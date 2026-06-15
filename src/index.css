@@ -1,13 +1,275 @@
-body {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* --- Root & Basic Resets --- */
+* {
+  box-sizing: border-box;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* --- Theme Tokens --- */
+
+/* 1. Default (Linear.app Inspired) */
+[data-theme="default"] {
+  --primary: #5e6ad2;
+  --primary-hover: #4d59c2;
+  --primary-rgb: 94, 106, 210;
+  --radius: 8px;
+  
+  --bg-gradient: radial-gradient(ellipse 80% 80% at 50% -20%, rgba(94, 106, 210, 0.15), rgba(255, 255, 255, 0));
+}
+[data-theme="default"][data-appearance="light"] {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-hover: #f3f3f4;
+  --border: rgba(0, 0, 0, 0.08);
+  --text: #111111;
+  --text-muted: #6b6b7b;
+  --accent: #5e6ad2;
+  --shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+}
+[data-theme="default"][data-appearance="dark"] {
+  --bg: #0f0f10;
+  --surface: #151516;
+  --surface-hover: #1e1e20;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #f7f8f8;
+  --text-muted: #8a8f98;
+  --accent: #5e6ad2;
+  --shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  --bg-gradient: radial-gradient(ellipse 80% 80% at 50% -20%, rgba(94, 106, 210, 0.08), rgba(0, 0, 0, 0));
+}
+
+/* 2. Neon (Cyberpunk Arcade) */
+[data-theme="neon"] {
+  --primary: #ff007f;
+  --primary-hover: #e0006c;
+  --primary-rgb: 255, 0, 127;
+  --radius: 4px;
+  --bg-gradient: linear-gradient(180deg, rgba(26, 8, 46, 0.5) 0%, rgba(10, 2, 22, 0) 100%);
+}
+[data-theme="neon"][data-appearance="light"] {
+  --bg: #f8f5fc;
+  --surface: #ffffff;
+  --surface-hover: #f1e9fc;
+  --border: #bf55ec;
+  --text: #2c0054;
+  --text-muted: #7b688c;
+  --accent: #00ffff;
+  --shadow: 0 0 10px rgba(191, 85, 236, 0.2);
+}
+[data-theme="neon"][data-appearance="dark"] {
+  --bg: #0d021a;
+  --surface: #17072e;
+  --surface-hover: #260e47;
+  --border: #ff007f;
+  --text: #00ffff;
+  --text-muted: #a372eb;
+  --accent: #ff007f;
+  --shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+}
+
+/* 3. Cyberpunk (Dystopian Tech) */
+[data-theme="cyberpunk"] {
+  --primary: #fcee0a;
+  --primary-hover: #d2c700;
+  --primary-rgb: 252, 238, 10;
+  --radius: 0px; /* Sharp corners */
+}
+[data-theme="cyberpunk"][data-appearance="light"] {
+  --bg: #e2e2e4;
+  --surface: #f3f3f5;
+  --surface-hover: #ffffff;
+  --border: #00f0ff;
+  --text: #000000;
+  --text-muted: #4e4e54;
+  --accent: #ff0055;
+  --shadow: 3px 3px 0px #000000;
+}
+[data-theme="cyberpunk"][data-appearance="dark"] {
+  --bg: #000411;
+  --surface: #080f26;
+  --surface-hover: #0d1b40;
+  --border: #fcee0a;
+  --text: #00f0ff;
+  --text-muted: #5e83a6;
+  --accent: #ff0055;
+  --shadow: 3px 3px 0px #00f0ff;
+  --bg-gradient: radial-gradient(ellipse 80% 80% at 50% -20%, rgba(252, 238, 10, 0.1), rgba(0, 0, 0, 0));
+}
+
+/* 4. Mystic (Fae Woodland) */
+[data-theme="mystic"] {
+  --primary: #2d7a4d;
+  --primary-hover: #1e5c36;
+  --primary-rgb: 45, 122, 77;
+  --radius: 20px; /* Soft edges */
+  --bg-gradient: radial-gradient(circle at top, rgba(144, 238, 144, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+}
+[data-theme="mystic"][data-appearance="light"] {
+  --bg: #f2f7f4;
+  --surface: #ffffff;
+  --surface-hover: #eaf1ed;
+  --border: #bce3c5;
+  --text: #1d3322;
+  --text-muted: #607c65;
+  --accent: #d4af37;
+  --shadow: 0 10px 30px rgba(45, 122, 77, 0.08);
+}
+[data-theme="mystic"][data-appearance="dark"] {
+  --bg: #0f1c13;
+  --surface: #162a1d;
+  --surface-hover: #223f2c;
+  --border: #2e543b;
+  --text: #e1efe6;
+  --text-muted: #7a9c84;
+  --accent: #d4af37;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  --bg-gradient: radial-gradient(circle at top, rgba(46, 84, 59, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
+}
+
+/* 5. Burnt Forest (Charred Ash) */
+[data-theme="burnt-forest"] {
+  --primary: #ff5500;
+  --primary-hover: #cc4400;
+  --primary-rgb: 255, 85, 0;
+  --radius: 6px;
+  --bg-gradient: linear-gradient(180deg, rgba(30, 10, 5, 0.4) 0%, rgba(0, 0, 0, 0) 100%);
+}
+[data-theme="burnt-forest"][data-appearance="light"] {
+  --bg: #f4efeb;
+  --surface: #ffffff;
+  --surface-hover: #ebdcd3;
+  --border: #cc7a52;
+  --text: #331f14;
+  --text-muted: #8c7365;
+  --accent: #ff5500;
+  --shadow: 0 4px 15px rgba(255, 85, 0, 0.08);
+}
+[data-theme="burnt-forest"][data-appearance="dark"] {
+  --bg: #0a0705;
+  --surface: #140e0a;
+  --surface-hover: #1e150f;
+  --border: #4d2600;
+  --text: #f0e6df;
+  --text-muted: #a68c7c;
+  --accent: #ff5500;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+  --bg-gradient: radial-gradient(ellipse 80% 80% at 50% -20%, rgba(255, 85, 0, 0.12), rgba(0, 0, 0, 0));
+}
+
+/* --- Common UI Helper Styles --- */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-image: var(--bg-gradient);
+  background-attachment: fixed;
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 24px 40px 24px; /* Space for the top nav bar */
+}
+
+/* Glassmorphism helpers */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+[data-appearance="dark"] .glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(21, 21, 22, 0.75);
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Shimmer Loading Skeleton */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-hover) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radius);
+}
+
+/* CSS Scrollbar Reset */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
