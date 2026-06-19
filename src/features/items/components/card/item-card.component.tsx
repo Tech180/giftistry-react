@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { itemsApi } from '../../api/items.api';
+import { useAuth } from 'app/providers/AuthContext';
 import { ItemCardProps } from '../../interfaces/item-card-props.interface';
 import { ItemCardTemplate } from './item-card.html';
 
@@ -12,7 +13,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   onUpdate,
   priorityLabel,
   onEdit,
+  isTaggingModeActive,
+  isTaggedSelection,
+  onSelectTag,
 }) => {
+  const { user } = useAuth();
+  const claimedByCurrentUser = !!(user && item.Claims.some(c => c.UserId === user.Id));
+
   const [urlInput, setUrlInput] = useState('');
   const [showAddLink, setShowAddLink] = useState(false);
   const [linkLoading, setLinkLoading] = useState(false);
@@ -21,6 +28,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const [showClaimForm, setShowClaimForm] = useState(false);
   const [claimAmount, setClaimAmount] = useState('');
   const [claimedByName, setClaimedByName] = useState('');
+  const [anonymous, setAnonymous] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
 
   // Delete state
@@ -31,10 +39,16 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const [localIsFavorite, setLocalIsFavorite] = useState(false);
 
   useEffect(() => {
-    setLocalIsFavorite(
-      priorityLabel?.includes('★') || priorityLabel?.includes('*') || priorityLabel?.includes('Favorite') || false
-    );
-  }, [priorityLabel]);
+    if (isOwner) {
+      setLocalIsFavorite(
+        priorityLabel?.includes('★') || priorityLabel?.includes('Favorite') || false
+      );
+    } else {
+      setLocalIsFavorite(
+        priorityLabel?.includes('📌') || priorityLabel?.includes('Pinned') || false
+      );
+    }
+  }, [priorityLabel, isOwner]);
 
   const handleAddLink = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,15 +67,16 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     }
   };
 
-  const handleClaim = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleClaim = async (e?: React.FormEvent<HTMLFormElement>) => {
+    if (e) e.preventDefault();
     setClaimLoading(true);
 
     try {
       const amount = claimAmount ? parseFloat(claimAmount) : null;
-      await itemsApi.claimItem(item.Id, amount, claimedByName.trim() || null);
+      await itemsApi.claimItem(item.Id, amount, null, anonymous);
       setClaimAmount('');
       setClaimedByName('');
+      setAnonymous(false);
       setShowClaimForm(false);
       onUpdate();
     } catch (err) {
@@ -83,6 +98,18 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     }
   };
 
+  const handleUnclaim = async () => {
+    setClaimLoading(true);
+    try {
+      await itemsApi.unclaimItem(item.Id);
+      onUpdate();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to unclaim item');
+    } finally {
+      setClaimLoading(false);
+    }
+  };
+
   // Group funding calculations
   const totalExtractedPrice = item.Links.reduce((acc, link) => {
     return Math.max(acc, link.ExtractedPrice || 0);
@@ -95,6 +122,23 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const isFullyClaimed = allowGroupFunds && totalExtractedPrice > 0
     ? totalClaimedAmount >= totalExtractedPrice
     : item.IsClaimed;
+
+  const [isPinned, setIsPinned] = useState(() => {
+    try {
+      return localStorage.getItem(`pinned_${item.Id}`) === 'true';
+    } catch (_) {
+      return false;
+    }
+  });
+
+  const togglePin = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newValue = !isPinned;
+    setIsPinned(newValue);
+    try {
+      localStorage.setItem(`pinned_${item.Id}`, String(newValue));
+    } catch (_) {}
+  };
 
   return (
     <ItemCardTemplate
@@ -119,6 +163,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       setClaimAmount={setClaimAmount}
       claimedByName={claimedByName}
       setClaimedByName={setClaimedByName}
+      anonymous={anonymous}
+      setAnonymous={setAnonymous}
       claimLoading={claimLoading}
       handleClaim={handleClaim}
       showDeleteConfirm={showDeleteConfirm}
@@ -128,6 +174,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       isFavorite={localIsFavorite}
       toggleFavorite={() => setLocalIsFavorite(!localIsFavorite)}
       onEdit={onEdit}
+      claimedByCurrentUser={claimedByCurrentUser}
+      handleUnclaim={handleUnclaim}
+      isPinned={isPinned}
+      togglePin={togglePin}
+      isTaggingModeActive={isTaggingModeActive}
+      isTaggedSelection={isTaggedSelection}
+      onSelectTag={onSelectTag}
     />
   );
 };

@@ -8,6 +8,7 @@ export interface Wishlist {
   CreatedAt?: string;
   OwnerUsername?: string; // Appended if available
   Category?: string;
+  RevealSuggestions?: boolean;
   OwnerFirstName?: string;
   Role?: 'owner' | 'collaborator' | 'viewer';
 }

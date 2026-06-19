@@ -1,9 +1,20 @@
 import React from 'react';
-import { ExternalLink, Plus, Gift, CheckCircle, Star, Trash2, Link, Edit2 } from 'lucide-react';
+import { ExternalLink, Plus, Gift, CheckCircle, Star, Trash2, Link, Edit2, Pin, Check } from 'lucide-react';
 import { Button, Card, Input } from 'shared/ui';
 import { ItemCardTemplateProps } from '../../interfaces/item-card-template-props.interface';
 import { getCategoryMeta } from './category-icons';
 import styles from './item-card.module.css';
+
+const getSiteName = (url: string, retailerName?: string | null) => {
+  if (retailerName) return retailerName;
+  try {
+    const hostname = new URL(url).hostname;
+    const domain = hostname.replace(/^www\./, '');
+    return domain.charAt(0).toUpperCase() + domain.slice(1);
+  } catch (_) {
+    return 'View Store';
+  }
+};
 
 export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   item,
@@ -27,6 +38,8 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   setClaimAmount,
   claimedByName,
   setClaimedByName,
+  anonymous,
+  setAnonymous,
   claimLoading,
   handleClaim,
   showDeleteConfirm,
@@ -36,6 +49,13 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   isFavorite,
   toggleFavorite,
   onEdit,
+  claimedByCurrentUser,
+  handleUnclaim,
+  isPinned,
+  togglePin,
+  isTaggingModeActive,
+  isTaggedSelection,
+  onSelectTag,
 }) => {
   // Parse JSON description if applicable
   let displayDescription: string | null = null;
@@ -61,30 +81,106 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   const displayCategoryBadge = item.Category && item.Category !== 'uncategorized';
 
   return (
-    <Card className={`${styles.itemCard} ${isFullyClaimed ? styles.claimedCard : ''}`} padding="none" glass={true}>
-      {/* Left Section - Favorite Star */}
-      <div className={styles.cardLeftSection}>
+    <Card
+      className={`${styles.itemCard} ${isFullyClaimed ? styles.claimedCard : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles.nonOwnerClaimed : ''} ${claimedByCurrentUser ? styles.userClaimedCard : ''} ${isTaggingModeActive ? styles.taggingModeCard : ''} ${isTaggedSelection ? styles.taggedCard : ''}`}
+      padding="none"
+      glass={true}
+    >
+      {/* Tagging Card Click Interceptor (covers card when in tagging mode) */}
+      {isTaggingModeActive && (
         <button
-          onClick={toggleFavorite}
-          className={`${styles.cardActionBtn} ${styles.starBtn} ${isFavorite ? styles.active : ''}`}
-          title="Toggle favorite"
-        >
-          <Star
-            size={20}
-            fill={isFavorite ? '#f59e0b' : 'none'}
-            stroke={isFavorite ? '#f59e0b' : 'currentColor'}
-          />
-        </button>
-      </div>
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onSelectTag?.();
+          }}
+          className={styles.taggingCardClickOverlay}
+          aria-label="Toggle selection"
+        />
+      )}
 
-      {/* Vertical Divider */}
-      <div className={styles.cardDivider}></div>
+      {/* Circle Tagging Select Section (before the star) */}
+      {isTaggingModeActive && (
+        <>
+          <div className={styles.cardSelectSection}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSelectTag?.();
+              }}
+              className={`${styles.selectIndicatorCircle} ${isTaggedSelection ? styles.checked : ''}`}
+              aria-label={isTaggedSelection ? "Deselect item" : "Select item"}
+            >
+              {isTaggedSelection && <Check size={12} strokeWidth={3.5} />}
+            </button>
+          </div>
+          <div className={styles.cardDivider}></div>
+        </>
+      )}
+
+      {/* Left Section - Favorite Star */}
+      <>
+        <div className={styles.cardLeftSection}>
+          {isOwner ? (
+            <button
+              onClick={toggleFavorite}
+              className={`${styles.cardActionBtn} ${styles.starBtn} ${isFavorite ? styles.active : ''}`}
+              title="Toggle favorite"
+            >
+              <Star
+                size={20}
+                fill={isFavorite ? '#f59e0b' : 'none'}
+                stroke={isFavorite ? '#f59e0b' : 'currentColor'}
+              />
+            </button>
+          ) : (priorityLabel?.includes('★') || priorityLabel?.includes('Favorite')) ? (
+            <div
+              title="Favorited by Owner"
+              style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Star size={20} fill="#f59e0b" stroke="#f59e0b" />
+            </div>
+          ) : (
+            <div
+              title="Not favorited"
+              style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}
+            >
+              <Star size={20} fill="none" stroke="currentColor" />
+            </div>
+          )}
+
+          {/* Pin Button for collaborators (underneath the star) */}
+          {!isOwner && (
+            <button
+              onClick={togglePin}
+              className={`${styles.pinBtnLeftSection} ${isPinned ? styles.pinBtnActive : ''}`}
+              title={isPinned ? 'Unpin Item' : 'Pin Item'}
+            >
+              <Pin size={16} style={{ transform: isPinned ? 'rotate(45deg)' : 'none' }} />
+            </button>
+          )}
+        </div>
+        <div className={styles.cardDivider}></div>
+      </>
 
       {/* Main Content Area */}
       <div className={styles.cardMainContent}>
         <div className={styles.itemInfo}>
           <div className={styles.itemTitleRow}>
             <span className={styles.itemName}>{item.Name}</span>
+            <div className={styles.itemTitleRight}>
+              {item.Links.length > 0 && item.Links[0].ExtractedPrice !== null && (
+                <span className={styles.mainPriceTag}>${item.Links[0].ExtractedPrice}</span>
+              )}
+              {claimedByCurrentUser && (
+                <span className={styles.myClaimBadge} title="You have claimed this item">
+                  🎁 You claimed this!
+                </span>
+              )}
+            </div>
           </div>
           {displayDescription && <p className={styles.itemDescription}>{displayDescription}</p>}
           
@@ -94,9 +190,6 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                 <CategoryIcon size={12} style={{ marginRight: '4px' }} />
                 {categoryMeta.label}
               </span>
-            )}
-            {item.Links.length > 0 && item.Links[0].ExtractedPrice !== null && (
-              <span className={styles.priceTag}>${item.Links[0].ExtractedPrice}</span>
             )}
           </div>
 
@@ -135,8 +228,13 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
             </div>
           )}
 
-          {item.IsHiddenIdea && (
+          {item.IsHiddenIdea && !item.IsSuggestion && (
             <span className={styles.ideaBadge}>Collaborator Suggestion (Hidden from list owner)</span>
+          )}
+          {item.IsSuggestion && (
+            <span className={styles.suggestionBadge}>
+              🎁 Suggestion by {item.SuggestedByUsername || 'Collaborator'}
+            </span>
           )}
         </div>
 
@@ -183,10 +281,8 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                   >
                     <Link size={12} style={{ marginRight: '4px' }} />
                     <span>
-                      {link.RetailerName || 'View Store'} 
-                      {link.ExtractedPrice !== null && ` - $${link.ExtractedPrice}`}
+                      {getSiteName(link.Url, link.RetailerName)}
                     </span>
-                    <ExternalLink size={11} style={{ marginLeft: '4px', opacity: 0.7 }} />
                   </a>
                 </li>
               ))}
@@ -216,99 +312,59 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           </div>
         )}
 
-        {/* Claims list & actions */}
-        {!isOwner && (
-          <div className={styles.section}>
-            <h5>Claims</h5>
-            <>
-              {item.Claims.length > 0 ? (
-                <ul className={styles.claimsList}>
-                  {item.Claims.map((claim) => (
-                    <li key={claim.Id} className={styles.claimItem}>
-                      <Gift size={12} />
-                      <span>
-                        Claimed by <strong>{claim.ClaimedByName || 'Anonymous'}</strong>
-                        {allowGroupFunds && claim.Amount !== null && ` ($${claim.Amount})`}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className={styles.emptyText}>No one has claimed this item yet.</p>
-              )}
-
-              {!isFullyClaimed && (
-                <div className={styles.claimActionBox}>
-                  {!showClaimForm ? (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => setShowClaimForm(true)}
-                    >
-                      Claim Item
-                    </Button>
-                  ) : (
-                    <form onSubmit={handleClaim} className={styles.claimForm}>
-                      <div className={styles.claimInputs}>
-                        <Input
-                          label="Your Name (Optional)"
-                          placeholder="Anonymous"
-                          value={claimedByName}
-                          onChange={(e) => setClaimedByName(e.target.value)}
-                        />
-                        {allowGroupFunds && totalExtractedPrice > 0 && (
-                          <Input
-                            label="Amount to Fund"
-                            type="number"
-                            min="1"
-                            max={totalExtractedPrice - totalClaimedAmount}
-                            placeholder="Amount"
-                            value={claimAmount}
-                            onChange={(e) => setClaimAmount(e.target.value)}
-                          />
-                        )}
-                      </div>
-                      <div className={styles.claimActions}>
-                        <Button type="submit" variant="primary" size="sm" isLoading={claimLoading}>
-                          Confirm Claim
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowClaimForm(false)}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </form>
-                  )}
-                </div>
-              )}
-            </>
+        {/* Claim confirmation dropdown */}
+        {showClaimForm && (
+          <div className={styles.claimConfirmationDropdown}>
+            <div className={styles.confirmPrompt}>Are you sure you want to claim this item?</div>
+            <div className={styles.confirmActionsRow}>
+              <div className={styles.confirmLeft}>
+                <label className={styles.anonLabel}>
+                  <input
+                    type="checkbox"
+                    checked={anonymous}
+                    onChange={(e) => setAnonymous(e.target.checked)}
+                  />
+                  <span>Anonymous</span>
+                </label>
+                {allowGroupFunds && totalExtractedPrice > 0 && (
+                  <div className={styles.confirmFundWrapper}>
+                    <label className={styles.fundLabel}>Amount:</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max={totalExtractedPrice - totalClaimedAmount}
+                      placeholder="Amt"
+                      value={claimAmount}
+                      onChange={(e) => setClaimAmount(e.target.value)}
+                      className={styles.fundInputSmall}
+                    />
+                  </div>
+                )}
+              </div>
+              <div className={styles.confirmButtons}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleClaim()}
+                  isLoading={claimLoading}
+                >
+                  Yes
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowClaimForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
       {/* Right Actions Section */}
       <div className={styles.cardRightSection}>
-        {/* Status badge at top */}
-        <div className={styles.badgeSection}>
-          {isFullyClaimed ? (
-            <span className={`${styles.claimBadge} ${styles.claimed}`}>
-              <CheckCircle size={12} /> Claimed
-            </span>
-          ) : item.IsClaimed && isOwner && !isExpired ? (
-            <span className={`${styles.claimBadge} ${styles.mystery}`}>
-              <Gift size={12} /> Claimed (Surprise)
-            </span>
-          ) : (
-            <span className={`${styles.claimBadge} ${styles.unclaimed}`}>
-              Unclaimed
-            </span>
-          )}
-        </div>
-
         {/* Center Actions Section */}
         <div className={styles.centerActions}>
           {isOwner ? (
@@ -352,25 +408,55 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
               )}
             </div>
           ) : (
-            <>
-              {item.Links.length > 0 && (
-                <a
-                  href={item.Links[0].Url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.visitStoreBtn}
+            <div className={styles.claimStatusButtonBox}>
+              {claimedByCurrentUser ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleUnclaim}
+                  isLoading={claimLoading}
+                  className={styles.unclaimBtn}
                 >
-                  <ExternalLink size={14} style={{ marginRight: '4px' }} />
-                  Visit store
-                </a>
+                  Unclaim
+                </Button>
+              ) : isFullyClaimed ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={true}
+                  className={styles.claimedDisabledBtn}
+                >
+                  Claimed
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setShowClaimForm(true)}
+                  className={styles.claimBtn}
+                >
+                  Claim
+                </Button>
               )}
-            </>
+            </div>
           )}
         </div>
 
-        {/* Spacing element at bottom */}
-        <div style={{ height: '20px' }}></div>
-      </div>
-    </Card>
+          {/* Claimed By Info at bottom */}
+          {item.Claims.length > 0 && (!isOwner || isExpired) ? (
+            <div className={styles.claimedByBox} title="Claim Details">
+              <div className={styles.claimedByBoxLabel}>
+                {allowGroupFunds ? 'Funded' : 'Claimed'}
+              </div>
+              <div className={styles.claimedByBoxSub}>by</div>
+              <div className={styles.claimedByBoxName}>
+                {item.Claims.map((c) => c.ClaimedByName || 'Anonymous').join(', ')}
+              </div>
+            </div>
+          ) : (
+            <div style={{ height: '20px' }}></div>
+          )}
+        </div>
+      </Card>
   );
 };

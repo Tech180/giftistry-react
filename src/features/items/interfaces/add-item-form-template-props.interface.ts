@@ -67,4 +67,9 @@ export interface AddItemFormTemplateProps {
   isFieldVisible: (def: FieldDefinition) => boolean;
   handleUpdateDynamicValue: (key: string, val: string) => void;
   handleDeletePriority: (id: string) => void;
+  currentUserId?: string;
+  otherUsersCanSee: boolean;
+  setOtherUsersCanSee: (val: boolean) => void;
+  claimOnCreate: boolean;
+  setClaimOnCreate: (val: boolean) => void;
 }

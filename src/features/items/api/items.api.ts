@@ -46,12 +46,15 @@ export const itemsApi = {
       'Items'
     ),
 
-  claimItem: (itemId: string, amount?: number | null, claimedByName?: string | null) =>
+  claimItem: (itemId: string, amount?: number | null, claimedByName?: string | null, anonymous?: boolean) =>
     apiClient.post<Claim>(
       `/api/items/${itemId}/claims`,
-      { amount, claimedByName },
+      { amount, claimedByName, anonymous },
       'Items'
     ),
+
+  unclaimItem: (itemId: string) =>
+    apiClient.delete<void>(`/api/items/${itemId}/claims`),
 
   updateItem: (
     itemId: string,

@@ -17,5 +17,8 @@ export const commentsApi = {
       { content, commenterName, isOwnerVisible, isRollover },
       'Comments'
     ),
+
+  deleteComment: (listId: string, commentId: string) =>
+    apiClient.delete(`/api/wishlists/${listId}/comments/${commentId}`),
 };
 export type { Comment };

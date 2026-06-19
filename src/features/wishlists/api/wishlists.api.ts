@@ -10,10 +10,10 @@ export const wishlistsApi = {
   getWishlist: (listId: string) =>
     apiClient.get<Wishlist>(`/api/wishlists/${listId}`),
 
-  createWishlist: (title: string, expiresAt?: string | null, allowGroupFunds?: boolean, category?: string) =>
+  createWishlist: (title: string, expiresAt?: string | null, allowGroupFunds?: boolean, category?: string, revealSuggestions?: boolean) =>
     apiClient.post<Wishlist>(
       '/api/wishlists',
-      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category },
+      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category, revealSuggestions },
       'Lists'
     ),
 
@@ -23,10 +23,10 @@ export const wishlistsApi = {
   deleteWishlist: (listId: string) =>
     apiClient.delete<{ success: boolean }>(`/api/wishlists/${listId}`),
 
-  updateWishlist: (listId: string, title: string, expiresAt?: string | null, allowGroupFunds?: boolean, category?: string) =>
+  updateWishlist: (listId: string, title: string, expiresAt?: string | null, allowGroupFunds?: boolean, category?: string, revealSuggestions?: boolean) =>
     apiClient.put<Wishlist>(
       `/api/wishlists/${listId}`,
-      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category },
+      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category, revealSuggestions },
       'Lists'
     ),
 

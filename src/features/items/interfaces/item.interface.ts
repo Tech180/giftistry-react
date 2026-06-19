@@ -6,9 +6,11 @@ export interface Item {
   ListId: string;
   PriorityId: string | null;
   SuggestedByUserId: string | null;
+  SuggestedByUsername?: string | null;
   Name: string;
   Description: string | null;
   IsHiddenIdea: boolean;
+  IsSuggestion?: boolean;
   Category: string;
   CreatedAt?: string;
   Links: ItemLink[];

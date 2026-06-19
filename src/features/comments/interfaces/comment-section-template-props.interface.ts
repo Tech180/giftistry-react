@@ -1,5 +1,6 @@
 import React from 'react';
 import { Comment } from './comment.interface';
+import { Item } from 'features/items';
 
 export interface CommentSectionTemplateProps {
   isOwner: boolean;
@@ -20,4 +21,18 @@ export interface CommentSectionTemplateProps {
   isSubmitLoading: boolean;
   handleSubmit: (e: React.FormEvent) => void;
   formatDate: (dateStr?: string) => string;
+
+  // Phase 5 additions
+  items: Item[];
+  onlineUsers: string[];
+  typingUsers: string[];
+  onItemTaggedClick?: (itemId: string) => void;
+  handleSelectTagItem: (itemId: string, itemName: string) => void;
+  isTaggingModeActive: boolean;
+  setIsTaggingModeActive: (val: boolean) => void;
+  taggedItemIds: string[];
+  setTaggedItemIds: (ids: string[]) => void;
+  handleDeleteComment: (commentId: string) => void;
+  deletingCommentId: string | null;
+  setDeletingCommentId: (id: string | null) => void;
 }

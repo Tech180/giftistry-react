@@ -2,6 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  padding: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .alert {
@@ -52,7 +55,7 @@
   color: var(--text);
   outline: none;
   resize: vertical;
-  min-height: 80px;
+  min-height: 100px;
   max-height: 250px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -175,6 +178,33 @@
   padding: 10px;
   border-radius: var(--radius);
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inlineInputFull {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.inlineInputFull:focus {
+  border-color: var(--primary);
+}
+
+.inlineInputsRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
 }
 
 .inlineInputs {
@@ -270,6 +300,18 @@
   border-color: #f59e0b;
   background-color: rgba(245, 158, 11, 0.1);
   color: #f59e0b;
+}
+
+.pinToggleBtn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.pinToggleBtnActive {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
 }
 
 .autopopulateLoader {

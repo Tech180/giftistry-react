@@ -4,5 +4,6 @@ export interface Claim {
   UserId: string | null;
   Amount: number | null;
   ClaimedByName: string | null;
+  Anonymous?: boolean;
   ClaimedAt?: string;
 }

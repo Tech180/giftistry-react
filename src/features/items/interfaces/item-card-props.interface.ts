@@ -9,4 +9,7 @@ export interface ItemCardProps {
   onUpdate: () => void;
   priorityLabel?: string;
   onEdit?: () => void;
+  isTaggingModeActive?: boolean;
+  isTaggedSelection?: boolean;
+  onSelectTag?: () => void;
 }

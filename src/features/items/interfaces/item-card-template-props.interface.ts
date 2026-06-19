@@ -27,8 +27,10 @@ export interface ItemCardTemplateProps {
   setClaimAmount: (val: string) => void;
   claimedByName: string;
   setClaimedByName: (val: string) => void;
+  anonymous: boolean;
+  setAnonymous: (val: boolean) => void;
   claimLoading: boolean;
-  handleClaim: (e: React.SubmitEvent<HTMLFormElement>) => void;
+  handleClaim: (e?: React.FormEvent<HTMLFormElement>) => void;
 
   // Delete State/Handlers
   showDeleteConfirm: boolean;
@@ -39,4 +41,11 @@ export interface ItemCardTemplateProps {
   isFavorite: boolean;
   toggleFavorite: () => void;
   onEdit?: () => void;
+  claimedByCurrentUser: boolean;
+  handleUnclaim: () => void;
+  isPinned: boolean;
+  togglePin: (e: React.MouseEvent) => void;
+  isTaggingModeActive?: boolean;
+  isTaggedSelection?: boolean;
+  onSelectTag?: () => void;
 }

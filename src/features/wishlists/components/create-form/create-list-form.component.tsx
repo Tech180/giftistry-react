@@ -7,6 +7,7 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
   const [title, setTitle] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [allowGroupFunds, setAllowGroupFunds] = useState(false);
+  const [revealSuggestions, setRevealSuggestions] = useState(true);
   const [category, setCategory] = useState('generic');
   const [customCategory, setCustomCategory] = useState('');
   
@@ -35,11 +36,13 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
         title.trim(),
         expiresAt ? new Date(expiresAt).toISOString() : null,
         allowGroupFunds,
-        finalCategory
+        finalCategory,
+        revealSuggestions
       );
       setTitle('');
       setExpiresAt('');
       setAllowGroupFunds(false);
+      setRevealSuggestions(true);
       setCategory('generic');
       setCustomCategory('');
       onSuccess(res);
@@ -58,6 +61,8 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
       setExpiresAt={setExpiresAt}
       allowGroupFunds={allowGroupFunds}
       setAllowGroupFunds={setAllowGroupFunds}
+      revealSuggestions={revealSuggestions}
+      setRevealSuggestions={setRevealSuggestions}
       isLoading={isLoading}
       errorMsg={errorMsg}
       handleSubmit={handleSubmit}

@@ -11,6 +11,8 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
   setExpiresAt,
   allowGroupFunds,
   setAllowGroupFunds,
+  revealSuggestions,
+  setRevealSuggestions,
   isLoading,
   errorMsg,
   handleSubmit,
@@ -31,7 +33,7 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
       <Input
         label="Wishlist Title *"
         type="text"
-        placeholder="e.g. Birthday Wishlist 2026"
+        placeholder="Birthday Wishlist 2026"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         leftIcon={<Tag size={16} />}
@@ -60,7 +62,7 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
         <Input
           label="Custom Category Name *"
           type="text"
-          placeholder="e.g. Housewarming, Graduation"
+          placeholder="Housewarming, Graduation"
           value={customCategory}
           onChange={(e) => setCustomCategory(e.target.value)}
           leftIcon={<Tag size={16} />}
@@ -88,6 +90,23 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
             <strong>Enable Group Funding</strong>
             <span className={styles.checkboxSubtext}>
               Allows friends to pool money together to claim high-ticket items.
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <div className={styles.checkboxWrapper}>
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={revealSuggestions}
+            onChange={(e) => setRevealSuggestions(e.target.checked)}
+            className={styles.checkbox}
+          />
+          <span className={styles.checkboxText}>
+            <strong>Reveal Suggestions After Expiration</strong>
+            <span className={styles.checkboxSubtext}>
+              Collaborators can suggest gifts anonymously. Reveal who suggested what after the list expires.
             </span>
           </span>
         </label>

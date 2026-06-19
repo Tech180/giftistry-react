@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tag, FileText, Link, Globe, DollarSign, Star, Plus, Trash2 } from 'lucide-react';
+import { Tag, FileText, Link, Globe, DollarSign, Star, Plus, Trash2, Pin } from 'lucide-react';
 import { Input, Button } from 'shared/ui';
 import { AddItemFormTemplateProps } from '../../interfaces/add-item-form-template-props.interface';
 import styles from './add-item-form.module.css';
@@ -85,6 +85,11 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   isFieldVisible,
   handleUpdateDynamicValue,
   handleDeletePriority,
+  currentUserId,
+  otherUsersCanSee,
+  setOtherUsersCanSee,
+  claimOnCreate,
+  setClaimOnCreate,
 }) => {
   const showOptionalSizing = (category && category !== 'uncategorized') || hasScraped;
 
@@ -167,19 +172,28 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           />
         </div>
         <div className={styles.starWrapper}>
-          <span className={styles.starLabel}>Favorite</span>
+          <span className={styles.starLabel}>{isOwner ? 'Favorite' : 'Pin'}</span>
           <button
             type="button"
             onClick={() => setIsFavorite(!isFavorite)}
-            className={`${styles.starToggleBtn} ${isFavorite ? styles.starToggleBtnActive : ''}`}
-            title={isFavorite ? 'Remove Favorite' : 'Mark as Favorite'}
+            className={`${styles.starToggleBtn} ${isOwner ? (isFavorite ? styles.starToggleBtnActive : '') : (isFavorite ? styles.pinToggleBtnActive : styles.pinToggleBtn)}`}
+            title={isOwner ? (isFavorite ? 'Remove Favorite' : 'Mark as Favorite') : (isFavorite ? 'Unpin Item' : 'Pin Item')}
             style={{ height: '40px' }}
           >
-            <Star
-              size={18}
-              fill={isFavorite ? '#f59e0b' : 'none'}
-              stroke={isFavorite ? '#f59e0b' : 'currentColor'}
-            />
+            {isOwner ? (
+              <Star
+                size={18}
+                fill={isFavorite ? '#f59e0b' : 'none'}
+                stroke={isFavorite ? '#f59e0b' : 'currentColor'}
+              />
+            ) : (
+              <Pin
+                size={18}
+                fill={isFavorite ? '#3b82f6' : 'none'}
+                stroke={isFavorite ? '#3b82f6' : 'currentColor'}
+                style={{ transform: isFavorite ? 'rotate(45deg)' : 'none' }}
+              />
+            )}
           </button>
         </div>
       </div>
@@ -427,7 +441,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       {/* 5. Priority / Category Section */}
       <div className={styles.fieldGroup}>
         <div className={styles.priorityLabelRow}>
-          <label className={styles.label}>Category / Section (Optional)</label>
+          <label className={styles.label}>Category (Optional)</label>
           <button
             type="button"
             onClick={() => setShowNewPriorityForm(!showNewPriorityForm)}
@@ -439,13 +453,13 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
 
         {showNewPriorityForm ? (
           <div className={styles.inlinePriorityForm}>
-            <div className={styles.inlineInputs}>
-              <input
-                placeholder="Category (Starred, Expensive, Common)"
-                value={newPriorityLabel}
-                onChange={(e) => setNewPriorityLabel(e.target.value)}
-                className={styles.inlineInput}
-              />
+            <input
+              placeholder="Category (Starred, Expensive, Common)"
+              value={newPriorityLabel}
+              onChange={(e) => setNewPriorityLabel(e.target.value)}
+              className={styles.inlineInputFull}
+            />
+            <div className={styles.inlineInputsRow}>
               <input
                 type="number"
                 min="1"
@@ -486,16 +500,18 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
                 >
                   <span>{p.Label}</span>
-                  <span
-                    className={styles.deleteCategoryBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletePriority(p.Id);
-                    }}
-                    title="Delete Category"
-                  >
-                    &times;
-                  </span>
+                  {(isOwner || p.UserId === currentUserId) && (
+                    <span
+                      className={styles.deleteCategoryBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePriority(p.Id);
+                      }}
+                      title="Delete Category"
+                    >
+                      &times;
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -504,22 +520,60 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       </div>
 
       {!isOwner && (
-        <div className={styles.checkboxWrapper}>
-          <label className={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={isHiddenIdea}
-              onChange={(e) => setIsHiddenIdea(e.target.checked)}
-              className={styles.checkbox}
-            />
-            <span className={styles.checkboxText}>
-              <strong>Suggest as Surprise Idea</strong>
-              <span className={styles.checkboxSubtext}>
-                This item will be hidden from the owner's view until their wishlist expires.
+        <>
+          <div className={styles.checkboxWrapper}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={isHiddenIdea}
+                onChange={(e) => setIsHiddenIdea(e.target.checked)}
+                className={styles.checkbox}
+              />
+              <span className={styles.checkboxText}>
+                <strong>Suggest as Surprise Idea</strong>
+                <span className={styles.checkboxSubtext}>
+                  This item will be hidden from the owner's view until their wishlist expires.
+                </span>
               </span>
-            </span>
-          </label>
-        </div>
+            </label>
+          </div>
+
+          <div className={styles.checkboxWrapper}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={otherUsersCanSee}
+                onChange={(e) => setOtherUsersCanSee(e.target.checked)}
+                className={styles.checkbox}
+              />
+              <span className={styles.checkboxText}>
+                <strong>Visible to Other Collaborators</strong>
+                <span className={styles.checkboxSubtext}>
+                  Allow other users to see this recommendation.
+                </span>
+              </span>
+            </label>
+          </div>
+
+          {!isEdit && (
+            <div className={styles.checkboxWrapper}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={claimOnCreate}
+                  onChange={(e) => setClaimOnCreate(e.target.checked)}
+                  className={styles.checkbox}
+                />
+                <span className={styles.checkboxText}>
+                  <strong>Claim this Item Immediately</strong>
+                  <span className={styles.checkboxSubtext}>
+                    Mark this item as claimed by you as soon as it is created.
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
+        </>
       )}
 
       <Button

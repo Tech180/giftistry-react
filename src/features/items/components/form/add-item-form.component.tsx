@@ -3,6 +3,7 @@ import { itemsApi, FieldDefinition } from '../../api/items.api';
 import { Priority, wishlistsApi } from 'features/wishlists';
 import { AddItemFormProps } from '../../interfaces/add-item-form-props.interface';
 import { AddItemFormTemplate } from './add-item-form.html';
+import { useAuth } from 'app/providers/AuthContext';
 
 const STANDARD_CATEGORIES = [
   { id: 'digital_tech', label: 'Digital & Tech' },
@@ -22,11 +23,14 @@ const getFriendlyLabel = (id: string) => {
 };
 
 export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuccess, existingCategories = [], item }) => {
+  const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [priorityId, setPriorityId] = useState('');
   const [isHiddenIdea, setIsHiddenIdea] = useState(false);
   const [priorities, setPriorities] = useState<Priority[]>([]);
+  const [otherUsersCanSee, setOtherUsersCanSee] = useState(true);
+  const [claimOnCreate, setClaimOnCreate] = useState(false);
 
   const [linkUrl, setLinkUrl] = useState('');
   const [websiteName, setWebsiteName] = useState('');
@@ -158,9 +162,15 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
             if (parsed.custom) {
               setCustomFields(parsed.custom.map((f: any) => ({ id: Math.random().toString(), name: f.name, value: f.value })));
             }
+            if (parsed.otherUsersCanSee !== undefined) {
+              setOtherUsersCanSee(parsed.otherUsersCanSee);
+            } else {
+              setOtherUsersCanSee(true);
+            }
             setShowExtraFields(true);
           } else {
             parsedDesc = item.Description;
+            setOtherUsersCanSee(true);
             setDynamicValues({});
           }
         } catch (_) {
@@ -327,18 +337,35 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       let finalPriorityId = priorityId || null;
 
       if (isFavorite) {
-        const favoritePriority = priorities.find(
-          (p) => p.Label === 'Favorite' || p.Label === 'High' || p.Label.includes('★')
-        );
-        if (favoritePriority) {
-          finalPriorityId = favoritePriority.Id;
+        if (isOwner) {
+          const favoritePriority = priorities.find(
+            (p) => p.Label === 'Favorite' || p.Label === 'High' || p.Label.includes('★')
+          );
+          if (favoritePriority) {
+            finalPriorityId = favoritePriority.Id;
+          } else {
+            try {
+              const newPriority = await wishlistsApi.createPriority('★ Favorite', 10);
+              setPriorities((prev) => [...prev, newPriority]);
+              finalPriorityId = newPriority.Id;
+            } catch (err) {
+              // Ignore priority creation error
+            }
+          }
         } else {
-          try {
-            const newPriority = await wishlistsApi.createPriority('★ Favorite', 10);
-            setPriorities((prev) => [...prev, newPriority]);
-            finalPriorityId = newPriority.Id;
-          } catch (err) {
-            // Ignore priority creation error
+          const pinnedPriority = priorities.find(
+            (p) => p.Label === 'Pinned' || p.Label.includes('📌')
+          );
+          if (pinnedPriority) {
+            finalPriorityId = pinnedPriority.Id;
+          } else {
+            try {
+              const newPriority = await wishlistsApi.createPriority('📌 Pinned', 9);
+              setPriorities((prev) => [...prev, newPriority]);
+              finalPriorityId = newPriority.Id;
+            } catch (err) {
+              // Ignore priority creation error
+            }
           }
         }
       }
@@ -359,23 +386,20 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       const hasVisibleDynamic = Object.keys(visibleDynamicValues).length > 0;
       const hasExtraFields = pantsSize.trim() || shirtSize.trim() || shoesSize.trim() || socksSize.trim() || color.trim() || customFields.some(f => f.name.trim() && f.value.trim());
 
-      if (hasVisibleDynamic || hasExtraFields || description.trim()) {
-        if (hasVisibleDynamic || hasExtraFields) {
-          descPayload = JSON.stringify({
-            text: description.trim() || null,
-            pantsSize: pantsSize.trim() || null,
-            shirtSize: shirtSize.trim() || null,
-            shoesSize: shoesSize.trim() || null,
-            socksSize: socksSize.trim() || null,
-            color: color.trim() || null,
-            custom: customFields
-              .filter(f => f.name.trim() && f.value.trim())
-              .map(f => ({ name: f.name.trim(), value: f.value.trim() })),
-            ...visibleDynamicValues
-          });
-        } else {
-          descPayload = description.trim();
-        }
+      if (hasVisibleDynamic || hasExtraFields || description.trim() || !isOwner) {
+        descPayload = JSON.stringify({
+          text: description.trim() || null,
+          pantsSize: pantsSize.trim() || null,
+          shirtSize: shirtSize.trim() || null,
+          shoesSize: shoesSize.trim() || null,
+          socksSize: socksSize.trim() || null,
+          color: color.trim() || null,
+          custom: customFields
+            .filter(f => f.name.trim() && f.value.trim())
+            .map(f => ({ name: f.name.trim(), value: f.value.trim() })),
+          otherUsersCanSee: isOwner ? true : otherUsersCanSee,
+          ...visibleDynamicValues
+        });
       }
 
       if (item) {
@@ -387,7 +411,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
           category === 'uncategorized' ? null : category
         );
       } else {
-        await itemsApi.addItem(
+        const newItem = await itemsApi.addItem(
           listId,
           name.trim(),
           descPayload,
@@ -398,6 +422,14 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
           websiteName.trim() || null,
           category === 'uncategorized' ? null : category
         );
+
+        if (!isOwner && claimOnCreate && newItem && newItem.Id) {
+          try {
+            await itemsApi.claimItem(newItem.Id);
+          } catch (err) {
+            // Ignore claim error
+          }
+        }
       }
 
       // Reset all states
@@ -547,6 +579,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       isFieldVisible={isFieldVisible}
       handleUpdateDynamicValue={handleUpdateDynamicValue}
       handleDeletePriority={handleDeletePriority}
+      currentUserId={user?.Id}
+      otherUsersCanSee={otherUsersCanSee}
+      setOtherUsersCanSee={setOtherUsersCanSee}
+      claimOnCreate={claimOnCreate}
+      setClaimOnCreate={setClaimOnCreate}
     />
   );
 };

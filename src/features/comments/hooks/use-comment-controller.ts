@@ -44,12 +44,29 @@ export function useCommentController() {
     }
   };
 
+  const deleteComment = async (listId: string, commentId: string) => {
+    try {
+      await commentsApi.deleteComment(listId, commentId);
+      setComments((prev) =>
+        prev.map((c) =>
+          c.Id === commentId
+            ? { ...c, IsDeleted: true, Content: 'Comment was deleted.' }
+            : c
+        )
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete comment.');
+      throw err;
+    }
+  };
+
   return {
     comments,
     isLoading,
     error,
     fetchComments,
     addComment,
+    deleteComment,
     setComments,
   };
 }

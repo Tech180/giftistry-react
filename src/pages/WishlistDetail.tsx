@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Share2, Plus, Trash2, Archive, Calendar, Users, Eye, Edit2, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Share2, Plus, Trash2, Archive, Calendar, Users, Eye, EyeOff, Edit2, MessageSquare } from 'lucide-react';
 import { wishlistsApi, Wishlist, ShareForm, Priority } from 'features/wishlists';
 import { useItemController, ItemCard, AddItemForm, Item } from 'features/items';
 import { CommentSection } from 'features/comments';
 import { useAuth } from 'app/providers/AuthContext';
-import { Button, Modal, Card } from 'shared/ui';
+import { Button, Modal, Card, Sidebar } from 'shared/ui';
 import styles from './WishlistDetail.module.css';
 
 export default function WishlistDetail() {
@@ -26,6 +26,8 @@ export default function WishlistDetail() {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [isTaggingModeActive, setIsTaggingModeActive] = useState(false);
+  const [taggedItemIds, setTaggedItemIds] = useState<string[]>([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState('');
   const [isEditingDate, setIsEditingDate] = useState(false);
@@ -34,20 +36,29 @@ export default function WishlistDetail() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'deactivate' | 'delete' | null>(null);
 
+  const handleSelectTag = useCallback((itemId: string) => {
+    setTaggedItemIds((prev) =>
+      prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
+    );
+  }, []);
+
   const loadData = useCallback(async () => {
     if (!listId) return;
     setIsWishlistLoading(true);
     setWishlistError(null);
     try {
-      const [wishlistData, prioritiesData] = await Promise.all([
+      const [wl, prio] = await Promise.all([
         wishlistsApi.getWishlist(listId),
-        wishlistsApi.listPriorities(listId),
+        wishlistsApi.listPriorities(listId)
       ]);
-      setWishlist(wishlistData);
-      setPriorities(prioritiesData || []);
+      setWishlist(wl);
+      setPriorities(prio || []);
+      const expiresAtIso = wl.ExpiresAt ? new Date(wl.ExpiresAt).toISOString().split('T')[0] : '';
+      setTempDate(expiresAtIso);
+      setTempTitle(wl.Title);
       await fetchItems(listId);
     } catch (err) {
-      setWishlistError(err instanceof Error ? err.message : 'Failed to load wishlist details.');
+      setWishlistError(err instanceof Error ? err.message : 'Failed to load wishlist.');
     } finally {
       setIsWishlistLoading(false);
     }
@@ -57,11 +68,12 @@ export default function WishlistDetail() {
     loadData();
   }, [loadData]);
 
-  useEffect(() => {
-    if (wishlist) {
-      setTempTitle(wishlist.Title);
-      setTempDate(wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString().split('T')[0] : '');
-    }
+  const isOwner = useMemo(() => {
+    return !!(wishlist && user && wishlist.UserId === user.Id);
+  }, [wishlist, user]);
+
+  const isExpired = useMemo(() => {
+    return !!(wishlist?.ExpiresAt ? new Date() > new Date(wishlist.ExpiresAt) : false);
   }, [wishlist]);
 
   const saveTitle = async (newTitle: string) => {
@@ -81,7 +93,9 @@ export default function WishlistDetail() {
         wishlist.Id,
         trimmed,
         wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
-        wishlist.AllowGroupFunds
+        wishlist.AllowGroupFunds,
+        wishlist.Category,
+        wishlist.RevealSuggestions
       );
       setWishlist(updated);
     } catch (err) {
@@ -91,6 +105,17 @@ export default function WishlistDetail() {
       setIsEditingTitle(false);
     }
   };
+
+  const handleItemTaggedClick = useCallback((itemId: string) => {
+    const element = document.getElementById(`item-card-${itemId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add(styles.itemCardWrapperHighlighted);
+      setTimeout(() => {
+        element.classList.remove(styles.itemCardWrapperHighlighted);
+      }, 1500);
+    }
+  }, []);
 
   const saveDate = async (newDateStr: string) => {
     if (!wishlist) return;
@@ -105,7 +130,9 @@ export default function WishlistDetail() {
         wishlist.Id,
         wishlist.Title,
         expiresAtIso,
-        wishlist.AllowGroupFunds
+        wishlist.AllowGroupFunds,
+        wishlist.Category,
+        wishlist.RevealSuggestions
       );
       setWishlist(updated);
     } catch (err) {
@@ -113,6 +140,23 @@ export default function WishlistDetail() {
       setTempDate(prevDateStr);
     } finally {
       setIsEditingDate(false);
+    }
+  };
+
+  const toggleRevealSuggestions = async () => {
+    if (!wishlist) return;
+    try {
+      const updated = await wishlistsApi.updateWishlist(
+        wishlist.Id,
+        wishlist.Title,
+        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
+        wishlist.AllowGroupFunds,
+        wishlist.Category,
+        !wishlist.RevealSuggestions
+      );
+      setWishlist(updated);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update suggestion visibility');
     }
   };
 
@@ -207,9 +251,6 @@ export default function WishlistDetail() {
     );
   }
 
-  const isOwner = user?.Id === wishlist.UserId;
-  const isExpired = wishlist.ExpiresAt ? new Date() > new Date(wishlist.ExpiresAt) : false;
-
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'No expiration date';
     const date = new Date(dateStr);
@@ -223,27 +264,27 @@ export default function WishlistDetail() {
   return (
     <div className={styles.appLayout}>
       {/* LEFT SIDEBAR: Add Item form */}
-      <div className={`${styles.sidebarWrapper} ${styles.addItemSidebar} ${(isAddOpen || !!editingItem) ? styles.active : ''}`}>
-        <div className={styles.sidebarPanel}>
-          <div className={styles.sidebarHeader}>
-            <h4 className={styles.sidebarTitle}>{editingItem ? 'Edit Gift Item' : 'Add Item to Wishlist'}</h4>
-            <button onClick={() => { setIsAddOpen(false); setEditingItem(null); }} className={styles.sidebarClose}>&times;</button>
-          </div>
-          <div className={styles.sidebarBody}>
-            <AddItemForm
-              listId={wishlist.Id}
-              isOwner={isOwner}
-              item={editingItem}
-              existingCategories={Array.from(new Set(items.map(item => item.Category).filter(Boolean)))}
-              onSuccess={() => {
-                setIsAddOpen(false);
-                setEditingItem(null);
-                loadData();
-              }}
-            />
-          </div>
-        </div>
-      </div>
+      <Sidebar
+        isOpen={isAddOpen || !!editingItem}
+        position="left"
+        title={editingItem ? 'Edit Gift Item' : 'Add Item to Wishlist'}
+        onClose={() => {
+          setIsAddOpen(false);
+          setEditingItem(null);
+        }}
+      >
+        <AddItemForm
+          listId={wishlist.Id}
+          isOwner={isOwner}
+          item={editingItem}
+          existingCategories={Array.from(new Set(items.map(item => item.Category).filter(Boolean)))}
+          onSuccess={() => {
+            setIsAddOpen(false);
+            setEditingItem(null);
+            loadData();
+          }}
+        />
+      </Sidebar>
 
       <div className={`${styles.container} animate-fade-in ${(isAddOpen || !!editingItem) ? styles.addOpen : ''} ${isCommentsOpen ? styles.commentsOpen : ''}`}>
         {confirmAction && (
@@ -371,6 +412,16 @@ export default function WishlistDetail() {
                   <span>Group Funding Enabled</span>
                 </div>
               )}
+              {isOwner && (
+                <button
+                  className={styles['settings-btn']}
+                  onClick={toggleRevealSuggestions}
+                  title="Toggle suggestion visibility after list expiration"
+                >
+                  {wishlist.RevealSuggestions ? <Eye size={14} /> : <EyeOff size={14} />}
+                  <span>{wishlist.RevealSuggestions ? 'Reveal suggestions after expiration' : 'Hide suggestions permanently'}</span>
+                </button>
+              )}
               {!isOwner && (
                 <div className={styles.metaItem}>
                   <Eye size={14} />
@@ -440,17 +491,21 @@ export default function WishlistDetail() {
                       </h4>
                       <div className={styles.itemsGrid}>
                         {group.items.map((item) => (
-                          <ItemCard
-                            key={item.Id}
-                            item={item}
-                            priorityLabel={group.priority?.Label || undefined}
-                            isOwner={isOwner}
-                            isExpired={isExpired}
-                            canCollaborate={true}
-                            allowGroupFunds={wishlist.AllowGroupFunds}
-                            onUpdate={loadData}
-                            onEdit={() => setEditingItem(item)}
-                          />
+                          <div key={item.Id} id={`item-card-${item.Id}`}>
+                            <ItemCard
+                              item={item}
+                              priorityLabel={group.priority?.Label || undefined}
+                              isOwner={isOwner}
+                              isExpired={isExpired}
+                              canCollaborate={isOwner || wishlist.Role === 'collaborator'}
+                              allowGroupFunds={wishlist.AllowGroupFunds}
+                              onUpdate={loadData}
+                              onEdit={() => setEditingItem(item)}
+                              isTaggingModeActive={isTaggingModeActive}
+                              isTaggedSelection={taggedItemIds.includes(item.Id)}
+                              onSelectTag={() => handleSelectTag(item.Id)}
+                            />
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -482,17 +537,23 @@ export default function WishlistDetail() {
       </div>
 
       {/* RIGHT SIDEBAR: Comments & Discussion */}
-      <div className={`${styles.sidebarWrapper} ${styles.commentsSidebar} ${isCommentsOpen ? styles.active : ''}`}>
-        <div className={styles.sidebarPanel}>
-          <div className={styles.sidebarHeader}>
-            <h4 className={styles.sidebarTitle}>Discussion Board</h4>
-            <button onClick={() => setIsCommentsOpen(false)} className={styles.sidebarClose}>&times;</button>
-          </div>
-          <div className={styles.sidebarBody}>
-            <CommentSection listId={wishlist.Id} isOwner={isOwner} />
-          </div>
-        </div>
-      </div>
+      <Sidebar
+        isOpen={isCommentsOpen}
+        position="right"
+        title="Discussion Board"
+        onClose={() => setIsCommentsOpen(false)}
+      >
+        <CommentSection
+          listId={wishlist.Id}
+          isOwner={isOwner}
+          items={items}
+          onItemTaggedClick={handleItemTaggedClick}
+          isTaggingModeActive={isTaggingModeActive}
+          setIsTaggingModeActive={setIsTaggingModeActive}
+          taggedItemIds={taggedItemIds}
+          setTaggedItemIds={setTaggedItemIds}
+        />
+      </Sidebar>
 
       <Modal
         isOpen={isShareOpen}
