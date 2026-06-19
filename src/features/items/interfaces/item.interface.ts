@@ -9,6 +9,7 @@ export interface Item {
   Name: string;
   Description: string | null;
   IsHiddenIdea: boolean;
+  Category: string;
   CreatedAt?: string;
   Links: ItemLink[];
   Claims: Claim[];

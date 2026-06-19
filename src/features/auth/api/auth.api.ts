@@ -1,5 +1,6 @@
 import { apiClient } from 'api/client';
-import { ApiUser, AuthResponse } from '../interfaces/api-user.interface';
+import { ApiUser } from '../interfaces/api-user.interface';
+import { AuthResponse } from '../interfaces/auth-response.interface';
 
 export const authApi = {
   login: (email: string, password: string) =>

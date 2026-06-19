@@ -5,3 +5,4 @@ export * from './api/items.api';
 export * from './interfaces/item.interface';
 export * from './interfaces/item-link.interface';
 export * from './interfaces/item-claim.interface';
+export * from './interfaces/category-meta.interface';

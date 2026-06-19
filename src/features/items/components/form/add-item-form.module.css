@@ -1,7 +1,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
 .alert {
@@ -16,7 +16,7 @@
 .fieldGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .label {
@@ -33,9 +33,12 @@
 .textareaIcon {
   position: absolute;
   left: 12px;
-  top: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--text-muted);
   pointer-events: none;
+  display: flex;
+  align-items: center;
 }
 
 .textarea {
@@ -49,12 +52,43 @@
   color: var(--text);
   outline: none;
   resize: vertical;
+  min-height: 80px;
+  max-height: 250px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .textarea:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+}
+
+.formRow {
+  width: 100%;
+}
+
+.priceRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.priceInputWrapper {
+  flex: 1;
+}
+
+.customFieldCountBubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--primary-rgb), 0.15);
+  color: var(--primary);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  min-width: 14px;
+  line-height: 1;
 }
 
 .select {
@@ -112,4 +146,518 @@
 
 .submitBtn {
   width: 100%;
+}
+
+.priorityLabelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.inlineFormToggle {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.inlineFormToggle:hover {
+  text-decoration: underline;
+}
+
+.inlinePriorityForm {
+  background-color: var(--surface-hover);
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: var(--radius);
+  box-sizing: border-box;
+}
+
+.inlineInputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.inlineInput {
+  flex: 2;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.inlineInput:focus {
+  border-color: var(--primary);
+}
+
+.inlineWeightInput {
+  flex: 1;
+  width: 70px;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.inlineWeightInput:focus {
+  border-color: var(--primary);
+}
+
+.inlineCreateBtn {
+  flex-shrink: 0;
+}
+
+.itemNameRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.itemNameInputWrapper {
+  flex: 1;
+}
+
+.starWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.starLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.starToggleBtn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+.starToggleBtn:hover {
+  border-color: #f59e0b;
+  color: #f59e0b;
+  background-color: rgba(245, 158, 11, 0.05);
+}
+
+.starToggleBtnActive {
+  border-color: #f59e0b;
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.autopopulateLoader {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--primary);
+  margin-top: 4px;
+  animation: fadeIn 0.2s ease;
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(var(--primary-rgb), 0.2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.extraFieldsToggleRow {
+  display: flex;
+  justify-content: center;
+  margin: 6px 0;
+}
+
+.extraFieldsToggleBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+  width: 100%;
+  background-color: var(--surface-hover);
+  border: 1px dashed var(--border);
+  box-sizing: border-box;
+}
+
+.extraFieldsToggleBtn:hover {
+  background-color: var(--surface);
+  border-color: var(--primary);
+}
+
+.extraFieldsPanel {
+  background-color: var(--surface-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.panelTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+
+.panelLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.panelInput {
+  font-family: inherit;
+  font-size: 0.8125rem;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.panelInput:focus {
+  border-color: var(--primary);
+}
+
+.grid2Col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.customFieldsSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+
+.addCustomFieldBtn {
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.addCustomFieldBtn:hover {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+.noCustomFieldsText {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 4px 0;
+}
+
+.customFieldsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.customFieldRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.customFieldInput {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.customFieldInput:focus {
+  border-color: var(--primary);
+}
+
+.removeCustomFieldBtn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  transition: background-color 0.2s ease;
+}
+
+.removeCustomFieldBtn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.scrapeButton {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+  margin: 0;
+}
+
+.scrapeButton:hover:not(:disabled) {
+  color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.1);
+  transform: scale(1.1);
+}
+
+.scrapeButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.scrapeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Subtle pulse animation for when a valid URL is typed but not yet scraped */
+.pulseClickMe {
+  animation: subtlePulse 2s infinite ease-in-out;
+  color: var(--primary) !important;
+  box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4);
+}
+
+@keyframes subtlePulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 6px rgba(var(--primary-rgb), 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
+  }
+}
+
+.categoryChipsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.categoryChip {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.categoryChip:hover {
+  background-color: var(--surface-hover);
+  color: var(--text);
+  border-color: var(--text-muted);
+  transform: translateY(-1px);
+}
+
+.categoryChipSelected {
+  background-color: rgba(var(--primary-rgb), 0.08) !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.1);
+}
+
+.categoryChipSelected:hover {
+  background-color: rgba(var(--primary-rgb), 0.12) !important;
+  transform: translateY(-1px);
+}
+
+.addCustomChip {
+  border-style: dashed;
+  background-color: transparent;
+}
+
+.addCustomChip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.customCategoryInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 6px 2px 12px;
+  height: 32px;
+}
+
+.customCategoryInput {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.85rem;
+  outline: none;
+  width: 140px;
+}
+
+.customCategoryAddBtn {
+  background-color: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.customCategoryAddBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+.customCategoryCancelBtn {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  border-radius: 14px;
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.customCategoryCancelBtn:hover {
+  color: var(--text);
+}
+
+.categoryChipCustom {
+  padding-right: 8px !important;
+  gap: 6px;
+}
+
+.deleteCategoryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  margin-left: 2px;
+}
+
+.deleteCategoryBtn:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.categoryChipSelected .deleteCategoryBtn {
+  color: var(--primary);
+}
+
+.categoryChipSelected .deleteCategoryBtn:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
 }

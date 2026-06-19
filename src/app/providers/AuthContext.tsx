@@ -2,19 +2,9 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { authApi, ApiUser } from 'features/auth';
 import { apiClient } from 'api/client';
 
-export type User = ApiUser;
+import { AuthContextType } from './interfaces/auth-context-type.interface';
 
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (username: string, email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
-  logout: () => Promise<void>;
-  updateProfile: (username?: string, firstName?: string, lastName?: string) => Promise<void>;
-  error: string | null;
-  clearError: () => void;
-}
+export type User = ApiUser;
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

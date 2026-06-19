@@ -10,6 +10,7 @@ export interface ItemCardTemplateProps {
   isFullyClaimed: boolean;
   totalExtractedPrice: number;
   totalClaimedAmount: number;
+  priorityLabel?: string;
   
   // Link State/Handlers
   urlInput: string;
@@ -17,7 +18,7 @@ export interface ItemCardTemplateProps {
   showAddLink: boolean;
   setShowAddLink: (val: boolean) => void;
   linkLoading: boolean;
-  handleAddLink: (e: React.FormEvent) => void;
+  handleAddLink: (e: React.SubmitEvent<HTMLFormElement>) => void;
 
   // Claim State/Handlers
   showClaimForm: boolean;
@@ -27,5 +28,15 @@ export interface ItemCardTemplateProps {
   claimedByName: string;
   setClaimedByName: (val: string) => void;
   claimLoading: boolean;
-  handleClaim: (e: React.FormEvent) => void;
+  handleClaim: (e: React.SubmitEvent<HTMLFormElement>) => void;
+
+  // Delete State/Handlers
+  showDeleteConfirm: boolean;
+  setShowDeleteConfirm: (val: boolean) => void;
+  deleteLoading: boolean;
+  handleDelete: () => void;
+
+  isFavorite: boolean;
+  toggleFavorite: () => void;
+  onEdit?: () => void;
 }

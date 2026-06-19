@@ -2,6 +2,27 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  background-color: #151516;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+}
+
+.archived {
+  opacity: 0.7;
+  filter: grayscale(100%);
+}
+
+.archived:hover {
+  opacity: 0.95;
+  filter: grayscale(0%);
 }
 
 .linkWrapper {
@@ -17,94 +38,165 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0;
-  line-height: 1.3;
+.categoryPill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.categoryIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.categoryName {
+  text-transform: capitalize;
 }
 
 .badge {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
 }
 
-.ownerBadge {
-  background-color: rgba(var(--primary-rgb), 0.08);
-  color: var(--primary);
-  border: 1px solid rgba(var(--primary-rgb), 0.15);
+.collaborator {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
-.sharedBadge {
-  background-color: rgba(212, 175, 55, 0.08);
-  color: #d4af37;
-  border: 1px solid rgba(212, 175, 55, 0.15);
+.viewer {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.2);
 }
+
+.personal {
+  background-color: rgba(113, 113, 122, 0.1);
+  color: #a1a1aa;
+  border-color: rgba(113, 113, 122, 0.2);
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.4;
+  transition: color 0.2s ease;
+}
+
+.card:hover .title {
+  color: #818cf8;
+}
+
+.ownerAttribution {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #a1a1aa;
+}
+
+.ownerAvatar {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  opacity: 0.8;
+}
+
+/* Avatar Colors */
+.avatarBg1 { background-color: #6366f1; }
+.avatarBg2 { background-color: #ec4899; }
+.avatarBg3 { background-color: #10b981; }
+.avatarBg4 { background-color: #f59e0b; }
+.avatarBg5 { background-color: #8b5cf6; }
 
 .meta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
   margin-top: auto;
 }
 
 .metaItem {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 0.75rem;
-  color: var(--text-muted);
+  font-weight: 500;
+  color: #a1a1aa;
+}
+
+.metaIcon {
+  width: 16px;
+  height: 16px;
 }
 
 .noExpire {
-  color: var(--text-muted);
+  color: #71717a;
 }
 
 .activeExpire {
-  color: var(--text-muted);
+  color: #a1a1aa;
 }
 
 .expired {
-  color: #ef4444;
+  color: #71717a;
 }
 
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
-  border-top: 1px solid var(--border);
-  background-color: var(--surface-hover);
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: #1a1a1c;
   transition: background-color 0.2s ease;
+}
+
+.card:hover .footer {
+  background-color: #1e1e20;
 }
 
 .viewLink {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text);
+  color: #ffffff;
 }
 
 .arrow {
-  color: var(--text-muted);
+  color: #71717a;
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .card:hover .arrow {
   transform: translateX(4px);
-  color: var(--primary);
+  color: #818cf8;
 }

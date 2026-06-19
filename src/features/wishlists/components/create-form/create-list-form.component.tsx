@@ -7,6 +7,8 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
   const [title, setTitle] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [allowGroupFunds, setAllowGroupFunds] = useState(false);
+  const [category, setCategory] = useState('generic');
+  const [customCategory, setCustomCategory] = useState('');
   
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -18,18 +20,28 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
       return;
     }
 
+    if (category === 'custom' && !customCategory.trim()) {
+      setErrorMsg('Please enter a custom category name.');
+      return;
+    }
+
     setIsLoading(true);
     setErrorMsg(null);
+
+    const finalCategory = category === 'custom' ? customCategory.trim() : category;
 
     try {
       const res = await wishlistsApi.createWishlist(
         title.trim(),
         expiresAt ? new Date(expiresAt).toISOString() : null,
-        allowGroupFunds
+        allowGroupFunds,
+        finalCategory
       );
       setTitle('');
       setExpiresAt('');
       setAllowGroupFunds(false);
+      setCategory('generic');
+      setCustomCategory('');
       onSuccess(res);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to create wishlist.');
@@ -49,6 +61,10 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
       isLoading={isLoading}
       errorMsg={errorMsg}
       handleSubmit={handleSubmit}
+      category={category}
+      setCategory={setCategory}
+      customCategory={customCategory}
+      setCustomCategory={setCustomCategory}
     />
   );
 };

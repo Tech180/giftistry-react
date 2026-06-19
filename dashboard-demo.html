@@ -1,0 +1,459 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+Search, Moon, Sun, ChevronDown, User, LogOut, Plus,
+Calendar, Users, ArrowRight, Gift, Cake, TreePine,
+Heart, List, Archive, Sparkles
+} from 'lucide-react';
+
+// --- Mock Data ---
+const initialWishlists = [
+{ id: "1", title: "Christmas 2026", expiresAt: "2026-12-25", allowGroupFunds: true, role: "owner", category: "holiday",
+ownerName: "Me" },
+{ id: "2", title: "Mom's 60th Birthday", expiresAt: "2026-09-14", allowGroupFunds: true, role: "owner", category:
+"birthday", ownerName: "Me" },
+{ id: "3", title: "Home Office Upgrade", expiresAt: null, allowGroupFunds: true, role: "owner", category: "generic",
+ownerName: "Me" },
+{ id: "4", title: "Sarah & John's Wedding", expiresAt: "2026-08-10", allowGroupFunds: true, role: "collaborator",
+category: "wedding", ownerName: "Sarah M.", avatarColor: "bg-pink-500" },
+{ id: "5", title: "Gaming Setup Fund", expiresAt: "2027-01-01", allowGroupFunds: false, role: "viewer", category:
+"generic", ownerName: "Alex R.", avatarColor: "bg-blue-500" },
+{ id: "6", title: "Summer Vacation Gear", expiresAt: "2026-06-01", allowGroupFunds: false, role: "owner", category:
+"generic", ownerName: "Me" }, // Expired
+{ id: "7", title: "Dad's Retirement", expiresAt: "2026-05-15", allowGroupFunds: true, role: "collaborator", category:
+"generic", ownerName: "Mom", avatarColor: "bg-emerald-500" }, // Expired
+{ id: "8", title: "Baby Shower - Emily", expiresAt: "2026-07-20", allowGroupFunds: true, role: "viewer", category:
+"generic", ownerName: "Emily C.", avatarColor: "bg-purple-500" },
+];
+
+const CategoryIcon = ({ category, className }) => {
+switch (category) {
+case 'birthday': return
+<Cake className={className} />;
+case 'holiday': return
+<TreePine className={className} />;
+case 'wedding': return
+<Heart className={className} />;
+default: return
+<List className={className} />;
+}
+};
+
+export default function App() {
+const [wishlists, setWishlists] = useState(initialWishlists);
+// NEW: activeTab state controls which segment we are viewing
+const [activeTab, setActiveTab] = useState('my-lists'); // 'my-lists', 'shared', 'archive'
+const [isModalOpen, setIsModalOpen] = useState(false);
+const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
+const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
+// Close dropdowns when clicking outside
+useEffect(() => {
+const handleClickOutside = (e) => {
+if (!e.target.closest('.dropdown-container')) {
+setThemeDropdownOpen(false);
+setProfileDropdownOpen(false);
+}
+};
+document.addEventListener('click', handleClickOutside);
+return () => document.removeEventListener('click', handleClickOutside);
+}, []);
+
+// --- Date & Filtering Logic ---
+const today = new Date('2026-06-18T00:00:00');
+
+const isExpired = (dateString) => {
+if (!dateString) return false;
+return new Date(dateString) < today; }; const formatDate=(dateString)=> {
+  if (!dateString) return "No expiration";
+  return new Date(dateString).toLocaleDateString(undefined, {
+  month: "short", day: "numeric", year: "numeric"
+  });
+  };
+
+  // Group lists by context rather than just a flat array
+  const { myLists, sharedLists, archivedLists } = useMemo(() => {
+  const my = [];
+  const shared = [];
+  const archived = [];
+
+  wishlists.forEach(list => {
+  if (isExpired(list.expiresAt)) {
+  archived.push(list);
+  } else if (list.role === 'owner') {
+  my.push(list);
+  } else {
+  shared.push(list);
+  }
+  });
+
+  return { myLists: my, sharedLists: shared, archivedLists: archived };
+  }, [wishlists]);
+
+  const greeting = useMemo(() => {
+  const h = new Date().getHours();
+  return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening" ; }, []); // Determine which lists to show
+    based on active tab const currentLists=useMemo(()=> {
+    switch (activeTab) {
+    case 'shared': return sharedLists;
+    case 'archive': return archivedLists;
+    case 'my-lists':
+    default: return myLists;
+    }
+    }, [activeTab, myLists, sharedLists, archivedLists]);
+
+    // --- Components ---
+    const RoleBadge = ({ role }) => {
+    if (role === 'owner') return null; // Don't need a badge for our own lists on the "My Lists" tab
+
+    const styles = {
+    collaborator: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    viewer: "bg-amber-500/10 text-amber-400 border-amber-500/20"
+    };
+
+    return (
+    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border ${styles[role]}`}>
+      {role}
+    </span>
+    );
+    };
+
+    const WishlistCard = ({ list }) => {
+    const isArchived = activeTab === 'archive';
+
+    return (
+    <div className={`group relative flex flex-col h-full bg-[#151516] border border-white/5 rounded-2xl overflow-hidden
+      transition-all duration-300 hover:border-white/10 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50
+      ${isArchived ? 'opacity-70 grayscale hover:grayscale-0' : '' }`}>
+
+      {/* Card Content */}
+      <div className="p-5 flex-1 flex flex-col gap-4">
+        <div className="flex justify-between items-start gap-3">
+          <div className="flex items-center gap-2 text-white/40 bg-white/5 px-2 py-1 rounded-md text-xs font-medium">
+            <CategoryIcon category={list.category} className="w-3.5 h-3.5" />
+            <span className="capitalize">{list.category}</span>
+          </div>
+
+          {/* Show who owns the list if it's shared or archived */}
+          {list.role !== 'owner' && (
+          <div className="flex items-center gap-2">
+            <RoleBadge role={list.role} />
+          </div>
+          )}
+          {isArchived && list.role === 'owner' && (
+          <span
+            className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border bg-zinc-500/10 text-zinc-400 border-zinc-500/20">
+            Personal
+          </span>
+          )}
+        </div>
+
+        <div className="space-y-1">
+          <h3 className="text-lg font-bold text-white leading-snug group-hover:text-indigo-400 transition-colors">
+            {list.title}
+          </h3>
+          {/* NEW: Show owner context for shared lists */}
+          {list.role !== 'owner' && (
+          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+            <span>by {list.ownerName}</span>
+            <div className={`w-3 h-3 rounded-full ${list.avatarColor || 'bg-indigo-500' } opacity-80`}></div>
+          </div>
+          )}
+        </div>
+
+        <div className="mt-auto pt-4 flex flex-col gap-2.5">
+          <div className={`flex items-center gap-2 text-xs font-medium ${isArchived ? 'text-zinc-500' : 'text-zinc-400'
+            }`}>
+            {isArchived ?
+            <Archive className="w-4 h-4" /> :
+            <Calendar className="w-4 h-4" />}
+            <span>{isArchived ? `Ended ${formatDate(list.expiresAt)}` : formatDate(list.expiresAt)}</span>
+          </div>
+          {list.allowGroupFunds && !isArchived && (
+          <div className="flex items-center gap-2 text-xs font-medium text-zinc-400">
+            <Users className="w-4 h-4" />
+            <span>Group Funding Enabled</span>
+          </div>
+          )}
+        </div>
+      </div>
+
+      {/* Card Footer */}
+      <div
+        className="flex items-center justify-between p-4 border-t border-white/5 bg-[#1a1a1c] group-hover:bg-[#1e1e20] transition-colors cursor-pointer">
+        <span className="text-xs font-semibold text-white">
+          {isArchived ? 'View Past Details' : 'Open Wishlist'}
+        </span>
+        <ArrowRight
+          className="w-4 h-4 text-zinc-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+      </div>
+    </div>
+    );
+    };
+
+    // Empty State Component
+    const EmptyState = () => (
+    <div
+      className="col-span-full flex flex-col items-center justify-center py-20 px-4 text-center bg-[#151516] border border-white/5 rounded-2xl border-dashed">
+      <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+        {activeTab === 'my-lists' ?
+        <Sparkles className="w-8 h-8 text-indigo-400" /> :
+        activeTab === 'shared' ?
+        <Users className="w-8 h-8 text-indigo-400" /> :
+        <Archive className="w-8 h-8 text-indigo-400" />}
+      </div>
+      <h3 className="text-lg font-bold text-white mb-2">
+        {activeTab === 'my-lists' ? "No active wishlists yet" :
+        activeTab === 'shared' ? "No shared lists right now" :
+        "Your archive is empty"}
+      </h3>
+      <p className="text-sm text-zinc-400 max-w-sm mb-6">
+        {activeTab === 'my-lists' ? "Create your first wishlist to start adding items and sharing with friends and
+        family." :
+        activeTab === 'shared' ? "When friends or family share their registries with you, they'll appear here." :
+        "Expired lists and past events will automatically move here for your reference."}
+      </p>
+      {activeTab === 'my-lists' && (
+      <button onClick={()=> setIsModalOpen(true)}
+        className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-semibold
+        transition-colors"
+        >
+        Create your first list
+      </button>
+      )}
+    </div>
+    );
+
+    return (
+    <div className="min-h-screen bg-[#0f0f10] text-zinc-200 font-sans selection:bg-indigo-500/30">
+
+      {/* Navbar */}
+      <nav
+        className="fixed top-0 w-full h-14 bg-[#0f0f10]/80 backdrop-blur-xl border-b border-white/5 z-50 flex items-center justify-center">
+        <div className="w-full max-w-7xl px-6 flex items-center justify-between">
+
+          <div className="flex items-center gap-8">
+            <a href="#" className="flex items-center gap-2 text-white font-bold text-lg tracking-tight group">
+              <Gift className="w-5 h-5 text-indigo-500 group-hover:scale-110 transition-transform" />
+              <span>Giftistry</span>
+            </a>
+            <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+              <a href="#" className="text-white">Dashboard</a>
+              <a href="#" className="hover:text-white transition-colors">Explore</a>
+              <a href="#" className="hover:text-white transition-colors">Friends</a>
+            </div>
+          </div>
+
+          <div className="flex-1 max-w-md mx-6 hidden lg:block">
+            <div className="relative group">
+              <Search
+                className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-indigo-400 transition-colors" />
+              <input type="text" placeholder="Search wishlists... (⌘K)"
+                className="w-full bg-[#151516] border border-white/10 rounded-lg pl-10 pr-4 py-1.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="relative dropdown-container">
+              <button onClick={()=> setThemeDropdownOpen(!themeDropdownOpen)}
+                className="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                >
+                <Moon className="w-4 h-4" />
+              </button>
+
+              {themeDropdownOpen && (
+              <div
+                className="absolute right-0 top-full mt-2 w-40 bg-[#151516] border border-white/10 rounded-lg shadow-2xl py-1 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Appearance
+                </div>
+                <button
+                  className="w-full text-left px-3 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                  <Sun className="w-4 h-4" /> Light
+                </button>
+                <button
+                  className="w-full text-left px-3 py-2 text-sm text-indigo-400 hover:bg-white/5 flex items-center gap-2">
+                  <Moon className="w-4 h-4" /> Dark
+                </button>
+              </div>
+              )}
+            </div>
+
+            <div className="relative dropdown-container">
+              <button onClick={()=> setProfileDropdownOpen(!profileDropdownOpen)}
+                className="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-white/5 transition-colors"
+                >
+                <div
+                  className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">
+                  T
+                </div>
+                <ChevronDown className="w-4 h-4 text-zinc-400" />
+              </button>
+
+              {profileDropdownOpen && (
+              <div
+                className="absolute right-0 top-full mt-2 w-48 bg-[#151516] border border-white/10 rounded-lg shadow-2xl py-1 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="px-4 py-3 border-b border-white/5">
+                  <div className="text-sm font-semibold text-white">Tech User</div>
+                  <div className="text-xs text-zinc-500">@tech180</div>
+                </div>
+                <div className="py-1">
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+                    <User className="w-4 h-4" /> Edit Profile
+                  </button>
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2">
+                    <LogOut className="w-4 h-4" /> Sign Out
+                  </button>
+                </div>
+              </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content Area */}
+      <main className="pt-24 pb-20 px-6 max-w-7xl mx-auto">
+
+        {/* Header Area */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">
+              {greeting}, Tech
+            </h1>
+            <p className="text-zinc-400">
+              Manage your personal registries and collaborated wishlists
+            </p>
+          </div>
+          <button onClick={()=> setIsModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5
+            py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-indigo-500/20"
+            >
+            <Plus className="w-4 h-4" /> New Wishlist
+          </button>
+        </div>
+
+        {/* Segmented Controls / Tabs */}
+        <div className="flex flex-wrap items-center p-1 bg-[#151516] border border-white/5 rounded-xl w-fit mb-8">
+          <button onClick={()=> setActiveTab('my-lists')}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'my-lists'
+            ? 'bg-[#232326] text-white shadow-sm border border-white/5'
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
+            }`}
+            >
+            My Wishlists
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab==='my-lists'
+              ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white/5 text-zinc-500' }`}>
+              {myLists.length}
+            </span>
+          </button>
+          <button onClick={()=> setActiveTab('shared')}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'shared'
+            ? 'bg-[#232326] text-white shadow-sm border border-white/5'
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
+            }`}
+            >
+            Shared With Me
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab==='shared'
+              ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white/5 text-zinc-500' }`}>
+              {sharedLists.length}
+            </span>
+          </button>
+          <button onClick={()=> setActiveTab('archive')}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'archive'
+            ? 'bg-[#232326] text-white shadow-sm border border-white/5'
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
+            }`}
+            >
+            Archive
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab==='archive'
+              ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white/5 text-zinc-500' }`}>
+              {archivedLists.length}
+            </span>
+          </button>
+        </div>
+
+        {/* Dynamic Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {currentLists.length > 0 ? (
+          currentLists.map(list => (
+          <WishlistCard key={list.id} list={list} />
+          ))
+          ) : (
+          <EmptyState />
+          )}
+        </div>
+
+      </main>
+
+      {/* Create Modal */}
+      {isModalOpen && (
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div
+          className="bg-[#151516] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">Create New Wishlist</h3>
+            <button onClick={()=> setIsModalOpen(false)}
+              className="p-1 text-zinc-500 hover:text-white hover:bg-white/10 rounded-md transition-colors text-xl
+              leading-none"
+              >
+              &times;
+            </button>
+          </div>
+
+          <div className="p-6 flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-zinc-400">List Title *</label>
+              <input type="text" placeholder="e.g. Dream Vacation Fund"
+                className="w-full bg-[#0f0f10] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors" />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-zinc-400">Category</label>
+              <select
+                className="w-full bg-[#0f0f10] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors appearance-none">
+                <option>Holiday</option>
+                <option>Birthday</option>
+                <option>Wedding</option>
+                <option>General</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-zinc-400">Expiration Date (Optional)</label>
+              <input type="date"
+                className="w-full bg-[#0f0f10] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors [color-scheme:dark]" />
+            </div>
+
+            <div className="flex items-center gap-3 mt-2">
+              <input type="checkbox" id="group-funds"
+                className="w-4 h-4 rounded border-white/10 bg-[#0f0f10] text-indigo-500 focus:ring-indigo-500 focus:ring-offset-[#151516]" />
+              <label htmlFor="group-funds" className="text-sm font-medium text-zinc-300 select-none cursor-pointer">
+                Allow Group Funding
+              </label>
+            </div>
+          </div>
+
+          <div className="px-6 py-4 border-t border-white/5 flex items-center justify-end gap-3 bg-[#1a1a1c]">
+            <button onClick={()=> setIsModalOpen(false)}
+              className="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors"
+              >
+              Cancel
+            </button>
+            <button onClick={()=> setIsModalOpen(false)}
+              className="px-4 py-2 text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg
+              transition-colors"
+              >
+              Create Wishlist
+            </button>
+          </div>
+        </div>
+      </div>
+      )}
+    </div>
+    );
+    }

@@ -4,4 +4,5 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   leftIcon?: ReactNode;
+  leftIconClickable?: boolean;
 }

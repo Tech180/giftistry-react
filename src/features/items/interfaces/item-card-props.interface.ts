@@ -7,4 +7,6 @@ export interface ItemCardProps {
   canCollaborate: boolean;
   allowGroupFunds: boolean;
   onUpdate: () => void;
+  priorityLabel?: string;
+  onEdit?: () => void;
 }

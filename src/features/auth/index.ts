@@ -3,3 +3,4 @@ export * from './components/register-form/register-form.component';
 export * from './components/profile-card/profile-card.component';
 export * from './api/auth.api';
 export * from './interfaces/api-user.interface';
+export * from './interfaces/auth-response.interface';

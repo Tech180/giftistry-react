@@ -9,6 +9,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   label,
   error,
   leftIcon,
+  leftIconClickable,
   className = '',
   id,
   type = 'text',
@@ -27,6 +28,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       label={label}
       error={error}
       leftIcon={leftIcon}
+      leftIconClickable={leftIconClickable}
       className={className}
       type={type}
       inputId={inputId}

@@ -1,5 +1,6 @@
 import { apiClient } from 'api/client';
-import { Wishlist, ListShare } from '../interfaces/wishlist.interface';
+import { Wishlist } from '../interfaces/wishlist.interface';
+import { ListShare } from '../interfaces/list-share.interface';
 import { Priority } from '../interfaces/priority.interface';
 
 export const wishlistsApi = {
@@ -9,15 +10,25 @@ export const wishlistsApi = {
   getWishlist: (listId: string) =>
     apiClient.get<Wishlist>(`/api/wishlists/${listId}`),
 
-  createWishlist: (title: string, expiresAt?: string | null, allowGroupFunds?: boolean) =>
+  createWishlist: (title: string, expiresAt?: string | null, allowGroupFunds?: boolean, category?: string) =>
     apiClient.post<Wishlist>(
       '/api/wishlists',
-      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds },
+      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category },
       'Lists'
     ),
 
   deactivateWishlist: (listId: string) =>
     apiClient.put<{ success: boolean }>(`/api/wishlists/${listId}/deactivate`, {}),
+
+  deleteWishlist: (listId: string) =>
+    apiClient.delete<{ success: boolean }>(`/api/wishlists/${listId}`),
+
+  updateWishlist: (listId: string, title: string, expiresAt?: string | null, allowGroupFunds?: boolean, category?: string) =>
+    apiClient.put<Wishlist>(
+      `/api/wishlists/${listId}`,
+      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category },
+      'Lists'
+    ),
 
   shareWishlist: (listId: string, email: string, role: 'viewer' | 'collaborator') =>
     apiClient.post<ListShare>(
@@ -26,8 +37,8 @@ export const wishlistsApi = {
       'Lists'
     ),
 
-  listPriorities: () =>
-    apiClient.get<Priority[]>('/api/priorities'),
+  listPriorities: (wishlistId?: string) =>
+    apiClient.get<Priority[]>(wishlistId ? `/api/priorities?wishlistId=${wishlistId}` : '/api/priorities'),
 
   createPriority: (label: string, weight: number) =>
     apiClient.post<Priority>(
@@ -35,4 +46,7 @@ export const wishlistsApi = {
       { label, weight },
       'Priorities'
     ),
+
+  deletePriority: (id: string) =>
+    apiClient.delete<void>(`/api/priorities/${id}`),
 };

@@ -1,15 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
+import { ThemeContextType } from './interfaces/theme-context-type.interface';
+
 export type Theme = "default" | "neon" | "cyberpunk" | "mystic" | "burnt-forest";
 export type Appearance = "light" | "dark" | "system";
-
-interface ThemeContextType {
-  theme: Theme;
-  appearance: Appearance;
-  setTheme: (theme: Theme) => void;
-  setAppearance: (appearance: Appearance) => void;
-  toggleAppearance: () => void;
-}
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 

@@ -4,7 +4,7 @@ import { WishlistCardProps } from '../../interfaces/wishlist-card-props.interfac
 import { WishlistCardTemplate } from './wishlist-card.html';
 import styles from './wishlist-card.module.css';
 
-export const WishlistCard: React.FC<WishlistCardProps> = ({ wishlist }) => {
+export const WishlistCard: React.FC<WishlistCardProps> = ({ wishlist, isArchived = false }) => {
   const { user } = useAuth();
   const isOwner = user?.Id === wishlist.UserId;
 
@@ -37,6 +37,7 @@ export const WishlistCard: React.FC<WishlistCardProps> = ({ wishlist }) => {
       isOwner={isOwner}
       formattedDate={formatDate(wishlist.ExpiresAt)}
       expirationClass={getExpirationClass(wishlist.ExpiresAt)}
+      isArchived={isArchived}
     />
   );
 };

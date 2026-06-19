@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giftistry - Wishlist Demo (Owner's View)</title>
+  <!-- Outfit Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ==========================================================================
+       CSS SECTIONS / VARIABLES
+       ========================================================================== */
+    :root {
+      --bg: #0d0f12;
+      --surface: #16191f;
+      --surface-hover: #1e232b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: #1e293b;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      line-height: 1.5;
+    }
+
+    /* ==========================================================================
+       LAYOUT STRUCTURE
+       ========================================================================== */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    .container {
+      flex: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      min-width: 0;
+    }
+
+    .content-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    /* ==========================================================================
+       TOP NAVIGATION & HEADER
+       ========================================================================== */
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .back-link:hover { color: var(--primary); }
+
+    .top-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .archive-btn, .deactivate-trash-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+    }
+
+    .archive-btn:hover { color: var(--primary); background-color: var(--surface-hover); }
+    .deactivate-trash-btn:hover { color: #ef4444; background-color: rgba(239, 68, 68, 0.05); }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+
+    .header-meta { flex: 1; }
+    .title-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+    .title { font-size: 1.75rem; font-weight: 700; color: var(--text); margin: 0; letter-spacing: -0.02em; }
+    
+    .title-edit-btn {
+      background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+      display: inline-flex; align-items: center; padding: 0.25rem; border-radius: var(--radius-sm); transition: all 0.2s ease;
+    }
+    .title-edit-btn:hover { color: var(--primary); background-color: var(--surface-hover); }
+
+    .inline-title-input {
+      font-size: 1.75rem; font-weight: 700; font-family: inherit; color: var(--text);
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.125rem 0.5rem; margin: 0; outline: none; width: 100%; max-width: 400px;
+    }
+
+    .meta-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.5rem; }
+    .meta-item { display: flex; align-items: center; gap: 0.375rem; font-size: 0.8125rem; color: var(--text-muted); }
+
+    .calendar-btn {
+      background: transparent; border: none; display: flex; align-items: center; gap: 0.375rem;
+      font-size: 0.8125rem; color: var(--text-muted); cursor: pointer; padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-sm); transition: all 0.2s ease; margin: -0.25rem -0.5rem;
+    }
+    .calendar-btn:hover { color: var(--primary); background-color: var(--surface-hover); }
+
+    .inline-date-input {
+      font-family: inherit; font-size: 0.8125rem; background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.125rem 0.375rem; outline: none;
+    }
+    .inline-date-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+    .actions { display: flex; gap: 0.625rem; flex-shrink: 0; }
+
+    /* ==========================================================================
+       COMPONENTS (Buttons, Badges, Banners)
+       ========================================================================== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      font-family: inherit; font-size: 0.875rem; font-weight: 500; padding: 0.625rem 1rem;
+      border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent;
+    }
+    .btn-primary { background-color: var(--primary); color: #ffffff; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-secondary { background-color: var(--surface); color: var(--text); border-color: var(--border); }
+    .btn-secondary:hover { background-color: var(--surface-hover); }
+    .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
+
+    /* Confirmation Banner */
+    .confirm-banner {
+      display: none; justify-content: space-between; align-items: center; width: 100%;
+      background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2);
+      padding: 0.75rem 1rem; border-radius: var(--radius); margin-bottom: 0.5rem; animation: slideDown 0.2s ease-out;
+    }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-0.5rem); } to { opacity: 1; transform: translateY(0); } }
+    .confirm-text { font-size: 0.875rem; font-weight: 500; color: var(--text); }
+    .confirm-buttons { display: flex; gap: 0.75rem; }
+    .confirm-btn {
+      background: transparent; border: 1px solid transparent; padding: 0.25rem 0.75rem;
+      font-size: 0.8125rem; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease;
+    }
+    .yes-btn { background-color: #ef4444; color: #ffffff; border-color: #ef4444; }
+    .yes-btn:hover { background-color: #dc2626; border-color: #dc2626; }
+    .no-btn { background-color: var(--surface); color: var(--text-muted); border-color: var(--border); }
+    .no-btn:hover { color: var(--text); background-color: var(--surface-hover); }
+
+    /* ==========================================================================
+       MAIN CONTENT: GIFT IDEAS
+       ========================================================================== */
+    .items-column { display: flex; flex-direction: column; gap: 1.25rem; }
+    .column-header { display: flex; justify-content: space-between; align-items: center; }
+    .column-title { font-size: 1.125rem; font-weight: 600; color: var(--text); }
+
+    .search-input {
+      background: var(--surface); border: 1px solid var(--border); color: var(--text);
+      padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.875rem;
+      outline: none; width: 240px; font-family: inherit; transition: border-color 0.2s ease;
+    }
+    .search-input:focus { border-color: var(--primary); }
+
+    .empty-card {
+      background: var(--surface); border: 1px solid var(--border); padding: 2rem;
+      text-align: center; border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    }
+    .empty-card p { color: var(--text-muted); font-size: 0.9375rem; }
+
+    .groups-container { display: flex; flex-direction: column; gap: 1.5rem; }
+    .priority-group { display: flex; flex-direction: column; gap: 0.75rem; }
+    .priority-group-title {
+      font-size: 0.875rem; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .group-count {
+      background: var(--border); color: var(--text-muted); font-size: 0.75rem;
+      padding: 0.125rem 0.375rem; border-radius: 999px; font-weight: 500;
+    }
+
+    .items-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    /* Redesigned Item Card */
+    .item-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      display: flex; align-items: stretch; padding: 0; overflow: hidden; transition: all 0.2s ease;
+    }
+    .item-card:hover { background: var(--surface-hover); border-color: rgba(255, 255, 255, 0.05); }
+
+    .card-left-section {
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+      background: rgba(255, 255, 255, 0.01);
+    }
+    .card-divider { width: 1px; background: var(--border); }
+    
+    .card-main-content {
+      flex: 1; padding: 1rem; display: flex; flex-direction: column; justify-content: center;
+    }
+
+    .item-info { display: flex; flex-direction: column; gap: 0.375rem; }
+    .item-title-row { display: flex; align-items: center; gap: 0.5rem; }
+    .item-name { font-weight: 600; font-size: 1rem; color: var(--text); }
+    .item-desc { font-size: 0.875rem; color: var(--text-muted); }
+
+    .item-meta { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.25rem; }
+    .category-tag {
+      background: rgba(79, 70, 229, 0.15); color: #a5b4fc; font-size: 0.75rem;
+      font-weight: 500; padding: 0.125rem 0.5rem; border-radius: 999px; text-transform: capitalize;
+    }
+    .price-tag { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+
+    /* Formatted Optional Tags */
+    .custom-fields-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.375rem; }
+    .custom-badge {
+      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
+      padding: 0.25rem 0.5rem; border-radius: 6px; display: inline-flex; align-items: baseline; gap: 0.25rem;
+    }
+    .badge-key { font-size: 0.8125rem; font-weight: 600; color: var(--text); text-transform: capitalize; }
+    .badge-val { font-size: 0.75rem; font-weight: 400; color: var(--text-muted); }
+
+    .card-right-actions {
+      display: flex; align-items: center; padding: 1rem; gap: 0.5rem;
+    }
+
+    .card-action-btn {
+      background: transparent; border: none; cursor: pointer; color: var(--text-muted);
+      padding: 0.375rem; border-radius: var(--radius-sm); transition: all 0.2s ease;
+      display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
+    }
+    .card-action-btn:hover { background-color: var(--surface-hover); color: var(--text); }
+    
+    .card-action-btn.star-btn:hover { color: #f59e0b; }
+    .card-action-btn.star-btn.active { color: #f59e0b; }
+    
+    .card-action-btn.link-action-btn:hover { color: var(--primary); }
+    .card-action-btn.delete-item-btn:hover { color: #ef4444; background-color: rgba(239, 68, 68, 0.05); }
+
+    /* ==========================================================================
+       SIDEBARS (Add Item & Comments)
+       ========================================================================== */
+    .sidebar-wrapper {
+      width: 0; overflow: hidden; background: var(--surface); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: sticky; top: 0; height: 100vh; flex-shrink: 0; z-index: 100;
+    }
+
+    /* Left Sidebar (Add Item) */
+    .add-item-sidebar { order: -1; border-right: 0px solid var(--border); }
+    .add-item-sidebar.active { width: 480px; border-right-width: 1px; }
+
+    /* Right Sidebar (Comments) */
+    .comments-sidebar { order: 2; border-left: 0px solid var(--border); }
+    .comments-sidebar.active { width: 320px; border-left-width: 1px; }
+
+    .sidebar-panel { height: 100%; display: flex; flex-direction: column; background: var(--surface); }
+    
+    /* Panel specific widths */
+    .add-item-sidebar .sidebar-panel { width: 480px; }
+    .comments-sidebar .sidebar-panel { width: 320px; }
+
+    @media (max-width: 768px) {
+      .add-item-sidebar.active, .comments-sidebar.active { width: 100vw; position: fixed; right: 0; left: 0; border: none; }
+      .add-item-sidebar .sidebar-panel, .comments-sidebar .sidebar-panel { width: 100vw; }
+    }
+
+    .sidebar-header {
+      padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex;
+      justify-content: space-between; align-items: center; flex-shrink: 0; background: var(--surface);
+    }
+    .sidebar-title { font-size: 1.125rem; font-weight: 600; color: var(--text); }
+    .sidebar-close {
+      background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 1.5rem; display: inline-flex; padding: 0.25rem; border-radius: var(--radius-sm); transition: all 0.2s ease;
+    }
+    .sidebar-close:hover { background-color: var(--surface-hover); color: var(--text); }
+
+    .sidebar-body {
+      padding: 1.5rem; overflow-y: auto; flex-grow: 1; scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .sidebar-body::-webkit-scrollbar { width: 6px; }
+    .sidebar-body::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 10px; }
+    
+    .sidebar-footer {
+      padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: var(--bg); flex-shrink: 0;
+    }
+
+    /* Comments Styles */
+    .comments-list { display: flex; flex-direction: column; gap: 1rem; }
+    .comment-card { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.875rem; }
+    .comment-header { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.375rem; }
+    .commenter-name { font-weight: 600; color: var(--text); }
+    .comment-content { font-size: 0.875rem; color: var(--text-muted); }
+    .comment-form { display: flex; flex-direction: column; gap: 0.5rem; }
+    .comment-input {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 0.625rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-family: inherit; outline: none; resize: none;
+    }
+    .comment-input:focus { border-color: var(--primary); }
+
+    /* ==========================================================================
+       FORM ELEMENTS (Add Item Form)
+       ========================================================================== */
+    .form-group { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 1.25rem; position: relative; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; gap: 0; } }
+
+    .form-label { font-size: 0.8125rem; font-weight: 500; color: var(--text-muted); }
+
+    .input-wrapper { display: flex; position: relative; align-items: center; width: 100%; }
+    .input-wrapper .scrape-btn {
+      position: absolute; left: 8px; background: transparent; border: none; color: var(--primary);
+      cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: all 0.2s ease;
+    }
+    .input-wrapper .scrape-btn:hover { background-color: var(--surface-hover); }
+    .input-wrapper .form-input-with-icon { padding-left: 2.25rem; }
+
+    .form-input, .form-textarea {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 0.625rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.875rem; outline: none; font-family: inherit; width: 100%;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: var(--primary); }
+    .form-textarea { resize: vertical; }
+
+    /* Chips UI */
+    .chips-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+    .chip {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.375rem 0.75rem; border-radius: 999px; font-size: 0.8125rem; cursor: pointer; transition: all 0.2s ease;
+      font-family: inherit; display: inline-flex; align-items: center; gap: 0.25rem;
+    }
+    .chip:hover { color: var(--text); border-color: var(--text-muted); }
+    .chip.selected { background-color: rgba(79, 70, 229, 0.15); color: #a5b4fc; border-color: var(--primary); }
+    .delete-chip-btn { color: #ef4444; font-weight: 700; background: none; border: none; cursor: pointer; font-size: 0.875rem; line-height: 1; }
+
+    .scrape-loader { display: none; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--primary); margin-top: 0.375rem; }
+    .spinner { width: 14px; height: 14px; border: 2px solid transparent; border-top-color: currentColor; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Collapsible Sections */
+    .collapsible-header {
+      background: none; border: none; color: var(--primary); font-family: inherit; font-size: 0.8125rem;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; margin-bottom: 1rem; margin-top: 0.5rem; padding: 0.25rem 0;
+    }
+    .collapsible-panel {
+      display: none; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.25rem;
+    }
+    .collapsible-panel.open { display: block; }
+
+    /* Custom Fields section */
+    .custom-fields-section { margin-top: 1rem; border-top: 1px dashed var(--border); padding-top: 1rem; }
+    .custom-fields-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .custom-fields-title { font-size: 0.8125rem; font-weight: 600; color: var(--text); }
+    .add-custom-field-btn {
+      background: transparent; border: none; color: var(--primary); cursor: pointer; font-size: 0.75rem;
+      font-weight: 600; display: flex; align-items: center; gap: 0.25rem; font-family: inherit;
+    }
+    .add-custom-field-btn:hover { text-decoration: underline; }
+    .custom-fields-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    
+    .custom-field-row {
+      display: grid; grid-template-columns: 1fr 1.2fr auto; gap: 0.5rem; align-items: center;
+      background: var(--bg); padding: 0.375rem; border-radius: var(--radius-sm); border: 1px solid transparent; transition: border-color 0.2s ease;
+    }
+    .custom-field-row:focus-within { border-color: var(--border); }
+
+    .remove-field-btn {
+      background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+      padding: 0.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    }
+    .remove-field-btn:hover { color: #ef4444; background-color: rgba(239, 68, 68, 0.05); }
+
+    .custom-chip-creator { display: none; align-items: center; gap: 0.375rem; margin-top: 0.375rem; }
+    .custom-chip-input {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.75rem; outline: none; width: 140px;
+    }
+
+    .priority-creator-wrapper { display: none; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+    .priority-creator-wrapper input {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.8125rem; outline: none;
+    }
+  </style>
+</head>
+<body data-appearance="dark">
+
+  <div class="app-layout">
+    
+    <!-- LEFT SIDEBAR: Add Item form -->
+    <div id="add-item-sidebar-wrapper" class="sidebar-wrapper add-item-sidebar">
+      <div class="sidebar-panel">
+        <div class="sidebar-header">
+          <h4 class="sidebar-title">Add Item to Wishlist</h4>
+          <button onclick="closeSidebar()" class="sidebar-close">&times;</button>
+        </div>
+        
+        <form onsubmit="addItemSubmit(event)" style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+          <div class="sidebar-body">
+            
+            <div class="form-group">
+              <label class="form-label">Link / URL (Optional)</label>
+              <div class="input-wrapper">
+                <button type="button" class="scrape-btn" onclick="simulateScrape()" title="Automatically scrape product details">
+                  <i data-lucide="link" style="width: 14px; height: 14px;"></i>
+                </button>
+                <input type="url" id="form-link" placeholder="https://example.com/item" class="form-input form-input-with-icon">
+              </div>
+              <div id="scrape-loader" class="scrape-loader">
+                <div class="spinner"></div>
+                <span>Fetching product details...</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Website Name (Optional)</label>
+              <input type="text" id="form-website" placeholder="e.g. Amazon, Target" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Item Name *</label>
+              <input type="text" id="form-name" placeholder="e.g. Mechanical Keyboard" class="form-input" required>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Price (Optional)</label>
+                <input type="text" id="form-price" placeholder="e.g. 49.99" class="form-input">
+              </div>
+              <div class="form-group" style="align-items: flex-end; justify-content: center;">
+                <button type="button" id="form-fav-btn" class="btn btn-secondary" onclick="toggleFormFavorite()" style="height: 42px; width: 100%; gap: 0.5rem; font-weight: 600;">
+                  <i data-lucide="star" style="width: 16px; height: 16px;"></i>
+                  <span>Favorite</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Gift Category (Optional)</label>
+              <div class="chips-container" id="category-chips">
+                <button type="button" class="chip" onclick="toggleCategoryChip(this, 'Tech')">Tech</button>
+                <button type="button" class="chip" onclick="toggleCategoryChip(this, 'Clothing')">Clothing</button>
+                <button type="button" class="chip" onclick="toggleCategoryChip(this, 'Wellness')">Wellness</button>
+                <button type="button" class="chip" onclick="toggleCategoryChip(this, 'Home')">Home</button>
+                <button type="button" class="chip" onclick="toggleCategoryChip(this, 'Books')">Books</button>
+                <button type="button" id="add-custom-chip-btn" class="chip" onclick="showCustomChipInput()" style="border-style: dashed; color: var(--primary);">
+                  + Custom
+                </button>
+              </div>
+
+              <div id="custom-chip-creator" class="custom-chip-creator">
+                <input type="text" id="custom-chip-name" placeholder="Category name..." class="custom-chip-input">
+                <button type="button" onclick="addCustomChip()" class="btn btn-primary btn-sm">Add</button>
+                <button type="button" onclick="hideCustomChipInput()" class="btn btn-secondary btn-sm">Cancel</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description (Optional)</label>
+              <textarea id="form-desc" placeholder="Add details, size details, or notes..." class="form-textarea" rows="3"></textarea>
+            </div>
+
+            <button type="button" onclick="toggleSizesPanel()" class="collapsible-header">
+              Show Clothing Sizes & Custom Properties ▼
+            </button>
+            
+            <div id="sizes-panel" class="collapsible-panel">
+              <h5 style="font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-muted);">Clothing Sizes</h5>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Shirt Size</label>
+                  <input type="text" id="form-shirt" placeholder="e.g. Medium" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Pants Size</label>
+                  <input type="text" id="form-pants" placeholder="e.g. 32x30" class="form-input">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Preferred Color</label>
+                <input type="text" id="form-color" placeholder="e.g. Matte Black" class="form-input">
+              </div>
+
+              <div class="custom-fields-section">
+                <div class="custom-fields-header">
+                  <span class="custom-fields-title">Custom Properties</span>
+                  <button type="button" class="add-custom-field-btn" onclick="addCustomFieldRow()">
+                    <i data-lucide="plus" style="width: 12px; height: 12px;"></i> Add Field
+                  </button>
+                </div>
+                <div id="custom-fields-list" class="custom-fields-list">
+                  <!-- Custom field rows append here -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Enhanced Priority UI -->
+            <div class="form-group" style="margin-top: 0.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.375rem;">
+                <label class="form-label" style="margin-bottom: 0;">Priority Section</label>
+                <button type="button" onclick="togglePriorityCreator()" id="priority-creator-toggle" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; font-weight: 600; cursor: pointer;">
+                  + New Priority
+                </button>
+              </div>
+              
+              <div class="chips-container" id="priority-chips">
+                <!-- Dynamically rendered -->
+              </div>
+
+              <div id="priority-creator" class="priority-creator-wrapper">
+                <input type="text" id="new-priority-label" placeholder="Label (e.g. Expensive)" style="flex: 2;">
+                <input type="number" id="new-priority-weight" placeholder="Weight" style="flex: 1;" min="1" max="10">
+                <button type="button" onclick="createPriority()" class="btn btn-primary btn-sm">Create</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="sidebar-footer">
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+              Add Item to Wishlist
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="container">
+      
+      <!-- Confirmation Banner -->
+      <div id="confirm-banner" class="confirm-banner">
+        <span id="confirm-text" class="confirm-text">Are you sure?</span>
+        <div class="confirm-buttons">
+          <button onclick="handleConfirmYes()" class="confirm-btn yes-btn">Yes</button>
+          <button onclick="handleConfirmNo()" class="confirm-btn no-btn">No</button>
+        </div>
+      </div>
+
+      <div class="top-row">
+        <button onclick="alert('Navigating to dashboard...')" class="back-link">
+          <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Back to Dashboard
+        </button>
+        <div class="top-actions">
+          <button onclick="showBanner('deactivate')" class="archive-btn" title="Deactivate / Archive Wishlist">
+            <i data-lucide="archive" style="width: 16px; height: 16px;"></i>
+          </button>
+          <button onclick="showBanner('delete')" class="deactivate-trash-btn" title="Delete Wishlist and Items">
+            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="header">
+        <div class="header-meta">
+          <div class="title-wrapper">
+            <div id="title-display-container" style="display: flex; align-items: center; gap: 0.5rem; width: 100%;">
+              <h1 id="wishlist-title" class="title">Holiday List 2026</h1>
+              <button onclick="enableTitleEdit()" class="title-edit-btn" title="Rename wishlist">
+                <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
+              </button>
+            </div>
+            <div id="title-edit-container" style="display: none; width: 100%;">
+              <input type="text" id="title-input" class="inline-title-input" onkeydown="handleTitleKey(event)" onblur="saveTitle()">
+            </div>
+          </div>
+          
+          <div class="meta-row">
+            <div id="date-display-container">
+              <button onclick="enableDateEdit()" class="calendar-btn" title="Change expiration date">
+                <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+                <span id="date-label">December 25, 2026</span>
+              </button>
+            </div>
+            <div id="date-edit-container" style="display: none;">
+              <input type="date" id="date-input" class="inline-date-input" onchange="saveDate()" onblur="saveDate()">
+            </div>
+            <div class="meta-item">
+              <i data-lucide="users" style="width: 14px; height: 14px;"></i>
+              <span>Group Funding Enabled</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button onclick="toggleCommentsSidebar()" class="btn btn-secondary" title="Discussion">
+            <i data-lucide="message-square" style="width: 16px; height: 16px;"></i> Discussion
+          </button>
+          <button onclick="alert('Share link copied to clipboard!')" class="btn btn-secondary">
+            <i data-lucide="share-2" style="width: 16px; height: 16px;"></i> Share Registry
+          </button>
+        </div>
+      </div>
+
+      <div class="content-layout">
+        <div class="items-column">
+          <div class="column-header">
+            <h3 id="items-header-title" class="column-title">Gift Ideas (2)</h3>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="text" id="search-bar" placeholder="Search ideas..." class="search-input" oninput="renderItems()">
+              <button onclick="openSidebar()" class="btn btn-primary btn-sm" title="Add Item" style="padding: 0.375rem; width: 34px; height: 34px;">
+                <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <div id="items-list-container" class="groups-container">
+            <!-- Dynamically Rendered Priority Groups & Cards -->
+          </div>
+        </div>
+      </div>
+    </div> <!-- Close container -->
+
+    <!-- RIGHT SIDEBAR: Comments & Discussion -->
+    <div id="comments-sidebar-wrapper" class="sidebar-wrapper comments-sidebar">
+      <div class="sidebar-panel">
+        <div class="sidebar-header">
+          <h4 class="sidebar-title">Discussion Board</h4>
+          <button onclick="closeCommentsSidebar()" class="sidebar-close">&times;</button>
+        </div>
+        <div class="sidebar-body comments-list" id="comments-list">
+          <!-- Dynamically Rendered Comments -->
+        </div>
+        <div class="sidebar-footer">
+          <form onsubmit="postComment(event)" class="comment-form">
+            <textarea id="comment-textarea" placeholder="Write a comment..." class="comment-input" rows="3" required></textarea>
+            <button type="submit" class="btn btn-secondary btn-sm" style="align-self: flex-end;">Post Comment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- Close app-layout -->
+
+  <script>
+    // State Variables
+    let wishlistTitle = "Holiday List 2026";
+    let wishlistDate = "2026-12-25";
+    let currentConfirmAction = null;
+    let selectedCategory = "";
+    let isFormFavorite = false;
+    let customFieldsCount = 0;
+    let selectedPriority = ""; // Default empty
+
+    let items = [
+      {
+        id: "101",
+        name: "PlayStation 5 Pro",
+        description: "For ultimate gaming setup.",
+        url: "https://amazon.com/ps5-pro",
+        websiteName: "Amazon",
+        price: "699.99",
+        category: "Tech",
+        isFavorite: true,
+        priorityId: "high",
+        shirtSize: "",
+        pantsSize: "",
+        color: "",
+        customFields: []
+      },
+      {
+        id: "102",
+        name: "Leather Jacket",
+        description: "Classic black bomber style.",
+        url: "",
+        websiteName: "",
+        price: "180.00",
+        category: "Clothing",
+        isFavorite: false,
+        priorityId: "medium",
+        shirtSize: "Large",
+        pantsSize: "",
+        color: "Black",
+        customFields: [{ name: "Material", value: "Genuine Cowhide" }]
+      }
+    ];
+
+    let priorities = [
+      { id: "high", label: "High Priority", weight: 10 },
+      { id: "medium", label: "Medium Priority", weight: 5 }
+    ];
+
+    let comments = [
+      { name: "Sarah", content: "Let's organize a group purchase for the console!", time: "2 hours ago" },
+      { name: "Joe", content: "I can cover half of the leather jacket price if anyone wants to split it.", time: "1 hour ago" }
+    ];
+
+    // Initialize Priority Chips
+    function renderPriorityChips() {
+      const container = document.getElementById("priority-chips");
+      let html = `<button type="button" class="chip ${selectedPriority === '' ? 'selected' : ''}" onclick="togglePriorityChip(this, '')">General Items</button>`;
+      
+      priorities.forEach(p => {
+        html += `<button type="button" class="chip ${selectedPriority === p.id ? 'selected' : ''}" onclick="togglePriorityChip(this, '${p.id}')">${p.label}</button>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function togglePriorityChip(button, priorityId) {
+      selectedPriority = priorityId;
+      renderPriorityChips(); // Simple re-render for clean state
+    }
+
+    // Format Date String
+    function formatDate(dateStr) {
+      if (!dateStr) return "No expiration date";
+      const options = { month: 'long', day: 'numeric', year: 'numeric' };
+      return new Date(dateStr).toLocaleDateString(undefined, options);
+    }
+
+    // Render Registry Items
+    function renderItems() {
+      const query = document.getElementById("search-bar").value.toLowerCase().trim();
+      const container = document.getElementById("items-list-container");
+      container.innerHTML = "";
+
+      const filtered = items.filter(it => 
+        it.name.toLowerCase().includes(query) || 
+        (it.description && it.description.toLowerCase().includes(query)) ||
+        (it.category && it.category.toLowerCase().includes(query))
+      );
+
+      document.getElementById("items-header-title").textContent = `Gift Ideas (${filtered.length})`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-card">
+            <p>This wishlist has no items matching your search.</p>
+            <button onclick="clearSearch()" class="btn btn-secondary btn-sm">Clear Search</button>
+          </div>
+        `;
+        return;
+      }
+
+      // Group items by priority level
+      const groups = {};
+      priorities.forEach(p => { groups[p.id] = { priority: p, items: [] }; });
+      groups["uncategorized"] = { priority: null, items: [] };
+
+      filtered.forEach(it => {
+        const pid = it.priorityId || "uncategorized";
+        if (groups[pid]) groups[pid].items.push(it);
+        else groups["uncategorized"].items.push(it);
+      });
+
+      Object.keys(groups).forEach(key => {
+        const group = groups[key];
+        if (group.items.length === 0) return;
+
+        const groupEl = document.createElement("div");
+        groupEl.className = "priority-group";
+
+        const titleText = group.priority ? group.priority.label : "General Items";
+        groupEl.innerHTML = `
+          <h4 class="priority-group-title">
+            ${titleText} <span class="group-count">${group.items.length}</span>
+          </h4>
+          <div class="items-grid" id="grid-${key}"></div>
+        `;
+
+        container.appendChild(groupEl);
+        const grid = groupEl.querySelector(`#grid-${key}`);
+
+        group.items.forEach(it => {
+          const card = document.createElement("div");
+          card.className = "item-card";
+
+          let favStarHtml = `
+            <button onclick="toggleStar('${it.id}')" class="card-action-btn star-btn ${it.isFavorite ? 'active' : ''}" title="Toggle favorite">
+              <i data-lucide="star" style="width: 20px; height: 20px;" ${it.isFavorite ? 'fill="#f59e0b" stroke="#f59e0b"' : ''}></i>
+            </button>
+          `;
+
+          let categoryHtml = it.category ? `<span class="category-tag">${it.category}</span>` : "";
+
+          // Formatted extra badges (Shirt: Large)
+          let extrasHtml = "";
+          if (it.shirtSize || it.pantsSize || it.color || (it.customFields && it.customFields.length > 0)) {
+            extrasHtml = `<div class="custom-fields-badges">`;
+            if (it.shirtSize) extrasHtml += `<span class="custom-badge"><span class="badge-key">Shirt:</span> <span class="badge-val">${it.shirtSize}</span></span>`;
+            if (it.pantsSize) extrasHtml += `<span class="custom-badge"><span class="badge-key">Pants:</span> <span class="badge-val">${it.pantsSize}</span></span>`;
+            if (it.color) extrasHtml += `<span class="custom-badge"><span class="badge-key">Color:</span> <span class="badge-val">${it.color}</span></span>`;
+            if (it.customFields) {
+              it.customFields.forEach(f => {
+                if (f.name && f.value) {
+                  extrasHtml += `<span class="custom-badge"><span class="badge-key">${f.name}:</span> <span class="badge-val">${f.value}</span></span>`;
+                }
+              });
+            }
+            extrasHtml += `</div>`;
+          }
+
+          let rightActionsHtml = `
+            <div class="card-right-actions">
+              ${it.url ? `
+                <a href="${it.url}" target="_blank" class="card-action-btn link-action-btn" title="Visit Link">
+                  <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
+                </a>
+              ` : ''}
+              <button onclick="deleteItem('${it.id}')" class="card-action-btn delete-item-btn" title="Delete item">
+                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+          `;
+
+          card.innerHTML = `
+            <div class="card-left-section">
+              ${favStarHtml}
+            </div>
+            <div class="card-divider"></div>
+            <div class="card-main-content">
+              <div class="item-info">
+                <div class="item-title-row">
+                  <span class="item-name">${it.name}</span>
+                </div>
+                ${it.description ? `<span class="item-desc">${it.description}</span>` : ''}
+                <div class="item-meta">
+                  ${categoryHtml}
+                  ${it.price ? `<span class="price-tag">$${it.price}</span>` : ''}
+                </div>
+                ${extrasHtml}
+              </div>
+            </div>
+            ${rightActionsHtml}
+          `;
+
+          grid.appendChild(card);
+        });
+      });
+
+      lucide.createIcons();
+    }
+
+    function clearSearch() {
+      document.getElementById("search-bar").value = "";
+      renderItems();
+    }
+
+    function toggleStar(itemId) {
+      const it = items.find(i => i.id === itemId);
+      if (it) {
+        it.isFavorite = !it.isFavorite;
+        renderItems();
+      }
+    }
+
+    function deleteItem(itemId) {
+      items = items.filter(it => it.id !== itemId);
+      renderItems();
+    }
+
+    // Discussion Sidebar
+    function toggleCommentsSidebar() {
+      const wrapper = document.getElementById("comments-sidebar-wrapper");
+      wrapper.classList.toggle("active");
+    }
+
+    function closeCommentsSidebar() {
+      document.getElementById("comments-sidebar-wrapper").classList.remove("active");
+    }
+
+    function renderComments() {
+      const container = document.getElementById("comments-list");
+      container.innerHTML = "";
+
+      comments.forEach(c => {
+        const card = document.createElement("div");
+        card.className = "comment-card";
+        card.innerHTML = `
+          <div class="comment-header">
+            <span class="commenter-name">${c.name}</span>
+            <span>${c.time}</span>
+          </div>
+          <span class="comment-content">${c.content}</span>
+        `;
+        container.appendChild(card);
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function postComment(event) {
+      event.preventDefault();
+      const textarea = document.getElementById("comment-textarea");
+      const content = textarea.value.trim();
+      if (content) {
+        comments.push({ name: "You (Owner)", content: content, time: "Just now" });
+        textarea.value = "";
+        renderComments();
+      }
+    }
+
+    // Inline Title Edit
+    function enableTitleEdit() {
+      document.getElementById("title-display-container").style.display = "none";
+      document.getElementById("title-edit-container").style.display = "block";
+      const input = document.getElementById("title-input");
+      input.value = wishlistTitle;
+      input.focus();
+    }
+
+    function saveTitle() {
+      const input = document.getElementById("title-input");
+      const val = input.value.trim();
+      if (val) {
+        wishlistTitle = val;
+        document.getElementById("wishlist-title").textContent = val;
+      }
+      document.getElementById("title-display-container").style.display = "flex";
+      document.getElementById("title-edit-container").style.display = "none";
+    }
+
+    function handleTitleKey(event) {
+      if (event.key === "Enter") saveTitle();
+      else if (event.key === "Escape") {
+        document.getElementById("title-display-container").style.display = "flex";
+        document.getElementById("title-edit-container").style.display = "none";
+      }
+    }
+
+    // Inline Date Edit
+    function enableDateEdit() {
+      document.getElementById("date-display-container").style.display = "none";
+      document.getElementById("date-edit-container").style.display = "block";
+      const input = document.getElementById("date-input");
+      input.value = wishlistDate;
+      input.focus();
+    }
+
+    function saveDate() {
+      const input = document.getElementById("date-input");
+      const val = input.value;
+      if (val) {
+        wishlistDate = val;
+        document.getElementById("date-label").textContent = formatDate(val);
+      }
+      document.getElementById("date-display-container").style.display = "block";
+      document.getElementById("date-edit-container").style.display = "none";
+    }
+
+    // Confirm Banner 
+    function showBanner(action) {
+      currentConfirmAction = action;
+      const banner = document.getElementById("confirm-banner");
+      const text = document.getElementById("confirm-text");
+      if (action === "deactivate") text.textContent = "Are you sure you want to deactivate and archive this wishlist?";
+      else text.textContent = "Are you sure you want to permanently delete this wishlist and all of its items?";
+      banner.style.display = "flex";
+    }
+
+    function handleConfirmYes() {
+      const banner = document.getElementById("confirm-banner");
+      banner.style.display = "none";
+      if (currentConfirmAction === "deactivate") alert("Wishlist deactivated and archived successfully!");
+      else {
+        alert("Wishlist, items, comments, and claims permanently deleted!");
+        items = []; comments = []; renderItems(); renderComments();
+      }
+      currentConfirmAction = null;
+    }
+
+    function handleConfirmNo() {
+      document.getElementById("confirm-banner").style.display = "none";
+      currentConfirmAction = null;
+    }
+
+    // Left Sidebar Control
+    function openSidebar() {
+      const wrapper = document.getElementById("add-item-sidebar-wrapper");
+      wrapper.classList.add("active");
+      
+      selectedCategory = "";
+      isFormFavorite = false;
+      customFieldsCount = 0;
+      selectedPriority = "";
+      
+      updateFormFavoriteUi();
+      renderPriorityChips();
+      document.getElementById("custom-fields-list").innerHTML = "";
+    }
+
+    function closeSidebar() {
+      const wrapper = document.getElementById("add-item-sidebar-wrapper");
+      wrapper.classList.remove("active");
+      
+      setTimeout(() => {
+        document.getElementById("form-link").value = "";
+        document.getElementById("form-website").value = "";
+        document.getElementById("form-name").value = "";
+        document.getElementById("form-price").value = "";
+        document.getElementById("form-desc").value = "";
+        document.getElementById("form-shirt").value = "";
+        document.getElementById("form-pants").value = "";
+        document.getElementById("form-color").value = "";
+        
+        const chips = document.querySelectorAll("#category-chips .chip:not(#add-custom-chip-btn)");
+        chips.forEach(c => c.classList.remove("selected"));
+        
+        hideCustomChipInput();
+        hidePriorityCreator();
+      }, 300);
+    }
+
+    // Form Favorite
+    function toggleFormFavorite() {
+      isFormFavorite = !isFormFavorite;
+      updateFormFavoriteUi();
+    }
+
+    function updateFormFavoriteUi() {
+      const btn = document.getElementById("form-fav-btn");
+      if (isFormFavorite) {
+        btn.classList.replace("btn-secondary", "btn-primary");
+        btn.innerHTML = `
+          <i data-lucide="star" fill="currentColor" style="width: 16px; height: 16px;"></i>
+          <span>Favorited</span>
+        `;
+      } else {
+        btn.classList.replace("btn-primary", "btn-secondary");
+        btn.innerHTML = `
+          <i data-lucide="star" style="width: 16px; height: 16px;"></i>
+          <span>Favorite</span>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    // Category Chips
+    function toggleCategoryChip(button, categoryName) {
+      const chips = document.querySelectorAll("#category-chips .chip:not(#add-custom-chip-btn)");
+      chips.forEach(c => c.classList.remove("selected"));
+      if (selectedCategory === categoryName) { selectedCategory = ""; } 
+      else { selectedCategory = categoryName; button.classList.add("selected"); }
+    }
+
+    function showCustomChipInput() {
+      document.getElementById("add-custom-chip-btn").style.display = "none";
+      document.getElementById("custom-chip-creator").style.display = "flex";
+      document.getElementById("custom-chip-name").focus();
+    }
+
+    function hideCustomChipInput() {
+      document.getElementById("add-custom-chip-btn").style.display = "inline-flex";
+      document.getElementById("custom-chip-creator").style.display = "none";
+      document.getElementById("custom-chip-name").value = "";
+    }
+
+    function addCustomChip() {
+      const name = document.getElementById("custom-chip-name").value.trim();
+      if (!name) return;
+
+      const chipsContainer = document.getElementById("category-chips");
+      const addButton = document.getElementById("add-custom-chip-btn");
+
+      const newChip = document.createElement("button");
+      newChip.type = "button";
+      newChip.className = "chip";
+      newChip.onclick = function() { toggleCategoryChip(this, name); };
+      newChip.innerHTML = `
+        <span>${name}</span>
+        <span class="delete-chip-btn" onclick="event.stopPropagation(); removeCustomChip(this, '${name}')">&times;</span>
+      `;
+
+      chipsContainer.insertBefore(newChip, addButton);
+      hideCustomChipInput();
+      toggleCategoryChip(newChip, name);
+    }
+
+    function removeCustomChip(btnElement, categoryName) {
+      btnElement.parentElement.remove();
+      if (selectedCategory === categoryName) selectedCategory = "";
+    }
+
+    function simulateScrape() {
+      const linkVal = document.getElementById("form-link").value.trim();
+      if (!linkVal) { alert("Please enter a URL first to simulate scraping details."); return; }
+
+      const loader = document.getElementById("scrape-loader");
+      loader.style.display = "flex";
+      setTimeout(() => {
+        loader.style.display = "none";
+        document.getElementById("form-name").value = "RGB Mechanical Keyboard";
+        document.getElementById("form-price").value = "89.99";
+        document.getElementById("form-website").value = "Amazon";
+        document.getElementById("form-desc").value = "Hot-swappable tactile switches, double-shot PBT keycaps.";
+        const techChip = Array.from(document.querySelectorAll("#category-chips .chip")).find(c => c.textContent.trim() === "Tech");
+        if (techChip) toggleCategoryChip(techChip, "Tech");
+      }, 1000);
+    }
+
+    function toggleSizesPanel() {
+      document.getElementById("sizes-panel").classList.toggle("open");
+    }
+
+    function addCustomFieldRow() {
+      customFieldsCount++;
+      const container = document.getElementById("custom-fields-list");
+      const rowId = `custom-field-${customFieldsCount}`;
+      const row = document.createElement("div");
+      row.className = "custom-field-row";
+      row.id = rowId;
+      row.innerHTML = `
+        <input type="text" placeholder="Key (e.g. Size)" class="form-input custom-key-input">
+        <input type="text" placeholder="Value (e.g. Medium)" class="form-input custom-value-input">
+        <button type="button" onclick="removeCustomFieldRow('${rowId}')" class="remove-field-btn" title="Remove property">
+          <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+        </button>
+      `;
+      container.appendChild(row);
+      lucide.createIcons();
+    }
+
+    function removeCustomFieldRow(rowId) { document.getElementById(rowId).remove(); }
+
+    function togglePriorityCreator() {
+      const creator = document.getElementById("priority-creator");
+      const toggleBtn = document.getElementById("priority-creator-toggle");
+      if (creator.style.display === "flex") hidePriorityCreator();
+      else {
+        creator.style.display = "flex"; toggleBtn.textContent = "Cancel New";
+        document.getElementById("new-priority-label").focus();
+      }
+    }
+
+    function hidePriorityCreator() {
+      document.getElementById("priority-creator").style.display = "none";
+      document.getElementById("priority-creator-toggle").textContent = "+ New Priority";
+      document.getElementById("new-priority-label").value = "";
+      document.getElementById("new-priority-weight").value = "";
+    }
+
+    function createPriority() {
+      const labelVal = document.getElementById("new-priority-label").value.trim();
+      const weightVal = document.getElementById("new-priority-weight").value.trim();
+      if (!labelVal || !weightVal) { alert("Please enter both a label and weight."); return; }
+
+      const pId = labelVal.toLowerCase().replace(/\s+/g, "-");
+      priorities.push({ id: pId, label: labelVal, weight: parseInt(weightVal) });
+      
+      selectedPriority = pId;
+      renderPriorityChips();
+      hidePriorityCreator();
+      renderItems();
+    }
+
+    function addItemSubmit(event) {
+      event.preventDefault();
+      const name = document.getElementById("form-name").value.trim();
+      if (!name) return;
+
+      const customFields = [];
+      document.querySelectorAll(".custom-field-row").forEach(row => {
+        const key = row.querySelector(".custom-key-input").value.trim();
+        const val = row.querySelector(".custom-value-input").value.trim();
+        if (key && val) customFields.push({ name: key, value: val });
+      });
+
+      const newItem = {
+        id: (Date.now() + Math.random()).toString(),
+        name: name,
+        description: document.getElementById("form-desc").value.trim(),
+        url: document.getElementById("form-link").value.trim(),
+        websiteName: document.getElementById("form-website").value.trim(),
+        price: document.getElementById("form-price").value.trim(),
+        category: selectedCategory,
+        isFavorite: isFormFavorite,
+        priorityId: selectedPriority || null,
+        shirtSize: document.getElementById("form-shirt").value.trim(),
+        pantsSize: document.getElementById("form-pants").value.trim(),
+        color: document.getElementById("form-color").value.trim(),
+        customFields: customFields
+      };
+
+      items.push(newItem);
+      closeSidebar();
+      renderItems();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderPriorityChips();
+      renderItems();
+      renderComments();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

@@ -21,6 +21,17 @@ export const NavigationTemplate: React.FC<NavigationTemplateProps> = ({
   themes,
   appearances,
   navigate,
+  isSearchOpen,
+  setIsSearchOpen,
+  searchQuery,
+  setSearchQuery,
+  searchResults,
+  isSearchLoading,
+  activeSearchIndex,
+  setActiveSearchIndex,
+  handleSearchSelect,
+  searchRef,
+  searchInputRef,
 }) => {
   return (
     <nav className={styles.navbar}>
@@ -39,10 +50,67 @@ export const NavigationTemplate: React.FC<NavigationTemplateProps> = ({
         </div>
 
         {isAuthenticated && (
-          <div className={styles.searchMock}>
-            <Search size={14} className={styles.searchIcon} />
-            <span className={styles.searchText}>Search wishlists...</span>
-            <span className={styles.searchHotkey}>⌘K</span>
+          <div className={styles['search-container']} ref={searchRef}>
+            <div className={styles['search-input-wrapper']}>
+              <Search size={14} className={styles['search-icon']} />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search wishlists... (⌘K)"
+                className={styles['search-input']}
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setIsSearchOpen(true);
+                  setActiveSearchIndex(0);
+                }}
+                onFocus={() => setIsSearchOpen(true)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className={styles['clear-search-btn']}
+                  onClick={() => setSearchQuery('')}
+                  title="Clear search"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+            
+            {isSearchOpen && (
+              <div className={`${styles['search-dropdown']} animate-scale-in`}>
+                {isSearchLoading ? (
+                  <div className={styles['dropdown-status']}>Loading wishlists...</div>
+                ) : searchResults.length > 0 ? (
+                  <div className={styles['dropdown-list']}>
+                    {searchResults.map((wishlist, idx) => {
+                      const isActive = idx === activeSearchIndex;
+                      return (
+                        <div
+                          key={wishlist.Id}
+                          className={`${styles['dropdown-item']} ${isActive ? styles['active-dropdown-item'] : ''}`}
+                          onClick={() => handleSearchSelect(wishlist.Id)}
+                          onMouseEnter={() => setActiveSearchIndex(idx)}
+                        >
+                          <Gift size={14} className={styles['dropdown-item-icon']} />
+                          <div className={styles['dropdown-item-info']}>
+                            <span className={styles['dropdown-item-title']}>{wishlist.Title}</span>
+                            {wishlist.OwnerUsername && (
+                              <span className={styles['dropdown-item-owner']}>@{wishlist.OwnerUsername}</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : searchQuery.trim() !== '' ? (
+                  <div className={styles['dropdown-status']}>No wishlists found matching "{searchQuery}"</div>
+                ) : (
+                  <div className={styles['dropdown-status']}>Type to search your wishlists...</div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -146,6 +214,8 @@ export const NavigationTemplate: React.FC<NavigationTemplateProps> = ({
           )}
         </div>
       </div>
+
+
     </nav>
   );
 };

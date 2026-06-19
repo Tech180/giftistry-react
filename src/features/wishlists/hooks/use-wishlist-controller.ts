@@ -20,10 +20,10 @@ export function useWishlistController() {
     }
   }, []);
 
-  const createWishlist = async (title: string, expiresAt?: string | null, allowGroupFunds?: boolean) => {
+  const createWishlist = async (title: string, expiresAt?: string | null, allowGroupFunds?: boolean, category?: string) => {
     setError(null);
     try {
-      const newList = await wishlistsApi.createWishlist(title, expiresAt, allowGroupFunds);
+      const newList = await wishlistsApi.createWishlist(title, expiresAt, allowGroupFunds, category);
       setWishlists((prev) => [newList, ...prev]);
       return newList;
     } catch (err) {

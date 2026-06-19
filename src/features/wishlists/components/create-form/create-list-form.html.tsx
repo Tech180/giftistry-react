@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Tag, AlertCircle } from 'lucide-react';
+import { Calendar, Tag, AlertCircle, ChevronDown } from 'lucide-react';
 import { Input, Button } from 'shared/ui';
 import { CreateListFormTemplateProps } from '../../interfaces/create-list-form-template-props.interface';
 import styles from './create-list-form.module.css';
@@ -14,6 +14,10 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
   isLoading,
   errorMsg,
   handleSubmit,
+  category,
+  setCategory,
+  customCategory,
+  setCustomCategory,
 }) => {
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
@@ -33,6 +37,36 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
         leftIcon={<Tag size={16} />}
         required
       />
+
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Category</label>
+        <div className={styles.selectWrapper}>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className={styles.select}
+          >
+            <option value="generic">General</option>
+            <option value="birthday">Birthday</option>
+            <option value="holiday">Holiday</option>
+            <option value="wedding">Wedding</option>
+            <option value="custom">Custom...</option>
+          </select>
+          <ChevronDown size={16} className={styles.selectIcon} />
+        </div>
+      </div>
+
+      {category === 'custom' && (
+        <Input
+          label="Custom Category Name *"
+          type="text"
+          placeholder="e.g. Housewarming, Graduation"
+          value={customCategory}
+          onChange={(e) => setCustomCategory(e.target.value)}
+          leftIcon={<Tag size={16} />}
+          required
+        />
+      )}
 
       <Input
         label="Expiration Date (Optional)"

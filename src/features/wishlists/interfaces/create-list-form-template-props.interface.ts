@@ -10,4 +10,8 @@ export interface CreateListFormTemplateProps {
   isLoading: boolean;
   errorMsg: string | null;
   handleSubmit: (e: React.FormEvent) => void;
+  category: string;
+  setCategory: (val: string) => void;
+  customCategory: string;
+  setCustomCategory: (val: string) => void;
 }

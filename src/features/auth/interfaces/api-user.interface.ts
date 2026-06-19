@@ -6,9 +6,3 @@ export interface ApiUser {
   LastName: string;
   CreatedAt?: string;
 }
-
-export interface AuthResponse {
-  success: boolean;
-  User: ApiUser;
-  Token: string;
-}

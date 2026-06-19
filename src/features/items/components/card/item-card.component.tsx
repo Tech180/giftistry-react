@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { itemsApi } from '../../api/items.api';
 import { ItemCardProps } from '../../interfaces/item-card-props.interface';
 import { ItemCardTemplate } from './item-card.html';
@@ -10,6 +10,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   canCollaborate,
   allowGroupFunds,
   onUpdate,
+  priorityLabel,
+  onEdit,
 }) => {
   const [urlInput, setUrlInput] = useState('');
   const [showAddLink, setShowAddLink] = useState(false);
@@ -21,7 +23,20 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const [claimedByName, setClaimedByName] = useState('');
   const [claimLoading, setClaimLoading] = useState(false);
 
-  const handleAddLink = async (e: React.FormEvent) => {
+  // Delete state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Favorite state (Mock toggle since backend doesn't support item updates yet)
+  const [localIsFavorite, setLocalIsFavorite] = useState(false);
+
+  useEffect(() => {
+    setLocalIsFavorite(
+      priorityLabel?.includes('★') || priorityLabel?.includes('*') || priorityLabel?.includes('Favorite') || false
+    );
+  }, [priorityLabel]);
+
+  const handleAddLink = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!urlInput.trim()) return;
 
@@ -38,7 +53,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     }
   };
 
-  const handleClaim = async (e: React.FormEvent) => {
+  const handleClaim = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setClaimLoading(true);
 
@@ -53,6 +68,18 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       alert(err instanceof Error ? err.message : 'Failed to claim item');
     } finally {
       setClaimLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleteLoading(true);
+    try {
+      await itemsApi.deleteItem(item.Id);
+      onUpdate();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete item.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -79,6 +106,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       isFullyClaimed={isFullyClaimed}
       totalExtractedPrice={totalExtractedPrice}
       totalClaimedAmount={totalClaimedAmount}
+      priorityLabel={priorityLabel}
       urlInput={urlInput}
       setUrlInput={setUrlInput}
       showAddLink={showAddLink}
@@ -93,6 +121,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       setClaimedByName={setClaimedByName}
       claimLoading={claimLoading}
       handleClaim={handleClaim}
+      showDeleteConfirm={showDeleteConfirm}
+      setShowDeleteConfirm={setShowDeleteConfirm}
+      deleteLoading={deleteLoading}
+      handleDelete={handleDelete}
+      isFavorite={localIsFavorite}
+      toggleFavorite={() => setLocalIsFavorite(!localIsFavorite)}
+      onEdit={onEdit}
     />
   );
 };

@@ -56,6 +56,10 @@
   pointer-events: none;
 }
 
+.clickableIcon {
+  pointer-events: auto !important;
+}
+
 .hasError {
   border-color: #ef4444;
 }

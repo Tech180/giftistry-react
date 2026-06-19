@@ -6,6 +6,7 @@ export const InputTemplate = forwardRef<HTMLInputElement, InputTemplateProps>(({
   label,
   error,
   leftIcon,
+  leftIconClickable,
   className = '',
   type = 'text',
   inputId,
@@ -13,6 +14,11 @@ export const InputTemplate = forwardRef<HTMLInputElement, InputTemplateProps>(({
   id,
   ...props
 }, ref) => {
+  const iconClass = [
+    styles.icon,
+    leftIconClickable ? styles.clickableIcon : '',
+  ].filter(Boolean).join(' ');
+
   return (
     <div className={`${styles.container} ${className}`}>
       {label && (
@@ -21,7 +27,7 @@ export const InputTemplate = forwardRef<HTMLInputElement, InputTemplateProps>(({
         </label>
       )}
       <div className={styles.wrapper}>
-        {leftIcon && <span className={styles.icon}>{leftIcon}</span>}
+        {leftIcon && <span className={iconClass}>{leftIcon}</span>}
         <input
           ref={ref}
           id={inputId}

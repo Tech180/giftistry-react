@@ -7,12 +7,7 @@ export interface Wishlist {
   IsActive: boolean;
   CreatedAt?: string;
   OwnerUsername?: string; // Appended if available
-}
-
-export interface ListShare {
-  Id: string;
-  ListId: string;
-  UserId: string;
-  Role: 'collaborator' | 'viewer';
-  CreatedAt?: string;
+  Category?: string;
+  OwnerFirstName?: string;
+  Role?: 'owner' | 'collaborator' | 'viewer';
 }

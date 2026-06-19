@@ -5,4 +5,5 @@ export interface WishlistCardTemplateProps {
   isOwner: boolean;
   formattedDate: string;
   expirationClass: string;
+  isArchived: boolean;
 }
