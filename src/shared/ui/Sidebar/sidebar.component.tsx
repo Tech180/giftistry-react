@@ -8,17 +8,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   position,
   title,
   onClose,
-  children
+  children,
+  overflowVisible = false
 }) => {
   const sidebarClass = `${styles.sidebarWrapper} ${
     position === 'left' ? styles.left : styles.right
-  } ${isOpen ? styles.active : ''}`;
+  } ${isOpen ? styles.active : ''} ${overflowVisible ? styles.overflowVisible : ''}`;
 
   return (
     <SidebarTemplate
       sidebarClass={sidebarClass}
       title={title}
       onClose={onClose}
+      overflowVisible={overflowVisible}
     >
       {children}
     </SidebarTemplate>

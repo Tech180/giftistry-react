@@ -106,9 +106,16 @@
 .commentTagsContainer {
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap-reverse;
+  align-content: flex-end;
   gap: 4px;
   margin-left: 12px;
+  padding-left: 8px;
+  border-left: 1.5px solid rgba(128, 128, 128, 0.35);
+  align-self: stretch;
+  justify-content: center;
   flex-shrink: 0;
+  max-height: 48px;
 }
 
 .commentTagIconBtn {

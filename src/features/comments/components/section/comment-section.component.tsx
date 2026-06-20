@@ -183,7 +183,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         .join(' ');
       
       if (tagLinks) {
-        finalContent += `\n\n🏷️ Tagged Items: ${tagLinks}`;
+        finalContent += `\n\n${tagLinks}`;
       }
     }
 

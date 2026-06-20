@@ -15,7 +15,9 @@ const parseCommentTagsAndText = (text: string) => {
   }
 
   let cleanText = text;
-  cleanText = cleanText.replace(/\[([^\]]+)\]\(item:[^)]+\)/g, '$1');
+  cleanText = cleanText.replace(/\n*🏷️?\s*Tagged\s*Items:\s*/gi, '');
+  cleanText = cleanText.replace(/\[([^\]]+)\]\(item:[^)]+\)/g, '');
+  cleanText = cleanText.trim();
 
   return {
     cleanText,

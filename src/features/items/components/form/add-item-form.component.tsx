@@ -22,7 +22,7 @@ const getFriendlyLabel = (id: string) => {
   return id.split(/[_-]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuccess, existingCategories = [], item }) => {
+export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuccess, existingCategories = [], item, onDraftChange }) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -215,6 +215,89 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
     }
   }, [item]);
 
+  // Trigger draft change callback for live item preview
+  useEffect(() => {
+    if (item && onDraftChange) {
+      const visibleDynamicValues: Record<string, string> = {};
+      definitions.forEach(def => {
+        if (isFieldVisible(def)) {
+          const val = dynamicValues[def.FieldKey];
+          if (val && val.trim()) {
+            visibleDynamicValues[def.FieldKey] = val.trim();
+          }
+        }
+      });
+
+      const hasVisibleDynamic = Object.keys(visibleDynamicValues).length > 0;
+      const hasExtraFields =
+        pantsSize.trim() ||
+        shirtSize.trim() ||
+        shoesSize.trim() ||
+        socksSize.trim() ||
+        color.trim() ||
+        customFields.some(f => f.name.trim() && f.value.trim());
+
+      let descPayload = '';
+      if (hasVisibleDynamic || hasExtraFields || description.trim() || !isOwner) {
+        descPayload = JSON.stringify({
+          text: description.trim() || null,
+          pantsSize: pantsSize.trim() || null,
+          shirtSize: shirtSize.trim() || null,
+          shoesSize: shoesSize.trim() || null,
+          socksSize: socksSize.trim() || null,
+          color: color.trim() || null,
+          custom: customFields
+            .filter(f => f.name.trim() && f.value.trim())
+            .map(f => ({ name: f.name.trim(), value: f.value.trim() })),
+          otherUsersCanSee: isOwner ? true : otherUsersCanSee,
+          ...visibleDynamicValues
+        });
+      } else {
+        descPayload = description.trim();
+      }
+
+      onDraftChange({
+        Id: item.Id,
+        Name: name.trim(),
+        Description: descPayload,
+        Category: category === 'uncategorized' ? '' : category,
+        PriorityId: priorityId || null,
+        Links: linkUrl.trim()
+          ? [
+              {
+                Id: item.Links?.[0]?.Id || 'temp-link-id',
+                ItemId: item.Id,
+                Url: linkUrl.trim(),
+                RetailerName: websiteName.trim() || null,
+                ExtractedPrice: price.trim() ? parseFloat(price) : null,
+                ExtractedImageUrl: item.Links?.[0]?.ExtractedImageUrl || null
+              }
+            ]
+          : []
+      });
+    }
+  }, [
+    name,
+    description,
+    category,
+    priorityId,
+    linkUrl,
+    websiteName,
+    price,
+    pantsSize,
+    shirtSize,
+    shoesSize,
+    socksSize,
+    color,
+    customFields,
+    otherUsersCanSee,
+    dynamicValues,
+    definitions,
+    isOwner,
+    item,
+    onDraftChange
+  ]);
+
   useEffect(() => {
     setHasScraped(false);
   }, [linkUrl]);
@@ -259,8 +342,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
         if (data.category && (category === 'uncategorized' || !category)) {
           setCategory(data.category);
         }
-        if (data.color && !color) {
+        if (data.color && !color && !(dynamicValues['preferredColor'] || '').trim()) {
           setColor(data.color);
+          handleUpdateDynamicValue('preferredColor', data.color);
+          handleUpdateDynamicValue('color', data.color);
           setShowExtraFields(true);
         }
         if (data.size && !pantsSize && !shirtSize && !shoesSize && !socksSize) {
@@ -269,17 +354,29 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
           const titleLower = (data.title || '').toLowerCase();
 
           if (urlLower.includes('shoe') || urlLower.includes('boot') || urlLower.includes('sneaker') || titleLower.includes('shoe') || titleLower.includes('sneaker')) {
-            setShoesSize(sizeVal);
-            setShowExtraFields(true);
+            if (!(dynamicValues['shoesSize'] || '').trim()) {
+              setShoesSize(sizeVal);
+              handleUpdateDynamicValue('shoesSize', sizeVal);
+              setShowExtraFields(true);
+            }
           } else if (urlLower.includes('pant') || urlLower.includes('jeans') || urlLower.includes('trouser') || urlLower.includes('short') || titleLower.includes('pant') || titleLower.includes('jeans') || /^\d{2}x\d{2}$/i.test(sizeVal)) {
-            setPantsSize(sizeVal);
-            setShowExtraFields(true);
+            if (!(dynamicValues['pantsSize'] || '').trim()) {
+              setPantsSize(sizeVal);
+              handleUpdateDynamicValue('pantsSize', sizeVal);
+              setShowExtraFields(true);
+            }
           } else if (urlLower.includes('sock') || titleLower.includes('sock')) {
-            setSocksSize(sizeVal);
-            setShowExtraFields(true);
+            if (!(dynamicValues['socksSize'] || '').trim()) {
+              setSocksSize(sizeVal);
+              handleUpdateDynamicValue('socksSize', sizeVal);
+              setShowExtraFields(true);
+            }
           } else {
-            setShirtSize(sizeVal);
-            setShowExtraFields(true);
+            if (!(dynamicValues['shirtSize'] || '').trim()) {
+              setShirtSize(sizeVal);
+              handleUpdateDynamicValue('shirtSize', sizeVal);
+              setShowExtraFields(true);
+            }
           }
         }
       }

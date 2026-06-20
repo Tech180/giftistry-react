@@ -70,10 +70,6 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
         </div>
       )}
 
-      <div className={styles.sectionHeader}>
-        <MessageSquare size={18} className={styles.headerIcon} />
-        <h4 className={styles.title}>Comments & Discussions</h4>
-      </div>
 
       {onlineUsers.length > 0 && (
         <div className={styles.onlinePresenceBar}>

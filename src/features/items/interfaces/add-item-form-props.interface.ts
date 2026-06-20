@@ -6,4 +6,6 @@ export interface AddItemFormProps {
   onSuccess: () => void;
   existingCategories?: string[];
   item?: Item | null;
+  onDraftChange?: (draft: Partial<Item> | null) => void;
 }
+

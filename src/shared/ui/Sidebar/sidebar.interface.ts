@@ -6,4 +6,5 @@ export interface SidebarProps {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  overflowVisible?: boolean;
 }

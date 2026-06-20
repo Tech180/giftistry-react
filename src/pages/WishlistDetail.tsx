@@ -1,40 +1,18 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Share2, Plus, Trash2, Archive, Calendar, Users, Eye, EyeOff, Edit2, MessageSquare } from 'lucide-react';
-import { wishlistsApi, Wishlist, ShareForm, Priority } from 'features/wishlists';
-import { useItemController, ItemCard, AddItemForm, Item } from 'features/items';
-import { CommentSection } from 'features/comments';
-import { useAuth } from 'app/providers/AuthContext';
-import { Button, Modal, Card, Sidebar } from 'shared/ui';
-import styles from './WishlistDetail.module.css';
 
-export default function WishlistDetail() {
-  const { listId } = useParams<{ listId: string }>();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  
-  const [wishlist, setWishlist] = useState<Wishlist | null>(null);
-  const [isWishlistLoading, setIsWishlistLoading] = useState(true);
-  const [wishlistError, setWishlistError] = useState<string | null>(null);
-  
-  const [priorities, setPriorities] = useState<Priority[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  const { items, isLoading: isItemsLoading, fetchItems } = useItemController();
-
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<Item | null>(null);
-  const [isShareOpen, setIsShareOpen] = useState(false);
-  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
-  const [isTaggingModeActive, setIsTaggingModeActive] = useState(false);
-  const [taggedItemIds, setTaggedItemIds] = useState<string[]>([]);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [tempTitle, setTempTitle] = useState('');
-  const [isEditingDate, setIsEditingDate] = useState(false);
-  const [tempDate, setTempDate] = useState('');
-  const [isDeactivating, setIsDeactivating] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<'deactivate' | 'delete' | null>(null);
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (exportRef.current && !exportRef.current.contains(event.target as Node)) {
+        setIsExportDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleSelectTag = useCallback((itemId: string) => {
     setTaggedItemIds((prev) =>
@@ -190,8 +168,23 @@ export default function WishlistDetail() {
     }
   };
 
+  const [editingItemDraft, setEditingItemDraft] = useState<Partial<Item> | null>(null);
+
+  const displayItems = useMemo(() => {
+    return items.map((item) => {
+      if (editingItem && editingItemDraft && item.Id === editingItem.Id) {
+        return {
+          ...item,
+          ...editingItemDraft,
+          Links: editingItemDraft.Links ? editingItemDraft.Links : item.Links
+        };
+      }
+      return item;
+    });
+  }, [items, editingItem, editingItemDraft]);
+
   const groupedItems = useMemo(() => {
-    const filtered = items.filter((item) => {
+    const filtered = displayItems.filter((item) => {
       const query = searchQuery.toLowerCase().trim();
       if (!query) return true;
       return (
@@ -226,7 +219,7 @@ export default function WishlistDetail() {
         if (!b.priority) return -1;
         return b.priority.Weight - a.priority.Weight;
       });
-  }, [items, priorities, searchQuery]);
+  }, [displayItems, priorities, searchQuery]);
 
   if (isWishlistLoading) {
     return (
@@ -271,6 +264,7 @@ export default function WishlistDetail() {
         onClose={() => {
           setIsAddOpen(false);
           setEditingItem(null);
+          setEditingItemDraft(null);
         }}
       >
         <AddItemForm
@@ -278,9 +272,11 @@ export default function WishlistDetail() {
           isOwner={isOwner}
           item={editingItem}
           existingCategories={Array.from(new Set(items.map(item => item.Category).filter(Boolean)))}
+          onDraftChange={setEditingItemDraft}
           onSuccess={() => {
             setIsAddOpen(false);
             setEditingItem(null);
+            setEditingItemDraft(null);
             loadData();
           }}
         />
@@ -432,20 +428,93 @@ export default function WishlistDetail() {
           </div>
 
           <div className={styles.actions}>
+            {wishlist && (
+              <div className={styles.exportDropdownContainer} ref={exportRef} title="Export">
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+                  aria-label="Export"
+                >
+                  <Download size={16} />
+                </Button>
+                {isExportDropdownOpen && (
+                  <div className={styles.exportDropdownMenu}>
+                    <button
+                      className={styles.exportDropdownItem}
+                      onClick={() => {
+                        exportToCsv(
+                          wishlist.Title,
+                          items,
+                          priorities,
+                          wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Owner'
+                        );
+                        setIsExportDropdownOpen(false);
+                      }}
+                    >
+                      CSV
+                    </button>
+                    <button
+                      className={styles.exportDropdownItem}
+                      onClick={() => {
+                        exportToXlsx(
+                          wishlist.Title,
+                          items,
+                          priorities,
+                          wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Owner'
+                        );
+                        setIsExportDropdownOpen(false);
+                      }}
+                    >
+                      XLSX
+                    </button>
+                    <button
+                      className={styles.exportDropdownItem}
+                      onClick={() => {
+                        exportToTxt(
+                          wishlist.Title,
+                          items,
+                          priorities,
+                          wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Owner'
+                        );
+                        setIsExportDropdownOpen(false);
+                      }}
+                    >
+                      TXT
+                    </button>
+                    <button
+                      className={styles.exportDropdownItem}
+                      onClick={() => {
+                        exportToJson(
+                          wishlist.Title,
+                          items,
+                          priorities,
+                          wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Owner'
+                        );
+                        setIsExportDropdownOpen(false);
+                      }}
+                    >
+                      JSON
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             <Button
               variant="secondary"
-              leftIcon={<MessageSquare size={16} />}
               onClick={() => setIsCommentsOpen(!isCommentsOpen)}
+              title="Discussion"
+              aria-label="Discussion"
             >
-              Discussion
+              <MessageSquare size={16} />
             </Button>
             {isOwner && (
               <Button
                 variant="secondary"
-                leftIcon={<Share2 size={16} />}
                 onClick={() => setIsShareOpen(true)}
+                title="Share Registry"
+                aria-label="Share Registry"
               >
-                Share Registry
+                <Share2 size={16} />
               </Button>
             )}
           </div>
@@ -540,13 +609,14 @@ export default function WishlistDetail() {
       <Sidebar
         isOpen={isCommentsOpen}
         position="right"
-        title="Discussion Board"
+        title="Comments"
         onClose={() => setIsCommentsOpen(false)}
+        overflowVisible={true}
       >
         <CommentSection
           listId={wishlist.Id}
           isOwner={isOwner}
-          items={items}
+          items={displayItems}
           onItemTaggedClick={handleItemTaggedClick}
           isTaggingModeActive={isTaggingModeActive}
           setIsTaggingModeActive={setIsTaggingModeActive}

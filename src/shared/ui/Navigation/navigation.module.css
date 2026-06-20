@@ -46,12 +46,37 @@
 
 .logoIcon {
   color: var(--primary);
-  animation: logoPulse 2s infinite ease-in-out;
+  display: inline-block;
+  overflow: visible;
+  animation: logoGentlyRock 6s infinite ease-in-out;
 }
 
-@keyframes logoPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
+.giftLid {
+  transform-origin: 4px 10px;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: giftLidBounce 6s infinite ease-in-out;
+}
+
+@keyframes logoGentlyRock {
+  0%, 80%, 100% { transform: rotate(0deg); }
+  85% { transform: rotate(-3deg); }
+  90% { transform: rotate(3deg); }
+  95% { transform: rotate(-1deg); }
+}
+
+@keyframes giftLidBounce {
+  0%, 80%, 100% { transform: translateY(0) rotate(0deg); }
+  85%, 95% { transform: translateY(-3px) rotate(-6deg); }
+  90% { transform: translateY(-4px) rotate(-8deg); }
+}
+
+.logo:hover .logoIcon {
+  animation: none;
+}
+
+.logo:hover .giftLid {
+  animation: none;
+  transform: translateY(-5px) rotate(-12deg);
 }
 
 .navLinks {
@@ -127,6 +152,61 @@
 .navButton:hover {
   background-color: var(--surface-hover);
   color: var(--text);
+}
+
+.themeNavButton {
+  position: relative;
+}
+
+.themeToggleWrapper {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paletteIcon {
+  color: var(--text-muted);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.navButton:hover .paletteIcon {
+  color: var(--text);
+  transform: rotate(15deg);
+}
+
+.miniIndicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  padding: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  width: 12px;
+  height: 12px;
+  color: var(--primary);
+  transition: all 0.2s ease;
+}
+
+:global([data-appearance="dark"]) .miniIndicator {
+  background-color: #161617;
+  color: #3b82f6;
+}
+
+:global([data-appearance="light"]) .miniIndicator {
+  background-color: #ffffff;
+  color: #f59e0b;
+}
+
+.navButton:hover .miniIndicator {
+  transform: scale(1.1);
 }
 
 /* --- Dropdown containers --- */

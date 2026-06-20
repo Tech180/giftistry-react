@@ -84,6 +84,14 @@
   padding: 0;
 }
 
+.sidebarBody.overflowVisible {
+  overflow: visible;
+}
+
+.sidebarWrapper.overflowVisible {
+  overflow: visible;
+}
+
 @media (max-width: 480px) {
   .sidebarWrapper {
     width: 100vw;

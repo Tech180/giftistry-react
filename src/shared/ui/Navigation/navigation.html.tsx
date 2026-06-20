@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Gift, Sun, Moon, LogOut, User as UserIcon, Search, ChevronDown } from 'lucide-react';
+import { Gift, Sun, Moon, LogOut, User as UserIcon, Search, ChevronDown, Palette } from 'lucide-react';
 import { NavigationTemplateProps } from 'shared/interfaces/navigation-template-props.interface';
 import styles from './navigation.module.css';
 
@@ -38,7 +38,25 @@ export const NavigationTemplate: React.FC<NavigationTemplateProps> = ({
       <div className={styles.container}>
         <div className={styles.left}>
           <Link to={isAuthenticated ? '/dashboard' : '/'} className={styles.logo}>
-            <Gift className={styles.logoIcon} size={20} />
+            <svg
+              className={styles.logoIcon}
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <g className={styles.giftLid}>
+                <path d="M4 7h16v3H4z" />
+                <path d="M12 7c-1.5-2.5-4-2.5-4 0 0 1.5 2.5 2.5 4 0z" />
+                <path d="M12 7c1.5-2.5 4-2.5 4 0 0 1.5-2.5 2.5-4 0z" />
+              </g>
+              <path d="M5 10h14v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V10z" />
+              <path d="M12 10v12" />
+            </svg>
             <span className={styles.logoText}>Giftistry</span>
           </Link>
 
@@ -117,12 +135,17 @@ export const NavigationTemplate: React.FC<NavigationTemplateProps> = ({
         <div className={styles.right}>
           <div className={styles.dropdownContainer} ref={themeRef}>
             <button
-              className={styles.navButton}
+              className={`${styles.navButton} ${styles.themeNavButton}`}
               onClick={() => setIsThemeOpen(!isThemeOpen)}
               aria-label="Theme settings"
               title="Change theme"
             >
-              {appearance === 'light' ? <Sun size={18} /> : <Moon size={18} />}
+              <div className={styles.themeToggleWrapper}>
+                <Palette size={18} className={styles.paletteIcon} />
+                <div className={styles.miniIndicator}>
+                  {appearance === 'light' ? <Sun size={10} /> : <Moon size={10} />}
+                </div>
+              </div>
             </button>
 
             {isThemeOpen && (

@@ -520,3 +520,55 @@
   border-radius: var(--radius);
 }
 
+.exportDropdownContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.exportDropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+  z-index: 1000;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  backdrop-filter: blur(10px);
+}
+
+.exportDropdownItem {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 6px 12px;
+  width: 100%;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+
+.exportDropdownItem:hover {
+  color: var(--text);
+  background-color: var(--surface-hover);
+}
+
+@media (max-width: 768px) {
+  .exportDropdownContainer {
+    width: 100%;
+  }
+  .exportDropdownContainer > button {
+    width: 100%;
+  }
+}
+
+

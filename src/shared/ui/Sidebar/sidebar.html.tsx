@@ -6,6 +6,7 @@ interface SidebarTemplateProps {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  overflowVisible?: boolean;
 }
 
 export const SidebarTemplate: React.FC<SidebarTemplateProps> = ({
@@ -13,6 +14,7 @@ export const SidebarTemplate: React.FC<SidebarTemplateProps> = ({
   title,
   onClose,
   children,
+  overflowVisible = false,
 }) => {
   return (
     <div className={sidebarClass}>
@@ -23,7 +25,7 @@ export const SidebarTemplate: React.FC<SidebarTemplateProps> = ({
             &times;
           </button>
         </div>
-        <div className={styles.sidebarBody}>{children}</div>
+        <div className={`${styles.sidebarBody} ${overflowVisible ? styles.overflowVisible : ''}`}>{children}</div>
       </div>
     </div>
   );
