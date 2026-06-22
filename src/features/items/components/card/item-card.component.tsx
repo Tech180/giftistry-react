@@ -16,7 +16,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   isTaggingModeActive,
   isTaggedSelection,
   onSelectTag,
+  viewMode = 'full',
+  isSelected,
+  onSelect,
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const { user } = useAuth();
   const claimedByCurrentUser = !!(user && item.Claims.some(c => c.UserId === user.Id));
 
@@ -35,20 +39,64 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Favorite state (Mock toggle since backend doesn't support item updates yet)
+  // Favorite state
   const [localIsFavorite, setLocalIsFavorite] = useState(false);
 
   useEffect(() => {
-    if (isOwner) {
-      setLocalIsFavorite(
-        priorityLabel?.includes('★') || priorityLabel?.includes('Favorite') || false
-      );
-    } else {
-      setLocalIsFavorite(
-        priorityLabel?.includes('📌') || priorityLabel?.includes('Pinned') || false
-      );
+    let descIsFavorite = false;
+
+    if (item.Description) {
+      try {
+        if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
+          const parsed = JSON.parse(item.Description);
+          descIsFavorite = !!parsed.isFavorite;
+        }
+      } catch (_) { }
     }
-  }, [priorityLabel, isOwner]);
+
+    setLocalIsFavorite(descIsFavorite);
+  }, [item.Description]);
+
+  const toggleFavorite = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+
+    try {
+      let descObj: any = { text: item.Description || '' };
+      if (item.Description) {
+        try {
+          if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
+            descObj = JSON.parse(item.Description);
+          }
+        } catch (_) { }
+      }
+
+      const newFavoriteState = !localIsFavorite;
+
+      if (isOwner) {
+        descObj.isFavorite = newFavoriteState;
+      } else {
+        descObj.isPinned = newFavoriteState;
+      }
+
+      const updatedDescription = JSON.stringify(descObj);
+
+      // Preserve the item's existing PriorityId (no overrides to a favorite section!)
+      await itemsApi.updateItem(
+        item.Id,
+        item.Name,
+        updatedDescription,
+        item.PriorityId,
+        item.Category
+      );
+
+      setLocalIsFavorite(newFavoriteState);
+      onUpdate();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update favorite status');
+    }
+  };
 
   const handleAddLink = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,13 +115,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     }
   };
 
-  const handleClaim = async (e?: React.FormEvent<HTMLFormElement>) => {
+  const handleClaim = async (e?: React.SyntheticEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
     setClaimLoading(true);
 
     try {
       const amount = claimAmount ? parseFloat(claimAmount) : null;
-      await itemsApi.claimItem(item.Id, amount, null, anonymous);
+      const claimerName = anonymous ? null : (user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null);
+      await itemsApi.claimItem(item.Id, amount, claimerName, anonymous);
       setClaimAmount('');
       setClaimedByName('');
       setAnonymous(false);
@@ -137,7 +186,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     setIsPinned(newValue);
     try {
       localStorage.setItem(`pinned_${item.Id}`, String(newValue));
-    } catch (_) {}
+    } catch (_) { }
   };
 
   return (
@@ -172,7 +221,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       deleteLoading={deleteLoading}
       handleDelete={handleDelete}
       isFavorite={localIsFavorite}
-      toggleFavorite={() => setLocalIsFavorite(!localIsFavorite)}
+      toggleFavorite={toggleFavorite}
       onEdit={onEdit}
       claimedByCurrentUser={claimedByCurrentUser}
       handleUnclaim={handleUnclaim}
@@ -181,6 +230,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       isTaggingModeActive={isTaggingModeActive}
       isTaggedSelection={isTaggedSelection}
       onSelectTag={onSelectTag}
+      viewMode={viewMode}
+      isSelected={isSelected}
+      onSelect={onSelect}
+      isExpanded={isExpanded}
+      setIsExpanded={setIsExpanded}
     />
   );
 };

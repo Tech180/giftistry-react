@@ -14,7 +14,7 @@ interface CommentInputTemplateProps {
   commenterName: string;
   setCommenterName: (name: string) => void;
   isSubmitLoading: boolean;
-  handleSubmit: (e: React.FormEvent) => void;
+  handleSubmit: (e: React.SyntheticEvent) => void;
   items: Item[];
   isTaggingModeActive: boolean;
   setIsTaggingModeActive: (active: boolean) => void;

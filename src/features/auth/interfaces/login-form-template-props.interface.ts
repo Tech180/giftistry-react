@@ -7,5 +7,5 @@ export interface LoginFormTemplateProps {
   setPassword: (val: string) => void;
   isLoading: boolean;
   localError: string | null;
-  handleSubmit: (e: React.FormEvent) => void;
+  handleSubmit: (e: React.SyntheticEvent) => void;
 }

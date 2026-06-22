@@ -6,4 +6,6 @@ export interface Claim {
   ClaimedByName: string | null;
   Anonymous?: boolean;
   ClaimedAt?: string;
+  Quantity?: number;
+  Selection?: string | null;
 }

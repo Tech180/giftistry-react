@@ -156,7 +156,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     handleContentChange(content ? `${content} [${itemName}](item:${itemId})` : `[${itemName}](item:${itemId})`);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
 

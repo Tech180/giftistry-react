@@ -9,7 +9,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   title,
   onClose,
   children,
-  overflowVisible = false
+  overflowVisible = false,
+  miniSidebar,
 }) => {
   const sidebarClass = `${styles.sidebarWrapper} ${
     position === 'left' ? styles.left : styles.right
@@ -21,6 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title={title}
       onClose={onClose}
       overflowVisible={overflowVisible}
+      miniSidebar={miniSidebar}
     >
       {children}
     </SidebarTemplate>

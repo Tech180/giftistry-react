@@ -21,7 +21,7 @@ export const ProfileCard: React.FC = () => {
     }
   }, [user]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!username || !firstName || !lastName) {
       setErrorMsg('All fields are required.');

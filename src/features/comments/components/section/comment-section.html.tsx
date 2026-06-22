@@ -37,38 +37,6 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
 }) => {
   return (
     <div className={styles.section}>
-      {/* Mini Tagged Sidebar (attached to the left of the main sidebar) */}
-      {(taggedItemIds.length > 0 || isTaggingModeActive) && (
-        <div className={styles.miniSidebar}>
-          <span className={styles.miniSidebarLabel}>Tags</span>
-          <div className={styles.miniSidebarSquares}>
-            {taggedItemIds.map((itemId) => {
-              const matchedItem = items.find((i) => i.Id === itemId);
-              if (!matchedItem) return null;
-              const categoryMeta = getCategoryMeta(matchedItem.Category);
-              const Icon = categoryMeta.icon;
-              return (
-                <div key={itemId} className={styles.miniSquareCard}>
-                  <button
-                    type="button"
-                    onClick={() => setTaggedItemIds(taggedItemIds.filter((id) => id !== itemId))}
-                    className={styles.miniSquareRemoveBtn}
-                    title="Remove tag"
-                  >
-                    <X size={10} />
-                  </button>
-                  <div className={styles.miniSquareIconWrapper}>
-                    <Icon size={18} />
-                  </div>
-                  <span className={styles.miniSquareTitle} title={matchedItem.Name}>
-                    {matchedItem.Name}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
 
       {onlineUsers.length > 0 && (

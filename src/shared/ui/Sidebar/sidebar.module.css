@@ -84,9 +84,6 @@
   padding: 0;
 }
 
-.sidebarBody.overflowVisible {
-  overflow: visible;
-}
 
 .sidebarWrapper.overflowVisible {
   overflow: visible;

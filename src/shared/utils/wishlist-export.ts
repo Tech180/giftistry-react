@@ -69,22 +69,26 @@ const formatCategory = (cat: string | null | undefined): string => {
   return cat.charAt(0).toUpperCase() + cat.slice(1);
 };
 
-// Process and sort items by Category (alphabetical), then Priority Weight (descending), then Name (alphabetical)
-function getSortedItemsWithPriority(items: any[], priorities: any[]) {
-  const priorityMap = new Map<string, any>();
-  for (const p of priorities) {
-    priorityMap.set(p.Id, p);
-  }
+// Process and sort items by Category (alphabetical), then Favorite/Starred status (top), then Priority (ascending), then Name (alphabetical)
+function getSortedItemsWithPriority(items: any[]) {
+  const isItemFavorite = (item: any) => {
+    if (item.Description) {
+      try {
+        if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
+          const parsed = JSON.parse(item.Description);
+          return !!parsed.isFavorite || !!parsed.isPinned;
+        }
+      } catch (_) {}
+    }
+    return false;
+  };
 
   return items
-    .map(item => {
-      const prio = item.PriorityId ? priorityMap.get(item.PriorityId) : null;
-      return {
-        ...item,
-        prioObj: prio,
-        categoryFormatted: formatCategory(item.Category)
-      };
-    })
+    .map(item => ({
+      ...item,
+      isFav: isItemFavorite(item),
+      categoryFormatted: formatCategory(item.Category)
+    }))
     .sort((a, b) => {
       // 1. Sort by Category (Uncategorized always goes last)
       if (a.categoryFormatted === 'Uncategorized' && b.categoryFormatted !== 'Uncategorized') return 1;
@@ -92,20 +96,30 @@ function getSortedItemsWithPriority(items: any[], priorities: any[]) {
       const catCompare = a.categoryFormatted.localeCompare(b.categoryFormatted);
       if (catCompare !== 0) return catCompare;
 
-      // 2. Sort by Priority Weight (descending)
-      const weightA = a.prioObj ? a.prioObj.Weight : 0;
-      const weightB = b.prioObj ? b.prioObj.Weight : 0;
-      if (weightB !== weightA) return weightB - weightA;
+      // 2. Sort by Favorite status
+      if (a.isFav && !b.isFav) return -1;
+      if (!a.isFav && b.isFav) return 1;
 
-      // 3. Sort by Name (alphabetical)
+      // 3. Sort by numeric Priority (ascending)
+      const aPri = a.Priority !== undefined && a.Priority !== null ? a.Priority : null;
+      const bPri = b.Priority !== undefined && b.Priority !== null ? b.Priority : null;
+      if (aPri !== null && bPri !== null) {
+        if (aPri !== bPri) return aPri - bPri;
+      } else if (aPri !== null && bPri === null) {
+        return -1;
+      } else if (aPri === null && bPri !== null) {
+        return 1;
+      }
+
+      // 4. Sort by Name (alphabetical)
       return a.Name.localeCompare(b.Name);
     });
 }
 
 // 1. Export CSV (Sorted by Category, Raw Links)
 export function exportToCsv(title: string, items: any[], priorities: any[] = [], ownerFirstName?: string) {
-  const headers = ['Category', 'Priority', 'Priority Number', 'Item', 'Star', 'Price', 'Website Link', 'Description'];
-  const sorted = getSortedItemsWithPriority(items, priorities);
+  const headers = ['Category', 'Priority', 'Item', 'Star', 'Price', 'Website Link', 'Description'];
+  const sorted = getSortedItemsWithPriority(items);
   const rows: any[][] = [];
 
   // Group by category to output category section dividers in CSV too
@@ -124,14 +138,12 @@ export function exportToCsv(title: string, items: any[], priorities: any[] = [],
   });
 
   for (const cat of categories) {
-    rows.push([`${cat}:`, '', '', '', '', '', '', '']);
+    rows.push([`${cat}:`, '', '', '', '', '', '']);
 
     const catItems = categoryGroups[cat];
     for (const item of catItems) {
-      const priorityLabel = item.prioObj ? item.prioObj.Label : 'Medium';
-      const priorityNum = item.prioObj ? item.prioObj.Weight : 3;
-      const isStarred = item.prioObj && item.prioObj.Label.includes('*');
-      const starVal = isStarred ? '*' : '';
+      const priorityVal = item.Priority !== null && item.Priority !== undefined ? item.Priority : '';
+      const starVal = item.isFav ? '*' : '';
       const formattedDesc = parseDescriptionForExport(item.Description);
 
       if (item.Links && item.Links.length > 0) {
@@ -141,8 +153,7 @@ export function exportToCsv(title: string, items: any[], priorities: any[] = [],
             : '';
           rows.push([
             '',
-            priorityLabel,
-            priorityNum,
+            priorityVal,
             item.Name,
             starVal,
             priceVal,
@@ -153,8 +164,7 @@ export function exportToCsv(title: string, items: any[], priorities: any[] = [],
       } else {
         rows.push([
           '',
-          priorityLabel,
-          priorityNum,
+          priorityVal,
           item.Name,
           starVal,
           '',
@@ -163,7 +173,7 @@ export function exportToCsv(title: string, items: any[], priorities: any[] = [],
         ]);
       }
     }
-    rows.push(['', '', '', '', '', '', '', '']); // Spacer row
+    rows.push(['', '', '', '', '', '', '']); // Spacer row
   }
 
   const csvContent = [
@@ -177,23 +187,22 @@ export function exportToCsv(title: string, items: any[], priorities: any[] = [],
 
 // 2. Export XLSX (Excel with cell hyperlinks, formatted sheet using ExcelJS)
 export async function exportToXlsx(title: string, items: any[], priorities: any[] = [], ownerFirstName?: string) {
-  const sorted = getSortedItemsWithPriority(items, priorities);
+  const sorted = getSortedItemsWithPriority(items);
 
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Wishlist');
 
   // Set column widths for a clean look
   worksheet.getColumn(1).width = 18; // Category
-  worksheet.getColumn(2).width = 14; // Priority
-  worksheet.getColumn(3).width = 16; // Priority Number
-  worksheet.getColumn(4).width = 28; // Item
-  worksheet.getColumn(5).width = 8;  // Star
-  worksheet.getColumn(6).width = 12; // Price
-  worksheet.getColumn(7).width = 18; // Website
-  worksheet.getColumn(8).width = 45; // Description
+  worksheet.getColumn(2).width = 12; // Priority
+  worksheet.getColumn(3).width = 28; // Item
+  worksheet.getColumn(4).width = 8;  // Star
+  worksheet.getColumn(5).width = 12; // Price
+  worksheet.getColumn(6).width = 18; // Website
+  worksheet.getColumn(7).width = 45; // Description
 
   // Row 1: Column Headers (No title banner anymore)
-  const headers = ['Category', 'Priority', 'Priority Number', 'Item', 'Star', 'Price', 'Website', 'Description'];
+  const headers = ['Category', 'Priority', 'Item', 'Star', 'Price', 'Website', 'Description'];
   const headerRow = worksheet.addRow(headers);
   headerRow.height = 24;
   headerRow.eachCell((cell) => {
@@ -250,10 +259,8 @@ export async function exportToXlsx(title: string, items: any[], priorities: any[
 
     const catItems = categoryGroups[cat];
     for (const item of catItems) {
-      const priorityLabel = item.prioObj ? item.prioObj.Label : 'Medium';
-      const priorityNum = item.prioObj ? item.prioObj.Weight : 3;
-      const isStarred = item.prioObj && item.prioObj.Label.includes('*');
-      const starVal = isStarred ? '*' : '';
+      const priorityVal = item.Priority !== null && item.Priority !== undefined ? item.Priority : '';
+      const starVal = item.isFav ? '*' : '';
       const formattedDesc = parseDescriptionForExport(item.Description);
 
       let priceVal = '';
@@ -281,8 +288,7 @@ export async function exportToXlsx(title: string, items: any[], priorities: any[
 
       const itemRow = worksheet.addRow([
         '',
-        priorityLabel,
-        priorityNum,
+        priorityVal,
         item.Name,
         starVal,
         priceVal,
@@ -290,11 +296,9 @@ export async function exportToXlsx(title: string, items: any[], priorities: any[
         formattedDesc
       ]);
 
-      // Remove static row height (itemRow.height = 20) to allow Excel to dynamically expand row height vertically for wrapped content
-
       // Formatting text styles
       itemRow.eachCell((cell, colNumber) => {
-        if (colNumber === 7 && linkUrl) {
+        if (colNumber === 6 && linkUrl) {
           cell.value = { text: websiteLabel, hyperlink: linkUrl };
           cell.font = {
             name: 'Inter',
@@ -326,7 +330,7 @@ export async function exportToXlsx(title: string, items: any[], priorities: any[
 
 // 3. Export TXT (Beautiful category-based document)
 export function exportToTxt(title: string, items: any[], priorities: any[] = [], ownerFirstName?: string) {
-  const sorted = getSortedItemsWithPriority(items, priorities);
+  const sorted = getSortedItemsWithPriority(items);
   
   const sections: string[] = [];
   sections.push('============================================================');
@@ -354,9 +358,8 @@ export function exportToTxt(title: string, items: any[], priorities: any[] = [],
 
     const catItems = categoryGroups[cat];
     for (const item of catItems) {
-      const isStarred = item.prioObj && item.prioObj.Label.includes('*');
-      const starPrefix = isStarred ? '★ ' : '  ';
-      const priorityLabel = item.prioObj ? `(Priority: ${item.prioObj.Label} / Weight: ${item.prioObj.Weight})` : '';
+      const starPrefix = item.isFav ? '★ ' : '  ';
+      const priorityLabel = item.Priority !== null && item.Priority !== undefined ? `(Priority: ${item.Priority})` : '';
       const descText = parseDescriptionForExport(item.Description);
       const descStr = descText ? `\n    Description: ${descText}` : '';
 
@@ -392,7 +395,7 @@ export function exportToTxt(title: string, items: any[], priorities: any[] = [],
 
 // 4. Export JSON (Professional, structured JSON format)
 export function exportToJson(title: string, items: any[], priorities: any[] = [], ownerFirstName?: string) {
-  const sorted = getSortedItemsWithPriority(items, priorities);
+  const sorted = getSortedItemsWithPriority(items);
 
   const formattedItems = sorted.map(item => {
     let parsedDesc = item.Description;
@@ -407,7 +410,8 @@ export function exportToJson(title: string, items: any[], priorities: any[] = []
     return {
       name: item.Name,
       category: item.categoryFormatted,
-      priority: item.prioObj ? { label: item.prioObj.Label, weight: item.prioObj.Weight } : { label: 'Medium', weight: 3 },
+      priority: item.Priority,
+      isFavorite: item.isFav,
       description: parsedDesc,
       links: (item.Links || []).map((link: any) => ({
         url: link.Url || '',

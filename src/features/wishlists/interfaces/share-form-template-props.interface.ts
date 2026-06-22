@@ -8,5 +8,5 @@ export interface ShareFormTemplateProps {
   isLoading: boolean;
   errorMsg: string | null;
   successMsg: string | null;
-  handleSubmit: (e: React.FormEvent) => void;
+  handleSubmit: (e: React.SyntheticEvent) => void;
 }

@@ -11,7 +11,7 @@ export interface CreateListFormTemplateProps {
   setRevealSuggestions: (val: boolean) => void;
   isLoading: boolean;
   errorMsg: string | null;
-  handleSubmit: (e: React.FormEvent) => void;
+  handleSubmit: (e: React.SyntheticEvent) => void;
   category: string;
   setCategory: (val: string) => void;
   customCategory: string;

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { itemsApi, FieldDefinition } from '../../api/items.api';
-import { Priority, wishlistsApi } from 'features/wishlists';
 import { AddItemFormProps } from '../../interfaces/add-item-form-props.interface';
 import { AddItemFormTemplate } from './add-item-form.html';
 import { useAuth } from 'app/providers/AuthContext';
@@ -22,13 +21,26 @@ const getFriendlyLabel = (id: string) => {
   return id.split(/[_-]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 };
 
-export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuccess, existingCategories = [], item, onDraftChange }) => {
+export const AddItemForm: React.FC<AddItemFormProps> = ({
+  listId,
+  isOwner,
+  onSuccess,
+  existingCategories = [],
+  item,
+  onDraftChange,
+  wishlistItems = [],
+  linkedItemIds,
+  setLinkedItemIds,
+  isLinkingModeActive,
+  setIsLinkingModeActive,
+  onPriorityChange,
+  isOpen,
+}) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [priorityId, setPriorityId] = useState('');
+  const [priorityWeight, setPriorityWeight] = useState('');
   const [isHiddenIdea, setIsHiddenIdea] = useState(false);
-  const [priorities, setPriorities] = useState<Priority[]>([]);
   const [otherUsersCanSee, setOtherUsersCanSee] = useState(true);
   const [claimOnCreate, setClaimOnCreate] = useState(false);
 
@@ -45,6 +57,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
   const [sessionCustomCategories, setSessionCustomCategories] = useState<string[]>([]);
   const [deletedCategories, setDeletedCategories] = useState<string[]>([]);
 
+  // Advanced fields (multi-count and linked items)
+  const [desiredQuantity, setDesiredQuantity] = useState<number | ''>(1);
+  const isMultiCount = typeof desiredQuantity === 'number' && desiredQuantity > 1;
+  const [variations, setVariations] = useState<{ name: string; quantity: number }[]>([]);
+
   // Optional and Custom Description Fields
   const [pantsSize, setPantsSize] = useState('');
   const [shirtSize, setShirtSize] = useState('');
@@ -53,11 +70,6 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
   const [color, setColor] = useState('');
   const [customFields, setCustomFields] = useState<{ id: string; name: string; value: string }[]>([]);
   const [showExtraFields, setShowExtraFields] = useState(false);
-
-  const [showNewPriorityForm, setShowNewPriorityForm] = useState(false);
-  const [newPriorityLabel, setNewPriorityLabel] = useState('');
-  const [newPriorityWeight, setNewPriorityWeight] = useState('5');
-  const [newPriorityLoading, setNewPriorityLoading] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -90,7 +102,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
     }
   }, [category]);
 
-  const isFieldVisible = (def: FieldDefinition) => {
+  const isFieldVisible = React.useCallback((def: FieldDefinition) => {
     if (!def.Dependencies || def.Dependencies.length === 0) {
       return true;
     }
@@ -101,7 +113,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       }
       return triggerVal.toLowerCase() === dep.TriggerValue.toLowerCase();
     });
-  };
+  }, [dynamicValues]);
 
   const handleUpdateDynamicValue = (key: string, val: string) => {
     setDynamicValues(prev => ({
@@ -110,29 +122,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
     }));
   };
 
-  useEffect(() => {
-    const fetchPriorities = async () => {
-      try {
-        const data = await wishlistsApi.listPriorities(listId);
-        setPriorities(data || []);
-      } catch (err) {
-        // Fallback silently if priority fetch fails
-      }
-    };
-    fetchPriorities();
-  }, [listId]);
 
-  const handleDeletePriority = async (id: string) => {
-    try {
-      await wishlistsApi.deletePriority(id);
-      setPriorities(prev => prev.filter(p => p.Id !== id));
-      if (priorityId === id) {
-        setPriorityId('');
-      }
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to delete category');
-    }
-  };
 
   useEffect(() => {
     if (item) {
@@ -147,8 +137,9 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
             parsedDesc = parsed.text || '';
             
             const dynValues: Record<string, string> = {};
+            const keysToExclude = ['text', 'custom', 'multiCount', 'desiredQuantity', 'variations', 'linkedItemIds', 'pantsSize', 'shirtSize', 'shoesSize', 'socksSize', 'color', 'otherUsersCanSee'];
             for (const key of Object.keys(parsed)) {
-              if (key !== 'text' && key !== 'custom') {
+              if (!keysToExclude.includes(key)) {
                 dynValues[key] = String(parsed[key] || '');
               }
             }
@@ -159,6 +150,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
             setShoesSize(parsed.shoesSize || '');
             setSocksSize(parsed.socksSize || '');
             setColor(parsed.color || '');
+            
+            setDesiredQuantity(parsed.desiredQuantity || 1);
+            setVariations(parsed.variations || []);
+            setLinkedItemIds(parsed.linkedItemIds || []);
+
             if (parsed.custom) {
               setCustomFields(parsed.custom.map((f: any) => ({ id: Math.random().toString(), name: f.name, value: f.value })));
             }
@@ -172,14 +168,32 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
             parsedDesc = item.Description;
             setOtherUsersCanSee(true);
             setDynamicValues({});
+            setDesiredQuantity(1);
+            setVariations([]);
+            setLinkedItemIds([]);
           }
         } catch (_) {
           parsedDesc = item.Description;
           setDynamicValues({});
+          setDesiredQuantity(1);
+          setVariations([]);
+          setLinkedItemIds([]);
         }
       }
       setDescription(parsedDesc);
-      setPriorityId(item.PriorityId || '');
+      
+      let isFav = false;
+      if (item.Description) {
+        try {
+          if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
+            const parsed = JSON.parse(item.Description);
+            isFav = !!parsed.isFavorite;
+          }
+        } catch (_) {}
+      }
+      
+      setIsFavorite(isFav);
+      setPriorityWeight(item.Priority !== undefined && item.Priority !== null ? item.Priority.toString() : '');
       setIsHiddenIdea(item.IsHiddenIdea || false);
       setCategory(item.Category || 'uncategorized');
       
@@ -197,7 +211,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       // Reset everything when item is null (Add Mode)
       setName('');
       setDescription('');
-      setPriorityId('');
+      setPriorityWeight('');
       setIsHiddenIdea(false);
       setLinkUrl('');
       setWebsiteName('');
@@ -212,8 +226,38 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       setCustomFields([]);
       setDynamicValues({});
       setShowExtraFields(false);
+      setDesiredQuantity(1);
+      setVariations([]);
+      setLinkedItemIds([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item]);
+
+  useEffect(() => {
+    if (isOpen === false) {
+      setName('');
+      setDescription('');
+      setPriorityWeight('');
+      setIsHiddenIdea(false);
+      setLinkUrl('');
+      setWebsiteName('');
+      setCategory('uncategorized');
+      setPrice('');
+      setIsFavorite(false);
+      setPantsSize('');
+      setShirtSize('');
+      setShoesSize('');
+      setSocksSize('');
+      setColor('');
+      setCustomFields([]);
+      setDynamicValues({});
+      setShowExtraFields(false);
+      setDesiredQuantity(1);
+      setVariations([]);
+      setLinkedItemIds([]);
+      setHasScraped(false);
+    }
+  }, [isOpen, setLinkedItemIds]);
 
   // Trigger draft change callback for live item preview
   useEffect(() => {
@@ -235,6 +279,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
         shoesSize.trim() ||
         socksSize.trim() ||
         color.trim() ||
+        isMultiCount ||
+        linkedItemIds.length > 0 ||
         customFields.some(f => f.name.trim() && f.value.trim());
 
       let descPayload = '';
@@ -246,6 +292,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
           shoesSize: shoesSize.trim() || null,
           socksSize: socksSize.trim() || null,
           color: color.trim() || null,
+          multiCount: isMultiCount,
+          desiredQuantity,
+          variations,
+          linkedItemIds,
           custom: customFields
             .filter(f => f.name.trim() && f.value.trim())
             .map(f => ({ name: f.name.trim(), value: f.value.trim() })),
@@ -261,7 +311,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
         Name: name.trim(),
         Description: descPayload,
         Category: category === 'uncategorized' ? '' : category,
-        PriorityId: priorityId || null,
+        PriorityId: null,
+        Priority: priorityWeight ? parseInt(priorityWeight, 10) : null,
         Links: linkUrl.trim()
           ? [
               {
@@ -280,7 +331,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
     name,
     description,
     category,
-    priorityId,
+    priorityWeight,
     linkUrl,
     websiteName,
     price,
@@ -295,7 +346,12 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
     definitions,
     isOwner,
     item,
-    onDraftChange
+    onDraftChange,
+    isMultiCount,
+    desiredQuantity,
+    variations,
+    linkedItemIds,
+    isFieldVisible
   ]);
 
   useEffect(() => {
@@ -313,16 +369,16 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       return;
     }
 
-    // Automatically pre-populate the Website Name from hostname if not manually typed yet
+    // Automatically pre-populate/replace the Website Name from hostname
     try {
       const urlObj = new URL(linkUrl.trim());
       const hostname = urlObj.hostname;
       const retailerNameRaw = hostname.replace('www.', '').split('.')[0] || '';
       const extractedWebName = retailerNameRaw ? retailerNameRaw.charAt(0).toUpperCase() + retailerNameRaw.slice(1) : '';
-      if (extractedWebName && !websiteName.trim()) {
-        setWebsiteName(extractedWebName);
-      }
-    } catch (_) {}
+      setWebsiteName(extractedWebName || '');
+    } catch (_) {
+      setWebsiteName('');
+    }
 
     setIsAutopopulating(true);
     setErrorMsg(null);
@@ -330,53 +386,43 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       const data = await itemsApi.extractMetadata(linkUrl.trim());
       if (data) {
         setHasScraped(true);
-        if (data.title && !name.trim()) {
-          setName(data.title);
-        }
-        if (data.price !== null && data.price !== undefined && !price.trim()) {
-          setPrice(data.price.toString());
-        }
-        if (data.description && !description.trim()) {
-          setDescription(data.description);
-        }
-        if (data.category && (category === 'uncategorized' || !category)) {
-          setCategory(data.category);
-        }
-        if (data.color && !color && !(dynamicValues['preferredColor'] || '').trim()) {
-          setColor(data.color);
-          handleUpdateDynamicValue('preferredColor', data.color);
-          handleUpdateDynamicValue('color', data.color);
-          setShowExtraFields(true);
-        }
-        if (data.size && !pantsSize && !shirtSize && !shoesSize && !socksSize) {
+        setName(data.title || '');
+        setPrice(data.price !== null && data.price !== undefined ? data.price.toString() : '');
+        setDescription(data.description || '');
+        setCategory(data.category || 'uncategorized');
+        
+        const colorVal = data.color || '';
+        setColor(colorVal);
+        handleUpdateDynamicValue('preferredColor', colorVal);
+        handleUpdateDynamicValue('color', colorVal);
+
+        // Reset size fields first so they don't overlap/accumulate
+        setPantsSize('');
+        setShirtSize('');
+        setShoesSize('');
+        setSocksSize('');
+
+        if (data.size) {
           const sizeVal = data.size.trim();
           const urlLower = linkUrl.toLowerCase();
           const titleLower = (data.title || '').toLowerCase();
 
           if (urlLower.includes('shoe') || urlLower.includes('boot') || urlLower.includes('sneaker') || titleLower.includes('shoe') || titleLower.includes('sneaker')) {
-            if (!(dynamicValues['shoesSize'] || '').trim()) {
-              setShoesSize(sizeVal);
-              handleUpdateDynamicValue('shoesSize', sizeVal);
-              setShowExtraFields(true);
-            }
+            setShoesSize(sizeVal);
+            handleUpdateDynamicValue('shoesSize', sizeVal);
+            setShowExtraFields(true);
           } else if (urlLower.includes('pant') || urlLower.includes('jeans') || urlLower.includes('trouser') || urlLower.includes('short') || titleLower.includes('pant') || titleLower.includes('jeans') || /^\d{2}x\d{2}$/i.test(sizeVal)) {
-            if (!(dynamicValues['pantsSize'] || '').trim()) {
-              setPantsSize(sizeVal);
-              handleUpdateDynamicValue('pantsSize', sizeVal);
-              setShowExtraFields(true);
-            }
+            setPantsSize(sizeVal);
+            handleUpdateDynamicValue('pantsSize', sizeVal);
+            setShowExtraFields(true);
           } else if (urlLower.includes('sock') || titleLower.includes('sock')) {
-            if (!(dynamicValues['socksSize'] || '').trim()) {
-              setSocksSize(sizeVal);
-              handleUpdateDynamicValue('socksSize', sizeVal);
-              setShowExtraFields(true);
-            }
+            setSocksSize(sizeVal);
+            handleUpdateDynamicValue('socksSize', sizeVal);
+            setShowExtraFields(true);
           } else {
-            if (!(dynamicValues['shirtSize'] || '').trim()) {
-              setShirtSize(sizeVal);
-              handleUpdateDynamicValue('shirtSize', sizeVal);
-              setShowExtraFields(true);
-            }
+            setShirtSize(sizeVal);
+            handleUpdateDynamicValue('shirtSize', sizeVal);
+            setShowExtraFields(true);
           }
         }
       }
@@ -399,31 +445,22 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
     setCustomFields(prev => prev.map(f => f.id === id ? { ...f, [key]: value } : f));
   };
 
-  const handleCreatePriority = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!newPriorityLabel.trim()) return;
-
-    setNewPriorityLoading(true);
-    setErrorMsg(null);
-    try {
-      const weight = parseInt(newPriorityWeight, 10) || 5;
-      const newPriority = await wishlistsApi.createPriority(newPriorityLabel.trim(), weight);
-      setPriorities(prev => [...prev, newPriority]);
-      setPriorityId(newPriority.Id);
-      setNewPriorityLabel('');
-      setNewPriorityWeight('5');
-      setShowNewPriorityForm(false);
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to create priority.');
-    } finally {
-      setNewPriorityLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       setErrorMsg('Please enter an item name.');
+      return;
+    }
+
+    if (desiredQuantity === '') {
+      setErrorMsg('Please enter a quantity.');
+      return;
+    }
+
+    const limit = Number(desiredQuantity) || 1;
+    const varTotal = variations.reduce((sum, v) => sum + v.quantity, 0);
+    if (isMultiCount && varTotal > limit) {
+      setErrorMsg('Cannot exceed the total limit.');
       return;
     }
 
@@ -431,42 +468,6 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
     setErrorMsg(null);
 
     try {
-      let finalPriorityId = priorityId || null;
-
-      if (isFavorite) {
-        if (isOwner) {
-          const favoritePriority = priorities.find(
-            (p) => p.Label === 'Favorite' || p.Label === 'High' || p.Label.includes('★')
-          );
-          if (favoritePriority) {
-            finalPriorityId = favoritePriority.Id;
-          } else {
-            try {
-              const newPriority = await wishlistsApi.createPriority('★ Favorite', 10);
-              setPriorities((prev) => [...prev, newPriority]);
-              finalPriorityId = newPriority.Id;
-            } catch (err) {
-              // Ignore priority creation error
-            }
-          }
-        } else {
-          const pinnedPriority = priorities.find(
-            (p) => p.Label === 'Pinned' || p.Label.includes('📌')
-          );
-          if (pinnedPriority) {
-            finalPriorityId = pinnedPriority.Id;
-          } else {
-            try {
-              const newPriority = await wishlistsApi.createPriority('📌 Pinned', 9);
-              setPriorities((prev) => [...prev, newPriority]);
-              finalPriorityId = newPriority.Id;
-            } catch (err) {
-              // Ignore priority creation error
-            }
-          }
-        }
-      }
-
       // Serialize optional and custom fields inside description as JSON if present
       let descPayload: string | null = null;
 
@@ -481,9 +482,9 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       });
 
       const hasVisibleDynamic = Object.keys(visibleDynamicValues).length > 0;
-      const hasExtraFields = pantsSize.trim() || shirtSize.trim() || shoesSize.trim() || socksSize.trim() || color.trim() || customFields.some(f => f.name.trim() && f.value.trim());
+      const hasExtraFields = pantsSize.trim() || shirtSize.trim() || shoesSize.trim() || socksSize.trim() || color.trim() || isMultiCount || linkedItemIds.length > 0 || customFields.some(f => f.name.trim() && f.value.trim());
 
-      if (hasVisibleDynamic || hasExtraFields || description.trim() || !isOwner) {
+      if (hasVisibleDynamic || hasExtraFields || description.trim() || !isOwner || isFavorite) {
         descPayload = JSON.stringify({
           text: description.trim() || null,
           pantsSize: pantsSize.trim() || null,
@@ -491,38 +492,49 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
           shoesSize: shoesSize.trim() || null,
           socksSize: socksSize.trim() || null,
           color: color.trim() || null,
+          multiCount: isMultiCount,
+          desiredQuantity: isMultiCount ? desiredQuantity : 1,
+          variations: isMultiCount ? variations : [],
+          linkedItemIds,
           custom: customFields
             .filter(f => f.name.trim() && f.value.trim())
             .map(f => ({ name: f.name.trim(), value: f.value.trim() })),
           otherUsersCanSee: isOwner ? true : otherUsersCanSee,
+          isFavorite: isOwner ? isFavorite : undefined,
+          isPinned: !isOwner ? isFavorite : undefined,
           ...visibleDynamicValues
         });
       }
+
+      const priorityVal = priorityWeight.trim() ? parseInt(priorityWeight, 10) : null;
 
       if (item) {
         await itemsApi.updateItem(
           item.Id,
           name.trim(),
           descPayload,
-          finalPriorityId,
-          category === 'uncategorized' ? null : category
+          null,
+          category === 'uncategorized' ? null : category,
+          priorityVal
         );
       } else {
         const newItem = await itemsApi.addItem(
           listId,
           name.trim(),
           descPayload,
-          finalPriorityId,
+          null,
           isOwner ? false : isHiddenIdea,
           linkUrl.trim() || null,
           price.trim() ? parseFloat(price) : null,
           websiteName.trim() || null,
-          category === 'uncategorized' ? null : category
+          category === 'uncategorized' ? null : category,
+          priorityVal
         );
 
         if (!isOwner && claimOnCreate && newItem && newItem.Id) {
           try {
-            await itemsApi.claimItem(newItem.Id);
+            const claimerName = user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null;
+            await itemsApi.claimItem(newItem.Id, null, claimerName, false);
           } catch (err) {
             // Ignore claim error
           }
@@ -532,7 +544,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       // Reset all states
       setName('');
       setDescription('');
-      setPriorityId('');
+      setPriorityWeight('');
       setIsHiddenIdea(false);
       setLinkUrl('');
       setWebsiteName('');
@@ -616,23 +628,14 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       setName={setName}
       description={description}
       setDescription={setDescription}
-      priorityId={priorityId}
-      setPriorityId={setPriorityId}
+      priorityWeight={priorityWeight}
+      setPriorityWeight={setPriorityWeight}
       isHiddenIdea={isHiddenIdea}
       setIsHiddenIdea={setIsHiddenIdea}
-      priorities={priorities}
       isOwner={isOwner}
       isLoading={isLoading}
       errorMsg={errorMsg}
       handleSubmit={handleSubmit}
-      showNewPriorityForm={showNewPriorityForm}
-      setShowNewPriorityForm={setShowNewPriorityForm}
-      newPriorityLabel={newPriorityLabel}
-      setNewPriorityLabel={setNewPriorityLabel}
-      newPriorityWeight={newPriorityWeight}
-      setNewPriorityWeight={setNewPriorityWeight}
-      newPriorityLoading={newPriorityLoading}
-      handleCreatePriority={handleCreatePriority}
       linkUrl={linkUrl}
       setLinkUrl={setLinkUrl}
       websiteName={websiteName}
@@ -675,12 +678,22 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({ listId, isOwner, onSuc
       dynamicValues={dynamicValues}
       isFieldVisible={isFieldVisible}
       handleUpdateDynamicValue={handleUpdateDynamicValue}
-      handleDeletePriority={handleDeletePriority}
       currentUserId={user?.Id}
       otherUsersCanSee={otherUsersCanSee}
       setOtherUsersCanSee={setOtherUsersCanSee}
       claimOnCreate={claimOnCreate}
       setClaimOnCreate={setClaimOnCreate}
+      isMultiCount={isMultiCount}
+      desiredQuantity={desiredQuantity}
+      setDesiredQuantity={setDesiredQuantity}
+      variations={variations}
+      setVariations={setVariations}
+      linkedItemIds={linkedItemIds}
+      setLinkedItemIds={setLinkedItemIds}
+      wishlistItems={wishlistItems}
+      itemId={item?.Id}
+      isLinkingModeActive={isLinkingModeActive}
+      setIsLinkingModeActive={setIsLinkingModeActive}
     />
   );
 };

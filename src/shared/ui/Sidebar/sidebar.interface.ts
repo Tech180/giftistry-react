@@ -7,4 +7,5 @@ export interface SidebarProps {
   onClose: () => void;
   children: React.ReactNode;
   overflowVisible?: boolean;
+  miniSidebar?: React.ReactNode;
 }

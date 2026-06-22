@@ -12,4 +12,7 @@ export interface ItemCardProps {
   isTaggingModeActive?: boolean;
   isTaggedSelection?: boolean;
   onSelectTag?: () => void;
+  viewMode?: 'full' | 'compact' | 'grid';
+  isSelected?: boolean;
+  onSelect?: () => void;
 }

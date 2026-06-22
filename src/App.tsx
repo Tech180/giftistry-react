@@ -3,11 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from 'app/providers/ThemeContext';
 import { AuthProvider, useAuth } from 'app/providers/AuthContext';
 import { Navigation } from 'shared/ui';
-import Login from 'pages/Login';
-import Register from 'pages/Register';
-import Dashboard from 'pages/Dashboard';
-import WishlistDetail from 'pages/WishlistDetail';
-import Profile from 'pages/Profile';
+import { Login, Register, Dashboard, WishlistDetail, Profile } from 'pages';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();

@@ -12,6 +12,7 @@ export interface Item {
   IsHiddenIdea: boolean;
   IsSuggestion?: boolean;
   Category: string;
+  Priority?: number | null;
   CreatedAt?: string;
   Links: ItemLink[];
   Claims: Claim[];

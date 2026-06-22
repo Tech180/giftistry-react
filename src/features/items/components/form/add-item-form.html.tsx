@@ -25,23 +25,14 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   setName,
   description,
   setDescription,
-  priorityId,
-  setPriorityId,
+  priorityWeight,
+  setPriorityWeight,
   isHiddenIdea,
   setIsHiddenIdea,
-  priorities,
   isOwner,
   isLoading,
   errorMsg,
   handleSubmit,
-  showNewPriorityForm,
-  setShowNewPriorityForm,
-  newPriorityLabel,
-  setNewPriorityLabel,
-  newPriorityWeight,
-  setNewPriorityWeight,
-  newPriorityLoading,
-  handleCreatePriority,
   linkUrl,
   setLinkUrl,
   websiteName,
@@ -84,14 +75,31 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   dynamicValues,
   isFieldVisible,
   handleUpdateDynamicValue,
-  handleDeletePriority,
   currentUserId,
   otherUsersCanSee,
   setOtherUsersCanSee,
   claimOnCreate,
   setClaimOnCreate,
+  isMultiCount,
+  desiredQuantity,
+  setDesiredQuantity,
+  variations,
+  setVariations,
+  linkedItemIds,
+  setLinkedItemIds,
+  wishlistItems = [],
+  itemId,
+  isLinkingModeActive,
+  setIsLinkingModeActive,
 }) => {
   const showOptionalSizing = (category && category !== 'uncategorized') || hasScraped;
+  const [varName, setVarName] = React.useState('');
+  const [varQty, setVarQty] = React.useState<number | ''>(1);
+  const [varError, setVarError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setVarError(null);
+  }, [desiredQuantity, variations]);
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
@@ -156,7 +164,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
         />
       </div>
       <div className={styles.priceRow}>
-        <div className={styles.priceInputWrapper}>
+        <div className={styles.priceInputWrapper} style={{ flex: 2 }}>
           <Input
             label="Price (Optional)"
             type="text"
@@ -169,6 +177,25 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
               }
             }}
             leftIcon={<DollarSign size={16} />}
+          />
+        </div>
+        <div className={styles.priceInputWrapper} style={{ flex: 1 }}>
+          <Input
+            label="Quantity"
+            type="number"
+            min="1"
+            value={desiredQuantity}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === '') {
+                setDesiredQuantity('');
+              } else {
+                const num = parseInt(val, 10);
+                if (!isNaN(num)) {
+                  setDesiredQuantity(Math.max(1, num));
+                }
+              }
+            }}
           />
         </div>
         <div className={styles.starWrapper}>
@@ -197,6 +224,96 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           </button>
         </div>
       </div>
+
+      {typeof desiredQuantity === 'number' && desiredQuantity > 1 && (
+        <div className={styles.checkboxWrapper} style={{ display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
+          <div className={styles.variationBoxQtyBadge}>
+            {variations.reduce((sum, v) => sum + v.quantity, 0)}/{desiredQuantity}
+          </div>
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} style={{ marginBottom: '8px', display: 'block' }}>Item Variations</label>
+            {varError && (
+              <div className={`${styles.alert} animate-slide-up`} style={{ marginBottom: '12px', marginTop: '4px' }}>
+                <span>{varError}</span>
+              </div>
+            )}
+            <div className={styles.variationInputRow}>
+              <input
+                type="text"
+                placeholder="e.g. Red, Blue, Size M"
+                value={varName}
+                onChange={(e) => setVarName(e.target.value)}
+                className={styles.variationNameInput}
+              />
+              <input
+                type="number"
+                min="1"
+                value={varQty}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setVarQty('');
+                  } else {
+                    const num = parseInt(val, 10);
+                    if (!isNaN(num)) {
+                      setVarQty(Math.max(1, num));
+                    }
+                  }
+                }}
+                className={styles.variationQtyInput}
+                style={{ width: '60px' }}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  if (varName.trim()) {
+                    if (varQty === '') {
+                      setVarError('Please enter a quantity for the variation.');
+                      return;
+                    }
+                    const limit = Number(desiredQuantity) || 1;
+                    const currentVarTotal = variations.reduce((sum, v) => sum + v.quantity, 0);
+                    const remaining = limit - currentVarTotal;
+
+                    if (remaining <= 0) {
+                      setVarError('Cannot exceed the total quantity limit.');
+                      return;
+                    }
+
+                    if (Number(varQty) > remaining) {
+                      setVarError('Cannot exceed the total quantity limit.');
+                      return;
+                    }
+
+                    setVarError(null);
+                    setVariations(prev => [...prev, { name: varName.trim(), quantity: Number(varQty) }]);
+                    setVarName('');
+                    setVarQty(1);
+                  }
+                }}
+              >
+                Add
+              </Button>
+            </div>
+            <div className={styles.variationsList}>
+              {variations.map((v, idx) => (
+                <span key={idx} className={styles.variationChip}>
+                  {v.name} ({v.quantity})
+                  <button
+                    type="button"
+                    onClick={() => setVariations(prev => prev.filter((_, i) => i !== idx))}
+                    className={styles.removeVariationBtn}
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 3. Gift Category Matrix */}
       <div className={styles.fieldGroup}>
@@ -438,86 +555,51 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
         </div>
       )}
 
-      {/* 5. Priority / Category Section */}
+      {/* 5. Priority Weight Number Selection */}
       <div className={styles.fieldGroup}>
-        <div className={styles.priorityLabelRow}>
-          <label className={styles.label}>Category (Optional)</label>
-          <button
-            type="button"
-            onClick={() => setShowNewPriorityForm(!showNewPriorityForm)}
-            className={styles.inlineFormToggle}
-          >
-            {showNewPriorityForm ? 'Cancel New' : '+ New Category'}
-          </button>
+        <label className={styles.label} htmlFor="item-priority-input">Item Priority (Optional)</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <input
+            id="item-priority-input"
+            type="number"
+            min="1"
+            placeholder="Enter priority (lowest e.g. 1 is highest priority)"
+            value={priorityWeight}
+            onChange={(e) => setPriorityWeight(e.target.value)}
+            className={styles.inlineInputFull}
+            style={{ maxWidth: '300px' }}
+          />
+          <span style={{ fontSize: '0.85rem', color: '#666' }}>
+            Note: Lower numbers (e.g. 1) sort to the top.
+          </span>
         </div>
+      </div>
 
-        {showNewPriorityForm ? (
-          <div className={styles.inlinePriorityForm}>
-            <input
-              placeholder="Category (Starred, Expensive, Common)"
-              value={newPriorityLabel}
-              onChange={(e) => setNewPriorityLabel(e.target.value)}
-              className={styles.inlineInputFull}
-            />
-            <div className={styles.inlineInputsRow}>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                placeholder="Weight (1-10)"
-                value={newPriorityWeight}
-                onChange={(e) => setNewPriorityWeight(e.target.value)}
-                className={styles.inlineWeightInput}
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleCreatePriority}
-                isLoading={newPriorityLoading}
-                className={styles.inlineCreateBtn}
-              >
-                Create
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className={styles.categoryChipsContainer}>
+      {/* Linked Items / Dependencies */}
+      {wishlistItems && wishlistItems.filter(i => i.Id !== itemId).length > 0 && (
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Linked Items / Dependencies</label>
+          <div className={styles.descriptionRow}>
+            <span className={styles.checkboxSubtext} style={{ flex: 1, margin: 0 }}>
+              Link this item to other gifts to warn viewers of dependencies and let them claim them together.
+            </span>
             <button
               type="button"
-              className={`${styles.categoryChip} ${priorityId === '' ? styles.categoryChipSelected : ''}`}
-              onClick={() => setPriorityId('')}
+              onClick={() => setIsLinkingModeActive(prev => !prev)}
+              className={`${styles.dependencyBoxBtn} ${isLinkingModeActive ? styles.dependencyBoxActive : ''}`}
+              title={isLinkingModeActive ? 'Finish Selecting Items' : 'Select Items from Wishlist'}
+              style={{ width: '56px', height: 'auto', alignSelf: 'stretch' }}
             >
-              General Gifts
+              <Link size={16} />
+              {linkedItemIds.length > 0 && (
+                <span className={styles.dependencyBadge}>
+                  {linkedItemIds.length}
+                </span>
+              )}
             </button>
-            {priorities.map((p) => {
-              const isSelected = priorityId === p.Id;
-              return (
-                <div
-                  key={p.Id}
-                  className={`${styles.categoryChip} ${isSelected ? styles.categoryChipSelected : ''}`}
-                  onClick={() => setPriorityId(p.Id)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
-                >
-                  <span>{p.Label}</span>
-                  {(isOwner || p.UserId === currentUserId) && (
-                    <span
-                      className={styles.deleteCategoryBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeletePriority(p.Id);
-                      }}
-                      title="Delete Category"
-                    >
-                      &times;
-                    </span>
-                  )}
-                </div>
-              );
-            })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {!isOwner && (
         <>

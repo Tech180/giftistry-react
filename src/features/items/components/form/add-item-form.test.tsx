@@ -7,6 +7,10 @@ jest.mock('react-router-dom', () => ({
   Link: ({ children, to }: any) => <a href={to}>{children}</a>,
 }));
 
+jest.mock('app/providers/AuthContext', () => ({
+  useAuth: () => ({ user: { Id: 'test-user-id' } }),
+}));
+
 import { AddItemForm } from './add-item-form.component';
 import { itemsApi } from '../../api/items.api';
 
@@ -68,6 +72,10 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
         isOwner={true}
         onSuccess={() => {}}
         existingCategories={[]}
+        linkedItemIds={[]}
+        setLinkedItemIds={() => {}}
+        isLinkingModeActive={false}
+        setIsLinkingModeActive={() => {}}
       />
     );
 
@@ -81,6 +89,7 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
 
     // Wait for definitions to load and confirm pants size is rendered, waist fit is hidden
     await waitFor(() => {
+      expect(screen.getByText(/Apparel & Accessories.*Sizing \/ Options/i)).toBeInTheDocument();
       expect(screen.getByText('Pants Size')).toBeInTheDocument();
     });
     expect(screen.queryByText('Waist Fit')).not.toBeInTheDocument();

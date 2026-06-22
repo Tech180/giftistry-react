@@ -1,259 +1,132 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft, Share2, Plus, Trash2, Archive, Calendar, Users, Eye, EyeOff, Edit2, MessageSquare, Download, LayoutList, Rows, LayoutGrid } from 'lucide-react';
+import { Wishlist, ShareForm, Priority } from 'features/wishlists';
+import { ItemCard, AddItemForm, Item, ItemShowcase } from 'features/items';
+import { CommentSection } from 'features/comments';
+import { Button, Modal, Card, Sidebar, MiniSidebar } from 'shared/ui';
+import { exportToCsv, exportToXlsx, exportToTxt, exportToJson } from 'shared/utils/wishlist-export';
+import styles from './wishlist-detail.module.css';
 
+interface WishlistDetailTemplateProps {
+  wishlist: Wishlist;
+  items: Item[];
+  priorities: Priority[];
+  isOwner: boolean;
+  isExpired: boolean;
+  isAddOpen: boolean;
+  setIsAddOpen: (open: boolean) => void;
+  editingItem: Item | null;
+  setEditingItem: (item: Item | null) => void;
+  setEditingItemDraft: (draft: Partial<Item> | null) => void;
+  linkedItemIds: string[];
+  setLinkedItemIds: (ids: string[] | ((prev: string[]) => string[])) => void;
+  isLinkingModeActive: boolean;
+  setIsLinkingModeActive: React.Dispatch<React.SetStateAction<boolean>>;
+  loadData: () => Promise<void>;
+  confirmAction: 'deactivate' | 'delete' | null;
+  setConfirmAction: (action: 'deactivate' | 'delete' | null) => void;
+  isDeactivating: boolean;
+  isDeleting: boolean;
+  handleDeactivateConfirm: () => void;
+  handleDeleteConfirm: () => void;
+  isEditingTitle: boolean;
+  setIsEditingTitle: (editing: boolean) => void;
+  tempTitle: string;
+  setTempTitle: (title: string) => void;
+  saveTitle: (title: string) => void;
+  isEditingDate: boolean;
+  setIsEditingDate: (editing: boolean) => void;
+  tempDate: string;
+  setTempDate: (date: string) => void;
+  saveDate: (date: string) => void;
+  toggleRevealSuggestions: () => void;
+  formatDate: (dateStr: string | null) => string;
+  exportRef: React.RefObject<HTMLDivElement | null>;
+  isExportDropdownOpen: boolean;
+  setIsExportDropdownOpen: (open: boolean) => void;
+  isCommentsOpen: boolean;
+  setIsCommentsOpen: (open: boolean) => void;
+  isShareOpen: boolean;
+  setIsShareOpen: (open: boolean) => void;
+  viewMode: 'full' | 'compact' | 'grid';
+  handleSetViewMode: (mode: 'full' | 'compact' | 'grid') => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  selectedItem: Item | null;
+  setSelectedItemId: (id: string | null) => void;
+  selectedItemId: string | null;
+  selectedItemPriorityLabel: string | undefined;
+  groupedItems: { categoryKey: string; label: string; items: Item[] }[];
+  displayItems: Item[];
+  handleItemTaggedClick: (itemId: string) => void;
+  isTaggingModeActive: boolean;
+  setIsTaggingModeActive: (active: boolean) => void;
+  taggedItemIds: string[];
+  setTaggedItemIds: (ids: string[]) => void;
+  handleSelectTag: (itemId: string) => void;
+  isLoading: boolean;
+}
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (exportRef.current && !exportRef.current.contains(event.target as Node)) {
-        setIsExportDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const handleSelectTag = useCallback((itemId: string) => {
-    setTaggedItemIds((prev) =>
-      prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
-    );
-  }, []);
-
-  const loadData = useCallback(async () => {
-    if (!listId) return;
-    setIsWishlistLoading(true);
-    setWishlistError(null);
-    try {
-      const [wl, prio] = await Promise.all([
-        wishlistsApi.getWishlist(listId),
-        wishlistsApi.listPriorities(listId)
-      ]);
-      setWishlist(wl);
-      setPriorities(prio || []);
-      const expiresAtIso = wl.ExpiresAt ? new Date(wl.ExpiresAt).toISOString().split('T')[0] : '';
-      setTempDate(expiresAtIso);
-      setTempTitle(wl.Title);
-      await fetchItems(listId);
-    } catch (err) {
-      setWishlistError(err instanceof Error ? err.message : 'Failed to load wishlist.');
-    } finally {
-      setIsWishlistLoading(false);
-    }
-  }, [listId, fetchItems]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  const isOwner = useMemo(() => {
-    return !!(wishlist && user && wishlist.UserId === user.Id);
-  }, [wishlist, user]);
-
-  const isExpired = useMemo(() => {
-    return !!(wishlist?.ExpiresAt ? new Date() > new Date(wishlist.ExpiresAt) : false);
-  }, [wishlist]);
-
-  const saveTitle = async (newTitle: string) => {
-    if (!wishlist) return;
-    const trimmed = newTitle.trim();
-    if (!trimmed) {
-      setTempTitle(wishlist.Title);
-      setIsEditingTitle(false);
-      return;
-    }
-    if (trimmed === wishlist.Title) {
-      setIsEditingTitle(false);
-      return;
-    }
-    try {
-      const updated = await wishlistsApi.updateWishlist(
-        wishlist.Id,
-        trimmed,
-        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
-        wishlist.AllowGroupFunds,
-        wishlist.Category,
-        wishlist.RevealSuggestions
-      );
-      setWishlist(updated);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update title');
-      setTempTitle(wishlist.Title);
-    } finally {
-      setIsEditingTitle(false);
-    }
-  };
-
-  const handleItemTaggedClick = useCallback((itemId: string) => {
-    const element = document.getElementById(`item-card-${itemId}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      element.classList.add(styles.itemCardWrapperHighlighted);
-      setTimeout(() => {
-        element.classList.remove(styles.itemCardWrapperHighlighted);
-      }, 1500);
-    }
-  }, []);
-
-  const saveDate = async (newDateStr: string) => {
-    if (!wishlist) return;
-    const prevDateStr = wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString().split('T')[0] : '';
-    if (newDateStr === prevDateStr) {
-      setIsEditingDate(false);
-      return;
-    }
-    try {
-      const expiresAtIso = newDateStr ? new Date(newDateStr).toISOString() : null;
-      const updated = await wishlistsApi.updateWishlist(
-        wishlist.Id,
-        wishlist.Title,
-        expiresAtIso,
-        wishlist.AllowGroupFunds,
-        wishlist.Category,
-        wishlist.RevealSuggestions
-      );
-      setWishlist(updated);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update date');
-      setTempDate(prevDateStr);
-    } finally {
-      setIsEditingDate(false);
-    }
-  };
-
-  const toggleRevealSuggestions = async () => {
-    if (!wishlist) return;
-    try {
-      const updated = await wishlistsApi.updateWishlist(
-        wishlist.Id,
-        wishlist.Title,
-        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
-        wishlist.AllowGroupFunds,
-        wishlist.Category,
-        !wishlist.RevealSuggestions
-      );
-      setWishlist(updated);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update suggestion visibility');
-    }
-  };
-
-  const handleDeactivateConfirm = async () => {
-    if (!wishlist) return;
-    
-    setIsDeactivating(true);
-    setConfirmAction(null);
-    try {
-      await wishlistsApi.deactivateWishlist(wishlist.Id);
-      navigate('/dashboard');
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Deactivation failed.');
-    } finally {
-      setIsDeactivating(false);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!wishlist) return;
-
-    setIsDeleting(true);
-    setConfirmAction(null);
-    try {
-      await wishlistsApi.deleteWishlist(wishlist.Id);
-      navigate('/dashboard');
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Deletion failed.');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const [editingItemDraft, setEditingItemDraft] = useState<Partial<Item> | null>(null);
-
-  const displayItems = useMemo(() => {
-    return items.map((item) => {
-      if (editingItem && editingItemDraft && item.Id === editingItem.Id) {
-        return {
-          ...item,
-          ...editingItemDraft,
-          Links: editingItemDraft.Links ? editingItemDraft.Links : item.Links
-        };
-      }
-      return item;
-    });
-  }, [items, editingItem, editingItemDraft]);
-
-  const groupedItems = useMemo(() => {
-    const filtered = displayItems.filter((item) => {
-      const query = searchQuery.toLowerCase().trim();
-      if (!query) return true;
-      return (
-        item.Name.toLowerCase().includes(query) ||
-        (item.Description && item.Description.toLowerCase().includes(query))
-      );
-    });
-
-    const priorityMap = new Map<string, Priority>();
-    for (const p of priorities) {
-      priorityMap.set(p.Id, p);
-    }
-
-    const groups: { [key: string]: { priority: Priority | null; items: Item[] } } = {};
-
-    for (const p of priorities) {
-      groups[p.Id] = { priority: p, items: [] };
-    }
-    
-    const uncategorizedKey = 'uncategorized';
-    groups[uncategorizedKey] = { priority: null, items: [] };
-
-    for (const item of filtered) {
-      const key = item.PriorityId && groups[item.PriorityId] ? item.PriorityId : uncategorizedKey;
-      groups[key].items.push(item);
-    }
-
-    return Object.values(groups)
-      .filter((g) => g.items.length > 0)
-      .sort((a, b) => {
-        if (!a.priority) return 1;
-        if (!b.priority) return -1;
-        return b.priority.Weight - a.priority.Weight;
-      });
-  }, [displayItems, priorities, searchQuery]);
-
-  if (isWishlistLoading) {
-    return (
-      <div className={styles.loadingState}>
-        <div className={styles.spinner} />
-        <p>Loading registry details...</p>
-      </div>
-    );
-  }
-
-  if (wishlistError || !wishlist) {
-    return (
-      <div className={styles.errorState}>
-        <h3>Wishlist Not Found</h3>
-        <p>{wishlistError || 'This wishlist does not exist or you do not have permission to view it.'}</p>
-        <Link to="/dashboard">
-          <Button variant="secondary" leftIcon={<ArrowLeft size={16} />}>
-            Back to Dashboard
-          </Button>
-        </Link>
-      </div>
-    );
-  }
-
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return 'No expiration date';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
+export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
+  wishlist,
+  items,
+  priorities,
+  isOwner,
+  isExpired,
+  isAddOpen,
+  setIsAddOpen,
+  editingItem,
+  setEditingItem,
+  setEditingItemDraft,
+  linkedItemIds,
+  setLinkedItemIds,
+  isLinkingModeActive,
+  setIsLinkingModeActive,
+  loadData,
+  confirmAction,
+  setConfirmAction,
+  isDeactivating,
+  isDeleting,
+  handleDeactivateConfirm,
+  handleDeleteConfirm,
+  isEditingTitle,
+  setIsEditingTitle,
+  tempTitle,
+  setTempTitle,
+  saveTitle,
+  isEditingDate,
+  setIsEditingDate,
+  tempDate,
+  setTempDate,
+  saveDate,
+  toggleRevealSuggestions,
+  formatDate,
+  exportRef,
+  isExportDropdownOpen,
+  setIsExportDropdownOpen,
+  isCommentsOpen,
+  setIsCommentsOpen,
+  isShareOpen,
+  setIsShareOpen,
+  viewMode,
+  handleSetViewMode,
+  searchQuery,
+  setSearchQuery,
+  selectedItem,
+  setSelectedItemId,
+  selectedItemId,
+  selectedItemPriorityLabel,
+  groupedItems,
+  displayItems,
+  handleItemTaggedClick,
+  isTaggingModeActive,
+  setIsTaggingModeActive,
+  taggedItemIds,
+  setTaggedItemIds,
+  handleSelectTag,
+  isLoading,
+}) => {
   return (
     <div className={styles.appLayout}>
       {/* LEFT SIDEBAR: Add Item form */}
@@ -266,6 +139,17 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
           setEditingItem(null);
           setEditingItemDraft(null);
         }}
+        overflowVisible={true}
+        miniSidebar={
+          <MiniSidebar
+            items={items}
+            selectedIds={linkedItemIds}
+            onRemoveId={(id) => setLinkedItemIds(prev => prev.filter(lid => lid !== id))}
+            isActive={isLinkingModeActive}
+            position="left"
+            label="Linked"
+          />
+        }
       >
         <AddItemForm
           listId={wishlist.Id}
@@ -273,6 +157,13 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
           item={editingItem}
           existingCategories={Array.from(new Set(items.map(item => item.Category).filter(Boolean)))}
           onDraftChange={setEditingItemDraft}
+          wishlistItems={items}
+          linkedItemIds={linkedItemIds}
+          setLinkedItemIds={setLinkedItemIds}
+          isLinkingModeActive={isLinkingModeActive}
+          setIsLinkingModeActive={setIsLinkingModeActive}
+          onPriorityChange={loadData}
+          isOpen={isAddOpen || !!editingItem}
           onSuccess={() => {
             setIsAddOpen(false);
             setEditingItem(null);
@@ -526,6 +417,32 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
             <div className={styles.columnHeader}>
               <h3 className={styles.columnTitle}>Gift Ideas</h3>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div className={styles.viewSwitcher}>
+                  <button
+                    className={`${styles.viewBtn} ${viewMode === 'full' ? styles.viewBtnActive : ''}`}
+                    onClick={() => handleSetViewMode('full')}
+                    title="Detailed Card View"
+                    aria-label="Detailed Card View"
+                  >
+                    <LayoutList size={16} />
+                  </button>
+                  <button
+                    className={`${styles.viewBtn} ${viewMode === 'compact' ? styles.viewBtnActive : ''}`}
+                    onClick={() => handleSetViewMode('compact')}
+                    title="Compact Row View"
+                    aria-label="Compact Row View"
+                  >
+                    <Rows size={16} />
+                  </button>
+                  <button
+                    className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
+                    onClick={() => handleSetViewMode('grid')}
+                    title="Grid Gallery View"
+                    aria-label="Grid Gallery View"
+                  >
+                    <LayoutGrid size={16} />
+                  </button>
+                </div>
                 <input
                   type="text"
                   placeholder="Search ideas..."
@@ -545,61 +462,117 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
               </div>
             </div>
             
-            {isItemsLoading ? (
+            {isLoading ? (
               <div className={styles.itemsLoading}>
                 <div className={styles.spinner} />
               </div>
-            ) : items.length > 0 ? (
-              groupedItems.length > 0 ? (
-                <div className={styles.groupsContainer}>
-                  {groupedItems.map((group) => (
-                    <div key={group.priority?.Id || 'uncategorized'} className={styles.priorityGroup}>
-                      <h4 className={styles.priorityGroupTitle}>
-                        {group.priority ? group.priority.Label : 'General Items'}
-                        <span className={styles.groupCount}>{group.items.length}</span>
-                      </h4>
-                      <div className={styles.itemsGrid}>
-                        {group.items.map((item) => (
-                          <div key={item.Id} id={`item-card-${item.Id}`}>
-                            <ItemCard
-                              item={item}
-                              priorityLabel={group.priority?.Label || undefined}
-                              isOwner={isOwner}
-                              isExpired={isExpired}
-                              canCollaborate={isOwner || wishlist.Role === 'collaborator'}
-                              allowGroupFunds={wishlist.AllowGroupFunds}
-                              onUpdate={loadData}
-                              onEdit={() => setEditingItem(item)}
-                              isTaggingModeActive={isTaggingModeActive}
-                              isTaggedSelection={taggedItemIds.includes(item.Id)}
-                              onSelectTag={() => handleSelectTag(item.Id)}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <Card className={styles.emptyItemsCard} padding="lg">
-                  <p>No items match your search "{searchQuery}".</p>
-                  <Button variant="secondary" size="sm" onClick={() => setSearchQuery('')}>
-                    Clear Search
-                  </Button>
-                </Card>
-              )
             ) : (
-              <Card className={styles.emptyItemsCard} padding="lg">
-                <p>This wishlist is currently empty.</p>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  leftIcon={<Plus size={14} />}
-                  onClick={() => setIsAddOpen(true)}
-                >
-                  Add the First Item
-                </Button>
-              </Card>
+              <>
+                {/* Grid View Detail Preview Panel */}
+                {viewMode === 'grid' && (
+                  selectedItem ? (
+                    <ItemShowcase
+                      key={`preview-${selectedItem.Id}`}
+                      item={selectedItem}
+                      priorityLabel={selectedItemPriorityLabel}
+                      isOwner={isOwner}
+                      isExpired={isExpired}
+                      canCollaborate={isOwner || wishlist.Role === 'collaborator'}
+                      allowGroupFunds={wishlist.AllowGroupFunds}
+                      onUpdate={loadData}
+                      onEdit={() => setEditingItem(selectedItem)}
+                      onClose={() => setSelectedItemId(null)}
+                      wishlistItems={items}
+                    />
+                  ) : (
+                    <div className={styles.gridPreviewPlaceholder}>
+                      <Eye size={20} className={styles.placeholderIcon} />
+                      <span>Select an item from the gallery below to view details & claims</span>
+                    </div>
+                  )
+                )}
+
+                {items.length > 0 ? (
+                  groupedItems.length > 0 ? (
+                    <div className={styles.groupsContainer}>
+                      {groupedItems.map((group) => (
+                        <div key={group.categoryKey} className={styles.priorityGroup}>
+                          <h4 className={styles.priorityGroupTitle}>
+                            {group.label}
+                            <span className={styles.groupCount}>{group.items.length}</span>
+                          </h4>
+                          <div className={
+                            viewMode === 'compact'
+                              ? styles.itemsCompactList
+                              : viewMode === 'grid'
+                                ? styles.itemsGridGallery
+                                : styles.itemsGrid
+                          }>
+                            {group.items.map((item) => (
+                              <div key={item.Id} id={`item-card-${item.Id}`}>
+                                <ItemCard
+                                  item={item}
+                                  priorityLabel={group.label}
+                                  isOwner={isOwner}
+                                  isExpired={isExpired}
+                                  canCollaborate={isOwner || wishlist.Role === 'collaborator'}
+                                  allowGroupFunds={wishlist.AllowGroupFunds}
+                                  onUpdate={loadData}
+                                  onEdit={() => setEditingItem(item)}
+                                  isTaggingModeActive={
+                                    (isAddOpen || !!editingItem)
+                                      ? (isLinkingModeActive && (!editingItem || item.Id !== editingItem.Id))
+                                      : isTaggingModeActive
+                                  }
+                                  isTaggedSelection={
+                                    (isAddOpen || !!editingItem)
+                                      ? linkedItemIds.includes(item.Id)
+                                      : taggedItemIds.includes(item.Id)
+                                  }
+                                  onSelectTag={() => {
+                                    if (isAddOpen || !!editingItem) {
+                                      if (editingItem && item.Id === editingItem.Id) return;
+                                      setLinkedItemIds((prev) =>
+                                        prev.includes(item.Id)
+                                          ? prev.filter((id) => id !== item.Id)
+                                          : [...prev, item.Id]
+                                      );
+                                    } else {
+                                      handleSelectTag(item.Id);
+                                    }
+                                  }}
+                                  viewMode={viewMode}
+                                  isSelected={selectedItemId === item.Id}
+                                  onSelect={() => setSelectedItemId(item.Id)}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <Card className={styles.emptyItemsCard} padding="lg">
+                      <p>No items match your search "{searchQuery}".</p>
+                      <Button variant="secondary" size="sm" onClick={() => setSearchQuery('')}>
+                        Clear Search
+                      </Button>
+                    </Card>
+                  )
+                ) : (
+                  <Card className={styles.emptyItemsCard} padding="lg">
+                    <p>This wishlist is currently empty.</p>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      leftIcon={<Plus size={14} />}
+                      onClick={() => setIsAddOpen(true)}
+                    >
+                      Add the First Item
+                    </Button>
+                  </Card>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -612,6 +585,16 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
         title="Comments"
         onClose={() => setIsCommentsOpen(false)}
         overflowVisible={true}
+        miniSidebar={
+          <MiniSidebar
+            items={displayItems}
+            selectedIds={taggedItemIds}
+            onRemoveId={(id) => setTaggedItemIds(taggedItemIds.filter((tid) => tid !== id))}
+            isActive={isTaggingModeActive}
+            position="right"
+            label="Tags"
+          />
+        }
       >
         <CommentSection
           listId={wishlist.Id}
@@ -639,5 +622,4 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
       </Modal>
     </div>
   );
-}
-
+};

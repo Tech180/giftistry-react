@@ -14,7 +14,7 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       setErrorMsg('Please enter a list title.');

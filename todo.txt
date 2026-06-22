@@ -1,70 +1,71 @@
 TODO:
 
 Sharing:
-    - implement better user sharing
+    - implement better user sharing (not done)
 
 Notifications:
-    - implement notifications
+    - implement notifications (not done)
 
 Comments:
-    - better comment section (move the comment message to the bottom)
-    - make hiding the default (no toggle)
+    - better comment section (move the comment message to the bottom) (done)
+    - make hiding the default (no toggle) (done)
         - should look like
         ------------------------
         --  Hidden from Owner --
         ------------------------
          comments text
-    - allow tagging of items in comments
-    - generally improve comment section
-    - make the comment section near disabled for the owner, they shouldn't need much access to that
-    - see when people are online
-    - have a toggle somewhere where they can allow the owner to see that message, but give the user a warning stating that the owner will be able to see this message like so...
+    - allow tagging of items in comments (done)
+    - generally improve comment section (done)
+    - see when people are online (partial)
+    - have a toggle somewhere where they can allow the owner to see that message, but give the user a warning stating that the owner will be able to see this message like so... (done)
                 ----------------------------------------------
                 |   {warning icon} Warning {warning icon}    |
                 | The owner will be able to see this message |
                 ----------------------------------------------
-    - Make sure when other people are viewing the discussion chat other people can see whos typing.
+    - Make sure when other people are viewing the discussion chat other people can see whos typing. (not done)
 
 Items:
-    - when claiming an item just have toggle and then a dropdown on that item saying are you sure and have another toggle for anonymous.
-    - owner should not be able to see claimed item until after the list is expired. Other viewers should be able to though
-    - when editing the item I want to see live changes (if those changes aren't saved then when exiting make sure the changes are reverted)
-    - on the item make the link only have the name of the site and the icon on the left, no price, no pointy arrow icon.
-    - the main price should go at the top right of the middle section for better clarity
-    - don't have a visit store button that is what the link is for (should be the claim button)
-    - where is says claims. maybe just get rid of that section and instead if being claimed by a user put it in the very bottom right in a small box like so. If the user name is too long then just use ellipsis. Otherwise go ahead and wrap the name around if it has a space in it or something.
+    - when claiming an item just have toggle and then a dropdown on that item saying are you sure and have another toggle for anonymous. (done)
+    - owner should not be able to see claimed item until after the list is expired. Other viewers should be able to though. (done)
+    - when editing the item I want to see live changes (if those changes aren't saved then when exiting make sure the changes are reverted) (check)
+    - on the item make the link only have the name of the site and the icon on the left, no price, no pointy arrow icon. (partial)
+    - the main price should go at the top right of the middle section for better clarity (done)
+    - don't have a visit store button that is what the link is for (should be the claim button) (done)
+    - where is says claims. maybe just get rid of that section and instead if being claimed by a user put it in the very bottom right in a small box like so. If the user name is too long then just use ellipsis. Otherwise go ahead and wrap the name around if it has a space in it or something. (partial)
         ------------
         |  Claimed |
         |    by    |
         |  {User}  |
         -----------|
-    - If an item is claimed, mark it as grayed out and unhoverable. (only for non-owners)
-    - when a non-owner is adding an item as a suggestion gift, the owner should never see it, they should have an option to let them see it after expiration, but automatically it should be a suggested gift and should show which user suggested it. If the suggested item, the item will carry over to the next list.
-    - When adding an item, the item name should be on it's own line (price and favorite hsould be on the same line)
-    - get rid of the place holder e.g.
-    - lower the amount of padding on "Add Item to Wishlist" section (vertically).
-    - when adding an item the show optional dropdown should only say "Custom Fields". And only when either a category was selected or the link was auto populated will optional fields like pants size, preferred color should show up (custom fields in the optional dropdown should always show up).
-    - the priority category section is messed up. first the section should be called Category, second the boxes go outside the box, 3rd for any category that (that) user creates they should be able to delete (the owner should not be able to see any other users category (unless the item is shown to them)). This should go for gift categories as well.
-    - MAKE SURE TO GET RID OF ALL THE e.g.'s
-    - in the Custom Fields section show the number of custom fields in the dropdown using the number bubble on the far right of that dropdown.
-    - for the description section make sure the document icon is in the vertical center of the box, and don't let the user close the description box so much when clicking and dragging it around
+    - If an item is claimed, mark it as grayed out and unhoverable. (only for non-owners) (redacted)
+    - when a non-owner is adding an item as a suggestion gift, the owner should never see it, they should have an option to let them see it after expiration, but automatically it should be a suggested gift and should show which user suggested it. If the suggested item, the item will carry over to the next list. (done)
+    - When adding an item, the item name should be on it's own line (price and favorite hsould be on the same line) (done)
+    - get rid of the place holder e.g. (done)
+    - lower the amount of padding on "Add Item to Wishlist" section (vertically). (done)
+    - when adding an item the show optional dropdown should only say "Custom Fields". And only when either a category was selected or the link was auto populated will optional fields like pants size, preferred color should show up (custom fields in the optional dropdown should always show up). (done)
+    - the priority category section is messed up. first the section should be called Category, second the boxes go outside the box, 3rd for any category that (that) user creates they should be able to delete (the owner should not be able to see any other users category (unless the item is shown to them)). This should go for gift categories as well. (unknown)
+    - MAKE SURE TO GET RID OF ALL THE e.g.'s (done)
+    - in the Custom Fields section show the number of custom fields in the dropdown using the number bubble on the far right of that dropdown. (done)
+    - for the description section make sure the document icon is in the vertical center of the box, and don't let the user close the description box so much when clicking and dragging it around (done)
+    - gift reliance, having the user be able to link that item to other items (that will highlight which ones it will choose and claim all at once and warn the user for each connected item and their info. Maybe like a popup menu that will show the warning, the items, and the rest of the information.)
+    - Multi-count items. For example: if there is an item that you want like 10 tshirts, when a user goes to claim multiple of that item they will be able to pick which (in this case) color they want and how many they want based on what the owner has put out there.
 
 
 Wishlist Page:
-    - don't show the gift ideas number beside gift ideas show that...
-    - on the page show the owner instead of owner's registry.
-    - Make sure that everything is the same font, check what fonts are used and inform the current user.
+    - don't show the gift ideas number beside gift ideas show that... (done)
+    - on the page show the owner instead of owner's registry. (partial)
+    - Make sure that everything is the same font, check what fonts are used and inform the current user. (done)
 
 Task Bar:
-    - on the dark/light toggle instead make it the color palette icon and put the night/dark icon on the top right but significanly smaller showing dark or light icons.
-    - make the gift box animation icon open like a gift box instead of go in and out.
+    - on the dark/light toggle instead make it the color palette icon and put the night/dark icon on the top right but significanly smaller showing dark or light icons. (done)
+    - make the gift box animation icon open like a gift box instead of go in and out. (done)
 
 AI:
-    - implement the ability to use locally hosted ai models using ollama using an api key in the backend to connect.
+    - implement the ability to use locally hosted ai models using ollama using an api key in the backend to connect. (not done)
 
 Dashboard Wishlists:
- - If a user is currently viewing that item show other users that they are viewing it (like an avatar). The owner should be able to see this functionality.
+ - If a user is currently viewing that item show other users that they are viewing it (like an avatar). The owner should be able to see this functionality. (not done)
 
 
 Login:
-  - implement two auth, recent login, and email authentication
+  - implement two auth, recent login, and email authentication (not done)

@@ -3,7 +3,7 @@
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  padding: 30px 20px;
+  padding: 10px 20px 20px 20px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -103,6 +103,7 @@
     opacity: 0;
     transform: translateY(-0.5rem);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -235,7 +236,8 @@
   color: var(--text-muted);
 }
 
-.itemsLoading, .loadingState {
+.itemsLoading,
+.loadingState {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -286,8 +288,13 @@
 }
 
 @keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
@@ -295,12 +302,12 @@
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .actions {
     width: 100%;
     flex-direction: column;
   }
-  
+
   .actions button {
     width: 100%;
   }
@@ -460,19 +467,19 @@
   overflow-x: hidden;
 }
 
-
-
 @media (min-width: 1200px) {
   .container.addOpen {
     margin-left: 200px;
     margin-right: auto;
     width: calc(100% - 200px);
   }
+
   .container.commentsOpen {
     margin-right: 200px;
     margin-left: auto;
     width: calc(100% - 200px);
   }
+
   .container.addOpen.commentsOpen {
     margin-left: 200px;
     margin-right: 200px;
@@ -505,10 +512,12 @@
     box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.4);
     transform: scale(1);
   }
+
   50% {
     box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
     transform: scale(1.02);
   }
+
   100% {
     box-shadow: 0 0 0 0px rgba(16, 185, 129, 0);
     transform: scale(1);
@@ -566,9 +575,139 @@
   .exportDropdownContainer {
     width: 100%;
   }
-  .exportDropdownContainer > button {
+
+  .exportDropdownContainer>button {
     width: 100%;
   }
 }
 
+.viewSwitcher {
+  display: flex;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2px;
+  gap: 2px;
+}
 
+.viewBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.viewBtn:hover {
+  color: var(--text);
+  background-color: var(--surface-hover);
+}
+
+.viewBtnActive {
+  color: var(--primary);
+  background-color: var(--surface-hover);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.itemsCompactList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.itemsGridGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+.gridPreviewContainer {
+  margin-bottom: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: morphUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(8px);
+}
+
+.gridPreviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border);
+}
+
+.gridPreviewTitle {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.closePreviewBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.closePreviewBtn:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.gridPreviewCardWrapper {
+  padding: 16px;
+}
+
+@keyframes morphUp {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.99);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.gridPreviewPlaceholder {
+  margin-bottom: 24px;
+  background: var(--surface);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 32px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  backdrop-filter: blur(8px);
+  height: 380px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.placeholderIcon {
+  color: var(--text-muted);
+  opacity: 0.5;
+}

@@ -30,7 +30,7 @@ export interface ItemCardTemplateProps {
   anonymous: boolean;
   setAnonymous: (val: boolean) => void;
   claimLoading: boolean;
-  handleClaim: (e?: React.FormEvent<HTMLFormElement>) => void;
+  handleClaim: (e?: React.SyntheticEvent<HTMLFormElement>) => void;
 
   // Delete State/Handlers
   showDeleteConfirm: boolean;
@@ -48,4 +48,9 @@ export interface ItemCardTemplateProps {
   isTaggingModeActive?: boolean;
   isTaggedSelection?: boolean;
   onSelectTag?: () => void;
+  viewMode?: 'full' | 'compact' | 'grid';
+  isSelected?: boolean;
+  onSelect?: () => void;
+  isExpanded?: boolean;
+  setIsExpanded?: (val: boolean) => void;
 }

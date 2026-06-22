@@ -17,11 +17,12 @@ export const itemsApi = {
     linkUrl?: string | null,
     price?: number | null,
     websiteName?: string | null,
-    category?: string | null
+    category?: string | null,
+    priority?: number | null
   ) =>
     apiClient.post<Item>(
       `/api/wishlists/${listId}/items`,
-      { name, description, priorityId, isHiddenIdea, linkUrl, price, websiteName, category },
+      { name, description, priorityId, isHiddenIdea, linkUrl, price, websiteName, category, priority },
       'Items'
     ),
 
@@ -46,10 +47,17 @@ export const itemsApi = {
       'Items'
     ),
 
-  claimItem: (itemId: string, amount?: number | null, claimedByName?: string | null, anonymous?: boolean) =>
+  claimItem: (
+    itemId: string,
+    amount?: number | null,
+    claimedByName?: string | null,
+    anonymous?: boolean,
+    quantity?: number,
+    selection?: string | null
+  ) =>
     apiClient.post<Claim>(
       `/api/items/${itemId}/claims`,
-      { amount, claimedByName, anonymous },
+      { amount, claimedByName, anonymous, quantity, selection },
       'Items'
     ),
 
@@ -61,11 +69,12 @@ export const itemsApi = {
     name: string,
     description?: string | null,
     priorityId?: string | null,
-    category?: string | null
+    category?: string | null,
+    priority?: number | null
   ) =>
     apiClient.put<Item>(
       `/api/items/${itemId}`,
-      { name, description, priorityId, category },
+      { name, description, priorityId, category, priority },
       'Items'
     ),
 

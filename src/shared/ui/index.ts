@@ -4,3 +4,4 @@ export * from './Card/card.component';
 export * from './Modal/modal.component';
 export * from './Navigation/navigation.component';
 export * from './Sidebar/sidebar.component';
+export * from './Sidebar/mini/mini-sidebar.component';

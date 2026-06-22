@@ -19,7 +19,7 @@ export interface CommentSectionTemplateProps {
   isRollover: boolean;
   setIsRollover: (val: boolean) => void;
   isSubmitLoading: boolean;
-  handleSubmit: (e: React.FormEvent) => void;
+  handleSubmit: (e: React.SyntheticEvent) => void;
   formatDate: (dateStr?: string) => string;
 
   // Phase 5 additions

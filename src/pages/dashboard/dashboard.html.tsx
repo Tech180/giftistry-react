@@ -1,86 +1,42 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React from 'react';
 import { Plus, Search, Sparkles, Users, Archive } from 'lucide-react';
-import { useWishlistController, WishlistCard, CreateListForm } from 'features/wishlists';
-import { useAuth } from 'app/providers/AuthContext';
+import { WishlistCard, CreateListForm } from 'features/wishlists';
 import { Button, Modal } from 'shared/ui';
-import styles from './Dashboard.module.css';
+import styles from './dashboard.module.css';
 
-export default function Dashboard() {
-  const { user } = useAuth();
-  const { wishlists, isLoading, error, fetchWishlists } = useWishlistController();
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'my-lists' | 'shared' | 'archive'>('my-lists');
-  const [searchQuery, setSearchQuery] = useState('');
+interface DashboardTemplateProps {
+  getGreeting: () => string;
+  isCreateOpen: boolean;
+  setIsCreateOpen: (open: boolean) => void;
+  activeTab: 'my-lists' | 'shared' | 'archive';
+  setActiveTab: (tab: 'my-lists' | 'shared' | 'archive') => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  myLists: any[];
+  sharedLists: any[];
+  archivedLists: any[];
+  currentLists: any[];
+  isLoading: boolean;
+  error: string | null;
+  handleCreateSuccess: () => void;
+}
 
-  useEffect(() => {
-    fetchWishlists();
-  }, [fetchWishlists]);
-
-  const handleCreateSuccess = () => {
-    setIsCreateOpen(false);
-    fetchWishlists();
-  };
-
-  const getGreeting = () => {
-    const hours = new Date().getHours();
-    const name = user?.FirstName || user?.Username || 'there';
-    if (hours < 12) return `Good morning, ${name}`;
-    if (hours < 18) return `Good afternoon, ${name}`;
-    return `Good evening, ${name}`;
-  };
-
-  const isExpired = (dateString: string | null) => {
-    if (!dateString) return false;
-    return new Date(dateString) < new Date();
-  };
-
-  // Group lists by context
-  const { myLists, sharedLists, archivedLists } = useMemo(() => {
-    const my: typeof wishlists = [];
-    const shared: typeof wishlists = [];
-    const archived: typeof wishlists = [];
-
-    wishlists.forEach((list) => {
-      if (isExpired(list.ExpiresAt)) {
-        archived.push(list);
-      } else if (list.Role === 'owner' || !list.Role) {
-        my.push(list);
-      } else {
-        shared.push(list);
-      }
-    });
-
-    return { myLists: my, sharedLists: shared, archivedLists: archived };
-  }, [wishlists]);
-
-  // Filter current list group by search query
-  const currentLists = useMemo(() => {
-    let lists = [];
-    switch (activeTab) {
-      case 'shared':
-        lists = sharedLists;
-        break;
-      case 'archive':
-        lists = archivedLists;
-        break;
-      case 'my-lists':
-      default:
-        lists = myLists;
-        break;
-    }
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      return lists.filter((list) =>
-        list.Title.toLowerCase().includes(query) ||
-        (list.Category && list.Category.toLowerCase().includes(query)) ||
-        (list.OwnerFirstName && list.OwnerFirstName.toLowerCase().includes(query))
-      );
-    }
-
-    return lists;
-  }, [activeTab, myLists, sharedLists, archivedLists, searchQuery]);
-
+export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
+  getGreeting,
+  isCreateOpen,
+  setIsCreateOpen,
+  activeTab,
+  setActiveTab,
+  searchQuery,
+  setSearchQuery,
+  myLists,
+  sharedLists,
+  archivedLists,
+  currentLists,
+  isLoading,
+  error,
+  handleCreateSuccess,
+}) => {
   return (
     <div className={`${styles.container} animate-fade-in`}>
       {/* Upper header segment */}
@@ -209,4 +165,4 @@ export default function Dashboard() {
       </Modal>
     </div>
   );
-}
+};

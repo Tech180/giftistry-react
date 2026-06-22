@@ -11,7 +11,7 @@ export const ShareForm: React.FC<ShareFormProps> = ({ listId, onSuccess }) => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!email.trim()) {
       setErrorMsg('Please enter an email address.');
