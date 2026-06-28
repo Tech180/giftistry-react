@@ -1,22 +1,22 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import styles from './wishlist-detail.module.css';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { wishlistsApi, Wishlist, Priority } from 'features/wishlists';
 import { useItemController, Item } from 'features/items';
-import { useAuth } from 'app/providers/AuthContext';
+import { useAuth } from 'app/providers/auth-context';
 import { Button } from 'shared/ui';
 import { WishlistDetailTemplate } from './wishlist-detail.html';
-import styles from './wishlist-detail.module.css';
 
 export default function WishlistDetail() {
   const { listId } = useParams<{ listId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [wishlist, setWishlist] = useState<Wishlist | null>(null);
   const [isWishlistLoading, setIsWishlistLoading] = useState(true);
   const [wishlistError, setWishlistError] = useState<string | null>(null);
-  
+
   const [priorities, setPriorities] = useState<Priority[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -30,16 +30,9 @@ export default function WishlistDetail() {
   const [taggedItemIds, setTaggedItemIds] = useState<string[]>([]);
   const [isLinkingModeActive, setIsLinkingModeActive] = useState(false);
   const [linkedItemIds, setLinkedItemIds] = useState<string[]>([]);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [tempTitle, setTempTitle] = useState('');
-  const [isEditingDate, setIsEditingDate] = useState(false);
-  const [tempDate, setTempDate] = useState('');
   const [isDeactivating, setIsDeactivating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'deactivate' | 'delete' | null>(null);
-
-  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
-  const exportRef = React.useRef<HTMLDivElement>(null);
 
   type ViewMode = 'full' | 'compact' | 'grid';
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -52,18 +45,6 @@ export default function WishlistDetail() {
     setViewMode(mode);
     localStorage.setItem('giftistry_view_mode', mode);
   };
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (exportRef.current && !exportRef.current.contains(event.target as Node)) {
-        setIsExportDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const handleSelectTag = useCallback((itemId: string) => {
     setTaggedItemIds((prev) =>
@@ -82,9 +63,6 @@ export default function WishlistDetail() {
       ]);
       setWishlist(wl);
       setPriorities(prio || []);
-      const expiresAtIso = wl.ExpiresAt ? new Date(wl.ExpiresAt).toISOString().split('T')[0] : '';
-      setTempDate(expiresAtIso);
-      setTempTitle(wl.Title);
       await fetchItems(listId);
     } catch (err) {
       setWishlistError(err instanceof Error ? err.message : 'Failed to load wishlist.');
@@ -133,13 +111,7 @@ export default function WishlistDetail() {
   const saveTitle = async (newTitle: string) => {
     if (!wishlist) return;
     const trimmed = newTitle.trim();
-    if (!trimmed) {
-      setTempTitle(wishlist.Title);
-      setIsEditingTitle(false);
-      return;
-    }
-    if (trimmed === wishlist.Title) {
-      setIsEditingTitle(false);
+    if (!trimmed || trimmed === wishlist.Title) {
       return;
     }
     try {
@@ -154,9 +126,7 @@ export default function WishlistDetail() {
       setWishlist(updated);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to update title');
-      setTempTitle(wishlist.Title);
-    } finally {
-      setIsEditingTitle(false);
+      throw err;
     }
   };
 
@@ -175,7 +145,6 @@ export default function WishlistDetail() {
     if (!wishlist) return;
     const prevDateStr = wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString().split('T')[0] : '';
     if (newDateStr === prevDateStr) {
-      setIsEditingDate(false);
       return;
     }
     try {
@@ -191,9 +160,7 @@ export default function WishlistDetail() {
       setWishlist(updated);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to update date');
-      setTempDate(prevDateStr);
-    } finally {
-      setIsEditingDate(false);
+      throw err;
     }
   };
 
@@ -216,7 +183,7 @@ export default function WishlistDetail() {
 
   const handleDeactivateConfirm = async () => {
     if (!wishlist) return;
-    
+
     setIsDeactivating(true);
     setConfirmAction(null);
     try {
@@ -279,7 +246,7 @@ export default function WishlistDetail() {
             const parsed = JSON.parse(item.Description);
             isFav = !!parsed.isFavorite;
           }
-        } catch (_) {}
+        } catch (_) { }
       }
       return isFav;
     };
@@ -397,21 +364,10 @@ export default function WishlistDetail() {
       isDeleting={isDeleting}
       handleDeactivateConfirm={handleDeactivateConfirm}
       handleDeleteConfirm={handleDeleteConfirm}
-      isEditingTitle={isEditingTitle}
-      setIsEditingTitle={setIsEditingTitle}
-      tempTitle={tempTitle}
-      setTempTitle={setTempTitle}
       saveTitle={saveTitle}
-      isEditingDate={isEditingDate}
-      setIsEditingDate={setIsEditingDate}
-      tempDate={tempDate}
-      setTempDate={setTempDate}
       saveDate={saveDate}
       toggleRevealSuggestions={toggleRevealSuggestions}
       formatDate={formatDate}
-      exportRef={exportRef}
-      isExportDropdownOpen={isExportDropdownOpen}
-      setIsExportDropdownOpen={setIsExportDropdownOpen}
       isCommentsOpen={isCommentsOpen}
       setIsCommentsOpen={setIsCommentsOpen}
       isShareOpen={isShareOpen}

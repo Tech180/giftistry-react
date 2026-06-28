@@ -15,8 +15,9 @@ export class ApiError extends Error {
 export type ResponseInterceptor = (response: Response, json: any) => void | Promise<void>;
 
 const responseInterceptors: ResponseInterceptor[] = [];
+const activeGetRequests = new Map<string, Promise<any>>();
 
-async function request<T>(
+async function executeRequest<T>(
   path: string,
   options: RequestInit = {},
   wrapNamespace?: string
@@ -92,9 +93,45 @@ async function request<T>(
   }
 }
 
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+  wrapNamespace?: string
+): Promise<T> {
+  const method = options.method || 'GET';
+
+  if (method === 'GET') {
+    const token = localStorage.getItem('giftistry-token');
+    const cacheKey = `${token || ''}:${path}`;
+
+    if (activeGetRequests.has(cacheKey)) {
+      return activeGetRequests.get(cacheKey)!;
+    }
+
+    const promise = (async () => {
+      try {
+        return await executeRequest<T>(path, options, wrapNamespace);
+      } finally {
+        activeGetRequests.delete(cacheKey);
+      }
+    })();
+
+    activeGetRequests.set(cacheKey, promise);
+    return promise;
+  }
+
+  return executeRequest<T>(path, options, wrapNamespace);
+}
+
 export const apiClient = {
   addResponseInterceptor: (interceptor: ResponseInterceptor) => {
     responseInterceptors.push(interceptor);
+    return () => {
+      const index = responseInterceptors.indexOf(interceptor);
+      if (index !== -1) {
+        responseInterceptors.splice(index, 1);
+      }
+    };
   },
 
   get: <T>(path: string, options?: RequestInit) =>

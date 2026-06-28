@@ -15,6 +15,9 @@ export const authApi = {
   getMe: () =>
     apiClient.get<{ success: boolean; User: ApiUser }>('/api/auth/me'),
 
-  updateProfile: (username?: string, firstName?: string, lastName?: string) =>
-    apiClient.put<{ success: boolean; User: ApiUser }>('/api/auth/profile', { username, firstName, lastName }, 'Auth'),
+  updateProfile: (username?: string, firstName?: string, lastName?: string, bio?: string, theme?: string, avatar?: string | null) =>
+    apiClient.put<{ success: boolean; User: ApiUser }>('/api/auth/profile', { username, firstName, lastName, bio, theme, avatar }, 'Auth'),
+
+  getUserPreview: (userId: string) =>
+    apiClient.get<{ success: boolean; User: ApiUser }>(`/api/users/${userId}/preview`),
 };

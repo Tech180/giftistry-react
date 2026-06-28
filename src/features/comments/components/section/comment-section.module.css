@@ -32,9 +32,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error);
   padding: 10px 12px;
   border-radius: var(--radius);
   font-size: 0.8125rem;
@@ -89,10 +89,10 @@
 .onlineDot {
   width: 6px;
   height: 6px;
-  background-color: #10b981;
+  background-color: var(--success);
   border-radius: 50%;
   display: inline-block;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 0 2px var(--success-border);
 }
 
 .onlineUsersList {

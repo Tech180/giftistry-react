@@ -1,25 +1,12 @@
 import React from 'react';
-import { Plus, Search, Sparkles, Users, Archive } from 'lucide-react';
+import { Plus, Sparkles, Users, Archive } from 'lucide-react';
 import { WishlistCard, CreateListForm } from 'features/wishlists';
 import { Button, Modal } from 'shared/ui';
 import styles from './dashboard.module.css';
 
-interface DashboardTemplateProps {
-  getGreeting: () => string;
-  isCreateOpen: boolean;
-  setIsCreateOpen: (open: boolean) => void;
-  activeTab: 'my-lists' | 'shared' | 'archive';
-  setActiveTab: (tab: 'my-lists' | 'shared' | 'archive') => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  myLists: any[];
-  sharedLists: any[];
-  archivedLists: any[];
-  currentLists: any[];
-  isLoading: boolean;
-  error: string | null;
-  handleCreateSuccess: () => void;
-}
+import { DashboardTemplateProps } from './interfaces/dashboard-template-props.interface';
+import { TabBar } from './components/tab-bar/tab-bar.component';
+import { SearchBar } from './components/search-bar/search-bar.component';
 
 export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
   getGreeting,
@@ -60,47 +47,20 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
 
       {/* Segmented Controls & Search Row */}
       <div className={styles.controlsRow}>
-        <div className={styles.tabsContainer}>
-          <button
-            onClick={() => setActiveTab('my-lists')}
-            className={`${styles.tabButton} ${activeTab === 'my-lists' ? styles.activeTabButton : ''}`}
-          >
-            My Wishlists
-            <span className={`${styles.tabCount} ${activeTab === 'my-lists' ? styles.activeTabCount : styles.inactiveTabCount}`}>
-              {myLists.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab('shared')}
-            className={`${styles.tabButton} ${activeTab === 'shared' ? styles.activeTabButton : ''}`}
-          >
-            Shared With Me
-            <span className={`${styles.tabCount} ${activeTab === 'shared' ? styles.activeTabCount : styles.inactiveTabCount}`}>
-              {sharedLists.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab('archive')}
-            className={`${styles.tabButton} ${activeTab === 'archive' ? styles.activeTabButton : ''}`}
-          >
-            Archive
-            <span className={`${styles.tabCount} ${activeTab === 'archive' ? styles.activeTabCount : styles.inactiveTabCount}`}>
-              {archivedLists.length}
-            </span>
-          </button>
-        </div>
+        <TabBar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          myListsCount={myLists.length}
+          sharedListsCount={sharedLists.length}
+          archivedListsCount={archivedLists.length}
+        />
 
-        <div className={styles.searchContainer}>
-          <Search size={16} className={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="Search wishlists..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={styles.searchInput}
-          />
-        </div>
+        <SearchBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
       </div>
+
 
       {/* Wishlist grid Section */}
       <div className={styles.gridSection}>

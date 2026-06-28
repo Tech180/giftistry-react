@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useWishlistController } from 'features/wishlists';
-import { useAuth } from 'app/providers/AuthContext';
+import { useAuth } from 'app/providers/auth-context';
 import { DashboardTemplate } from './dashboard.html';
 
 export default function Dashboard() {

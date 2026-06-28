@@ -30,7 +30,7 @@
   width: 20px;
   padding: 4px 8px 4px 0;
   margin-right: 8px;
-  border-right: 1.5px solid rgba(128, 128, 128, 0.35);
+  border-right: 1.5px solid var(--border);
   align-self: stretch;
   box-sizing: border-box;
 }
@@ -58,8 +58,8 @@
 }
 
 .commentDeleteBtnLeft:hover {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: var(--error-bg);
+  color: var(--error);
 }
 
 .commentMainContent {
@@ -80,6 +80,14 @@
   font-size: 0.775rem;
   font-weight: 600;
   color: var(--text);
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.author:hover {
+  color: var(--primary);
+  border-color: var(--primary);
 }
 
 .date {
@@ -111,7 +119,7 @@
   gap: 4px;
   margin-left: 12px;
   padding-left: 8px;
-  border-left: 1.5px solid rgba(128, 128, 128, 0.35);
+  border-left: 1.5px solid var(--border);
   align-self: stretch;
   justify-content: center;
   flex-shrink: 0;
@@ -143,7 +151,7 @@
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid var(--border);
-  background-color: rgba(239, 68, 68, 0.03);
+  background-color: var(--error-bg);
   padding: 8px 12px;
   overflow: hidden;
   animation: slideDownConfirm 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -160,8 +168,8 @@
 }
 
 .deleteConfirmBtn {
-  background-color: #ef4444;
-  color: #ffffff;
+  background-color: var(--error);
+  color: var(--primary-text);
   border: none;
   padding: 3px 8px;
   font-size: 0.75rem;
@@ -172,7 +180,8 @@
 }
 
 .deleteConfirmBtn:hover {
-  background-color: #dc2626;
+  background-color: var(--error);
+  filter: brightness(0.9);
 }
 
 .deleteCancelBtn {

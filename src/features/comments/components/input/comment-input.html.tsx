@@ -1,25 +1,7 @@
 import React from 'react';
 import { AlertCircle, Tag, Check, Send, Eye, EyeOff } from 'lucide-react';
-import { Item } from '../../../items/interfaces/item.interface';
+import { CommentInputTemplateProps } from '../../interfaces/comment-input-template-props.interface';
 import styles from './comment-input.module.css';
-
-interface CommentInputTemplateProps {
-  isOwner: boolean;
-  isOwnerVisible: boolean;
-  setIsOwnerVisible: (visible: boolean) => void;
-  isRollover: boolean;
-  setIsRollover: (rollover: boolean) => void;
-  content: string;
-  setContent: (content: string) => void;
-  commenterName: string;
-  setCommenterName: (name: string) => void;
-  isSubmitLoading: boolean;
-  handleSubmit: (e: React.SyntheticEvent) => void;
-  items: Item[];
-  isTaggingModeActive: boolean;
-  setIsTaggingModeActive: (active: boolean) => void;
-  typingUsers: string[];
-}
 
 export const CommentInputTemplate: React.FC<CommentInputTemplateProps> = ({
   isOwner,
@@ -37,6 +19,8 @@ export const CommentInputTemplate: React.FC<CommentInputTemplateProps> = ({
   isTaggingModeActive,
   setIsTaggingModeActive,
   typingUsers,
+  isAnonymous,
+  setIsAnonymous,
 }) => {
   return (
     <>
@@ -73,41 +57,31 @@ export const CommentInputTemplate: React.FC<CommentInputTemplateProps> = ({
         </div>
       ) : (
         <form onSubmit={handleSubmit} className={styles.chatForm}>
-          {/* Meta toolbar (Posting As, Tag Item) */}
+          {/* Meta toolbar (Posting As, Anonymous Toggle) */}
           <div className={styles.chatMetaRow}>
             <div className={styles.chatPostingAs}>
-              <span>Post as:</span>
-              <input
-                type="text"
-                value={commenterName}
-                onChange={(e) => setCommenterName(e.target.value)}
-                className={styles.chatNameInput}
-                placeholder="Your name"
-              />
+              <strong className={`${styles.chatNameValue} ${isAnonymous ? styles.isAnonymous : ''}`}>
+                {commenterName}
+              </strong>
             </div>
 
-            {items && items.length > 0 && (
-              <div className={styles.chatTagButtonWrapper}>
-                <button
-                  type="button"
-                  onClick={() => setIsTaggingModeActive(!isTaggingModeActive)}
-                  className={`${styles.chatTagIconBtn} ${isTaggingModeActive ? styles.active : ''}`}
-                  title={isTaggingModeActive ? "Click checkmark to finish tagging" : "Tag wishlist items"}
-                >
-                  <Tag size={16} />
-                </button>
-                {isTaggingModeActive && (
-                  <button
-                    type="button"
-                    onClick={() => setIsTaggingModeActive(false)}
-                    className={styles.chatTagCheckBtn}
-                    title="Complete tagging"
-                  >
-                    <Check size={16} />
-                  </button>
-                )}
-              </div>
-            )}
+            <div className={styles.chatMetaRight}>
+              {/* Anonymous Toggle Pill */}
+              <label 
+                className={`${styles.anonymousToggleWrapper} ${isAnonymous ? styles.isActive : ''}`}
+                title="Post Anonymously"
+              >
+                <div className={styles.toggleSwitch}>
+                  <input 
+                    type="checkbox" 
+                    checked={isAnonymous}
+                    onChange={(e) => setIsAnonymous(e.target.checked)}
+                  />
+                  <span className={styles.toggleSlider}></span>
+                </div>
+                <span className={styles.toggleLabel}>Anon</span>
+              </label>
+            </div>
           </div>
 
           {/* Main text message box */}
@@ -136,25 +110,56 @@ export const CommentInputTemplate: React.FC<CommentInputTemplateProps> = ({
             </button>
           </div>
 
-          {/* Bottom options row (Visible to owner, Rollover, Surprise info) */}
+          {/* Bottom options row (Tag toggle, Visible to owner, Rollover, Surprise info) */}
           <div className={styles.chatBottomRow}>
-            <div className={styles.chatToggles}>
-              <label className={styles.chatToggleLabel}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {items && items.length > 0 && (
+                <div className={styles.chatTagButtonWrapper}>
+                  <button
+                    type="button"
+                    onClick={() => setIsTaggingModeActive(!isTaggingModeActive)}
+                    className={`${styles.chatTagIconBtn} ${isTaggingModeActive ? styles.active : ''}`}
+                    title={isTaggingModeActive ? "Click checkmark to finish tagging" : "Tag wishlist items"}
+                  >
+                    <Tag size={14} />
+                  </button>
+                  {isTaggingModeActive && (
+                    <button
+                      type="button"
+                      onClick={() => setIsTaggingModeActive(false)}
+                      className={styles.chatTagCheckBtn}
+                      title="Complete tagging"
+                    >
+                      <Check size={14} />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Rock Tumbling Rollover Toggle */}
+              <label
+                className={styles.rockToggleWrapper}
+                title="Toggle Rollover"
+              >
                 <input
                   type="checkbox"
                   checked={isRollover}
                   onChange={(e) => setIsRollover(e.target.checked)}
-                  className={styles.chatCheckbox}
                 />
-                <span>Rollover</span>
+                <div className={styles.rockToggleTrack}>
+                  <div className={styles.rockTumbler}>
+                    <div className={styles.rockTexture} />
+                  </div>
+                </div>
+                <span className={styles.rockToggleLabel}>Rollover</span>
               </label>
             </div>
 
+            {/* Owner Visibility Toggle Button */}
             <button
               type="button"
               onClick={() => setIsOwnerVisible(!isOwnerVisible)}
-              className={`${styles.chatStatusBadge} ${isOwnerVisible ? styles.visibleToOwner : styles.invisibleToOwner
-                }`}
+              className={`${styles.chatStatusBadge} ${isOwnerVisible ? styles.visibleToOwner : styles.invisibleToOwner}`}
               title="Toggle owner visibility"
             >
               {isOwnerVisible ? (

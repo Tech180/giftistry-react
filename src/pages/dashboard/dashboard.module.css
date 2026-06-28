@@ -12,28 +12,28 @@
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border);
   padding-bottom: 24px;
 }
 
 .greeting {
   font-size: 1.875rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text);
   margin: 0;
   letter-spacing: -0.02em;
 }
 
 .subtitle {
   font-size: 0.9375rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   margin-top: 6px;
 }
 
 .errorBanner {
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error);
   padding: 12px 16px;
   border-radius: 8px;
   font-size: 0.875rem;
@@ -45,94 +45,6 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-}
-
-.tabsContainer {
-  display: flex;
-  padding: 4px;
-  background-color: #151516;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-}
-
-.tabButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: 1px solid transparent;
-  background-color: transparent;
-  color: #a1a1aa;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tabButton:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.03);
-}
-
-.activeTabButton {
-  background-color: #232326;
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.tabCount {
-  padding: 2px 6px;
-  border-radius: 9999px;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.activeTabCount {
-  background-color: rgba(129, 140, 248, 0.2);
-  color: #a5b4fc;
-}
-
-.inactiveTabCount {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #71717a;
-}
-
-.searchContainer {
-  position: relative;
-  max-width: 280px;
-  flex: 1;
-}
-
-.searchIcon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #71717a;
-  transition: color 0.2s ease;
-  pointer-events: none;
-}
-
-.searchContainer:focus-within .searchIcon {
-  color: #818cf8;
-}
-
-.searchInput {
-  width: 100%;
-  background-color: #151516;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 8px 12px 8px 36px;
-  font-size: 0.875rem;
-  color: #ffffff;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.searchInput:focus {
-  border-color: #818cf8;
 }
 
 .gridSection {
@@ -147,8 +59,8 @@
 
 .skeletonCard {
   height: 180px;
-  background-color: #151516;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
   position: relative;
   overflow: hidden;
@@ -164,7 +76,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.03),
+    rgba(var(--primary-rgb), 0.05),
     transparent
   );
   transform: translateX(-100%);
@@ -182,16 +94,16 @@
   justify-content: center;
   padding: 80px 20px;
   text-align: center;
-  border: 1px dashed rgba(255, 255, 255, 0.05);
+  border: 1px dashed var(--border);
   border-radius: 16px;
-  background-color: #151516;
+  background-color: var(--surface);
 }
 
 .emptyIconBox {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--surface-hover);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -199,19 +111,19 @@
 }
 
 .emptyIcon {
-  color: #818cf8;
+  color: var(--primary);
 }
 
 .emptyTitle {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text);
   margin-bottom: 8px;
 }
 
 .emptyDesc {
   font-size: 0.875rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   max-width: 380px;
   margin-bottom: 24px;
   line-height: 1.5;
@@ -234,14 +146,6 @@
   .controlsRow {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .tabsContainer {
-    flex-direction: column;
-  }
-
-  .searchContainer {
-    max-width: 100%;
   }
 
   .grid, .loadingGrid {

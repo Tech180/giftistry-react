@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { itemsApi } from '../../api/items.api';
-import { useAuth } from 'app/providers/AuthContext';
+import { useAuth } from 'app/providers/auth-context';
 import { ItemCardProps } from '../../interfaces/item-card-props.interface';
 import { ItemCardTemplate } from './item-card.html';
 

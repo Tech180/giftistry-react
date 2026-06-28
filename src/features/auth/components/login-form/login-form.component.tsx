@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from 'app/providers/AuthContext';
+import { useAuth } from 'app/providers/auth-context';
 import { LoginFormTemplate } from './login-form.html';
 
 export const LoginForm: React.FC = () => {

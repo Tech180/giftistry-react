@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from 'app/providers/AuthContext';
+import { useAuth } from 'app/providers/auth-context';
 import { WishlistCardProps } from '../../interfaces/wishlist-card-props.interface';
 import { WishlistCardTemplate } from './wishlist-card.html';
 import styles from './wishlist-card.module.css';

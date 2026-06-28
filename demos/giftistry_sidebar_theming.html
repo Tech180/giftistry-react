@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default" data-appearance="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giftistry - Settings</title>
+  
+  <!-- Outfit & Inter Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ==========================================================================
+       1. CORE DESIGN SYSTEM & THEME TOKENS
+       ========================================================================== */
+    :root {
+      --error: #ef4444;
+      --error-rgb: 239, 68, 68;
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: rgba(239, 68, 68, 0.2);
+      
+      --success: #10b981;
+      --success-rgb: 16, 185, 129;
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --success-border: rgba(16, 185, 129, 0.2);
+
+      --backdrop-bg: rgba(0, 0, 0, 0.6);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.4);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.24);
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+      
+      --radius: 12px;
+      --sidebar-width: 260px;
+      --navbar-height: 64px;
+    }
+
+    /* --- THEMES (DARK MODE) --- */
+    [data-appearance="dark"][data-theme="default"] {
+      --primary: #5e6ad2; --primary-hover: #4d59c2; --primary-rgb: 94, 106, 210; --primary-text: #ffffff;
+      --bg: #0f0f10; --surface: #151516; --surface-hover: #1e1e20; --text: #f7f8f8; --text-muted: #8a8f98;
+      --border: #262629; --surface-glass: rgba(21, 21, 22, 0.7);
+    }
+    [data-appearance="dark"][data-theme="neon"] {
+      --primary: #ff007f; --primary-hover: #e0006c; --primary-rgb: 255, 0, 127; --primary-text: #ffffff;
+      --bg: #0d021a; --surface: #17072e; --surface-hover: #260e47; --text: #f7f8f8; --text-muted: #a372eb;
+      --border: #38126b; --surface-glass: rgba(23, 7, 46, 0.7);
+    }
+    [data-appearance="dark"][data-theme="cyberpunk"] {
+      --primary: #fcee0a; --primary-hover: #d2c700; --primary-rgb: 252, 238, 10; --primary-text: #000000;
+      --bg: #000411; --surface: #080f26; --surface-hover: #0d1b40; --text: #f7f8f8; --text-muted: #5e83a6;
+      --border: #142861; --surface-glass: rgba(8, 15, 38, 0.7);
+    }
+    [data-appearance="dark"][data-theme="mystic"] {
+      --primary: #2d7a4d; --primary-hover: #1e5c36; --primary-rgb: 45, 122, 77; --primary-text: #ffffff;
+      --bg: #0f1c13; --surface: #162a1d; --surface-hover: #223f2c; --text: #e1efe6; --text-muted: #7a9c84;
+      --border: #234530; --surface-glass: rgba(22, 42, 29, 0.7);
+    }
+    [data-appearance="dark"][data-theme="burnt-forest"] {
+      --primary: #ff5500; --primary-hover: #cc4400; --primary-rgb: 255, 85, 0; --primary-text: #ffffff;
+      --bg: #0a0705; --surface: #140e0a; --surface-hover: #1e150f; --text: #f0e6df; --text-muted: #a68c7c;
+      --border: #2b1d14; --surface-glass: rgba(20, 14, 10, 0.7);
+    }
+
+    /* --- THEMES (LIGHT MODE) --- */
+    [data-appearance="light"] {
+      --backdrop-bg: rgba(0, 0, 0, 0.3); --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05); --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    }
+    [data-appearance="light"][data-theme="default"] {
+      --primary: #5e6ad2; --primary-hover: #4d59c2; --primary-rgb: 94, 106, 210; --primary-text: #ffffff;
+      --bg: #fafafa; --surface: #ffffff; --surface-hover: #f3f3f4; --text: #111111; --text-muted: #6b6b7b;
+      --border: #e4e4e7; --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="neon"] {
+      --primary: #ff007f; --primary-hover: #e0006c; --primary-rgb: 255, 0, 127; --primary-text: #ffffff;
+      --bg: #fcf8fd; --surface: #ffffff; --surface-hover: #f6ecf9; --text: #2c0054; --text-muted: #7b688c;
+      --border: #f0d6f5; --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+
+    /* --- CUSTOM OVERRIDE THEME --- */
+    [data-theme="custom"] {
+      /* Values injected via JS */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; font-weight: 600; letter-spacing: -0.02em; }
+
+    /* Glassmorphism helpers */
+    .glass { background: var(--surface-glass); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+    /* Animations */
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    .topbar {
+      height: var(--navbar-height);
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .nav-left, .nav-right { display: flex; align-items: center; gap: 16px; }
+
+    .logo {
+      display: flex; align-items: center; gap: 8px; text-decoration: none;
+      color: var(--text); font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.25rem;
+    }
+    .logoIcon { color: var(--primary); display: inline-block; overflow: visible; animation: logoGentlyRock 6s infinite ease-in-out; }
+    .giftLid { transform-origin: 4px 10px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); animation: giftLidBounce 6s infinite ease-in-out; }
+    @keyframes logoGentlyRock { 0%, 80%, 100% { transform: rotate(0deg); } 85% { transform: rotate(-3deg); } 90% { transform: rotate(3deg); } 95% { transform: rotate(-1deg); } }
+    @keyframes giftLidBounce { 0%, 80%, 100% { transform: translateY(0) rotate(0deg); } 85%, 95% { transform: translateY(-3px) rotate(-6deg); } 90% { transform: translateY(-4px) rotate(-8deg); } }
+
+    .navLinks { display: flex; align-items: center; gap: 16px; margin-left: 24px; }
+    .navLink { font-size: 0.875rem; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.15s ease; }
+    .navLink:hover { color: var(--text); }
+
+    /* Search Input */
+    .search-container { flex: 1; margin: 0 2rem; position: relative; max-width: 600px; }
+    .search-input-wrapper { display: flex; align-items: center; background-color: var(--surface-hover); border: 1px solid var(--border); padding: 6px 16px; border-radius: 8px; transition: all 0.2s ease; width: 100%; }
+    .search-input-wrapper:focus-within { border-color: var(--primary); background-color: var(--surface); box-shadow: 0 0 0 1px var(--primary); }
+    .search-icon { color: var(--text-muted); margin-right: 10px; flex-shrink: 0; }
+    .search-input { flex: 1; background: transparent; border: none; outline: none; font-size: 0.875rem; color: var(--text); font-family: inherit; }
+    .search-input::placeholder { color: var(--text-muted); }
+    
+    /* Topbar Right Icons & Profile */
+    .navButton { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius); transition: all 0.2s ease; }
+    .navButton:hover { background-color: var(--surface-hover); color: var(--text); }
+    
+    .dropdownContainer { position: relative; display: inline-block; }
+    .profileTrigger { display: flex; align-items: center; gap: 8px; background: transparent; border: none; cursor: pointer; padding: 4px 8px 4px 4px; border-radius: 24px; transition: background-color 0.2s ease; }
+    .profileTrigger:hover { background-color: var(--surface-hover); }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background-color: var(--primary); color: var(--primary-text); font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .chevron { color: var(--text-muted); }
+
+    /* Dropdown Menus */
+    .dropdownMenu { position: absolute; right: 0; top: calc(100% + 8px); width: 220px; background-color: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 8px; z-index: 101; display: none; }
+    .menuHeader { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); padding: 8px 10px; font-weight: 600; }
+    .menuItem { display: flex; align-items: center; width: 100%; background: transparent; border: none; padding: 8px 10px; font-size: 0.875rem; color: var(--text); text-align: left; border-radius: 6px; cursor: pointer; transition: all 0.15s ease; font-family: inherit; }
+    .menuItem:hover { background-color: var(--surface-hover); }
+    .menuItem.activeItem { color: var(--primary); font-weight: 500; background-color: rgba(var(--primary-rgb), 0.05); }
+    .menuDivider { height: 1px; background-color: var(--border); margin: 6px 0; }
+    .itemIcon { margin-right: 10px; color: var(--text-muted); width: 16px; height: 16px; }
+    
+    .userInfo { padding: 10px; }
+    .userName { font-size: 0.9375rem; font-weight: 600; color: var(--text); }
+    .userEmail { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+    .app-body {
+      display: flex;
+      flex: 1;
+      position: relative;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      position: fixed;
+      left: 0;
+      top: var(--navbar-height);
+      bottom: 0;
+      background-color: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .sidebar-nav { padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
+    .nav-section-title { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); padding: 16px 12px 8px; font-weight: 600; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      border-radius: 8px; color: var(--text-muted); font-weight: 500; font-size: 0.875rem;
+      cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; transition: all 0.2s ease;
+    }
+    .nav-item:hover { background-color: var(--surface-hover); color: var(--text); }
+    .nav-item.active { background-color: rgba(var(--primary-rgb), 0.1); color: var(--primary); }
+    .nav-item.active .nav-icon { color: var(--primary); }
+    .nav-icon { color: var(--text-muted); transition: color 0.2s ease; width: 18px; height: 18px; }
+
+    .nav-item.danger-text .nav-icon { color: var(--error); }
+    .nav-item.danger-text:hover { background-color: var(--error-bg); color: var(--error); }
+
+    /* Main Content Area */
+    .main-wrapper {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 48px 64px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: calc(100% - var(--sidebar-width));
+    }
+
+    .tab-pane {
+      display: none;
+      width: 100%;
+      max-width: 1000px;
+      animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .tab-pane.active { display: block; }
+
+    .pageHeader { margin-bottom: 40px; border-bottom: 1px solid var(--border); padding-bottom: 24px; }
+    .pageTitle { font-size: 2.25rem; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.02em; }
+    .pageSubtitle { font-size: 1rem; color: var(--text-muted); }
+
+    .glassCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-sm); }
+    
+    .inputContainer { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+    .inputLabel { font-size: 0.875rem; font-weight: 500; color: var(--text); }
+    .inputField {
+      width: 100%; font-family: inherit; font-size: 0.9375rem; padding: 10px 14px;
+      border-radius: 8px; background-color: var(--bg); border: 1px solid var(--border);
+      color: var(--text); outline: none; transition: all 0.2s;
+    }
+    .inputField:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15); }
+    .inputField:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; font-family: inherit; font-weight: 500; border-radius: 8px; cursor: pointer; border: 1px solid transparent; gap: 8px; transition: all 0.2s; outline: none; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btnMd { padding: 10px 20px; font-size: 0.9375rem; }
+    .btnPrimary { background-color: var(--primary); color: var(--primary-text); border-color: transparent; }
+    .btnPrimary:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-1px); }
+    .btnOutline { background-color: transparent; color: var(--text); border-color: var(--border); }
+    .btnOutline:hover:not(:disabled) { background-color: var(--surface-hover); }
+
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--surface-hover); transition: .4s; border-radius: 24px; border: 1px solid var(--border); }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--text-muted); transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #10b981; border-color: #10b981; }
+    input:checked + .slider:before { transform: translateX(20px); background-color: #fff; }
+
+    .spinner { width: 16px; height: 16px; border: 2px solid currentColor; border-bottom-color: transparent; border-radius: 50%; display: none; animation: rotation 0.6s linear infinite; }
+    @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Custom Toast System */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+    .toast {
+      background-color: var(--surface); color: var(--text); padding: 14px 20px; border-radius: 8px;
+      border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px;
+      font-size: 0.875rem; font-weight: 500; transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .toast.show { transform: translateX(0); }
+    .toast-icon.success { color: var(--success); }
+    .toast-icon.error { color: var(--error); }
+    .toast-icon.info { color: var(--primary); }
+
+    .theming-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 1024px) { .theming-grid { grid-template-columns: 1fr 1fr; } }
+
+    /* Custom Color Picker Styles */
+    .theme-group { margin-bottom: 32px; }
+    .theme-group:last-child { margin-bottom: 0; }
+    .theme-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .theme-row:last-child { border-bottom: none; }
+    
+    .color-control { display: flex; align-items: center; gap: 12px; }
+    .hex-input-wrapper { position: relative; display: flex; align-items: center; }
+    .hex-input {
+      width: 85px; padding: 6px 8px; font-family: 'Fira Code', monospace; font-size: 0.75rem;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); text-transform: uppercase; text-align: center;
+    }
+    .hex-input:focus { border-color: var(--primary); outline: none; }
+    
+    .custom-picker-wrapper {
+      position: relative; width: 32px; height: 32px; border-radius: 50%; overflow: hidden;
+      border: 2px solid var(--border); box-shadow: var(--shadow-sm); cursor: pointer; flex-shrink: 0;
+    }
+    .custom-picker-wrapper input[type="color"] {
+      position: absolute; top: -10px; left: -10px; width: 50px; height: 50px; cursor: pointer; border: none; padding: 0;
+    }
+
+    /* JSON Editor Styles */
+    .json-editor-container { display: flex; flex-direction: column; height: 100%; min-height: 400px; }
+    .json-textarea {
+      flex: 1; width: 100%; background-color: #0d0d0f; color: #34d399; font-family: 'Fira Code', monospace;
+      font-size: 0.8125rem; padding: 20px; border-radius: 12px; border: 1px solid var(--border);
+      resize: none; outline: none; line-height: 1.6;
+    }
+    .json-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1); }
+    .json-textarea.error { border-color: var(--error); color: #f87171; }
+
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="nav-left">
+      <a href="#" class="logo">
+        <svg class="logoIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <g class="giftLid">
+            <path d="M4 7h16v3H4z" />
+            <path d="M12 7c-1.5-2.5-4-2.5-4 0 0 1.5 2.5 2.5 4 0z" />
+            <path d="M12 7c1.5-2.5 4-2.5 4 0 0 1.5-2.5 2.5-4 0z" />
+          </g>
+          <path d="M5 10h14v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V10z" />
+          <path d="M12 10v12" />
+        </svg>
+        <span class="logoText">Giftistry</span>
+      </a>
+      <div class="navLinks">
+        <a href="#" class="navLink">Dashboard</a>
+      </div>
+    </div>
+
+    <div class="search-container" id="nav-search-ref">
+      <div class="search-input-wrapper">
+        <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
+        <input type="text" id="nav-search-input" placeholder="Search wishlists... (⌘K)" class="search-input">
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <!-- Dark/Light Mode Quick Toggle -->
+      <button class="navButton" id="quick-theme-toggle" onclick="toggleAppearanceMode()" aria-label="Toggle Light/Dark Mode">
+        <i data-lucide="moon" id="quick-theme-icon" style="width: 18px; height: 18px;"></i>
+      </button>
+
+      <!-- Profile Dropdown -->
+      <div class="dropdownContainer" id="nav-profile-dropdown-container">
+        <button class="profileTrigger" id="nav-profile-btn">
+          <div class="avatar avatar-bg avatar-initials" id="nav-avatar-initials">TU</div>
+          <i data-lucide="chevron-down" class="chevron" style="width: 16px; height: 16px;"></i>
+        </button>
+
+        <div class="dropdownMenu" id="nav-profile-dropdown">
+          <div class="userInfo">
+            <div class="userName" id="dropdown-fullname">Tech User</div>
+            <div class="userEmail" id="dropdown-username">@tech180</div>
+          </div>
+          <div class="menuDivider"></div>
+          <button class="menuItem dangerItem" onclick="showToast('Signing out...', 'info')">
+            <i data-lucide="log-out" class="itemIcon"></i> Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Account</div>
+        <button class="nav-item active" onclick="switchTab('tab-profile')">
+          <i data-lucide="user" class="nav-icon"></i> Profile Settings
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-security')">
+          <i data-lucide="shield" class="nav-icon"></i> Password & Security
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-notifications')">
+          <i data-lucide="bell" class="nav-icon"></i> Notifications
+        </button>
+        
+        <div class="nav-section-title" style="margin-top: 16px;">Design System</div>
+        <button class="nav-item" onclick="switchTab('tab-theming')">
+          <i data-lucide="palette" class="nav-icon"></i> Theming
+        </button>
+        
+        <div class="nav-section-title" style="margin-top: 16px;">Danger Zone</div>
+        <button class="nav-item danger-text" onclick="showToast('Account deletion requested.', 'error')">
+          <i data-lucide="trash-2" class="nav-icon"></i> Delete Account
+        </button>
+      </nav>
+    </aside>
+
+    <main class="main-wrapper">
+        
+      <!-- TAB 1: Profile Settings -->
+      <div id="tab-profile" class="tab-pane active">
+        <div class="pageHeader">
+          <h2 class="pageTitle">Profile Settings</h2>
+          <p class="pageSubtitle">Manage your personal information and public presence.</p>
+        </div>
+
+        <div style="display: flex; gap: 48px; align-items: flex-start; flex-wrap: wrap;">
+          <!-- Left Column: Avatar & Presence -->
+          <div style="width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+              <div style="position: relative;">
+                <div class="avatar-bg" style="width: 140px; height: 140px; border-radius: 50%; background-color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 700; color: white; box-shadow: var(--shadow-md); transition: background-color 0.4s ease;">
+                  <span class="avatar-initials">TU</span>
+                </div>
+                <!-- Presence Indicator -->
+                <div id="presence-dot" style="position: absolute; bottom: 8px; right: 8px; width: 24px; height: 24px; background-color: #10b981; border: 4px solid var(--bg); border-radius: 50%; transition: background-color 0.3s ease;"></div>
+              </div>
+              <button class="btn btnOutline" style="font-size: 0.8125rem; padding: 6px 12px;" onclick="randomizeAvatarColor()">
+                <i data-lucide="dices" style="width: 14px; height: 14px;"></i> Randomize Color
+              </button>
+            </div>
+
+            <div class="glassCard" style="padding: 16px; display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <p style="font-size: 0.875rem; font-weight: 600;">Status</p>
+                <p id="presence-text" style="font-size: 0.75rem; color: var(--text-muted);">Online</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="presence-toggle" checked onchange="togglePresence()">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Right Column: Form -->
+          <div style="flex: 1; max-width: 600px;">
+            <form id="profile-form" onsubmit="handleProfileSubmit(event)">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <div class="inputContainer">
+                  <label class="inputLabel">First Name</label>
+                  <input type="text" id="fname" class="inputField" value="Tech" onkeyup="updateInitials()" required>
+                </div>
+                <div class="inputContainer">
+                  <label class="inputLabel">Last Name</label>
+                  <input type="text" id="lname" class="inputField" value="User" onkeyup="updateInitials()" required>
+                </div>
+              </div>
+
+              <div class="inputContainer" style="margin-bottom: 24px;">
+                <label class="inputLabel">Username</label>
+                <input type="text" id="uname" class="inputField" value="tech180" required>
+              </div>
+
+              <div class="inputContainer" style="margin-bottom: 24px;">
+                <label class="inputLabel">Email Address</label>
+                <input type="email" class="inputField" value="user@tech180.dev" disabled title="Contact support to change email">
+              </div>
+
+              <div class="inputContainer" style="margin-bottom: 32px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <label class="inputLabel">Biography</label>
+                  <span id="bio-count" style="font-family: 'Fira Code', monospace; font-size: 0.75rem; color: var(--text-muted);">0 / 200</span>
+                </div>
+                <textarea id="bio-input" class="inputField" rows="4" maxlength="200" oninput="updateCharCount(this)" placeholder="Write a short bio..."></textarea>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btnPrimary btnMd" id="save-btn">
+                  <span class="spinner" id="save-spinner"></span>
+                  <span id="save-text">Save Profile Changes</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Password & Security (Placeholder) -->
+      <div id="tab-security" class="tab-pane">
+        <div class="pageHeader">
+          <h2 class="pageTitle">Security</h2>
+          <p class="pageSubtitle">Manage your passwords and 2FA settings.</p>
+        </div>
+        <div class="glassCard" style="max-width: 500px;">
+          <div class="inputContainer" style="margin-bottom: 20px;">
+            <label class="inputLabel">Current Password</label>
+            <input type="password" class="inputField" placeholder="••••••••">
+          </div>
+          <div class="inputContainer" style="margin-bottom: 24px;">
+            <label class="inputLabel">New Password</label>
+            <input type="password" class="inputField" placeholder="••••••••">
+          </div>
+          <button class="btn btnPrimary btnMd" onclick="showToast('Password updated successfully.', 'success')">Update Password</button>
+        </div>
+      </div>
+
+      <!-- TAB 3: Notifications (Placeholder) -->
+      <div id="tab-notifications" class="tab-pane">
+        <div class="pageHeader">
+          <h2 class="pageTitle">Notifications</h2>
+          <p class="pageSubtitle">Configure how and when we contact you.</p>
+        </div>
+        <div class="glassCard" style="max-width: 600px; display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text);">Email Alerts</div>
+              <div style="font-size: 0.8125rem; color: var(--text-muted);">Receive updates about wishlists you follow.</div>
+            </div>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+          <div style="height: 1px; background-color: var(--border);"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text);">Marketing Promos</div>
+              <div style="font-size: 0.8125rem; color: var(--text-muted);">Occasional deals and holiday specials.</div>
+            </div>
+            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-theming" class="tab-pane">
+        <div class="pageHeader" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h2 class="pageTitle">Theming</h2>
+            <p class="pageSubtitle">Design your workspace. Edit visual tokens directly or paste a JSON payload.</p>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <!-- Dropdown for Presets inside the Theming Header -->
+            <select id="preset-selector" class="inputField" style="width: auto; padding: 8px 36px 8px 12px; cursor: pointer; font-weight: 500;" onchange="handlePresetSelection(this.value)">
+              <option value="" disabled selected>Load Preset...</option>
+              <optgroup label="Core Themes">
+                <option value="default">Linear (Default)</option>
+                <option value="neon">Neon</option>
+                <option value="cyberpunk">Cyberpunk</option>
+                <option value="mystic">Mystic</option>
+                <option value="burnt-forest">Burnt Forest</option>
+              </optgroup>
+              <optgroup label="Holiday Editions">
+                <option value="valentines">Valentine's</option>
+                <option value="halloween">Halloween</option>
+                <option value="christmas">Christmas</option>
+              </optgroup>
+            </select>
+            <button class="btn btnPrimary btnMd" onclick="applyJsonTheme()">
+              <i data-lucide="check" style="width: 16px; height: 16px;"></i> Apply Theme
+            </button>
+          </div>
+        </div>
+        
+        <div class="theming-grid">
+          
+          <!-- Visual Editor Column -->
+          <div class="glassCard">
+            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 24px; color: var(--text);">Visual Editor</h3>
+            
+            <div class="theme-group">
+              <h4 style="font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 12px; font-weight: 600;">Brand Colors</h4>
+              
+              <div class="theme-row">
+                <label class="inputLabel">Primary Accent</label>
+                <div class="color-control">
+                  <input type="text" id="hex-primary" class="hex-input" onchange="syncHexToPicker('primary')" onkeyup="if(event.key==='Enter')syncHexToPicker('primary')">
+                  <div class="custom-picker-wrapper" title="Pick color">
+                    <input type="color" id="picker-primary" oninput="syncPickerToJson('primary')">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="theme-group">
+              <h4 style="font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 12px; font-weight: 600;">Base Colors</h4>
+              
+              <div class="theme-row">
+                <label class="inputLabel">Background</label>
+                <div class="color-control">
+                  <input type="text" id="hex-bg" class="hex-input" onchange="syncHexToPicker('bg')" onkeyup="if(event.key==='Enter')syncHexToPicker('bg')">
+                  <div class="custom-picker-wrapper">
+                    <input type="color" id="picker-bg" oninput="syncPickerToJson('bg')">
+                  </div>
+                </div>
+              </div>
+
+              <div class="theme-row">
+                <label class="inputLabel">Surface (Cards, Nav)</label>
+                <div class="color-control">
+                  <input type="text" id="hex-surface" class="hex-input" onchange="syncHexToPicker('surface')" onkeyup="if(event.key==='Enter')syncHexToPicker('surface')">
+                  <div class="custom-picker-wrapper">
+                    <input type="color" id="picker-surface" oninput="syncPickerToJson('surface')">
+                  </div>
+                </div>
+              </div>
+
+              <div class="theme-row">
+                <label class="inputLabel">Borders & Dividers</label>
+                <div class="color-control">
+                  <input type="text" id="hex-border" class="hex-input" onchange="syncHexToPicker('border')" onkeyup="if(event.key==='Enter')syncHexToPicker('border')">
+                  <div class="custom-picker-wrapper">
+                    <input type="color" id="picker-border" oninput="syncPickerToJson('border')">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="theme-group" style="margin-bottom: 0;">
+              <h4 style="font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 12px; font-weight: 600;">Typography</h4>
+              
+              <div class="theme-row">
+                <label class="inputLabel">Main Text</label>
+                <div class="color-control">
+                  <input type="text" id="hex-text" class="hex-input" onchange="syncHexToPicker('text')" onkeyup="if(event.key==='Enter')syncHexToPicker('text')">
+                  <div class="custom-picker-wrapper">
+                    <input type="color" id="picker-text" oninput="syncPickerToJson('text')">
+                  </div>
+                </div>
+              </div>
+
+              <div class="theme-row">
+                <label class="inputLabel">Muted Text</label>
+                <div class="color-control">
+                  <input type="text" id="hex-text-muted" class="hex-input" onchange="syncHexToPicker('text-muted')" onkeyup="if(event.key==='Enter')syncHexToPicker('text-muted')">
+                  <div class="custom-picker-wrapper">
+                    <input type="color" id="picker-text-muted" oninput="syncPickerToJson('text-muted')">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- JSON Editor Column -->
+          <div class="glassCard json-editor-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+              <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text);">JSON Configuration</h3>
+              <button class="btn btnOutline" style="padding: 6px 12px; font-size: 0.8125rem;" onclick="copyThemeJson()">
+                <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Copy JSON
+              </button>
+            </div>
+            
+            <textarea id="json-textarea" class="json-textarea" spellcheck="false" oninput="handleJsonInput()"></textarea>
+            <p id="json-error-msg" style="color: var(--error); font-size: 0.8125rem; margin-top: 8px; display: none;">Invalid JSON format.</p>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div> <!-- End app-body -->
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script>
+    // Initialize Icons
+    lucide.createIcons();
+
+    // -------------------------------------------------------------------------
+    // Toast Notification System
+    // -------------------------------------------------------------------------
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      
+      let icon = '';
+      if(type === 'success') icon = `<i data-lucide="check-circle" class="toast-icon success" style="width: 18px; height: 18px;"></i>`;
+      else if(type === 'error') icon = `<i data-lucide="alert-circle" class="toast-icon error" style="width: 18px; height: 18px;"></i>`;
+      else icon = `<i data-lucide="info" class="toast-icon info" style="width: 18px; height: 18px;"></i>`;
+        
+      toast.innerHTML = `${icon}<span>${message}</span>`;
+      container.appendChild(toast);
+      lucide.createIcons();
+      
+      requestAnimationFrame(() => {
+        setTimeout(() => toast.classList.add('show'), 10);
+      });
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // -------------------------------------------------------------------------
+    // Sidebar & Navigation
+    // -------------------------------------------------------------------------
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => el.classList.remove('active'));
+      
+      const targetTab = document.getElementById(tabId);
+      if(targetTab) targetTab.classList.add('active');
+      
+      const activeLink = document.querySelector(`.sidebar-nav .nav-item[onclick="switchTab('${tabId}')"]`);
+      if(activeLink) activeLink.classList.add('active');
+
+      if(tabId === 'tab-theming') {
+        extractCurrentThemeToJson();
+      }
+    }
+
+    // Navbar Dropdown Logic
+    const profileBtn = document.getElementById("nav-profile-btn");
+    const profileDropdown = document.getElementById("nav-profile-dropdown");
+
+    profileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      profileDropdown.style.display = profileDropdown.style.display === "block" ? "none" : "block";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#nav-profile-dropdown-container")) {
+        profileDropdown.style.display = "none";
+      }
+    });
+
+    // -------------------------------------------------------------------------
+    // Profile Interactions
+    // -------------------------------------------------------------------------
+    function randomizeAvatarColor() {
+      const h = Math.floor(Math.random() * 360);
+      const s = Math.floor(Math.random() * 40) + 60; 
+      const l = Math.floor(Math.random() * 30) + 30; 
+      const color = `hsl(${h}, ${s}%, ${l}%)`;
+      document.querySelectorAll('.avatar-bg').forEach(el => el.style.backgroundColor = color);
+    }
+
+    function updateInitials() {
+      const f = document.getElementById('fname').value.trim();
+      const l = document.getElementById('lname').value.trim();
+      const initials = (f.charAt(0) + l.charAt(0)).toUpperCase() || 'U';
+      document.querySelectorAll('.avatar-initials').forEach(el => el.innerText = initials);
+    }
+
+    function togglePresence() {
+      const isOnline = document.getElementById('presence-toggle').checked;
+      document.getElementById('presence-text').innerText = isOnline ? 'Online' : 'Offline';
+      document.getElementById('presence-dot').style.backgroundColor = isOnline ? '#10b981' : '#6b7280';
+    }
+
+    function updateCharCount(el) {
+      document.getElementById('bio-count').innerText = `${el.value.length} / 200`;
+    }
+
+    function handleProfileSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('save-btn');
+      const spinner = document.getElementById('save-spinner');
+      const text = document.getElementById('save-text');
+      
+      btn.disabled = true;
+      spinner.style.display = 'inline-block';
+      text.innerText = 'Saving...';
+
+      setTimeout(() => {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        text.innerText = 'Save Profile Changes';
+        
+        const fname = document.getElementById('fname').value;
+        const lname = document.getElementById('lname').value;
+        const uname = document.getElementById('uname').value;
+        document.getElementById('dropdown-fullname').innerText = `${fname} ${lname}`;
+        document.getElementById('dropdown-username').innerText = `@${uname}`;
+        
+        showToast('Profile settings saved securely!', 'success');
+      }, 1200);
+    }
+
+    // -------------------------------------------------------------------------
+    // Advanced Theming System (JSON <-> UI <-> DOM)
+    // -------------------------------------------------------------------------
+    const THEME_KEYS = ['primary', 'bg', 'surface', 'border', 'text', 'text-muted'];
+    
+    // Quick Light/Dark Toggle
+    function toggleAppearanceMode() {
+      const current = document.documentElement.getAttribute('data-appearance');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-appearance', next);
+      
+      const icon = document.getElementById('quick-theme-icon');
+      icon.setAttribute('data-lucide', next === 'dark' ? 'moon' : 'sun');
+      lucide.createIcons();
+      
+      if(document.getElementById('tab-theming').classList.contains('active')){
+        setTimeout(extractCurrentThemeToJson, 50); // delay allows CSS to recalculate
+      }
+    }
+
+    // Convert rgb() string to Hex
+    function rgbToHex(rgb) {
+      if(rgb.startsWith('#')) return rgb;
+      const rgbValues = rgb.match(/\d+/g);
+      if(!rgbValues || rgbValues.length < 3) return '#000000';
+      const hex = rgbValues.slice(0,3).map(x => {
+        const hexVal = parseInt(x).toString(16);
+        return hexVal.length === 1 ? '0' + hexVal : hexVal;
+      }).join('');
+      return `#${hex}`;
+    }
+
+    // Hex to RGB comma separated (for primary-rgb variable)
+    function hexToRgbVals(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0,0,0';
+    }
+
+    // Read computed CSS vars and populate Editor
+    function extractCurrentThemeToJson() {
+      const computed = getComputedStyle(document.body);
+      const themeObj = {
+        config: { name: "Extracted Theme" },
+        colors: { brand: {}, backgrounds: {}, typography: {} }
+      };
+
+      // Extract colors, converting to Hex for the JSON
+      themeObj.colors.brand.primary = rgbToHex(computed.getPropertyValue('--primary').trim());
+      themeObj.colors.backgrounds.bg = rgbToHex(computed.getPropertyValue('--bg').trim());
+      themeObj.colors.backgrounds.surface = rgbToHex(computed.getPropertyValue('--surface').trim());
+      themeObj.colors.backgrounds.border = rgbToHex(computed.getPropertyValue('--border').trim());
+      themeObj.colors.typography.text = rgbToHex(computed.getPropertyValue('--text').trim());
+      themeObj.colors.typography.textMuted = rgbToHex(computed.getPropertyValue('--text-muted').trim());
+
+      // Update JSON Textarea
+      const jsonArea = document.getElementById('json-textarea');
+      jsonArea.value = JSON.stringify(themeObj, null, 2);
+      jsonArea.classList.remove('error');
+      document.getElementById('json-error-msg').style.display = 'none';
+
+      // Update Visual Pickers
+      updateVisualsFromObj(themeObj);
+    }
+
+    // Load a preset via the dropdown
+    function handlePresetSelection(themeName) {
+      if(!themeName) return;
+      document.documentElement.setAttribute('data-theme', themeName);
+      setTimeout(() => {
+        extractCurrentThemeToJson();
+        showToast(`Loaded ${themeName} preset`, 'info');
+      }, 50);
+    }
+
+    // Update the color inputs based on a JSON object
+    function updateVisualsFromObj(obj) {
+      try {
+        const c = obj.colors;
+        const mapping = {
+          'primary': c.brand.primary,
+          'bg': c.backgrounds.bg,
+          'surface': c.backgrounds.surface,
+          'border': c.backgrounds.border,
+          'text': c.typography.text,
+          'text-muted': c.typography.textMuted
+        };
+
+        for (const [key, val] of Object.entries(mapping)) {
+          if(val) {
+            document.getElementById(`picker-${key}`).value = val;
+            document.getElementById(`hex-${key}`).value = val.toUpperCase();
+          }
+        }
+      } catch (e) { console.error("Error mapping object to visuals", e); }
+    }
+
+    // Triggered when a visual color picker is dragged
+    function syncPickerToJson(key) {
+      const val = document.getElementById(`picker-${key}`).value;
+      document.getElementById(`hex-${key}`).value = val.toUpperCase();
+      rebuildJsonFromVisuals();
+    }
+
+    // Triggered when someone types in the hex text input
+    function syncHexToPicker(key) {
+      let val = document.getElementById(`hex-${key}`).value;
+      if(!val.startsWith('#')) val = '#' + val;
+      if(/^#[0-9A-F]{6}$/i.test(val)) {
+        document.getElementById(`picker-${key}`).value = val;
+        rebuildJsonFromVisuals();
+      }
+    }
+
+    // Reads all visual inputs and creates the JSON string
+    function rebuildJsonFromVisuals() {
+      const themeObj = {
+        config: { name: "Custom Builder" },
+        colors: {
+          brand: {
+            primary: document.getElementById('picker-primary').value
+          },
+          backgrounds: {
+            bg: document.getElementById('picker-bg').value,
+            surface: document.getElementById('picker-surface').value,
+            border: document.getElementById('picker-border').value
+          },
+          typography: {
+            text: document.getElementById('picker-text').value,
+            textMuted: document.getElementById('picker-text-muted').value
+          }
+        }
+      };
+      document.getElementById('json-textarea').value = JSON.stringify(themeObj, null, 2);
+    }
+
+    // Validates manual JSON edits in the textarea
+    function handleJsonInput() {
+      const jsonArea = document.getElementById('json-textarea');
+      const errorMsg = document.getElementById('json-error-msg');
+      try {
+        const obj = JSON.parse(jsonArea.value);
+        jsonArea.classList.remove('error');
+        errorMsg.style.display = 'none';
+        updateVisualsFromObj(obj); // Live update pickers if JSON is valid
+      } catch (e) {
+        jsonArea.classList.add('error');
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    // Injects the custom hex codes into a runtime style block
+    function applyJsonTheme() {
+      const jsonArea = document.getElementById('json-textarea');
+      try {
+        const obj = JSON.parse(jsonArea.value);
+        const c = obj.colors;
+        
+        const primary = c.brand.primary;
+        const primaryRgb = hexToRgbVals(primary);
+        
+        let styleTag = document.getElementById('custom-theme-runtime-styles');
+        if (!styleTag) {
+          styleTag = document.createElement('style');
+          styleTag.id = 'custom-theme-runtime-styles';
+          document.head.appendChild(styleTag);
+        }
+        
+        // Apply strictly as [data-theme="custom"]
+        styleTag.innerHTML = `
+          [data-appearance="dark"][data-theme="custom"],
+          [data-appearance="light"][data-theme="custom"] {
+            --primary: ${primary};
+            --primary-hover: ${primary}dd;
+            --primary-rgb: ${primaryRgb};
+            --bg: ${c.backgrounds.bg};
+            --surface: ${c.backgrounds.surface};
+            --surface-hover: ${c.backgrounds.surface}dd;
+            --border: ${c.backgrounds.border};
+            --text: ${c.typography.text};
+            --text-muted: ${c.typography.textMuted};
+            --surface-glass: ${c.backgrounds.surface}b3;
+          }
+        `;
+        
+        document.documentElement.setAttribute("data-theme", "custom");
+        document.getElementById('preset-selector').value = ""; // Clear preset dropdown
+        
+        // Recolor UI elements dependent on primary
+        document.querySelectorAll('.avatar-bg').forEach(el => el.style.backgroundColor = primary);
+        
+        showToast('Custom Theme Applied Successfully!', 'success');
+
+      } catch (e) {
+        showToast('Cannot apply: JSON format is invalid.', 'error');
+      }
+    }
+
+    function copyThemeJson() {
+      const jsonStr = document.getElementById('json-textarea').value;
+      if(navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(jsonStr).then(() => showToast('JSON Configuration Copied!', 'info'));
+      } else {
+          // Fallback
+          let textArea = document.createElement("textarea");
+          textArea.value = jsonStr;
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+              document.execCommand('copy');
+              showToast('JSON Configuration Copied!', 'info');
+          } catch (err) {
+              showToast('Failed to copy', 'error');
+          }
+          document.body.removeChild(textArea);
+      }
+    }
+
+    // Init
+    document.addEventListener("DOMContentLoaded", () => {
+      randomizeAvatarColor();
+      updateInitials();
+      updateCharCount(document.getElementById('bio-input'));
+    });
+  </script>
+</body>
+</html>

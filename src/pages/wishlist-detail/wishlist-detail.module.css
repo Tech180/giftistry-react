@@ -47,8 +47,8 @@
 }
 
 .deactivate-trash-btn:hover:not(:disabled) {
-  color: #ef4444;
-  background-color: rgba(239, 68, 68, 0.05);
+  color: var(--error);
+  background-color: var(--error-bg);
 }
 
 .deactivate-trash-btn:disabled {
@@ -90,8 +90,8 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  background-color: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
   padding: 0.75rem 1rem;
   border-radius: var(--radius);
   margin-bottom: 0.5rem;
@@ -133,14 +133,13 @@
 }
 
 .yes-btn {
-  background-color: #ef4444;
-  color: #ffffff;
-  border-color: #ef4444;
+  background-color: var(--error);
+  color: var(--color-white);
+  border-color: var(--error);
 }
 
 .yes-btn:hover {
-  background-color: #dc2626;
-  border-color: #dc2626;
+  filter: brightness(0.9);
 }
 
 .no-btn {
@@ -187,7 +186,7 @@
 }
 
 .expiredLabel {
-  color: #ef4444;
+  color: var(--error);
   font-weight: 600;
 }
 
@@ -509,17 +508,17 @@
 
 @keyframes card-pulse {
   0% {
-    box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 0 0px rgba(var(--success-rgb), 0.4);
     transform: scale(1);
   }
 
   50% {
-    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 10px rgba(var(--success-rgb), 0);
     transform: scale(1.02);
   }
 
   100% {
-    box-shadow: 0 0 0 0px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 0px rgba(var(--success-rgb), 0);
     transform: scale(1);
   }
 }
@@ -642,7 +641,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-hover);
   border-bottom: 1px solid var(--border);
 }
 

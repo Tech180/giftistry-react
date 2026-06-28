@@ -1,5 +1,5 @@
 import React from 'react';
-import { CommentItemProps } from './comment-item.interface';
+import { CommentItemProps } from '../../interfaces/comment-item-props.interface';
 import { CommentItemTemplate } from './comment-item.html';
 
 const parseCommentTagsAndText = (text: string) => {
@@ -34,6 +34,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   handleDeleteComment,
   deletingCommentId,
   setDeletingCommentId,
+  onlineUsers,
 }) => {
   const { cleanText, taggedIds } = parseCommentTagsAndText(comment.Content);
   const isDeleting = deletingCommentId === comment.Id;
@@ -50,6 +51,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       onItemTaggedClick={onItemTaggedClick}
       handleDeleteComment={handleDeleteComment}
       setDeletingCommentId={setDeletingCommentId}
+      onlineUsers={onlineUsers}
     />
   );
 };

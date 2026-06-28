@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { itemsApi, FieldDefinition } from '../../api/items.api';
 import { AddItemFormProps } from '../../interfaces/add-item-form-props.interface';
 import { AddItemFormTemplate } from './add-item-form.html';
-import { useAuth } from 'app/providers/AuthContext';
+import { useAuth } from 'app/providers/auth-context';
 
 const STANDARD_CATEGORIES = [
   { id: 'digital_tech', label: 'Digital & Tech' },

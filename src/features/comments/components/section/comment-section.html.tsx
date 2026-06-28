@@ -1,7 +1,6 @@
 import React from 'react';
-import { MessageSquare, AlertCircle, X } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { CommentSectionTemplateProps } from '../../interfaces/comment-section-template-props.interface';
-import { getCategoryMeta } from 'features/items/components/card/category-icons';
 import { CommentItem } from '../item/comment-item.component';
 import { CommentInput } from '../input/comment-input.component';
 import styles from './comment-section.module.css';
@@ -34,6 +33,8 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   handleDeleteComment,
   deletingCommentId,
   setDeletingCommentId,
+  isAnonymous,
+  setIsAnonymous,
 }) => {
   return (
     <div className={styles.section}>
@@ -73,6 +74,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
                 handleDeleteComment={handleDeleteComment}
                 deletingCommentId={deletingCommentId}
                 setDeletingCommentId={setDeletingCommentId}
+                onlineUsers={onlineUsers}
               />
             ))}
           </div>
@@ -101,6 +103,8 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
           isTaggingModeActive={isTaggingModeActive}
           setIsTaggingModeActive={setIsTaggingModeActive}
           typingUsers={typingUsers}
+          isAnonymous={isAnonymous}
+          setIsAnonymous={setIsAnonymous}
         />
       </div>
     </div>

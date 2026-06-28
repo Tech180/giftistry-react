@@ -210,14 +210,14 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             {isOwner ? (
               <Star
                 size={18}
-                fill={isFavorite ? '#f59e0b' : 'none'}
-                stroke={isFavorite ? '#f59e0b' : 'currentColor'}
+                fill={isFavorite ? 'var(--warning)' : 'none'}
+                stroke={isFavorite ? 'var(--warning)' : 'currentColor'}
               />
             ) : (
               <Pin
                 size={18}
-                fill={isFavorite ? '#3b82f6' : 'none'}
-                stroke={isFavorite ? '#3b82f6' : 'currentColor'}
+                fill={isFavorite ? 'var(--primary)' : 'none'}
+                stroke={isFavorite ? 'var(--primary)' : 'currentColor'}
                 style={{ transform: isFavorite ? 'rotate(45deg)' : 'none' }}
               />
             )}
@@ -569,7 +569,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             className={styles.inlineInputFull}
             style={{ maxWidth: '300px' }}
           />
-          <span style={{ fontSize: '0.85rem', color: '#666' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             Note: Lower numbers (e.g. 1) sort to the top.
           </span>
         </div>

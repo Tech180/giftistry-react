@@ -8,9 +8,9 @@
 }
 
 .alert {
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error);
   padding: 10px 12px;
   border-radius: var(--radius);
   font-size: 0.8125rem;
@@ -291,27 +291,27 @@
 }
 
 .starToggleBtn:hover {
-  border-color: #f59e0b;
-  color: #f59e0b;
-  background-color: rgba(245, 158, 11, 0.05);
+  border-color: var(--warning);
+  color: var(--warning);
+  background-color: var(--warning-bg);
 }
 
 .starToggleBtnActive {
-  border-color: #f59e0b;
-  background-color: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
+  border-color: var(--warning);
+  background-color: var(--warning-border);
+  color: var(--warning);
 }
 
 .pinToggleBtn:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
-  background-color: rgba(59, 130, 246, 0.05);
+  border-color: var(--primary);
+  color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.05);
 }
 
 .pinToggleBtnActive {
-  border-color: #3b82f6;
-  background-color: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  border-color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
 }
 
 .autopopulateLoader {
@@ -456,7 +456,7 @@
 
 .addCustomFieldBtn:hover {
   background-color: var(--primary);
-  color: #fff;
+  color: var(--primary-text);
 }
 
 .noCustomFieldsText {
@@ -501,7 +501,7 @@
 .removeCustomFieldBtn {
   background: transparent;
   border: none;
-  color: #ef4444;
+  color: var(--error);
   cursor: pointer;
   padding: 6px;
   display: flex;
@@ -512,7 +512,7 @@
 }
 
 .removeCustomFieldBtn:hover {
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: var(--error-bg);
 }
 
 .scrapeButton {
@@ -642,7 +642,7 @@
 
 .customCategoryAddBtn {
   background-color: var(--primary);
-  color: #fff;
+  color: var(--primary-text);
   border: none;
   border-radius: 14px;
   padding: 3px 10px;
@@ -691,8 +691,8 @@
 }
 
 .deleteCategoryBtn:hover {
-  background-color: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background-color: var(--error-bg);
+  color: var(--error);
 }
 
 .categoryChipSelected .deleteCategoryBtn {
@@ -700,8 +700,8 @@
 }
 
 .categoryChipSelected .deleteCategoryBtn:hover {
-  background-color: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background-color: var(--error-bg);
+  color: var(--error);
 }
 
 /* Advanced Features Styles */
@@ -783,7 +783,7 @@
   top: 12px;
   right: 12px;
   background-color: var(--primary);
-  color: #ffffff;
+  color: var(--primary-text);
   font-size: 0.75rem;
   font-weight: 700;
   border-radius: 4px;
@@ -793,14 +793,14 @@
   align-items: center;
   justify-content: center;
   padding: 0 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-sm);
   line-height: 1;
 }
 
 .removeVariationBtn {
   background: transparent;
   border: none;
-  color: #ef4444;
+  color: var(--error);
   cursor: pointer;
   padding: 0;
   display: inline-flex;
@@ -886,7 +886,7 @@
   top: -6px;
   right: -6px;
   background-color: var(--primary);
-  color: #ffffff;
+  color: var(--primary-text);
   font-size: 0.625rem;
   font-weight: 700;
   border-radius: 9999px;
@@ -896,5 +896,5 @@
   align-items: center;
   justify-content: center;
   padding: 0 3px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-sm);
 }

@@ -1,16 +1,24 @@
 import React from 'react';
-import { User } from 'app/providers/AuthContext';
+import { User } from 'app/providers/auth-context';
 
 export interface ProfileCardTemplateProps {
-  user: User;
+  user: any;
   username: string;
   setUsername: (val: string) => void;
   firstName: string;
   setFirstName: (val: string) => void;
   lastName: string;
   setLastName: (val: string) => void;
+  bio: string;
+  setBio: (val: string) => void;
+  avatar: string | null;
+  setAvatar: (val: string | null) => void;
   isLoading: boolean;
   errorMsg: string | null;
   successMsg: string | null;
   handleSubmit: (e: React.SyntheticEvent) => void;
+  handleAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleRemoveAvatar: () => void;
+  randomizeAvatarColor: () => void;
+  handleDeleteAccount: () => void;
 }

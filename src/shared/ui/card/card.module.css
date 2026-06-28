@@ -1,0 +1,40 @@
+.card {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flat {
+  background-color: var(--surface);
+}
+
+.glass {
+  background: var(--surface-glass);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.hoverable:hover {
+  transform: translateY(-2px);
+  border-color: var(--text-muted);
+  box-shadow: var(--shadow-hover);
+}
+
+/* --- Padding Options --- */
+.none {
+  padding: 0;
+}
+
+.sm {
+  padding: 12px;
+}
+
+.md {
+  padding: 20px;
+}
+
+.lg {
+  padding: 32px;
+}

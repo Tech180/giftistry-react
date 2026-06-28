@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default" data-appearance="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comments Sidebar Reference - Giftistry</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* --- CSS Variables & Themes --- */
+    :root {
+      --color-white: #ffffff;
+      --color-black: #000000;
+      
+      --error: #ef4444;
+      --error-rgb: 239, 68, 68;
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: rgba(239, 68, 68, 0.2);
+      
+      --success: #10b981;
+      --success-rgb: 16, 185, 129;
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --success-border: rgba(16, 185, 129, 0.2);
+
+      --warning: #f59e0b;
+      --warning-rgb: 245, 158, 11;
+      --warning-bg: rgba(245, 158, 11, 0.08);
+      --warning-border: rgba(245, 158, 11, 0.2);
+      
+      --backdrop-bg: rgba(0, 0, 0, 0.4);
+      --surface-glass: rgba(255, 255, 255, 0.85);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-color: rgba(0, 0, 0, 0.15);
+
+      --primary: #5e6ad2;
+      --primary-hover: #4d59c2;
+      --primary-rgb: 94, 106, 210;
+      --primary-light: rgba(94, 106, 210, 0.08);
+      --primary-text: #ffffff;
+      
+      --bg: #fafafa;
+      --bg-gradient: linear-gradient(135deg, #fafafa 0%, #f5f5f7 100%);
+      --surface: #ffffff;
+      --surface-hover: #f3f3f4;
+      --border: #e4e4e7;
+      --text: #111111;
+      --text-muted: #6b6b7b;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 16px;
+    }
+
+    [data-appearance="dark"] {
+      --backdrop-bg: rgba(0, 0, 0, 0.6);
+      --surface-glass: rgba(21, 21, 22, 0.85);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.5);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.24);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+      --shadow-color: rgba(0, 0, 0, 0.45);
+
+      --bg: #0f0f10;
+      --bg-gradient: linear-gradient(135deg, #0f0f10 0%, #151516 100%);
+      --surface: #151516;
+      --surface-hover: #1e1e20;
+      --border: #27272a;
+      --text: #f7f8f8;
+      --text-muted: #8a8f98;
+    }
+
+    /* --- General Layout --- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background-color: var(--bg);
+      background-image: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* --- Navigation --- */
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      height: 64px;
+      box-shadow: var(--shadow-sm);
+      z-index: 10;
+    }
+
+    .logo {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.03em;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
+
+    button.btn {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    button.btn:hover {
+      background: var(--surface-hover);
+    }
+
+    button.btn-primary {
+      background: var(--primary);
+      color: var(--primary-text);
+      border: none;
+    }
+
+    button.btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    /* --- Main Workspace Grid --- */
+    .workspace {
+      display: flex;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-content {
+      flex: 1;
+      padding: 40px;
+      max-width: calc(100% - 420px);
+      overflow-y: auto;
+    }
+
+    .title-area {
+      margin-bottom: 32px;
+    }
+
+    .title-area h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    /* --- Sidebar Component Styles --- */
+    .sidebarWrapper {
+      position: fixed;
+      top: 64px;
+      bottom: 0;
+      width: 420px;
+      max-width: 100%;
+      background: var(--surface);
+      z-index: 1000;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: visible;
+    }
+
+    .right {
+      right: 0;
+      border-left: 1px solid var(--border);
+      box-shadow: -10px 0 30px var(--shadow-color);
+    }
+
+    .sidebarPanel {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+    }
+
+    .sidebarHeader {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+    }
+
+    .sidebarTitle {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .sidebarClose {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .sidebarClose:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .sidebarBody {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* --- Comment Section Module --- */
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      position: relative;
+    }
+
+    .onlinePresenceBar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background-color: var(--bg);
+    }
+
+    .onlineDot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--success);
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 2px var(--success-border);
+    }
+
+    .onlineUsersList {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .listContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      min-height: 0;
+    }
+
+    .commentsList {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* --- Comment Item Module --- */
+    .commentBubble {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .commentBubble.ownComment {
+      border-left: 2px solid var(--primary);
+    }
+    
+    .commentBubble.anonComment {
+      border-left: 2px solid var(--warning);
+    }
+
+    .commentBubbleTopRow {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 10px 12px;
+      gap: 0;
+    }
+
+    .commentVisibilityIndicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      width: 20px;
+      padding: 4px 8px 4px 0;
+      margin-right: 8px;
+      border-right: 1.5px solid var(--border);
+      align-self: stretch;
+      box-sizing: border-box;
+    }
+
+    .visibleEye { color: var(--primary); }
+    .hiddenEye { color: var(--text-muted); }
+
+    .commentDeleteBtnLeft {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      margin-top: 4px;
+    }
+
+    .commentDeleteBtnLeft:hover {
+      background: var(--error-bg);
+      color: var(--error);
+    }
+
+    .commentMainContent {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* --- Hovering User Profile Card --- */
+    .has-user-card {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .hoverable-name {
+      border-bottom: 1px dashed var(--text-muted);
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .has-user-card:hover .hoverable-name {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .userProfileCard {
+      position: fixed;
+      width: 280px;
+      background: var(--surface-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.05) inset;
+      padding: 16px;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      cursor: default;
+      transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+    }
+
+    .userProfileCard.is-visible {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+
+    .userProfileCard.show-bottom {
+      transform-origin: top left;
+      transform: translateY(12px) scale(0.95);
+    }
+
+    .userProfileCard.show-top {
+      transform-origin: bottom left;
+      transform: translateY(-12px) scale(0.95);
+    }
+
+    .upc-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .upc-avatar-wrapper {
+      position: relative;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, #8b96eb 100%);
+      color: var(--color-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.125rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .upc-status-dot {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 12px;
+      height: 12px;
+      background-color: var(--success);
+      border: 2px solid var(--surface);
+      border-radius: 50%;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .upc-identity {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .upc-display-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .upc-username {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .upc-bio {
+      font-size: 0.8125rem;
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .upc-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .upc-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .upc-meta-item svg {
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+
+    .commentMeta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+
+    .author {
+      font-size: 0.775rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .date {
+      font-size: 0.725rem;
+      color: var(--text-muted);
+    }
+
+    .rolloverBadge {
+      font-size: 0.65rem;
+      background-color: var(--primary-light);
+      color: var(--primary);
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    
+    .rolloverBadge.anonBadge {
+      background-color: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    .commentContent {
+      font-size: 0.825rem;
+      color: var(--text);
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .commentTagsContainer {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap-reverse;
+      align-content: flex-end;
+      gap: 4px;
+      margin-left: 12px;
+      padding-left: 8px;
+      border-left: 1.5px solid var(--border);
+      align-self: stretch;
+      justify-content: center;
+      flex-shrink: 0;
+      max-height: 48px;
+    }
+
+    .commentBubbleBottomRow {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      background-color: var(--error-bg);
+      padding: 8px 12px;
+      overflow: hidden;
+    }
+
+    .commentBubbleBottomRow.active {
+      display: flex;
+      animation: slideDownConfirm 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .deleteConfirmText {
+      font-size: 0.775rem;
+      color: var(--text-muted);
+    }
+
+    .deleteConfirmActions { display: flex; gap: 8px; }
+
+    .deleteConfirmBtn {
+      background-color: var(--error);
+      color: var(--primary-text);
+      border: none;
+      padding: 3px 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .deleteConfirmBtn:hover { filter: brightness(0.9); }
+
+    .deleteCancelBtn {
+      background-color: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .deleteCancelBtn:hover {
+      background-color: var(--surface-hover);
+      color: var(--text);
+    }
+
+    @keyframes slideDownConfirm {
+      from { max-height: 0; opacity: 0; }
+      to { max-height: 100px; opacity: 1; }
+    }
+
+    /* --- Comment Input Module --- */
+    .bottomSeamlessContainer {
+      margin-top: auto;
+      background-color: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .chatTypingIndicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 6px 16px;
+      background-color: rgba(94, 106, 210, 0.02);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .typingBouncer {
+      display: flex;
+      align-items: center;
+      gap: 2.5px;
+      height: 12px;
+    }
+
+    .typingDot {
+      width: 4px;
+      height: 4px;
+      background-color: var(--text-muted);
+      border-radius: 50%;
+      animation: typingBounce 1.4s infinite ease-in-out both;
+    }
+    .typingDot:nth-child(1) { animation-delay: -0.32s; }
+    .typingDot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1.0); }
+    }
+
+    .chatForm {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 16px;
+      background-color: var(--surface);
+    }
+
+    .chatMetaRow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .chatPostingAs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .chatNameInput {
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed var(--border);
+      padding: 1px 4px;
+      outline: none;
+      width: 100px;
+      transition: all 0.2s ease;
+    }
+
+    .chatNameInput:focus { border-bottom-color: var(--primary); }
+    
+    .chatNameInput.is-anonymous {
+      color: var(--text-muted);
+      font-style: italic;
+      border-bottom-color: transparent;
+      pointer-events: none;
+    }
+
+    .chatMetaRight {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* --- Anonymous Toggle Widget --- */
+    .anonymousToggleWrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .anonymousToggleWrapper:hover {
+      border-color: var(--primary-light);
+      background-color: var(--surface-hover);
+    }
+
+    .anonymousToggleWrapper.is-active {
+      background-color: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .toggleSwitch {
+      position: relative;
+      display: inline-block;
+      width: 26px;
+      height: 14px;
+    }
+
+    .toggleSwitch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggleSlider {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--border);
+      transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
+      border-radius: 14px;
+    }
+
+    .toggleSlider:before {
+      position: absolute;
+      content: "";
+      height: 10px;
+      width: 10px;
+      left: 2px;
+      bottom: 2px;
+      background-color: var(--surface);
+      transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .toggleSwitch input:checked + .toggleSlider {
+      background-color: var(--primary);
+    }
+
+    .toggleSwitch input:checked + .toggleSlider:before {
+      transform: translateX(12px);
+    }
+
+    .toggleLabel {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: color 0.2s ease;
+    }
+
+    .anonymousToggleWrapper.is-active .toggleLabel {
+      color: var(--primary);
+    }
+
+    .chatTagIconBtn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 26px;
+      height: 26px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chatTagIconBtn:hover, .chatTagIconBtn.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background-color: rgba(94, 106, 210, 0.05);
+    }
+
+    .chatInputRow {
+      display: flex;
+      align-items: flex-end;
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 8px 16px;
+      margin-bottom: 8px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    .chatInputRow:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.12);
+    }
+
+    .chatTextarea {
+      flex: 1;
+      font-family: inherit;
+      font-size: 0.875rem;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      outline: none;
+      resize: none;
+      min-height: 40px;
+      max-height: 200px;
+      padding: 4px 4px 4px 0;
+      line-height: 1.35;
+    }
+
+    .chatSendBtn {
+      background-color: var(--primary);
+      color: var(--primary-text);
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 1px;
+    }
+
+    .chatSendBtn:hover {
+      background-color: var(--primary-hover);
+      transform: scale(1.05);
+    }
+
+    .chatBottomRow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* --- Custom Rock Tumbling Toggle Styles --- */
+    .chatToggles { display: flex; gap: 12px; }
+
+    .rockToggleWrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .rockToggleWrapper input {
+      display: none;
+    }
+
+    .rockToggleTrack {
+      position: relative;
+      width: 44px;
+      height: 22px;
+      background-color: var(--border);
+      border-radius: 20px;
+      transition: background-color 0.4s ease;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+
+    /* The "Rock" that tumbles */
+    .rockTumbler {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      /* Brown boulder gradient */
+      background: radial-gradient(circle at 30% 30%, #a87b51 0%, #6e4b2d 70%, #4a301a 100%);
+      /* Irregular organic shape to resemble a small pebble */
+      border-radius: 40% 60% 55% 45% / 50% 45% 55% 50%; 
+      /* Deep shadows for 3D rock texture */
+      box-shadow: 
+        inset 2px 2px 3px rgba(255, 255, 255, 0.15), 
+        inset -2px -2px 4px rgba(0, 0, 0, 0.6),
+        1px 2px 3px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Cubic bezier overshoot for bouncy tumbling feel */
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), border-radius 0.5s ease;
+    }
+
+    /* Cracks / pits texture on the boulder */
+    .rockTexture {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+    }
+    
+    .rockTexture::before {
+      content: '';
+      position: absolute;
+      top: 4px; left: 4px;
+      width: 3px; height: 3px;
+      background-color: rgba(0,0,0,0.4);
+      border-radius: 50%;
+      box-shadow: 5px 3px 0 1px rgba(0,0,0,0.25), 2px 7px 0 0 rgba(0,0,0,0.3);
+    }
+
+    .rockToggleWrapper input:checked + .rockToggleTrack {
+      background-color: var(--primary);
+    }
+
+    .rockToggleWrapper input:checked + .rockToggleTrack .rockTumbler {
+      /* Roll entirely to the right and spin */
+      transform: translateX(22px) rotate(360deg);
+      /* Morph border-radius for an organic shift while tumbling */
+      border-radius: 55% 45% 40% 60% / 45% 55% 50% 50%;
+      /* Update the light reflection on rotation */
+      background: radial-gradient(circle at 70% 30%, #a87b51 0%, #6e4b2d 70%, #4a301a 100%);
+    }
+
+    .rockToggleLabel {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+
+    .rockToggleWrapper input:checked ~ .rockToggleLabel {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* Badge Variations */
+    .chatStatusBadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      border: 1px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .visibleToOwner {
+      color: var(--primary);
+      background-color: rgba(94, 106, 210, 0.08);
+      border-color: rgba(94, 106, 210, 0.18);
+    }
+    .visibleToOwner:hover {
+      background-color: rgba(94, 106, 210, 0.15);
+      border-color: rgba(94, 106, 210, 0.3);
+    }
+
+    .hiddenFromOwner {
+      color: var(--text-muted);
+      background-color: var(--surface-hover);
+      border-color: var(--border);
+    }
+    .hiddenFromOwner:hover {
+      background-color: var(--border);
+    }
+
+    /* --- Mini Sidebar Module --- */
+    .miniSidebar {
+      position: absolute;
+      top: 64px;
+      right: 100%;
+      min-width: 78px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-right: none;
+      border-radius: 12px 0 0 12px;
+      z-index: 1005;
+      max-height: calc(100vh - 140px);
+      box-sizing: border-box;
+      box-shadow: -10px 0 20px var(--shadow-color);
+      display: none; 
+    }
+
+    .miniSidebar.active { display: flex; }
+
+    .miniSidebarLabel {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .miniSidebarSquares {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: calc(100vh - 180px);
+      overflow-y: auto;
+    }
+
+    .miniSquareCard {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      background: var(--surface-hover);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      transition: all 0.2s;
+    }
+    .miniSquareCard:hover {
+      border-color: var(--primary);
+      background: var(--surface);
+    }
+
+    .miniSquareRemoveBtn {
+      position: absolute;
+      top: -4px; right: -4px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--error);
+      color: var(--color-white);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      z-index: 10;
+      font-size: 10px;
+    }
+
+    .miniSquareIconWrapper {
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+
+    .miniSquareTitle {
+      font-size: 0.625rem;
+      font-weight: 500;
+      color: var(--text);
+      width: 100%;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* --- Reference Info Box --- */
+    .info-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .info-box h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+    }
+
+    .info-box p {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .info-box code {
+      background: var(--surface-hover);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: var(--primary);
+    }
+    
+    .info-box ul { margin-left: 20px; font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
+    .info-box li { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Nav Bar -->
+  <nav class="nav-bar">
+    <div class="logo">Giftistry</div>
+    <div class="controls">
+      <button class="btn" id="appearance-toggle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        Toggle Mode
+      </button>
+      <button class="btn btn-primary" id="sidebar-toggle">Toggle Sidebar</button>
+    </div>
+  </nav>
+
+  <!-- Workspace -->
+  <div class="workspace">
+    
+    <!-- Left Hand Page Details -->
+    <main class="page-content">
+      <div class="title-area">
+        <h1>Comments Sidebar Blueprint</h1>
+        <p>A pure HTML & CSS rendering of the Giftistry Comments Sidebar for reference.</p>
+      </div>
+
+      <div class="info-box">
+        <h2>Interactive Preview Features</h2>
+        <p>This page acts as a living implementation contract. Try interacting with the sidebar on the right:</p>
+        <ul>
+          <li><strong>Appearance Toggle</strong>: Swap between light and dark mode centrally declared in <code>colors.css</code>.</li>
+          <li><strong>NEW! Hovering User Card</strong>: Hover over the name "Alex" in the first comment to reveal a sleek glassmorphic profile card!</li>
+          <li><strong>Anonymous Toggle</strong>: Activate the pill in the form header to switch your post author context to <em>Anonymous</em>.</li>
+          <li><strong>Rock Tumbling Share Toggle</strong>: At the bottom of the input form, click the rolling rock toggle to observe the bouncy cubic-bezier shape-shifting animation.</li>
+          <li><strong>Comment Input</strong>: Type a comment and press enter or click the send button.</li>
+          <li><strong>Delete Action</strong>: Click the trash can icon on any comment to test the slide-down delete confirmation widget.</li>
+        </ul>
+      </div>
+
+      <div class="info-box">
+        <h2>Component Architecture</h2>
+        <p>The sidebar consists of three primary modules nested together:</p>
+        <ol>
+          <li><code>Sidebar.tsx</code>: Base layout slide-out panel wrapper.</li>
+          <li><code>MiniSidebar.tsx</code>: Floats on the left edge of the sidebar panel to contain item thumbnail tags.</li>
+          <li><code>CommentSection.tsx</code>: Inner chat shell managing online presence, message history, and bottom chat form inputs.</li>
+        </ol>
+      </div>
+    </main>
+
+    <!-- Floating Sidebar Structure -->
+    <div class="sidebarWrapper right" id="comments-sidebar">
+      
+      <!-- Tags Mini Sidebar -->
+      <aside class="miniSidebar" id="tags-minibar">
+        <span class="miniSidebarLabel">Tags</span>
+        <div class="miniSidebarSquares">
+          <div class="miniSquareCard">
+            <button class="miniSquareRemoveBtn">×</button>
+            <div class="miniSquareIconWrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+            </div>
+            <span class="miniSquareTitle">Tech Item</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Sidebar Inner Panel -->
+      <div class="sidebarPanel">
+        <header class="sidebarHeader">
+          <h3 class="sidebarTitle">Comments</h3>
+          <button class="sidebarClose" id="sidebar-close-btn">×</button>
+        </header>
+
+        <div class="sidebarBody">
+          <div class="section">
+            
+            <!-- Presence Bar -->
+            <div class="onlinePresenceBar">
+              <span class="onlineDot"></span>
+              <span>Online: </span>
+              <span class="onlineUsersList">Alex, Jordan, Taylor</span>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="listContainer">
+              <div class="commentsList" id="messages-list">
+                
+                <!-- Comment Item: Guest (WITH HOVER CARD) -->
+                <div class="commentBubble">
+                  <div class="commentBubbleTopRow">
+                    <div class="commentVisibilityIndicator">
+                      <span class="visibleEye">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      </span>
+                    </div>
+                    <div class="commentMainContent">
+                      <div class="commentMeta">
+                        
+                        <!-- Interactive Hover Profile Card Trigger -->
+                        <div class="has-user-card">
+                          <span class="author hoverable-name"
+                                data-displayname="Alex Rivera"
+                                data-username="@alexr_gifts"
+                                data-avatar="AL"
+                                data-status="Online"
+                                data-theme="Light Mode"
+                                data-joined="May 2024"
+                                data-bio="Tech enthusiast and avid gift giver. Always on the hunt for the perfect gadget or personalized accessory. 🎁✨"
+                          >Alex (Guest)</span>
+                        </div>
+
+                        <span class="date">10 mins ago</span>
+                      </div>
+                      <p class="commentContent">I think they would absolutely love this gadget!</p>
+                    </div>
+                    <div class="commentTagsContainer">
+                      <button class="commentDeleteBtnLeft">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Slide Down Confirm Widget -->
+                  <div class="commentBubbleBottomRow">
+                    <span class="deleteConfirmText">Delete comment?</span>
+                    <div class="deleteConfirmActions">
+                      <button class="deleteConfirmBtn">Yes</button>
+                      <button class="deleteCancelBtn">Cancel</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Comment Item: Own/Creator -->
+                <div class="commentBubble ownComment">
+                  <div class="commentBubbleTopRow">
+                    <div class="commentVisibilityIndicator">
+                      <span class="visibleEye">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      </span>
+                    </div>
+                    <div class="commentMainContent">
+                      <div class="commentMeta">
+                        <span class="author">Jordan (You)</span>
+                        <span class="date">Just now</span>
+                        <span class="rolloverBadge">Owner</span>
+                      </div>
+                      <p class="commentContent">Yeah! Agreed.</p>
+                    </div>
+                    <div class="commentTagsContainer">
+                      <button class="commentDeleteBtnLeft">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Slide Down Confirm Widget -->
+                  <div class="commentBubbleBottomRow">
+                    <span class="deleteConfirmText">Delete comment?</span>
+                    <div class="deleteConfirmActions">
+                      <button class="deleteConfirmBtn">Yes</button>
+                      <button class="deleteCancelBtn">Cancel</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Bottom Seamless Input -->
+            <div class="bottomSeamlessContainer">
+              
+              <!-- Typing Indicator -->
+              <div class="chatTypingIndicator">
+                <div class="typingBouncer">
+                  <span class="typingDot"></span>
+                  <span class="typingDot"></span>
+                  <span class="typingDot"></span>
+                </div>
+                <span>Taylor is typing...</span>
+              </div>
+
+              <!-- Form -->
+              <form class="chatForm" id="comment-form">
+                
+                <div class="chatMetaRow">
+                  <div class="chatPostingAs">
+                    <span>Posting as</span>
+                    <input type="text" class="chatNameInput" id="posting-name-input" value="Jordan" placeholder="Your name">
+                  </div>
+                  
+                  <div class="chatMetaRight">
+                    
+                    <!-- Anonymous Toggle Pill -->
+                    <label class="anonymousToggleWrapper" id="anon-wrapper" title="Post Anonymously">
+                      <div class="toggleSwitch">
+                        <input type="checkbox" id="anonymous-toggle">
+                        <span class="toggleSlider"></span>
+                      </div>
+                      <span class="toggleLabel">Anon</span>
+                    </label>
+
+                    <!-- Tag Button Toggle -->
+                    <button type="button" class="chatTagIconBtn" id="tag-toggle-btn" title="Toggle Tag Sidebar">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                    </button>
+
+                  </div>
+                </div>
+
+                <!-- Textarea Row -->
+                <div class="chatInputRow">
+                  <textarea class="chatTextarea" id="comment-input-field" placeholder="Write a comment..." rows="1"></textarea>
+                  <button type="submit" class="chatSendBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                  </button>
+                </div>
+
+                <!-- Bottom Config Row with Rock Toggle -->
+                <div class="chatBottomRow">
+                  <div class="chatToggles">
+                    
+                    <!-- Rock Tumbling Share Toggle -->
+                    <label class="rockToggleWrapper" id="share-owner-wrapper" title="Toggle List Owner Visibility">
+                      <input type="checkbox" id="share-owner-toggle" checked>
+                      <div class="rockToggleTrack">
+                        <div class="rockTumbler">
+                          <div class="rockTexture"></div>
+                        </div>
+                      </div>
+                      <span class="rockToggleLabel">Share with list owner</span>
+                    </label>
+
+                  </div>
+
+                  <span class="chatStatusBadge visibleToOwner" id="visibility-badge">
+                    Owner Visible
+                  </span>
+                </div>
+              </form>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Global Hover Profile Card -->
+  <div class="userProfileCard" id="global-user-card">
+    <div class="upc-header">
+      <div class="upc-avatar-wrapper">
+        <span id="upc-avatar-text">AL</span>
+        <div class="upc-status-dot" id="upc-status-dot" title="Online"></div>
+      </div>
+      <div class="upc-identity">
+        <span class="upc-display-name" id="upc-display-name">Alex Rivera</span>
+        <span class="upc-username" id="upc-username">@alexr_gifts</span>
+      </div>
+    </div>
+    <div class="upc-bio" id="upc-bio-text">
+      Tech enthusiast and avid gift giver. Always on the hunt for the perfect gadget or personalized accessory. 🎁✨
+    </div>
+    <div class="upc-meta">
+      <div class="upc-meta-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <span id="upc-joined">Joined May 2024</span>
+      </div>
+      <div class="upc-meta-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <span id="upc-theme">Current Theme: Light Mode</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Interactive State Control Script ---
+    const app = document.documentElement;
+    
+    // 1. Appearance / Dark Mode Toggle
+    document.getElementById('appearance-toggle').addEventListener('click', () => {
+      const current = app.getAttribute('data-appearance');
+      app.setAttribute('data-appearance', current === 'dark' ? 'light' : 'dark');
+    });
+
+    // 2. Sidebar Slide Panel Open/Close
+    const sidebar = document.getElementById('comments-sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const closeBtn = document.getElementById('sidebar-close-btn');
+
+    toggleBtn.addEventListener('click', () => {
+      sidebar.style.transform = sidebar.style.transform === 'translateX(0%)' ? 'translateX(100%)' : 'translateX(0%)';
+    });
+
+    closeBtn.addEventListener('click', () => {
+      sidebar.style.transform = 'translateX(100%)';
+    });
+    sidebar.style.transform = 'translateX(0%)';
+
+    // 3. Mini Sidebar (Tags minibar) toggle
+    const tagToggleBtn = document.getElementById('tag-toggle-btn');
+    const tagsMinibar = document.getElementById('tags-minibar');
+    
+    tagToggleBtn.addEventListener('click', () => {
+      tagToggleBtn.classList.toggle('active');
+      tagsMinibar.classList.toggle('active');
+    });
+
+    // 4. Anonymous Toggle Logic
+    const anonToggle = document.getElementById('anonymous-toggle');
+    const anonWrapper = document.getElementById('anon-wrapper');
+    const nameInput = document.getElementById('posting-name-input');
+    let originalName = nameInput.value;
+
+    anonToggle.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        // Switch to Anonymous mode
+        anonWrapper.classList.add('is-active');
+        originalName = nameInput.value; // save what they were typing
+        nameInput.value = 'Anonymous';
+        nameInput.classList.add('is-anonymous');
+        nameInput.readOnly = true; 
+      } else {
+        // Revert to Named mode
+        anonWrapper.classList.remove('is-active');
+        nameInput.value = originalName;
+        nameInput.classList.remove('is-anonymous');
+        nameInput.readOnly = false;
+      }
+    });
+
+    // 5. Rock Tumbling Toggle (Share with Owner) state sync
+    const shareOwnerToggle = document.getElementById('share-owner-toggle');
+    const visibilityBadge = document.getElementById('visibility-badge');
+
+    shareOwnerToggle.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        visibilityBadge.textContent = 'Owner Visible';
+        visibilityBadge.className = 'chatStatusBadge visibleToOwner';
+      } else {
+        visibilityBadge.textContent = 'Hidden from Owner';
+        visibilityBadge.className = 'chatStatusBadge hiddenFromOwner';
+      }
+    });
+
+    // 6. Delete Bubble confirmation slide-down toggling
+    document.querySelectorAll('.commentDeleteBtnLeft').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const bubble = e.target.closest('.commentBubble');
+        const confirmRow = bubble.querySelector('.commentBubbleBottomRow');
+        confirmRow.classList.toggle('active');
+      });
+    });
+
+    document.querySelectorAll('.deleteCancelBtn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const confirmRow = e.target.closest('.commentBubbleBottomRow');
+        confirmRow.classList.remove('active');
+      });
+    });
+
+    document.querySelectorAll('.deleteConfirmBtn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const bubble = e.target.closest('.commentBubble');
+        bubble.style.transition = 'all 0.3s ease';
+        bubble.style.opacity = '0';
+        bubble.style.transform = 'scale(0.9)';
+        setTimeout(() => bubble.remove(), 300);
+      });
+    });
+
+    // 7. Submit Message to History
+    const form = document.getElementById('comment-form');
+    const input = document.getElementById('comment-input-field');
+    const list = document.getElementById('messages-list');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = input.value.trim();
+      if (!val) return;
+
+      // Check current posting status
+      const isAnon = anonToggle.checked;
+      const authorText = isAnon ? 'Anonymous' : `${nameInput.value} (You)`;
+      const bubbleClass = isAnon ? 'anonComment' : 'ownComment';
+      const badgeHTML = isAnon 
+        ? `<span class="rolloverBadge anonBadge">Secret</span>` 
+        : `<span class="rolloverBadge">Owner</span>`;
+
+      // Create new message bubble element
+      const bubble = document.createElement('div');
+      bubble.className = `commentBubble ${bubbleClass}`;
+      bubble.innerHTML = `
+        <div class="commentBubbleTopRow">
+          <div class="commentVisibilityIndicator">
+            <span class="visibleEye">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </span>
+          </div>
+          <div class="commentMainContent">
+            <div class="commentMeta">
+              <span class="author">${authorText}</span>
+              <span class="date">Just now</span>
+              ${badgeHTML}
+            </div>
+            <p class="commentContent">${val}</p>
+          </div>
+          <div class="commentTagsContainer">
+            <button class="commentDeleteBtnLeft">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div class="commentBubbleBottomRow">
+          <span class="deleteConfirmText">Delete comment?</span>
+          <div class="deleteConfirmActions">
+            <button class="deleteConfirmBtn">Yes</button>
+            <button class="deleteCancelBtn">Cancel</button>
+          </div>
+        </div>
+      `;
+
+      // Set events on new buttons
+      bubble.querySelector('.commentDeleteBtnLeft').addEventListener('click', (ev) => {
+        bubble.querySelector('.commentBubbleBottomRow').classList.toggle('active');
+      });
+      bubble.querySelector('.deleteCancelBtn').addEventListener('click', (ev) => {
+        bubble.querySelector('.commentBubbleBottomRow').classList.remove('active');
+      });
+      bubble.querySelector('.deleteConfirmBtn').addEventListener('click', (ev) => {
+        bubble.style.transition = 'all 0.3s ease';
+        bubble.style.opacity = '0';
+        bubble.style.transform = 'scale(0.9)';
+        setTimeout(() => bubble.remove(), 300);
+      });
+
+      list.appendChild(bubble);
+      input.value = '';
+      
+      // Auto scroll
+      const container = document.querySelector('.listContainer');
+      container.scrollTop = container.scrollHeight;
+    });
+
+    // Submit on Enter
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.dispatchEvent(new Event('submit'));
+      }
+    });
+
+    // 8. Smart Global Hover Card Logic
+    const globalCard = document.getElementById('global-user-card');
+    let hoverTimer;
+
+    function populateCard(target) {
+      document.getElementById('upc-avatar-text').textContent = target.dataset.avatar;
+      document.getElementById('upc-display-name').textContent = target.dataset.displayname;
+      document.getElementById('upc-username').textContent = target.dataset.username;
+      document.getElementById('upc-bio-text').textContent = target.dataset.bio;
+      document.getElementById('upc-joined').textContent = `Joined ${target.dataset.joined}`;
+      document.getElementById('upc-theme').textContent = `Current Theme: ${target.dataset.theme}`;
+      
+      const statusDot = document.getElementById('upc-status-dot');
+      if(target.dataset.status === 'Online') {
+        statusDot.style.backgroundColor = 'var(--success)';
+      } else {
+        statusDot.style.backgroundColor = 'var(--text-muted)';
+      }
+    }
+
+    function initHoverCards() {
+      document.querySelectorAll('.hoverable-name').forEach(trigger => {
+        // Prevent binding multiple times if called again
+        if(trigger.dataset.hoverBound) return;
+        trigger.dataset.hoverBound = "true";
+
+        trigger.addEventListener('mouseenter', () => {
+          clearTimeout(hoverTimer);
+          populateCard(trigger);
+          
+          const rect = trigger.getBoundingClientRect();
+          
+          // Briefly display to measure
+          globalCard.style.display = 'flex';
+          const cardHeight = globalCard.offsetHeight;
+          const cardWidth = globalCard.offsetWidth;
+          
+          const spaceBelow = window.innerHeight - rect.bottom;
+          const spaceAbove = rect.top;
+          
+          // Determine placement based on bounds
+          let isTop = spaceBelow < cardHeight + 20 && spaceAbove > spaceBelow;
+          
+          globalCard.classList.remove('show-top', 'show-bottom');
+          
+          if (isTop) {
+            globalCard.classList.add('show-top');
+            globalCard.style.top = `${rect.top - cardHeight - 12}px`;
+          } else {
+            globalCard.classList.add('show-bottom');
+            globalCard.style.top = `${rect.bottom + 12}px`;
+          }
+          
+          // Horizontal bounds matching
+          let leftPos = rect.left - 16; 
+          if (leftPos + cardWidth > window.innerWidth - 20) {
+            leftPos = window.innerWidth - cardWidth - 20;
+          }
+          if (leftPos < 20) leftPos = 20;
+          
+          globalCard.style.left = `${leftPos}px`;
+          
+          // Trigger animation
+          requestAnimationFrame(() => {
+            globalCard.classList.add('is-visible');
+          });
+        });
+        
+        trigger.addEventListener('mouseleave', () => {
+          hoverTimer = setTimeout(() => {
+            globalCard.classList.remove('is-visible');
+          }, 250);
+        });
+      });
+    }
+
+    globalCard.addEventListener('mouseenter', () => clearTimeout(hoverTimer));
+    globalCard.addEventListener('mouseleave', () => {
+      hoverTimer = setTimeout(() => {
+        globalCard.classList.remove('is-visible');
+      }, 250);
+    });
+
+    initHoverCards();
+
+  </script>
+</body>
+</html>

@@ -35,4 +35,6 @@ export interface CommentSectionTemplateProps {
   handleDeleteComment: (commentId: string) => void;
   deletingCommentId: string | null;
   setDeletingCommentId: (id: string | null) => void;
+  isAnonymous: boolean;
+  setIsAnonymous: (anon: boolean) => void;
 }

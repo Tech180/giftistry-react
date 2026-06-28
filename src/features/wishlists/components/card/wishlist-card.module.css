@@ -2,17 +2,17 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #151516;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card:hover {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary);
   transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow);
 }
 
 .archived {
@@ -52,8 +52,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: rgba(255, 255, 255, 0.4);
-  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  background-color: var(--surface-hover);
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.75rem;
@@ -80,21 +80,21 @@
 }
 
 .collaborator {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: #34d399;
-  border-color: rgba(16, 185, 129, 0.2);
+  background-color: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success-border);
 }
 
 .viewer {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.2);
+  background-color: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
+  border-color: rgba(var(--primary-rgb), 0.2);
 }
 
 .personal {
-  background-color: rgba(113, 113, 122, 0.1);
-  color: #a1a1aa;
-  border-color: rgba(113, 113, 122, 0.2);
+  background-color: var(--surface-hover);
+  color: var(--text-muted);
+  border-color: var(--border);
 }
 
 .titleArea {
@@ -106,14 +106,14 @@
 .title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text);
   margin: 0;
   line-height: 1.4;
   transition: color 0.2s ease;
 }
 
 .card:hover .title {
-  color: #818cf8;
+  color: var(--primary);
 }
 
 .ownerAttribution {
@@ -121,7 +121,7 @@
   align-items: center;
   gap: 6px;
   font-size: 0.75rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
 .ownerAvatar {
@@ -132,11 +132,12 @@
 }
 
 /* Avatar Colors */
-.avatarBg1 { background-color: #6366f1; }
-.avatarBg2 { background-color: #ec4899; }
-.avatarBg3 { background-color: #10b981; }
-.avatarBg4 { background-color: #f59e0b; }
-.avatarBg5 { background-color: #8b5cf6; }
+.avatarBg1 { background-color: var(--primary); }
+.avatarBg2 { background-color: var(--accent); }
+.avatarBg3 { background-color: var(--success); }
+.avatarBg4 { background-color: var(--text-muted); }
+.avatarBg5 { background-color: var(--primary-hover); }
+
 
 .meta {
   display: flex;
@@ -151,7 +152,7 @@
   gap: 8px;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
 .metaIcon {
@@ -160,15 +161,15 @@
 }
 
 .noExpire {
-  color: #71717a;
+  color: var(--text-muted);
 }
 
 .activeExpire {
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
 .expired {
-  color: #71717a;
+  color: var(--text-muted);
 }
 
 .footer {
@@ -176,27 +177,27 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background-color: #1a1a1c;
+  border-top: 1px solid var(--border);
+  background-color: var(--surface-hover);
   transition: background-color 0.2s ease;
 }
 
 .card:hover .footer {
-  background-color: #1e1e20;
+  filter: brightness(1.02);
 }
 
 .viewLink {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text);
 }
 
 .arrow {
-  color: #71717a;
+  color: var(--text-muted);
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .card:hover .arrow {
   transform: translateX(4px);
-  color: #818cf8;
+  color: var(--primary);
 }

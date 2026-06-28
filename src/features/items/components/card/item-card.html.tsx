@@ -144,13 +144,13 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
               >
                 <Star
                   size={16}
-                  fill={isFavorite ? '#f59e0b' : 'none'}
-                  stroke={isFavorite ? '#f59e0b' : 'currentColor'}
+                  fill={isFavorite ? 'var(--warning)' : 'none'}
+                  stroke={isFavorite ? 'var(--warning)' : 'currentColor'}
                 />
               </button>
             ) : isFavorite ? (
               <div title="Favorited by Owner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Star size={16} fill="#f59e0b" stroke="#f59e0b" />
+                <Star size={16} fill="var(--warning)" stroke="var(--warning)" />
               </div>
             ) : (
               <Star size={16} fill="none" stroke="currentColor" style={{ opacity: 0.3 }} />
@@ -161,16 +161,9 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           <div className={styles.compactInfoSection}>
             <span className={styles.compactItemName} title={item.Name}>{item.Name}</span>
             {displayCategoryBadge && (
-              <span
-                className={styles.compactCategoryBadge}
-                title={`Category: ${categoryMeta.label}`}
-                style={{
-                  backgroundColor: `${categoryMeta.color}15`,
-                  borderColor: `${categoryMeta.color}30`,
-                  color: categoryMeta.color
-                }}
-              >
-                <CategoryIcon size={10} />
+              <span className={styles.compactCategoryBadge} title={`Category: ${categoryMeta.label}`}>
+                <CategoryIcon size={10} style={{ marginRight: '2px' }} />
+                {categoryMeta.label}
               </span>
             )}
 
@@ -393,15 +386,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
         <div className={styles.gridTopBar}>
           <div className={styles.gridCategoryContainer}>
             {displayCategoryBadge && (
-              <span
-                className={styles.gridCategoryBadge}
-                title={`Category: ${categoryMeta.label}`}
-                style={{
-                  backgroundColor: `${categoryMeta.color}15`,
-                  borderColor: `${categoryMeta.color}30`,
-                  color: categoryMeta.color
-                }}
-              >
+              <span className={styles.gridCategoryBadge} title={`Category: ${categoryMeta.label}`}>
                 <CategoryIcon size={10} />
               </span>
             )}
@@ -418,13 +403,13 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
               >
                 <Star
                   size={10}
-                  fill={isFavorite ? '#f59e0b' : 'none'}
-                  stroke={isFavorite ? '#f59e0b' : 'currentColor'}
+                  fill={isFavorite ? 'var(--warning)' : 'none'}
+                  stroke={isFavorite ? 'var(--warning)' : 'currentColor'}
                 />
               </button>
             ) : isFavorite ? (
               <div title="Favorited by Owner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Star size={10} fill="#f59e0b" stroke="#f59e0b" />
+                <Star size={10} fill="var(--warning)" stroke="var(--warning)" />
               </div>
             ) : null}
           </div>
@@ -556,16 +541,16 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
             >
               <Star
                 size={20}
-                fill={isFavorite ? '#f59e0b' : 'none'}
-                stroke={isFavorite ? '#f59e0b' : 'currentColor'}
+                fill={isFavorite ? 'var(--warning)' : 'none'}
+                stroke={isFavorite ? 'var(--warning)' : 'currentColor'}
               />
             </button>
           ) : isFavorite ? (
             <div
               title="Favorited by Owner"
-              style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ color: 'var(--warning)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              <Star size={20} fill="#f59e0b" stroke="#f59e0b" />
+              <Star size={20} fill="var(--warning)" stroke="var(--warning)" />
             </div>
           ) : (
             <div

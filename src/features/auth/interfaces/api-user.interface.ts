@@ -5,4 +5,7 @@ export interface ApiUser {
   FirstName: string;
   LastName: string;
   CreatedAt?: string;
+  Bio?: string;
+  Theme?: string;
+  Avatar?: string | null;
 }

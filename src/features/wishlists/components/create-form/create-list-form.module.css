@@ -8,9 +8,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error);
   padding: 10px 12px;
   border-radius: var(--radius);
   font-size: 0.8125rem;
@@ -74,10 +74,10 @@
 .select {
   width: 100%;
   padding: 10px 36px 10px 12px;
-  background-color: #151516;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: #ffffff;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
   font-size: 0.875rem;
   outline: none;
   appearance: none;
@@ -86,7 +86,7 @@
 }
 
 .select:focus {
-  border-color: #818cf8;
+  border-color: var(--primary);
 }
 
 .selectIcon {
@@ -94,7 +94,7 @@
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #71717a;
+  color: var(--text-muted);
   pointer-events: none;
 }
 

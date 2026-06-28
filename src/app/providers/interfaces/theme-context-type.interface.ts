@@ -1,4 +1,4 @@
-import { Theme, Appearance } from '../ThemeContext';
+import { Theme, Appearance } from '../theme-context';
 
 export interface ThemeContextType {
   theme: Theme;
@@ -6,4 +6,6 @@ export interface ThemeContextType {
   setTheme: (theme: Theme) => void;
   setAppearance: (appearance: Appearance) => void;
   toggleAppearance: () => void;
+  unlockedThemes: Theme[];
+  isThemeUnlocked: (theme: Theme) => boolean;
 }

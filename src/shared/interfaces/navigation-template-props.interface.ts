@@ -1,6 +1,6 @@
 import { RefObject } from 'react';
-import { Theme, Appearance } from 'app/providers/ThemeContext';
-import { User } from 'app/providers/AuthContext';
+import { Theme, Appearance } from 'app/providers/theme-context';
+import { User } from 'app/providers/auth-context';
 import { Wishlist } from 'features/wishlists/interfaces/wishlist.interface';
 
 export interface NavigationTemplateProps {
@@ -10,6 +10,7 @@ export interface NavigationTemplateProps {
   appearance: Appearance;
   setTheme: (t: Theme) => void;
   setAppearance: (a: Appearance) => void;
+  isThemeUnlocked: (t: Theme) => boolean;
   isProfileOpen: boolean;
   setIsProfileOpen: (open: boolean) => void;
   isThemeOpen: boolean;
@@ -17,7 +18,10 @@ export interface NavigationTemplateProps {
   profileRef: RefObject<HTMLDivElement | null>;
   themeRef: RefObject<HTMLDivElement | null>;
   handleLogout: () => void;
-  themes: { value: Theme; label: string }[];
+  standardThemes: { value: Theme; label: string }[];
+  holidayThemes: { value: Theme; label: string }[];
+  isHolidayOpen: boolean;
+  setIsHolidayOpen: (open: boolean) => void;
   appearances: { value: Appearance; label: string; icon: any }[];
   navigate: (to: string) => void;
   isSearchOpen: boolean;

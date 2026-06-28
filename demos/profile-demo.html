@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default" data-appearance="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giftistry - Edit Profile</title>
+  
+  <!-- Outfit & Inter Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ==========================================================================
+       1. CORE DESIGN SYSTEM & THEME TOKENS
+       ========================================================================== */
+    :root {
+      --error: #ef4444;
+      --error-rgb: 239, 68, 68;
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: rgba(239, 68, 68, 0.2);
+      
+      --success: #10b981;
+      --success-rgb: 16, 185, 129;
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --success-border: rgba(16, 185, 129, 0.2);
+
+      --backdrop-bg: rgba(0, 0, 0, 0.6);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.4);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.24);
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+      
+      --radius: 12px;
+    }
+
+    /* --- THEMES (DARK MODE) --- */
+    [data-appearance="dark"][data-theme="default"] {
+      --primary: #5e6ad2;
+      --primary-hover: #4d59c2;
+      --primary-rgb: 94, 106, 210;
+      --primary-text: #ffffff;
+      --bg: #0f0f10;
+      --surface: #151516;
+      --surface-hover: #1e1e20;
+      --text: #f7f8f8;
+      --text-muted: #8a8f98;
+      --border: rgba(255, 255, 255, 0.08);
+      --surface-glass: rgba(21, 21, 22, 0.7);
+    }
+    [data-appearance="dark"][data-theme="neon"] {
+      --primary: #ff007f;
+      --primary-hover: #e0006c;
+      --primary-rgb: 255, 0, 127;
+      --primary-text: #ffffff;
+      --bg: #0d021a;
+      --surface: #17072e;
+      --surface-hover: #260e47;
+      --text: #f7f8f8;
+      --text-muted: #a372eb;
+      --border: rgba(255, 0, 127, 0.15);
+      --surface-glass: rgba(23, 7, 46, 0.7);
+    }
+    [data-appearance="dark"][data-theme="cyberpunk"] {
+      --primary: #fcee0a;
+      --primary-hover: #d2c700;
+      --primary-rgb: 252, 238, 10;
+      --primary-text: #000000;
+      --bg: #000411;
+      --surface: #080f26;
+      --surface-hover: #0d1b40;
+      --text: #f7f8f8;
+      --text-muted: #5e83a6;
+      --border: rgba(252, 238, 10, 0.15);
+      --surface-glass: rgba(8, 15, 38, 0.7);
+    }
+    [data-appearance="dark"][data-theme="mystic"] {
+      --primary: #2d7a4d;
+      --primary-hover: #1e5c36;
+      --primary-rgb: 45, 122, 77;
+      --primary-text: #ffffff;
+      --bg: #0f1c13;
+      --surface: #162a1d;
+      --surface-hover: #223f2c;
+      --text: #e1efe6;
+      --text-muted: #7a9c84;
+      --border: rgba(45, 122, 77, 0.15);
+      --surface-glass: rgba(22, 42, 29, 0.7);
+    }
+    [data-appearance="dark"][data-theme="burnt-forest"] {
+      --primary: #ff5500;
+      --primary-hover: #cc4400;
+      --primary-rgb: 255, 85, 0;
+      --primary-text: #ffffff;
+      --bg: #0a0705;
+      --surface: #140e0a;
+      --surface-hover: #1e150f;
+      --text: #f0e6df;
+      --text-muted: #a68c7c;
+      --border: rgba(255, 85, 0, 0.15);
+      --surface-glass: rgba(20, 14, 10, 0.7);
+    }
+    [data-appearance="dark"][data-theme="valentines"] {
+      --primary: #ff4d6d;
+      --primary-hover: #ff758f;
+      --primary-rgb: 255, 77, 109;
+      --primary-text: #ffffff;
+      --bg: #1c0a10;
+      --surface: #2c0f1a;
+      --surface-hover: #3d1424;
+      --text: #fff0f3;
+      --text-muted: #ffb3c1;
+      --border: rgba(255, 77, 109, 0.15);
+      --surface-glass: rgba(44, 15, 26, 0.7);
+    }
+    [data-appearance="dark"][data-theme="st-patricks"] {
+      --primary: #00a867;
+      --primary-hover: #008f56;
+      --primary-rgb: 0, 168, 107;
+      --primary-text: #ffffff;
+      --bg: #03140b;
+      --surface: #072615;
+      --surface-hover: #0b3d21;
+      --text: #e8f5e9;
+      --text-muted: #81c784;
+      --border: rgba(0, 168, 107, 0.15);
+      --surface-glass: rgba(7, 38, 21, 0.7);
+    }
+    [data-appearance="dark"][data-theme="earth-day"] {
+      --primary: #d97443;
+      --primary-hover: #c46233;
+      --primary-rgb: 217, 116, 67;
+      --primary-text: #ffffff;
+      --bg: #14110f;
+      --surface: #241e1a;
+      --surface-hover: #332b24;
+      --text: #fdfaf7;
+      --text-muted: #d7ccc8;
+      --border: rgba(217, 116, 67, 0.15);
+      --surface-glass: rgba(36, 30, 26, 0.7);
+    }
+    [data-appearance="dark"][data-theme="independence"] {
+      --primary: #d62828;
+      --primary-hover: #b31d1d;
+      --primary-rgb: 214, 40, 40;
+      --primary-text: #ffffff;
+      --bg: #0a0e17;
+      --surface: #131a2b;
+      --surface-hover: #1c2740;
+      --text: #f0f4f8;
+      --text-muted: #9ab0c7;
+      --border: rgba(214, 40, 40, 0.15);
+      --surface-glass: rgba(19, 26, 43, 0.7);
+    }
+    [data-appearance="dark"][data-theme="halloween"] {
+      --primary: #fe5000;
+      --primary-hover: #d44300;
+      --primary-rgb: 254, 80, 0;
+      --primary-text: #ffffff;
+      --bg: #0a0604;
+      --surface: #1c110b;
+      --surface-hover: #291a11;
+      --text: #fffbf7;
+      --text-muted: #ffb782;
+      --border: rgba(254, 80, 0, 0.15);
+      --surface-glass: rgba(28, 17, 11, 0.7);
+    }
+    [data-appearance="dark"][data-theme="thanksgiving"] {
+      --primary: #e65100;
+      --primary-hover: #bf4300;
+      --primary-rgb: 230, 81, 0;
+      --primary-text: #ffffff;
+      --bg: #120904;
+      --surface: #241308;
+      --surface-hover: #331c0b;
+      --text: #fffbf7;
+      --text-muted: #ffcc80;
+      --border: rgba(230, 81, 0, 0.15);
+      --surface-glass: rgba(36, 19, 8, 0.7);
+    }
+    [data-appearance="dark"][data-theme="christmas"] {
+      --primary: #b01b2e;
+      --primary-hover: #911222;
+      --primary-rgb: 176, 27, 46;
+      --primary-text: #ffffff;
+      --bg: #050d08;
+      --surface: #0a1c12;
+      --surface-hover: #11301f;
+      --text: #f1fdf5;
+      --text-muted: #8cd6a5;
+      --border: rgba(176, 27, 46, 0.15);
+      --surface-glass: rgba(10, 28, 18, 0.7);
+    }
+
+    /* --- THEMES (LIGHT MODE) --- */
+    [data-appearance="light"] {
+      --backdrop-bg: rgba(0, 0, 0, 0.3);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    }
+    [data-appearance="light"][data-theme="default"] {
+      --primary: #5e6ad2;
+      --primary-hover: #4d59c2;
+      --primary-rgb: 94, 106, 210;
+      --primary-text: #ffffff;
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --surface-hover: #f3f3f4;
+      --text: #111111;
+      --text-muted: #6b6b7b;
+      --border: rgba(0, 0, 0, 0.08);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="neon"] {
+      --primary: #ff007f;
+      --primary-hover: #e0006c;
+      --primary-rgb: 255, 0, 127;
+      --primary-text: #ffffff;
+      --bg: #fcf8fd;
+      --surface: #ffffff;
+      --surface-hover: #f6ecf9;
+      --text: #2c0054;
+      --text-muted: #7b688c;
+      --border: rgba(255, 0, 127, 0.1);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="cyberpunk"] {
+      --primary: #d2c700;
+      --primary-hover: #b0a700;
+      --primary-rgb: 210, 199, 0;
+      --primary-text: #000000;
+      --bg: #e2e2e4;
+      --surface: #f3f3f5;
+      --surface-hover: #e7e7ea;
+      --text: #111111;
+      --text-muted: #4e4e54;
+      --border: rgba(0, 0, 0, 0.1);
+      --surface-glass: rgba(243, 243, 245, 0.7);
+    }
+    [data-appearance="light"][data-theme="mystic"] {
+      --primary: #2d7a4d;
+      --primary-hover: #1e5c36;
+      --primary-rgb: 45, 122, 77;
+      --primary-text: #ffffff;
+      --bg: #f2f7f4;
+      --surface: #ffffff;
+      --surface-hover: #eaf1ed;
+      --text: #1d3322;
+      --text-muted: #607c65;
+      --border: rgba(45, 122, 77, 0.1);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="burnt-forest"] {
+      --primary: #ff5500;
+      --primary-hover: #cc4400;
+      --primary-rgb: 255, 85, 0;
+      --primary-text: #ffffff;
+      --bg: #f4efeb;
+      --surface: #ffffff;
+      --surface-hover: #ebdcd3;
+      --text: #331f14;
+      --text-muted: #8c7365;
+      --border: rgba(255, 85, 0, 0.1);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="valentines"] {
+      --primary: #ff4d6d;
+      --primary-hover: #e03a5c;
+      --primary-rgb: 255, 77, 109;
+      --primary-text: #ffffff;
+      --bg: #fff0f3;
+      --surface: #ffffff;
+      --surface-hover: #ffe3e8;
+      --text: #590d22;
+      --text-muted: #a4133c;
+      --border: rgba(255, 77, 109, 0.1);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="st-patricks"] {
+      --primary: #00a867;
+      --primary-hover: #008f56;
+      --primary-rgb: 0, 168, 107;
+      --primary-text: #ffffff;
+      --bg: #e8f5e9;
+      --surface: #ffffff;
+      --surface-hover: #c8e6c9;
+      --text: #1b5e20;
+      --text-muted: #4caf50;
+      --border: rgba(0, 168, 107, 0.1);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="earth-day"] {
+      --primary: #d97443;
+      --primary-hover: #c46233;
+      --primary-rgb: 217, 116, 67;
+      --primary-text: #ffffff;
+      --bg: #fdfaf7;
+      --surface: #ffffff;
+      --surface-hover: #efebe9;
+      --text: #3e2723;
+      --text-muted: #8d6e63;
+      --border: rgba(217, 116, 67, 0.1);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="independence"] {
+      --primary: #d62828;
+      --primary-hover: #b31d1d;
+      --primary-rgb: 214, 40, 40;
+      --primary-text: #ffffff;
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --surface-hover: #dbe4ee;
+      --text: #0b1c3a;
+      --text-muted: #486581;
+      --border: rgba(214, 40, 40, 0.1);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="halloween"] {
+      --primary: #fe5000;
+      --primary-hover: #d44300;
+      --primary-rgb: 254, 80, 0;
+      --primary-text: #ffffff;
+      --bg: #fffbf7;
+      --surface: #ffffff;
+      --surface-hover: #ffe0cc;
+      --text: #2b1100;
+      --text-muted: #b33c00;
+      --border: rgba(254, 80, 0, 0.1);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="thanksgiving"] {
+      --primary: #e65100;
+      --primary-hover: #bf4300;
+      --primary-rgb: 230, 81, 0;
+      --primary-text: #ffffff;
+      --bg: #fffde7;
+      --surface: #ffffff;
+      --surface-hover: #ffe0b2;
+      --text: #3e2723;
+      --text-muted: #ef6c00;
+      --border: rgba(230, 81, 0, 0.1);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="christmas"] {
+      --primary: #b01b2e;
+      --primary-hover: #911222;
+      --primary-rgb: 176, 27, 46;
+      --primary-text: #ffffff;
+      --bg: #f1fdf5;
+      --surface: #ffffff;
+      --surface-hover: #d2edd9;
+      --text: #052611;
+      --text-muted: #1e7d41;
+      --border: rgba(176, 27, 46, 0.1);
+      --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+
+    /* ==========================================================================
+       2. RESET & BASE LAYOUT STYLES
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .app-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 24px 40px 24px;
+    }
+
+    /* Glassmorphism helpers */
+    .glass {
+      background: var(--surface-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Animations */
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-scale-in {
+      animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .animate-slide-up {
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* ==========================================================================
+       3. NAVIGATION COMPONENT MODULE STYLES
+       ========================================================================== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 48px;
+      background-color: var(--surface);
+      opacity: 0.95;
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+
+    .nav-container {
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.125rem;
+    }
+
+    .logoIcon {
+      color: var(--primary);
+      display: inline-block;
+      overflow: visible;
+      animation: logoGentlyRock 6s infinite ease-in-out;
+    }
+
+    .giftLid {
+      transform-origin: 4px 10px;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: giftLidBounce 6s infinite ease-in-out;
+    }
+
+    @keyframes logoGentlyRock {
+      0%, 80%, 100% { transform: rotate(0deg); }
+      85% { transform: rotate(-3deg); }
+      90% { transform: rotate(3deg); }
+      95% { transform: rotate(-1deg); }
+    }
+
+    @keyframes giftLidBounce {
+      0%, 80%, 100% { transform: translateY(0) rotate(0deg); }
+      85%, 95% { transform: translateY(-3px) rotate(-6deg); }
+      90% { transform: translateY(-4px) rotate(-8deg); }
+    }
+
+    .logo:hover .logoIcon {
+      animation: none;
+    }
+
+    .logo:hover .giftLid {
+      animation: none;
+      transform: translateY(-5px) rotate(-12deg);
+    }
+
+    .navLinks {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-left: 24px;
+    }
+
+    .navLink {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+
+    .navLink:hover {
+      color: var(--text);
+    }
+
+    /* Search Input Wrapper */
+    .search-container {
+      flex: 1;
+      margin: 0 2rem;
+      position: relative;
+      max-width: 42.5rem;
+    }
+
+    .search-input-wrapper {
+      display: flex;
+      align-items: center;
+      background-color: var(--surface-hover);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+
+    .search-input-wrapper:focus-within {
+      border-color: var(--primary);
+      background-color: var(--surface);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    .search-icon {
+      color: var(--text-muted);
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 0.8125rem;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .clear-search-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.15s ease;
+    }
+
+    .clear-search-btn:hover {
+      color: var(--text);
+    }
+
+    /* Search Dropdown */
+    .search-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background-color: var(--surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 1000;
+      padding: 6px;
+      display: none;
+    }
+
+    .dropdown-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+      user-select: none;
+    }
+
+    .dropdown-item:hover, .active-dropdown-item {
+      background-color: var(--surface-hover);
+      transform: translateX(2px);
+    }
+
+    .dropdown-item-icon {
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: color 0.15s ease;
+    }
+
+    .dropdown-item:hover .dropdown-item-icon, .active-dropdown-item .dropdown-item-icon {
+      color: var(--primary);
+    }
+
+    .dropdown-item-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dropdown-item-title {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .dropdown-item-owner {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .dropdown-status {
+      padding: 16px;
+      text-align: center;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    /* Navigation Action Buttons */
+    .navButton {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+
+    .navButton:hover {
+      background-color: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .themeNavButton {
+      position: relative;
+    }
+
+    .themeToggleWrapper {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .paletteIcon {
+      color: var(--text-muted);
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .navButton:hover .paletteIcon {
+      color: var(--text);
+      transform: rotate(15deg);
+    }
+
+    .miniIndicator {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      padding: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      width: 12px;
+      height: 12px;
+      color: var(--primary);
+      transition: all 0.2s ease;
+    }
+
+    .navButton:hover .miniIndicator {
+      transform: scale(1.1);
+    }
+
+    /* Dropdowns */
+    .dropdownContainer {
+      position: relative;
+      display: inline-block;
+    }
+
+    .profileTrigger {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 20px;
+      transition: background-color 0.2s ease;
+    }
+
+    .profileTrigger:hover {
+      background-color: var(--surface-hover);
+    }
+
+    .avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: var(--primary-text);
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+    }
+
+    .chevron {
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+
+    .dropdownMenu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: 200px;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 6px;
+      z-index: 101;
+      display: none;
+    }
+
+    .themeMenu {
+      width: 160px;
+    }
+
+    .menuHeader {
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 6px 8px;
+      font-weight: 600;
+    }
+
+    .menuItem {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 6px 8px;
+      font-size: 0.8125rem;
+      color: var(--text);
+      text-align: left;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .menuItem:hover {
+      background-color: var(--surface-hover);
+    }
+
+    .activeItem {
+      color: var(--primary) !important;
+      font-weight: 500;
+      background-color: rgba(var(--primary-rgb), 0.05);
+    }
+
+    .menuItem:disabled {
+      color: var(--text-muted);
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .menuItem:disabled:hover {
+      background: transparent;
+    }
+
+    .menuDivider {
+      height: 1px;
+      background-color: var(--border);
+      margin: 4px 0;
+    }
+
+    .itemIcon {
+      margin-right: 8px;
+      color: var(--text-muted);
+    }
+
+    .userInfo {
+      padding: 8px;
+    }
+
+    .userName {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .userEmail {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .dangerItem {
+      color: var(--error);
+    }
+
+    .dangerItem:hover {
+      background-color: var(--error-bg);
+    }
+
+    .lockIcon {
+      margin-left: auto;
+      color: var(--text-muted);
+    }
+
+    .holidayToggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 500;
+    }
+
+    .rotatedChevron {
+      transform: rotate(180deg);
+    }
+
+    .holidaySubMenu {
+      padding-left: 6px;
+      margin: 4px 0 4px 6px;
+      border-left: 1px dashed var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      display: none;
+    }
+
+    .holidayMenuItem {
+      padding-left: 10px;
+    }
+
+    /* ==========================================================================
+       4. PAGE CONTAINER & PROFILE CARD COMPONENT STYLES
+       ========================================================================== */
+    .profile-container {
+      display: flex;
+      min-height: calc(100vh - 120px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .profileCard {
+      width: 100%;
+      max-width: 540px;
+      margin: 40px auto;
+    }
+
+    .cardHeader {
+      margin-bottom: 24px;
+    }
+
+    .cardTitle {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .cardSubtitle {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* Alert / Banner Messages */
+    .alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      margin-bottom: 20px;
+    }
+
+    .alertError {
+      background-color: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error);
+    }
+
+    .alertSuccess {
+      background-color: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success);
+    }
+
+    .alertIcon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Profile form layout */
+    .profileForm {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .nameRow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 540px) {
+      .nameRow {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Shared Card Styles */
+    .card {
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glassCard {
+      background: var(--surface-glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .cardPaddingLg {
+      padding: 32px;
+    }
+
+    /* Shared Input Styles */
+    .inputContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .inputLabel {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .inputWrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .inputField {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.875rem;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    .inputField:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+    }
+
+    .inputField:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .inputHasLeftIcon {
+      padding-left: 36px;
+    }
+
+    .inputIcon {
+      position: absolute;
+      left: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    /* Shared Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      font-weight: 500;
+      border-radius: var(--radius);
+      cursor: pointer;
+      border: 1px solid transparent;
+      gap: 8px;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+      outline: none;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btnMd {
+      padding: 8px 16px;
+      font-size: 0.875rem;
+    }
+
+    .btnPrimary {
+      background-color: var(--primary);
+      color: var(--primary-text);
+      border-color: var(--border);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btnPrimary:hover:not(:disabled) {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btnPrimary:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .submitBtn {
+      align-self: flex-start;
+      min-width: 140px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 540px) {
+      .submitBtn {
+        width: 100%;
+      }
+    }
+
+    /* Button Loading spinner animations */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      display: inline-block;
+      animation: rotation 0.6s linear infinite;
+    }
+
+    .btnContent {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    @keyframes rotation {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Top Navigation component replica -->
+    <nav class="navbar">
+      <div class="nav-container">
+        
+        <div class="nav-left">
+          <a href="/dashboard" class="logo">
+            <svg class="logoIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <g class="giftLid">
+                <path d="M4 7h16v3H4z" />
+                <path d="M12 7c-1.5-2.5-4-2.5-4 0 0 1.5 2.5 2.5 4 0z" />
+                <path d="M12 7c1.5-2.5 4-2.5 4 0 0 1.5-2.5 2.5-4 0z" />
+              </g>
+              <path d="M5 10h14v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V10z" />
+              <path d="M12 10v12" />
+            </svg>
+            <span class="logoText">Giftistry</span>
+          </a>
+          <div class="navLinks">
+            <a href="/dashboard" class="navLink">Dashboard</a>
+          </div>
+        </div>
+
+        <!-- Inline search bar component mock -->
+        <div class="search-container" id="nav-search-ref">
+          <div class="search-input-wrapper">
+            <i data-lucide="search" class="search-icon" style="width: 14px; height: 14px;"></i>
+            <input type="text" id="nav-search-input" placeholder="Search wishlists... (⌘K)" class="search-input">
+            <button type="button" class="clear-search-btn" id="nav-clear-search-btn" style="display: none;">&times;</button>
+          </div>
+          
+          <div class="search-dropdown" id="nav-search-dropdown">
+            <div class="dropdown-list" id="nav-search-dropdown-list">
+              <!-- Dynamically rendered wishlists search results -->
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-right">
+          
+          <!-- Themes Settings Dropdown -->
+          <div class="dropdownContainer" id="nav-theme-dropdown-container">
+            <button class="navButton themeNavButton" id="nav-theme-btn" aria-label="Theme settings" title="Change theme">
+              <div class="themeToggleWrapper">
+                <i data-lucide="palette" class="paletteIcon" style="width: 18px; height: 18px;"></i>
+                <div class="miniIndicator" id="theme-appearance-mini-icon">
+                  <i data-lucide="moon" style="width: 10px; height: 10px;"></i>
+                </div>
+              </div>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="dropdownMenu themeMenu" id="nav-theme-dropdown">
+              <div class="menuHeader">Style Theme</div>
+              
+              <button class="menuItem activeItem" onclick="setAppTheme('default')">
+                <span>Linear</span>
+              </button>
+              <button class="menuItem" onclick="setAppTheme('neon')">
+                <span>Neon</span>
+              </button>
+              <button class="menuItem" onclick="setAppTheme('cyberpunk')">
+                <span>Cyberpunk</span>
+              </button>
+              <button class="menuItem" onclick="setAppTheme('mystic')">
+                <span>Mystic</span>
+              </button>
+              <button class="menuItem" onclick="setAppTheme('burnt-forest')">
+                <span>Burnt Forest</span>
+              </button>
+
+              <button class="menuItem holidayToggle" onclick="toggleHolidaySubMenu(event)">
+                <span>Holiday</span>
+                <i data-lucide="chevron-down" id="holiday-chevron" class="chevron" style="width: 12px; height: 12px;"></i>
+              </button>
+
+              <div class="holidaySubMenu" id="holiday-submenu-container">
+                <button class="menuItem holidayMenuItem" onclick="setAppTheme('valentines')">
+                  <span>Valentine's</span>
+                </button>
+                <button class="menuItem holidayMenuItem" onclick="setAppTheme('st-patricks')">
+                  <span>St. Patrick's</span>
+                </button>
+                <button class="menuItem holidayMenuItem" onclick="setAppTheme('earth-day')">
+                  <span>Earth Day</span>
+                </button>
+                <button class="menuItem holidayMenuItem" onclick="setAppTheme('independence')">
+                  <span>Independence Day</span>
+                </button>
+                <button class="menuItem holidayMenuItem" onclick="setAppTheme('halloween')">
+                  <span>Halloween</span>
+                </button>
+                <button class="menuItem holidayMenuItem" onclick="setAppTheme('thanksgiving')">
+                  <span>Thanksgiving</span>
+                </button>
+                <button class="menuItem holidayMenuItem" onclick="setAppTheme('christmas')">
+                  <span>Christmas</span>
+                </button>
+              </div>
+
+              <div class="menuDivider"></div>
+              
+              <div class="menuHeader">Appearance</div>
+              <button class="menuItem activeItem" id="appearance-btn-dark" onclick="setAppAppearance('dark')">
+                <i data-lucide="moon" class="itemIcon" style="width: 14px; height: 14px;"></i>
+                Dark
+              </button>
+              <button class="menuItem" id="appearance-btn-light" onclick="setAppAppearance('light')">
+                <i data-lucide="sun" class="itemIcon" style="width: 14px; height: 14px;"></i>
+                Light
+              </button>
+            </div>
+          </div>
+
+          <!-- Profile settings user dropdown -->
+          <div class="dropdownContainer" id="nav-profile-dropdown-container">
+            <button class="profileTrigger" id="nav-profile-btn">
+              <div class="avatar" id="nav-avatar-initials">TU</div>
+              <i data-lucide="chevron-down" class="chevron" style="width: 14px; height: 14px;"></i>
+            </button>
+
+            <!-- Profile Dropdown Menu -->
+            <div class="dropdownMenu" id="nav-profile-dropdown" style="width: 200px;">
+              <div class="userInfo">
+                <div class="userName" id="dropdown-fullname">Tech User</div>
+                <div class="userEmail" id="dropdown-username">@tech180</div>
+              </div>
+              <div class="menuDivider"></div>
+              <button class="menuItem activeItem" onclick="closeDropdowns();">
+                <i data-lucide="user" class="itemIcon" style="width: 14px; height: 14px;"></i>
+                Edit Profile
+              </button>
+              <button class="menuItem dangerItem" onclick="alert('Demo: Logging out...');">
+                <i data-lucide="log-out" class="itemIcon" style="width: 14px; height: 14px;"></i>
+                Sign Out
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content animate-fade-in">
+      
+      <!-- Profile template layout wrapper -->
+      <div class="profile-container">
+        
+        <!-- Profile Card Component replica -->
+        <div class="card glassCard cardPaddingLg profileCard animate-scale-in" id="profile-card-element">
+          
+          <div class="cardHeader">
+            <h2 class="cardTitle">Account Settings</h2>
+            <p class="cardSubtitle">Update your registry profile information</p>
+          </div>
+
+          <!-- Error Alert Banner (Hidden by default) -->
+          <div class="alert alertError animate-slide-up" id="form-error-alert" style="display: none;">
+            <span class="alertIcon">
+              <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+            </span>
+            <span id="form-error-text">All fields are required.</span>
+          </div>
+
+          <!-- Success Alert Banner (Hidden by default) -->
+          <div class="alert alertSuccess animate-slide-up" id="form-success-alert" style="display: none;">
+            <span class="alertIcon">
+              <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+            </span>
+            <span>Profile updated successfully!</span>
+          </div>
+
+          <!-- Account Settings Form -->
+          <form class="profileForm" id="edit-profile-form" onsubmit="handleProfileSubmit(event)">
+            
+            <div class="nameRow">
+              
+              <!-- First Name Field -->
+              <div class="inputContainer">
+                <label class="inputLabel" for="first-name-input">First Name</label>
+                <div class="inputWrapper">
+                  <span class="inputIcon">
+                    <i data-lucide="smile" style="width: 16px; height: 16px;"></i>
+                  </span>
+                  <input 
+                    type="text" 
+                    id="first-name-input" 
+                    class="inputField inputHasLeftIcon" 
+                    value="Tech" 
+                    required
+                  >
+                </div>
+              </div>
+
+              <!-- Last Name Field -->
+              <div class="inputContainer">
+                <label class="inputLabel" for="last-name-input">Last Name</label>
+                <div class="inputWrapper">
+                  <span class="inputIcon">
+                    <i data-lucide="smile" style="width: 16px; height: 16px;"></i>
+                  </span>
+                  <input 
+                    type="text" 
+                    id="last-name-input" 
+                    class="inputField inputHasLeftIcon" 
+                    value="User" 
+                    required
+                  >
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Username Field -->
+            <div class="inputContainer">
+              <label class="inputLabel" for="username-input">Username</label>
+              <div class="inputWrapper">
+                <span class="inputIcon">
+                  <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                </span>
+                <input 
+                  type="text" 
+                  id="username-input" 
+                  class="inputField inputHasLeftIcon" 
+                  value="tech180" 
+                  required
+                >
+              </div>
+            </div>
+
+            <!-- Email Field (Disabled) -->
+            <div class="inputContainer">
+              <label class="inputLabel" for="email-input">Email (Cannot be changed)</label>
+              <div class="inputWrapper">
+                <input 
+                  type="email" 
+                  id="email-input" 
+                  class="inputField" 
+                  value="user@tech180.dev" 
+                  disabled 
+                  style="opacity: 0.6;"
+                >
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button 
+              type="submit" 
+              class="btn btnMd btnPrimary submitBtn" 
+              id="submit-profile-btn"
+            >
+              <span class="btnContent" id="submit-btn-content">Save Changes</span>
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    // Initialize lucide icons on load
+    lucide.createIcons();
+
+    // Mock Wishlist search db
+    const mockWishlists = [
+      { Id: "1", Title: "Christmas 2026", OwnerUsername: "tech180" },
+      { Id: "2", Title: "Mom's 60th Birthday", OwnerUsername: "tech180" },
+      { Id: "3", Title: "Home Office Upgrade", OwnerUsername: "tech180" },
+      { Id: "4", Title: "Sarah & John's Wedding", OwnerUsername: "sarah_m" },
+      { Id: "5", Title: "Gaming Setup Fund", OwnerUsername: "alex_r" }
+    ];
+
+    // Setup interactive search functionality
+    const searchInput = document.getElementById("nav-search-input");
+    const clearSearchBtn = document.getElementById("nav-clear-search-btn");
+    const searchDropdown = document.getElementById("nav-search-dropdown");
+    const searchDropdownList = document.getElementById("nav-search-dropdown-list");
+    let activeSearchIndex = 0;
+
+    searchInput.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      
+      if (query === "") {
+        clearSearchBtn.style.display = "none";
+        searchDropdown.style.display = "none";
+        return;
+      }
+      
+      clearSearchBtn.style.display = "flex";
+      searchDropdown.style.display = "block";
+      
+      const filtered = mockWishlists.filter(wl => 
+        wl.Title.toLowerCase().includes(query) || 
+        wl.OwnerUsername.toLowerCase().includes(query)
+      );
+
+      activeSearchIndex = 0;
+      renderSearchResults(filtered, query);
+    });
+
+    searchInput.addEventListener("focus", () => {
+      if (searchInput.value.trim() !== "") {
+        searchDropdown.style.display = "block";
+      }
+    });
+
+    clearSearchBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      clearSearchBtn.style.display = "none";
+      searchDropdown.style.display = "none";
+    });
+
+    // Close search dropdown and click outside handlers
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#nav-search-ref")) {
+        searchDropdown.style.display = "none";
+      }
+      if (!e.target.closest("#nav-theme-dropdown-container")) {
+        document.getElementById("nav-theme-dropdown").style.display = "none";
+      }
+      if (!e.target.closest("#nav-profile-dropdown-container")) {
+        document.getElementById("nav-profile-dropdown").style.display = "none";
+      }
+    });
+
+    function renderSearchResults(results, query) {
+      if (results.length === 0) {
+        searchDropdownList.innerHTML = `<div class="dropdown-status">No wishlists found matching "${query}"</div>`;
+        return;
+      }
+
+      searchDropdownList.innerHTML = results.map((wl, idx) => `
+        <div class="dropdown-item ${idx === activeSearchIndex ? 'active-dropdown-item' : ''}" onclick="selectWishlist('${wl.Id}')">
+          <i data-lucide="gift" class="dropdown-item-icon" style="width: 14px; height: 14px;"></i>
+          <div class="dropdown-item-info">
+            <span class="dropdown-item-title">${wl.Title}</span>
+            <span class="dropdown-item-owner">@${wl.OwnerUsername}</span>
+          </div>
+        </div>
+      `).join("");
+      
+      lucide.createIcons();
+    }
+
+    function selectWishlist(id) {
+      const wl = mockWishlists.find(w => w.Id === id);
+      alert(`Demo: Navigating to Wishlist "${wl.Title}"`);
+      searchInput.value = "";
+      clearSearchBtn.style.display = "none";
+      searchDropdown.style.display = "none";
+    }
+
+    // Dropdown toggles
+    const themeBtn = document.getElementById("nav-theme-btn");
+    const themeDropdown = document.getElementById("nav-theme-dropdown");
+    const profileBtn = document.getElementById("nav-profile-btn");
+    const profileDropdown = document.getElementById("nav-profile-dropdown");
+
+    themeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeDropdowns();
+      themeDropdown.style.display = themeDropdown.style.display === "block" ? "none" : "block";
+    });
+
+    profileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeDropdowns();
+      profileDropdown.style.display = profileDropdown.style.display === "block" ? "none" : "block";
+    });
+
+    function closeDropdowns() {
+      themeDropdown.style.display = "none";
+      profileDropdown.style.display = "none";
+    }
+
+    // Holiday themes expand toggle
+    let isHolidaySubmenuOpen = false;
+    function toggleHolidaySubMenu(e) {
+      e.stopPropagation();
+      const chevron = document.getElementById("holiday-chevron");
+      const submenu = document.getElementById("holiday-submenu-container");
+      
+      isHolidaySubmenuOpen = !isHolidaySubmenuOpen;
+      if (isHolidaySubmenuOpen) {
+        chevron.classList.add("rotatedChevron");
+        submenu.style.display = "flex";
+      } else {
+        chevron.classList.remove("rotatedChevron");
+        submenu.style.display = "none";
+      }
+    }
+
+    // Set active theme handler
+    function setAppTheme(themeName) {
+      document.documentElement.setAttribute("data-theme", themeName);
+      
+      // Update active styling in dropdown
+      const themeItems = document.querySelectorAll("#nav-theme-dropdown .menuItem");
+      themeItems.forEach(item => {
+        if (item.classList.contains("holidayToggle")) return;
+        
+        const spanText = item.querySelector("span")?.textContent.toLowerCase() || "";
+        const formattedThemeName = themeName === "default" ? "linear" : themeName.replace("-", " ");
+        
+        if (spanText.includes(formattedThemeName)) {
+          item.classList.add("activeItem");
+        } else {
+          item.classList.remove("activeItem");
+        }
+      });
+      
+      // Update color indicators
+      const appearanceMini = document.getElementById("theme-appearance-mini-icon");
+      appearanceMini.style.color = "var(--primary)";
+
+      // Update avatar color in navbar
+      document.getElementById("nav-avatar-initials").style.backgroundColor = "var(--primary)";
+      
+      closeDropdowns();
+    }
+
+    // Set appearance mode
+    function setAppAppearance(mode) {
+      document.documentElement.setAttribute("data-appearance", mode);
+      
+      const darkBtn = document.getElementById("appearance-btn-dark");
+      const lightBtn = document.getElementById("appearance-btn-light");
+      const miniIcon = document.getElementById("theme-appearance-mini-icon");
+      
+      if (mode === "dark") {
+        darkBtn.classList.add("activeItem");
+        lightBtn.classList.remove("activeItem");
+        miniIcon.innerHTML = `<i data-lucide="moon" style="width: 10px; height: 10px;"></i>`;
+      } else {
+        lightBtn.classList.add("activeItem");
+        darkBtn.classList.remove("activeItem");
+        miniIcon.innerHTML = `<i data-lucide="sun" style="width: 10px; height: 10px;"></i>`;
+      }
+      
+      lucide.createIcons();
+      closeDropdowns();
+    }
+
+    // Handle profile form submit action
+    function handleProfileSubmit(event) {
+      event.preventDefault();
+      
+      const firstName = document.getElementById("first-name-input").value.trim();
+      const lastName = document.getElementById("last-name-input").value.trim();
+      const username = document.getElementById("username-input").value.trim();
+      
+      const errorAlert = document.getElementById("form-error-alert");
+      const successAlert = document.getElementById("form-success-alert");
+      const submitBtn = document.getElementById("submit-profile-btn");
+      const submitContent = document.getElementById("submit-btn-content");
+
+      errorAlert.style.display = "none";
+      successAlert.style.display = "none";
+
+      if (!firstName || !lastName || !username) {
+        errorAlert.style.display = "flex";
+        return;
+      }
+
+      // Simulate loading state
+      submitBtn.disabled = true;
+      submitContent.innerHTML = `<span class="spinner"></span>`;
+
+      setTimeout(() => {
+        // Restore button state
+        submitBtn.disabled = false;
+        submitContent.innerHTML = `Save Changes`;
+
+        // Show success alert banner
+        successAlert.style.display = "flex";
+
+        // Update display items in navbar profile dropdown
+        document.getElementById("dropdown-fullname").textContent = `${firstName} ${lastName}`;
+        document.getElementById("dropdown-username").textContent = `@${username}`;
+
+        // Update initials in avatar icon
+        const initials = ((firstName[0] || "") + (lastName[0] || "")).toUpperCase();
+        document.getElementById("nav-avatar-initials").textContent = initials || username[0].toUpperCase();
+
+        // Autoclose success alert after 3 seconds
+        setTimeout(() => {
+          successAlert.style.display = "none";
+        }, 3000);
+
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from 'app/providers/ThemeContext';
-import { AuthProvider, useAuth } from 'app/providers/AuthContext';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ThemeProvider } from 'app/providers/theme-context';
+import { AuthProvider, useAuth } from 'app/providers/auth-context';
 import { Navigation } from 'shared/ui';
 import { Login, Register, Dashboard, WishlistDetail, Profile } from 'pages';
 
@@ -48,10 +48,13 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 function AppContent() {
+  const location = useLocation();
+  const isProfilePage = location.pathname.startsWith('/profile');
+
   return (
     <div className="app-container">
       <Navigation />
-      <main className="main-content animate-fade-in">
+      <main className={`${isProfilePage ? 'profile-main-content' : 'main-content'} animate-fade-in`}>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route
@@ -87,7 +90,7 @@ function AppContent() {
             }
           />
           <Route
-            path="/profile"
+            path="/profile/*"
             element={
               <ProtectedRoute>
                 <Profile />
@@ -103,13 +106,13 @@ function AppContent() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <ThemeProvider>
         <BrowserRouter>
           <AppContent />
         </BrowserRouter>
-      </AuthProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

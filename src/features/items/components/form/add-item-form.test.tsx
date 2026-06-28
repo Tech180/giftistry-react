@@ -7,7 +7,7 @@ jest.mock('react-router-dom', () => ({
   Link: ({ children, to }: any) => <a href={to}>{children}</a>,
 }));
 
-jest.mock('app/providers/AuthContext', () => ({
+jest.mock('app/providers/auth-context', () => ({
   useAuth: () => ({ user: { Id: 'test-user-id' } }),
 }));
 

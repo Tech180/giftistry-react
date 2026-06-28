@@ -1,21 +1,8 @@
 import React from 'react';
 import { Eye, EyeOff, Trash2, Tag } from 'lucide-react';
-import { Comment } from '../../interfaces/comment.interface';
-import { Item } from '../../../items/interfaces/item.interface';
+import { CommentItemTemplateProps } from '../../interfaces/comment-item-template-props.interface';
+import { UserPreviewCard } from 'shared/ui/user-preview-card';
 import styles from './comment-item.module.css';
-
-interface CommentItemTemplateProps {
-  comment: Comment;
-  cleanText: string;
-  taggedIds: string[];
-  isDeleting: boolean;
-  currentUserId: string | null | undefined;
-  items: Item[];
-  formatDate: (dateStr?: string) => string;
-  onItemTaggedClick?: (itemId: string) => void;
-  handleDeleteComment: (commentId: string) => void;
-  setDeletingCommentId: (commentId: string | null) => void;
-}
 
 export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
   comment,
@@ -28,6 +15,7 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
   onItemTaggedClick,
   handleDeleteComment,
   setDeletingCommentId,
+  onlineUsers = [],
 }) => {
   if (comment.IsDeleted) {
     return (
@@ -38,6 +26,8 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
       </div>
     );
   }
+
+  const isOnline = comment.UserId ? onlineUsers.includes(comment.UserId) : false;
 
   return (
     <div
@@ -72,7 +62,13 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
 
         <div className={styles.commentMainContent}>
           <div className={styles.commentMeta}>
-            <span className={styles.author}>{comment.CommenterName}</span>
+            <UserPreviewCard
+              userId={comment.UserId}
+              displayName={comment.CommenterName}
+              isOnline={isOnline}
+            >
+              <span className={styles.author}>{comment.CommenterName}</span>
+            </UserPreviewCard>
             <span className={styles.date}>{formatDate(comment.CreatedAt)}</span>
 
             {comment.IsRollover && (
@@ -130,3 +126,4 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
     </div>
   );
 };
+

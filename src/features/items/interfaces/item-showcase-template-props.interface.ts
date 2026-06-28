@@ -1,0 +1,43 @@
+import { Item } from './item.interface';
+
+export interface ItemShowcaseTemplateProps {
+  item: Item;
+  priorityLabel?: string;
+  isOwner: boolean;
+  isExpired: boolean;
+  allowGroupFunds: boolean;
+  wishlistItems: Item[];
+  claimedByCurrentUser: boolean;
+  claimAmount: string;
+  setClaimAmount: (val: string) => void;
+  anonymous: boolean;
+  setAnonymous: (val: boolean) => void;
+  claimLoading: boolean;
+  showClaimForm: boolean;
+  setShowClaimForm: (val: boolean) => void;
+  showDeleteConfirm: boolean;
+  setShowDeleteConfirm: (val: boolean) => void;
+  deleteLoading: boolean;
+  localIsFavorite: boolean;
+  selectedVariation: string;
+  setSelectedVariation: (val: string) => void;
+  claimQty: number;
+  setClaimQty: (val: number) => void;
+  showDependencyModal: boolean;
+  setShowDependencyModal: (val: boolean) => void;
+  displayDescription: string;
+  metadata: any;
+  handleClaim: (e?: React.SyntheticEvent, skipLinkedCheck?: boolean) => void;
+  handleBulkClaim: () => void;
+  handleUnclaim: () => void;
+  handleDelete: () => void;
+  totalExtractedPrice: number;
+  totalClaimedAmount: number;
+  isMultiCount: boolean;
+  totalClaimedQty: number;
+  desiredQtyVal: number;
+  isFullyClaimed: boolean;
+  progressPercent: number;
+  onClose: () => void;
+  onEdit: () => void;
+}

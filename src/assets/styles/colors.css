@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Global Core Colors */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Default Semantic Colors */
+  --error: #ef4444;
+  --error-rgb: 239, 68, 68;
+  --error-bg: rgba(239, 68, 68, 0.1);
+  --error-border: rgba(239, 68, 68, 0.2);
+  
+  --success: #10b981;
+  --success-rgb: 16, 185, 129;
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --success-border: rgba(16, 185, 129, 0.2);
+
+  --warning: #f59e0b;
+  --warning-rgb: 245, 158, 11;
+  --warning-bg: rgba(245, 158, 11, 0.08);
+  --warning-border: rgba(245, 158, 11, 0.2);
+  
+  --backdrop-bg: rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-color: rgba(0, 0, 0, 0.15);
+
+  /* --- Design System Theme Tokens --- */
+
+  /* 1. Default (Linear) Theme Colors */
+  --color-linear-primary: #5e6ad2;
+  --color-linear-primary-hover: #4d59c2;
+  --color-linear-primary-rgb: 94, 106, 210;
+  
+  --color-linear-bg-light: #fafafa;
+  --color-linear-surface-hover-light: #f3f3f4;
+  --color-linear-text-light: #111111;
+  --color-linear-text-muted-light: #6b6b7b;
+
+  --color-linear-bg-dark: #0f0f10;
+  --color-linear-surface-dark: #151516;
+  --color-linear-surface-hover-dark: #1e1e20;
+  --color-linear-text-dark: #f7f8f8;
+  --color-linear-text-muted-dark: #8a8f98;
+
+  /* 2. Neon Theme Colors */
+  --color-neon-primary: #ff007f;
+  --color-neon-primary-hover: #e0006c;
+  --color-neon-primary-rgb: 255, 0, 127;
+  
+  --color-neon-bg-light: #f8f5fc;
+  --color-neon-surface-hover-light: #f1e9fc;
+  --color-neon-border-light: #bf55ec;
+  --color-neon-text-light: #2c0054;
+  --color-neon-text-muted-light: #7b688c;
+  --color-neon-cyan: #00ffff;
+
+  --color-neon-bg-dark: #0d021a;
+  --color-neon-surface-dark: #17072e;
+  --color-neon-surface-hover-dark: #260e47;
+  --color-neon-text-muted-dark: #a372eb;
+
+  /* 3. Cyberpunk Theme Colors */
+  --color-cyber-primary: #fcee0a;
+  --color-cyber-primary-hover: #d2c700;
+  --color-cyber-primary-rgb: 252, 238, 10;
+  
+  --color-cyber-bg-light: #e2e2e4;
+  --color-cyber-surface-light: #f3f3f5;
+  --color-cyber-cyan: #00f0ff;
+  --color-cyber-text-muted-light: #4e4e54;
+  --color-cyber-pink: #ff0055;
+
+  --color-cyber-bg-dark: #000411;
+  --color-cyber-surface-dark: #080f26;
+  --color-cyber-surface-hover-dark: #0d1b40;
+  --color-cyber-text-muted-dark: #5e83a6;
+
+  /* 4. Mystic Theme Colors */
+  --color-mystic-primary: #2d7a4d;
+  --color-mystic-primary-hover: #1e5c36;
+  --color-mystic-primary-rgb: 45, 122, 77;
+  
+  --color-mystic-bg-light: #f2f7f4;
+  --color-mystic-surface-hover-light: #eaf1ed;
+  --color-mystic-border-light: #bce3c5;
+  --color-mystic-text-light: #1d3322;
+  --color-mystic-text-muted-light: #607c65;
+  --color-mystic-gold: #d4af37;
+
+  --color-mystic-bg-dark: #0f1c13;
+  --color-mystic-surface-dark: #162a1d;
+  --color-mystic-surface-hover-dark: #223f2c;
+  --color-mystic-border-dark: #2e543b;
+  --color-mystic-text-dark: #e1efe6;
+  --color-mystic-text-muted-dark: #7a9c84;
+
+  /* 5. Burnt Forest Theme Colors */
+  --color-burnt-primary: #ff5500;
+  --color-burnt-primary-hover: #cc4400;
+  --color-burnt-primary-rgb: 255, 85, 0;
+  
+  --color-burnt-bg-light: #f4efeb;
+  --color-burnt-surface-hover-light: #ebdcd3;
+  --color-burnt-border-light: #cc7a52;
+  --color-burnt-text-light: #331f14;
+  --color-burnt-text-muted-light: #8c7365;
+
+  --color-burnt-bg-dark: #0a0705;
+  --color-burnt-surface-dark: #140e0a;
+  --color-burnt-surface-hover-dark: #1e150f;
+  --color-burnt-border-dark: #4d2600;
+  --color-burnt-text-dark: #f0e6df;
+  --color-burnt-text-muted-dark: #a68c7c;
+}
+
+[data-appearance="dark"] {
+  --backdrop-bg: rgba(0, 0, 0, 0.6);
+  --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.24);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-color: rgba(0, 0, 0, 0.45);
+}

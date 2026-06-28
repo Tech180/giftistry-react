@@ -1,5 +1,5 @@
 import React from 'react';
-import { CommentInputProps } from './comment-input.interface';
+import { CommentInputProps } from '../../interfaces/comment-input-props.interface';
 import { CommentInputTemplate } from './comment-input.html';
 
 export const CommentInput: React.FC<CommentInputProps> = (props) => {

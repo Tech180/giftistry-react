@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCommentController } from '../../hooks/use-comment-controller';
-import { useAuth } from 'app/providers/AuthContext';
+import { useAuth } from 'app/providers/auth-context';
 import { CommentSectionProps } from '../../interfaces/comment-section-props.interface';
 import { CommentSectionTemplate } from './comment-section.html';
 
@@ -8,7 +8,7 @@ const getWsUrl = (listId: string) => {
   const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
   let protocol = 'ws:';
   let host = 'localhost:3001';
-  
+
   if (apiBaseUrl.startsWith('http')) {
     protocol = apiBaseUrl.startsWith('https') ? 'wss:' : 'ws:';
     host = apiBaseUrl.replace(/^https?:\/\//, '');
@@ -16,7 +16,7 @@ const getWsUrl = (listId: string) => {
     protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     host = window.location.host;
   }
-  
+
   const token = localStorage.getItem('giftistry-token') || '';
   return `${protocol}//${host}/ws/wishlist/${listId}?token=${encodeURIComponent(token)}`;
 };
@@ -32,7 +32,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   setTaggedItemIds,
 }) => {
   const { user } = useAuth();
-  
+
   const {
     comments,
     isLoading,
@@ -44,6 +44,9 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   const [content, setContent] = useState('');
   const [commenterName, setCommenterName] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(() => {
+    return localStorage.getItem('giftistry-comment-anon') === 'true';
+  });
   const [isOwnerVisible, setIsOwnerVisible] = useState(false); // Surprise is default!
   const [isRollover, setIsRollover] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
@@ -64,9 +67,17 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   useEffect(() => {
     if (user) {
-      setCommenterName(user.FirstName ? `${user.FirstName} ${user.LastName}` : user.Username);
+      const realName = user.FirstName ? `${user.FirstName} ${user.LastName}` : user.Username;
+      setCommenterName(isAnonymous ? 'Anonymous' : realName);
+    } else {
+      setCommenterName(isAnonymous ? 'Anonymous' : '');
     }
-  }, [user]);
+  }, [user, isAnonymous]);
+
+  const handleSetIsAnonymous = (anon: boolean) => {
+    setIsAnonymous(anon);
+    localStorage.setItem('giftistry-comment-anon', anon ? 'true' : 'false');
+  };
 
   // WebSocket Connection
   useEffect(() => {
@@ -88,11 +99,11 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                 ...prev,
                 [data.userId]: data.username
               }));
-              
+
               if (typingTimeoutRefs.current[data.userId]) {
                 clearTimeout(typingTimeoutRefs.current[data.userId]);
               }
-              
+
               typingTimeoutRefs.current[data.userId] = setTimeout(() => {
                 setTypingUsersMap(prev => {
                   const updated = { ...prev };
@@ -122,16 +133,17 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       setTypingUsersMap({});
     };
 
+    const currentTimeoutMap = typingTimeoutRefs.current;
     return () => {
       socket.close();
       socketRef.current = null;
-      Object.values(typingTimeoutRefs.current).forEach(clearTimeout);
+      Object.values(currentTimeoutMap).forEach(clearTimeout);
     };
   }, [listId, user, isOwner]);
 
   const handleContentChange = (val: string) => {
     setContent(val);
-    
+
     if (isOwner) return;
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) return;
 
@@ -181,7 +193,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         })
         .filter(Boolean)
         .join(' ');
-      
+
       if (tagLinks) {
         finalContent += `\n\n${tagLinks}`;
       }
@@ -259,6 +271,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       handleDeleteComment={handleDeleteComment}
       deletingCommentId={deletingCommentId}
       setDeletingCommentId={setDeletingCommentId}
+      isAnonymous={isAnonymous}
+      setIsAnonymous={handleSetIsAnonymous}
     />
   );
 };
