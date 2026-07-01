@@ -6,7 +6,7 @@
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(12px);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: var(--animation-slide-up);
   height: 380px;
   width: 100%;
   display: flex;
@@ -38,28 +38,28 @@
 .showcaseCategory {
   display: inline-flex;
   align-items: center;
-  font-size: 0.6875rem;
-  font-weight: 700;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
   background: var(--surface-hover);
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
 }
 
 .favoriteBadge {
   display: inline-flex;
   align-items: center;
-  font-size: 0.6875rem;
-  font-weight: 700;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--warning);
   background: var(--warning-bg);
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--warning-border);
 }
 
@@ -80,13 +80,13 @@
   cursor: pointer;
   padding: 4px;
   line-height: 1;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .closeBtn:hover {
@@ -125,8 +125,8 @@
 }
 
 .sectionTitle {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
@@ -141,7 +141,7 @@
 
 .descriptionText {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text);
   line-height: 1.6;
   white-space: pre-wrap;
@@ -155,7 +155,7 @@
 .descriptionBoxEmpty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   padding: 12px 16px;
   background: var(--surface-hover);
   border-radius: var(--radius);
@@ -175,12 +175,12 @@
 }
 
 .metaBadge {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   background: var(--surface-hover);
   color: var(--text);
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
   display: inline-flex;
   align-items: center;
@@ -206,8 +206,8 @@
 }
 
 .priceLabel {
-  font-size: 0.6875rem;
-  font-weight: 700;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
@@ -229,22 +229,22 @@
 .fundingHeader {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
 }
 
 .progressBarBg {
   height: 8px;
   background: var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .progressBarFill {
   height: 100%;
   background: var(--primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -262,15 +262,15 @@
 .retailerLink {
   display: flex;
   align-items: center;
-  font-size: 0.8125rem;
+  font-size: var(--font-size-xs);
   color: var(--text);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   padding: 8px 12px;
   background: var(--surface-hover);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .retailerLink:hover {
@@ -285,12 +285,12 @@
 
 .linkPrice {
   color: var(--primary);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   margin-left: 4px;
 }
 
 .noLinks {
-  font-size: 0.8125rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   font-style: italic;
 }
@@ -329,8 +329,8 @@
 }
 
 .formGroup label {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
 }
 
@@ -338,16 +338,16 @@
   padding: 6px 10px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .anonLabel {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   cursor: pointer;
   color: var(--text-muted);
 }
@@ -391,8 +391,8 @@
 }
 
 .confirmPrompt {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   color: var(--error);
 }
 
@@ -401,16 +401,7 @@
   gap: 4px;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 
 /* Variations Progress Styles */
 .variationsSection {
@@ -438,13 +429,13 @@
 .variationProgressHeader {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text);
 }
 
 .variationName {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .variationQty {
@@ -467,8 +458,8 @@
 
 /* Claim Options Form Elements */
 .formLabel {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
   margin-bottom: 4px;
 }
@@ -476,7 +467,7 @@
 .variationSelect {
   width: 100%;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: var(--font-size-xs);
   padding: 8px 10px;
   border-radius: var(--radius);
   background-color: var(--surface);
@@ -489,7 +480,7 @@
 .qtyInput {
   width: 80px !important;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: var(--font-size-xs);
   padding: 6px 10px;
   border-radius: var(--radius);
   background-color: var(--surface);
@@ -505,19 +496,19 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: color-mix(in srgb, var(--background) 40%, transparent);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  z-index: var(--z-index-modal);
+  animation: var(--animation-fade-in);
 }
 
 .dependencyModal {
   width: 90%;
   max-width: 440px;
-  background: rgba(var(--surface-rgb), 0.8) !important;
+  background: color-mix(in srgb, var(--surface) 80%, transparent) !important;
   backdrop-filter: blur(20px);
   border: 1px solid var(--border) !important;
   box-shadow: var(--shadow-lg) !important;
@@ -526,18 +517,18 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: var(--animation-slide-up);
 }
 
 .modalTitle {
   font-size: 1.125rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text);
   margin: 0;
 }
 
 .modalText {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   line-height: 1.5;
   margin: 0;
@@ -559,24 +550,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8125rem;
+  font-size: var(--font-size-xs);
 }
 
 .linkedItemName {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text);
 }
 
 .linkedItemStatusClaimed {
   color: var(--error);
-  font-weight: 700;
-  font-size: 0.75rem;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xs);
 }
 
 .linkedItemStatusAvailable {
   color: var(--success);
-  font-weight: 700;
-  font-size: 0.75rem;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xs);
 }
 
 .modalActions {

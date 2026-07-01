@@ -69,3 +69,27 @@ Dashboard Wishlists:
 
 Login:
   - implement two auth, recent login, and email authentication (not done)
+
+
+
+New:
+
+Items:
+ - add item image
+ - fix item name on dropdowns to span the whole item length (compact view)
+ - passkey seems to go into two auth (they should be separate), two auth also isn't auto populating with auth code
+ - i get this when logging into two auth "Invalid or expired 2FA login session" - paper theme, paper mario ttyd theme
+ - ultrawide view and vertical monitor view
+ - ai implementation in the backend connecting to ollama, llama.cpp, etc.
+    - implement server ai button to turn on and off this, implement the frontend for settings (also in the wizard). also have a toggle per list to
+ - achievements
+    - prizes
+        - unlock themes
+        - other cool fun ideas
+ - fix animations
+ - reviews
+    - should be extracted using AI and stored in a review table linked to a item id. this should extract all reviews from links and give an overall pros and cons summary. then give like 2 reviews (from the source) of each that completely describe and summarize the item.
+ - images on items
+ - file attachments up to 100mb, limit to 5 files (on each item), store them efficiently
+ -
+

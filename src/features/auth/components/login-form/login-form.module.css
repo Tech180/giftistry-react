@@ -11,13 +11,13 @@
 
 .title {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text);
   margin-bottom: 8px;
 }
 
 .subtitle {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
 }
 
@@ -30,7 +30,7 @@
   color: var(--error);
   padding: 10px 12px;
   border-radius: var(--radius);
-  font-size: 0.8125rem;
+  font-size: var(--font-size-xs);
   margin-bottom: 20px;
 }
 
@@ -48,14 +48,14 @@
 .footer {
   margin-top: 24px;
   text-align: center;
-  font-size: 0.8125rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
 .link {
   color: var(--primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .link:hover {

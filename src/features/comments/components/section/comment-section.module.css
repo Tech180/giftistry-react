@@ -23,7 +23,7 @@
 
 .title {
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text);
   margin: 0;
 }
@@ -37,7 +37,7 @@
   color: var(--error);
   padding: 10px 12px;
   border-radius: var(--radius);
-  font-size: 0.8125rem;
+  font-size: var(--font-size-xs);
   margin: 12px 1.25rem 0 1.25rem;
 }
 
@@ -58,7 +58,7 @@
 }
 
 .emptyText {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   text-align: center;
   padding: 32px 0;
@@ -81,7 +81,7 @@
   gap: 6px;
   padding: 6px 1.25rem;
   border-bottom: 1px solid var(--border);
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   background-color: var(--background);
 }
@@ -90,13 +90,13 @@
   width: 6px;
   height: 6px;
   background-color: var(--success);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: inline-block;
   box-shadow: 0 0 0 2px var(--success-border);
 }
 
 .onlineUsersList {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text);
 }
 
@@ -113,11 +113,7 @@
   height: 24px;
   border: 2px solid var(--border);
   border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  border-radius: var(--radius-full);
+  animation: var(--animation-rotation);
 }
 

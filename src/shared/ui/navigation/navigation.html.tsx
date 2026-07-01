@@ -21,6 +21,7 @@ export const NavigationTemplate: React.FC<NavigationTemplateProps> = ({
   handleLogout,
   standardThemes,
   holidayThemes,
+  customThemes,
   isHolidayOpen,
   setIsHolidayOpen,
   appearances,
@@ -222,6 +223,24 @@ export const NavigationTemplate: React.FC<NavigationTemplateProps> = ({
                           ))}
                       </div>
                     )}
+                  </>
+                )}
+                {customThemes && customThemes.length > 0 && (
+                  <>
+                    <div className={styles.menuDivider} />
+                    <div className={styles.menuHeader}>Custom Themes</div>
+                    {customThemes.map((ct) => (
+                      <button
+                        key={ct.id}
+                        className={`${styles.menuItem} ${theme === ct.id ? styles.activeItem : ''}`}
+                        onClick={() => {
+                          setTheme(ct.id);
+                          setIsThemeOpen(false);
+                        }}
+                      >
+                        <span>{ct.name}</span>
+                      </button>
+                    ))}
                   </>
                 )}
                 

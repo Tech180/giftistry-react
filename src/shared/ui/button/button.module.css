@@ -3,13 +3,13 @@
   align-items: center;
   justify-content: center;
   font-family: inherit;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   border-radius: var(--radius);
   cursor: pointer;
   border: 1px solid transparent;
   gap: 8px;
   user-select: none;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
   outline: none;
 }
@@ -27,7 +27,7 @@
 
 .md {
   padding: 8px 16px;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .lg {
@@ -40,7 +40,7 @@
   background-color: var(--primary);
   color: var(--primary-text);
   border-color: var(--border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .primary:hover:not(:disabled) {
@@ -104,9 +104,9 @@
   height: 14px;
   border: 2px solid currentColor;
   border-bottom-color: transparent;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: inline-block;
-  animation: rotation 0.6s linear infinite;
+  animation: var(--animation-rotation);
 }
 
 .icon {
@@ -119,9 +119,4 @@
 .content {
   display: inline-flex;
   align-items: center;
-}
-
-@keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }

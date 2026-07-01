@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { wishlistsApi } from '../../api/wishlists.api';
 import { CreateListFormProps } from '../../interfaces/create-list-form-props.interface';
 import { CreateListFormTemplate } from './create-list-form.html';
+import { useAuth } from 'app/providers/auth-context';
 
 export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => {
+  const { user } = useAuth();
+  const isUnverified = user ? !user.EmailVerified : false;
+
   const [title, setTitle] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [allowGroupFunds, setAllowGroupFunds] = useState(false);
@@ -16,6 +20,11 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    if (isUnverified) {
+      setErrorMsg('Please verify your email address to create wishlists.');
+      return;
+    }
+
     if (!title.trim()) {
       setErrorMsg('Please enter a list title.');
       return;
@@ -70,6 +79,7 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
       setCategory={setCategory}
       customCategory={customCategory}
       setCustomCategory={setCustomCategory}
+      isUnverified={isUnverified}
     />
   );
 };

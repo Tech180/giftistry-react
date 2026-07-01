@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { wishlistsApi } from '../../api/wishlists.api';
 import { ShareFormProps } from '../../interfaces/share-form-props.interface';
 import { ShareFormTemplate } from './share-form.html';
+import { useAuth } from 'app/providers/auth-context';
 
 export const ShareForm: React.FC<ShareFormProps> = ({ listId, onSuccess }) => {
+  const { user } = useAuth();
+  const isUnverified = user ? !user.EmailVerified : false;
+
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'viewer' | 'collaborator'>('viewer');
   
@@ -13,6 +17,11 @@ export const ShareForm: React.FC<ShareFormProps> = ({ listId, onSuccess }) => {
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    if (isUnverified) {
+      setErrorMsg('Please verify your email address to share wishlists.');
+      return;
+    }
+
     if (!email.trim()) {
       setErrorMsg('Please enter an email address.');
       return;
@@ -45,6 +54,7 @@ export const ShareForm: React.FC<ShareFormProps> = ({ listId, onSuccess }) => {
       errorMsg={errorMsg}
       successMsg={successMsg}
       handleSubmit={handleSubmit}
+      isUnverified={isUnverified}
     />
   );
 };

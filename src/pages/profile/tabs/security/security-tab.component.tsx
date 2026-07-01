@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SecurityTabTemplate } from './security-tab.html';
+import { useAuth } from 'app/providers/auth-context';
+import { authApi } from 'features/auth';
+import { startRegistration } from '@simplewebauthn/browser';
 
 interface SecurityTabProps {
   showToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
 }
 
 export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
+  const { user, refreshUser } = useAuth();
+  
+  // Password state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -14,6 +20,34 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  // 2FA state
+  const [twoFactorStep, setTwoFactorStep] = useState<'none' | 'setup' | 'disable'>('none');
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [totpSecret, setTotpSecret] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
+
+  // Passkeys list state
+  const [passkeys, setPasskeys] = useState<any[]>([]);
+  const [deletingPasskeyId, setDeletingPasskeyId] = useState<string | null>(null);
+
+  const is2faEnabled = !!user?.TwoFactorEnabled;
+
+  const fetchPasskeys = async () => {
+    try {
+      const res = await authApi.getPasskeys();
+      if (res && res.Passkeys) {
+        setPasskeys(res.Passkeys);
+      }
+    } catch (err) {
+      console.error('Failed to load passkeys:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPasskeys();
+  }, []);
 
   const handleUpdatePassword = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +65,7 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
     }
 
     setIsLoading(true);
-    // Simulate API update
+    // Simulate password update since it's progressive profiling / secure local flow
     setTimeout(() => {
       setIsLoading(false);
       showToast('Password updated successfully!', 'success');
@@ -39,6 +73,100 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
       setNewPassword('');
       setConfirmPassword('');
     }, 1200);
+  };
+
+  const handleSetup2FA = async () => {
+    try {
+      const res = await authApi.setup2fa();
+      if (res && res.Secret) {
+        setTotpSecret(res.Secret);
+        setQrCodeUrl(res.QrCodeUrl);
+        setVerificationCode('');
+        setRecoveryCodes([]);
+        setTwoFactorStep('setup');
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to retrieve 2FA setup options', 'error');
+    }
+  };
+
+  const handleEnable2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!verificationCode) {
+      showToast('Please enter the 6-digit verification code.', 'error');
+      return;
+    }
+
+    try {
+      const res = await authApi.enable2fa(totpSecret, verificationCode);
+      await refreshUser();
+      showToast('Two-Factor Authentication enabled successfully!', 'success');
+      if (res.RecoveryCodes && res.RecoveryCodes.length > 0) {
+        setRecoveryCodes(res.RecoveryCodes);
+      } else {
+        setTwoFactorStep('none');
+      }
+      setVerificationCode('');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Invalid code. Verification failed.', 'error');
+    }
+  };
+
+  const handleDisable2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!verificationCode) {
+      showToast('Please enter the 6-digit verification code.', 'error');
+      return;
+    }
+
+    try {
+      await authApi.disable2fa(verificationCode);
+      await refreshUser();
+      showToast('Two-Factor Authentication has been disabled.', 'info');
+      setTwoFactorStep('none');
+      setVerificationCode('');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Invalid code. Disable failed.', 'error');
+    }
+  };
+
+  const handleRegisterPasskey = async () => {
+    try {
+      const res = await authApi.passkeyRegisterOptions();
+      if (!res || !res.options) {
+        throw new Error('Failed to retrieve passkey options from server.');
+      }
+
+      // SimpleWebAuthn browser registration
+      let regResponse;
+      try {
+        regResponse = await startRegistration({ optionsJSON: res.options });
+      } catch (browserErr) {
+        // Silent return: The browser handles the UI for all local WebAuthn prompt cancellations/failures
+        return;
+      }
+
+      try {
+        await authApi.passkeyRegisterVerify(regResponse);
+        showToast('Passkey registered successfully! You can now use it to sign in.', 'success');
+        await fetchPasskeys();
+      } catch (serverErr) {
+        showToast(serverErr instanceof Error ? serverErr.message : 'Server failed to verify passkey.', 'error');
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to retrieve passkey options.', 'error');
+    }
+  };
+
+  const handleDeletePasskey = async (passkeyId: string) => {
+    try {
+      await authApi.deletePasskey(passkeyId);
+      showToast('Passkey deleted successfully.', 'success');
+      setDeletingPasskeyId(null);
+      await fetchPasskeys();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to delete passkey.', 'error');
+    }
   };
 
   return (
@@ -57,7 +185,30 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
       showConfirm={showConfirm}
       setShowConfirm={setShowConfirm}
       handleUpdatePassword={handleUpdatePassword}
+      
+      // 2FA props
+      is2faEnabled={is2faEnabled}
+      twoFactorStep={twoFactorStep}
+      setTwoFactorStep={setTwoFactorStep}
+      qrCodeUrl={qrCodeUrl}
+      totpSecret={totpSecret}
+      verificationCode={verificationCode}
+      setVerificationCode={setVerificationCode}
+      handleSetup2FA={handleSetup2FA}
+      handleEnable2FA={handleEnable2FA}
+      handleDisable2FA={handleDisable2FA}
+      recoveryCodes={recoveryCodes}
+      setRecoveryCodes={setRecoveryCodes}
+      showToast={showToast}
+
+      // Passkey
+      handleRegisterPasskey={handleRegisterPasskey}
+      passkeys={passkeys}
+      handleDeletePasskey={handleDeletePasskey}
+      deletingPasskeyId={deletingPasskeyId}
+      setDeletingPasskeyId={setDeletingPasskeyId}
     />
   );
 };
+
 export default SecurityTab;

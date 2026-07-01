@@ -13,6 +13,20 @@ export const Navigation: React.FC = () => {
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [customThemes, setCustomThemes] = useState<{ id: string; name: string }[]>([]);
+
+  const handleSetThemeOpen = (open: boolean) => {
+    if (open) {
+      try {
+        const saved = localStorage.getItem('giftistry-custom-themes');
+        setCustomThemes(saved ? JSON.parse(saved) : []);
+      } catch {
+        setCustomThemes([]);
+      }
+    }
+    setIsThemeOpen(open);
+  };
+
   const [isHolidayOpen, setIsHolidayOpen] = useState(false);
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -156,12 +170,13 @@ export const Navigation: React.FC = () => {
       isProfileOpen={isProfileOpen}
       setIsProfileOpen={setIsProfileOpen}
       isThemeOpen={isThemeOpen}
-      setIsThemeOpen={setIsThemeOpen}
+      setIsThemeOpen={handleSetThemeOpen}
       profileRef={profileRef}
       themeRef={themeRef}
       handleLogout={handleLogout}
       standardThemes={standardThemes}
       holidayThemes={holidayThemes}
+      customThemes={customThemes}
       isHolidayOpen={isHolidayOpen}
       setIsHolidayOpen={setIsHolidayOpen}
       appearances={appearances}

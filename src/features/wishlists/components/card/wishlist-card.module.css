@@ -4,9 +4,9 @@
   flex-direction: column;
   background-color: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card:hover {
@@ -55,9 +55,9 @@
   color: var(--text-muted);
   background-color: var(--surface-hover);
   padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
 }
 
 .categoryIcon {
@@ -70,12 +70,12 @@
 }
 
 .badge {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 4px 8px;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   border: 1px solid transparent;
 }
 
@@ -86,9 +86,9 @@
 }
 
 .viewer {
-  background-color: rgba(var(--primary-rgb), 0.1);
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
   color: var(--primary);
-  border-color: rgba(var(--primary-rgb), 0.2);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
 .personal {
@@ -105,11 +105,11 @@
 
 .title {
   font-size: 1.125rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text);
   margin: 0;
   line-height: 1.4;
-  transition: color 0.2s ease;
+  transition: color var(--transition-normal);
 }
 
 .card:hover .title {
@@ -120,14 +120,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
 .ownerAvatar {
   width: 12px;
   height: 12px;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   opacity: 0.8;
 }
 
@@ -150,8 +150,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   color: var(--text-muted);
 }
 
@@ -179,7 +179,7 @@
   padding: 16px 20px;
   border-top: 1px solid var(--border);
   background-color: var(--surface-hover);
-  transition: background-color 0.2s ease;
+  transition: background-color var(--transition-normal);
 }
 
 .card:hover .footer {
@@ -187,14 +187,14 @@
 }
 
 .viewLink {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text);
 }
 
 .arrow {
   color: var(--text-muted);
-  transition: transform 0.2s ease, color 0.2s ease;
+  transition: transform var(--transition-normal), color var(--transition-normal);
 }
 
 .card:hover .arrow {

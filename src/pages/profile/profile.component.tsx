@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProfileCard } from 'features/auth';
 import { SecurityTab } from './tabs/security/security-tab.component';
 import { NotificationsTab } from './tabs/notifications/notifications-tab.component';
 import { ThemingTab } from './tabs/theming/theming-tab.component';
+import { ServerSettingsTab } from './tabs/server/server-settings-tab.component';
 import { ProfileTemplate } from './profile.html';
+import { useToast } from 'app/providers/toast-context';
+import { useAuth } from 'app/providers/auth-context';
 
 export interface ToastInfo {
   id: number;
@@ -13,17 +16,9 @@ export interface ToastInfo {
 }
 
 export default function Profile() {
-  const [toasts, setToasts] = useState<ToastInfo[]>([]);
-
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
-    
-    // Auto-remove after 3 seconds
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3000);
-  };
+  const { showToast } = useToast();
+  const { user } = useAuth();
+  const isAdmin = !!user?.IsAdmin;
 
   const routes = (
     <Routes>
@@ -32,6 +27,7 @@ export default function Profile() {
       <Route path="security" element={<SecurityTab showToast={showToast} />} />
       <Route path="notifications" element={<NotificationsTab showToast={showToast} />} />
       <Route path="theming" element={<ThemingTab showToast={showToast} />} />
+      {isAdmin && <Route path="server" element={<ServerSettingsTab showToast={showToast} />} />}
       <Route path="*" element={<Navigate to="settings" replace />} />
     </Routes>
   );
@@ -39,7 +35,8 @@ export default function Profile() {
   return (
     <ProfileTemplate
       routes={routes}
-      toasts={toasts}
+      toasts={[]}
+      isAdmin={isAdmin}
     />
   );
 }

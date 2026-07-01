@@ -29,13 +29,7 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
     return `${Math.max(stringVal.length * charWidth + 10, minWidth)}px`;
   };
 
-  // Helper to automatically adjust textarea height based on its content
-  const adjustHeight = (el: HTMLTextAreaElement | null) => {
-    if (el) {
-      el.style.height = 'auto';
-      el.style.height = `${el.scrollHeight}px`;
-    }
-  };
+
 
   return (
     <div className={styles.tabPane}>
@@ -126,12 +120,14 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                   className={`${styles.hexInput} ${invalidColorFields.includes('primary') ? styles.invalidInput : ''}`}
                   value={colors.primary.toUpperCase()}
                   onChange={(e) => handleHexInputChange('primary', e.target.value)}
+                  disabled={isNameDisabled}
                 />
                 <div className={styles.customPickerWrapper}>
                   <input
                     type="color"
                     value={colors.primary}
                     onChange={(e) => handlePickerChange('primary', e.target.value)}
+                    disabled={isNameDisabled}
                   />
                 </div>
               </div>
@@ -148,12 +144,14 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                   className={`${styles.hexInput} ${invalidColorFields.includes('bg') ? styles.invalidInput : ''}`}
                   value={colors.bg.toUpperCase()}
                   onChange={(e) => handleHexInputChange('bg', e.target.value)}
+                  disabled={isNameDisabled}
                 />
                 <div className={styles.customPickerWrapper}>
                   <input
                     type="color"
                     value={colors.bg}
                     onChange={(e) => handlePickerChange('bg', e.target.value)}
+                    disabled={isNameDisabled}
                   />
                 </div>
               </div>
@@ -167,12 +165,14 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                   className={`${styles.hexInput} ${invalidColorFields.includes('surface') ? styles.invalidInput : ''}`}
                   value={colors.surface.toUpperCase()}
                   onChange={(e) => handleHexInputChange('surface', e.target.value)}
+                  disabled={isNameDisabled}
                 />
                 <div className={styles.customPickerWrapper}>
                   <input
                     type="color"
                     value={colors.surface}
                     onChange={(e) => handlePickerChange('surface', e.target.value)}
+                    disabled={isNameDisabled}
                   />
                 </div>
               </div>
@@ -186,12 +186,14 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                   className={`${styles.hexInput} ${invalidColorFields.includes('border') ? styles.invalidInput : ''}`}
                   value={colors.border.toUpperCase()}
                   onChange={(e) => handleHexInputChange('border', e.target.value)}
+                  disabled={isNameDisabled}
                 />
                 <div className={styles.customPickerWrapper}>
                   <input
                     type="color"
                     value={colors.border}
                     onChange={(e) => handlePickerChange('border', e.target.value)}
+                    disabled={isNameDisabled}
                   />
                 </div>
               </div>
@@ -208,12 +210,14 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                   className={`${styles.hexInput} ${invalidColorFields.includes('text') ? styles.invalidInput : ''}`}
                   value={colors.text.toUpperCase()}
                   onChange={(e) => handleHexInputChange('text', e.target.value)}
+                  disabled={isNameDisabled}
                 />
                 <div className={styles.customPickerWrapper}>
                   <input
                     type="color"
                     value={colors.text}
                     onChange={(e) => handlePickerChange('text', e.target.value)}
+                    disabled={isNameDisabled}
                   />
                 </div>
               </div>
@@ -227,12 +231,14 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                   className={`${styles.hexInput} ${invalidColorFields.includes('text-muted') ? styles.invalidInput : ''}`}
                   value={colors['text-muted'].toUpperCase()}
                   onChange={(e) => handleHexInputChange('text-muted', e.target.value)}
+                  disabled={isNameDisabled}
                 />
                 <div className={styles.customPickerWrapper}>
                   <input
                     type="color"
                     value={colors['text-muted']}
                     onChange={(e) => handlePickerChange('text-muted', e.target.value)}
+                    disabled={isNameDisabled}
                   />
                 </div>
               </div>
@@ -291,6 +297,7 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                 className={`${styles.jsonInlineInput} ${invalidColorFields.includes('primary') ? styles.invalidJsonInput : ''}`}
                 value={colors.primary}
                 onChange={(e) => handleHexInputChange('primary', e.target.value)}
+                disabled={isNameDisabled}
                 style={{ width: getInputWidth(colors.primary), maxWidth: '100%' }}
               />
               <span className={styles.jsonPunct}>{"\","}</span>
@@ -304,6 +311,7 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                 className={`${styles.jsonInlineInput} ${invalidColorFields.includes('bg') ? styles.invalidJsonInput : ''}`}
                 value={colors.bg}
                 onChange={(e) => handleHexInputChange('bg', e.target.value)}
+                disabled={isNameDisabled}
                 style={{ width: getInputWidth(colors.bg), maxWidth: '100%' }}
               />
               <span className={styles.jsonPunct}>{"\","}</span>
@@ -317,6 +325,7 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                 className={`${styles.jsonInlineInput} ${invalidColorFields.includes('surface') ? styles.invalidJsonInput : ''}`}
                 value={colors.surface}
                 onChange={(e) => handleHexInputChange('surface', e.target.value)}
+                disabled={isNameDisabled}
                 style={{ width: getInputWidth(colors.surface), maxWidth: '100%' }}
               />
               <span className={styles.jsonPunct}>{"\","}</span>
@@ -330,6 +339,7 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                 className={`${styles.jsonInlineInput} ${invalidColorFields.includes('border') ? styles.invalidJsonInput : ''}`}
                 value={colors.border}
                 onChange={(e) => handleHexInputChange('border', e.target.value)}
+                disabled={isNameDisabled}
                 style={{ width: getInputWidth(colors.border), maxWidth: '100%' }}
               />
               <span className={styles.jsonPunct}>{"\","}</span>
@@ -343,6 +353,7 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                 className={`${styles.jsonInlineInput} ${invalidColorFields.includes('text') ? styles.invalidJsonInput : ''}`}
                 value={colors.text}
                 onChange={(e) => handleHexInputChange('text', e.target.value)}
+                disabled={isNameDisabled}
                 style={{ width: getInputWidth(colors.text), maxWidth: '100%' }}
               />
               <span className={styles.jsonPunct}>{"\","}</span>
@@ -356,6 +367,7 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
                 className={`${styles.jsonInlineInput} ${invalidColorFields.includes('text-muted') ? styles.invalidJsonInput : ''}`}
                 value={colors['text-muted']}
                 onChange={(e) => handleHexInputChange('text-muted', e.target.value)}
+                disabled={isNameDisabled}
                 style={{ width: getInputWidth(colors['text-muted']), maxWidth: '100%' }}
               />
               <span className={styles.jsonPunct}>{"\""}</span>
@@ -378,16 +390,13 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
             <div className={`${styles.jsonLine} ${styles.indent3}`}>
               <span className={styles.jsonKey}>{"\"sm\""}</span>
               <span className={styles.jsonPunct}>{"\": \""}</span>
-              <textarea
-                ref={adjustHeight}
-                className={styles.jsonInlineTextarea}
+              <input
+                type="text"
+                className={styles.jsonInlineInput}
                 value={advanced.shadows.sm}
-                onChange={(e) => {
-                  handleAdvancedChange('shadows', 'sm', e.target.value);
-                  e.target.style.height = 'auto';
-                  e.target.style.height = `${e.target.scrollHeight}px`;
-                }}
-                rows={1}
+                onChange={(e) => handleAdvancedChange('shadows', 'sm', e.target.value)}
+                disabled={isNameDisabled}
+                style={{ width: getInputWidth(advanced.shadows.sm), maxWidth: '100%' }}
               />
               <span className={styles.jsonPunct}>{"\","}</span>
             </div>
@@ -395,16 +404,13 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
             <div className={`${styles.jsonLine} ${styles.indent3}`}>
               <span className={styles.jsonKey}>{"\"md\""}</span>
               <span className={styles.jsonPunct}>{"\": \""}</span>
-              <textarea
-                ref={adjustHeight}
-                className={styles.jsonInlineTextarea}
+              <input
+                type="text"
+                className={styles.jsonInlineInput}
                 value={advanced.shadows.md}
-                onChange={(e) => {
-                  handleAdvancedChange('shadows', 'md', e.target.value);
-                  e.target.style.height = 'auto';
-                  e.target.style.height = `${e.target.scrollHeight}px`;
-                }}
-                rows={1}
+                onChange={(e) => handleAdvancedChange('shadows', 'md', e.target.value)}
+                disabled={isNameDisabled}
+                style={{ width: getInputWidth(advanced.shadows.md), maxWidth: '100%' }}
               />
               <span className={styles.jsonPunct}>{"\","}</span>
             </div>
@@ -412,16 +418,13 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
             <div className={`${styles.jsonLine} ${styles.indent3}`}>
               <span className={styles.jsonKey}>{"\"lg\""}</span>
               <span className={styles.jsonPunct}>{"\": \""}</span>
-              <textarea
-                ref={adjustHeight}
-                className={styles.jsonInlineTextarea}
+              <input
+                type="text"
+                className={styles.jsonInlineInput}
                 value={advanced.shadows.lg}
-                onChange={(e) => {
-                  handleAdvancedChange('shadows', 'lg', e.target.value);
-                  e.target.style.height = 'auto';
-                  e.target.style.height = `${e.target.scrollHeight}px`;
-                }}
-                rows={1}
+                onChange={(e) => handleAdvancedChange('shadows', 'lg', e.target.value)}
+                disabled={isNameDisabled}
+                style={{ width: getInputWidth(advanced.shadows.lg), maxWidth: '100%' }}
               />
               <span className={styles.jsonPunct}>{"\""}</span>
             </div>
@@ -438,38 +441,13 @@ export const ThemingTabTemplate: React.FC<ThemingTabTemplateProps> = ({
             <div className={`${styles.jsonLine} ${styles.indent3}`}>
               <span className={styles.jsonKey}>{"\"sans\""}</span>
               <span className={styles.jsonPunct}>{"\": \""}</span>
-              <textarea
-                ref={adjustHeight}
-                className={styles.jsonInlineTextarea}
-                value={advanced.fonts.sans}
-                onChange={(e) => {
-                  handleAdvancedChange('fonts', 'sans', e.target.value);
-                  e.target.style.height = 'auto';
-                  e.target.style.height = `${e.target.scrollHeight}px`;
-                }}
-                rows={1}
-              />
-              <span className={styles.jsonPunct}>{"\""}</span>
-            </div>
-            
-            <div className={`${styles.jsonLine} ${styles.indent2}`}>
-              <span className={styles.jsonPunct}>{"},"}</span>
-            </div>
-            
-            <div className={`${styles.jsonLine} ${styles.indent2}`}>
-              <span className={styles.jsonKey}>{"\"radius\""}</span>
-              <span className={styles.jsonPunct}>{"\": {"}</span>
-            </div>
-            
-            <div className={`${styles.jsonLine} ${styles.indent3}`}>
-              <span className={styles.jsonKey}>{"\"default\""}</span>
-              <span className={styles.jsonPunct}>{"\": \""}</span>
               <input
                 type="text"
                 className={styles.jsonInlineInput}
-                value={advanced.radius.default}
-                onChange={(e) => handleAdvancedChange('radius', 'default', e.target.value)}
-                style={{ width: getInputWidth(advanced.radius.default), maxWidth: '100%' }}
+                value={advanced.fonts.sans}
+                onChange={(e) => handleAdvancedChange('fonts', 'sans', e.target.value)}
+                disabled={isNameDisabled}
+                style={{ width: getInputWidth(advanced.fonts.sans), maxWidth: '100%' }}
               />
               <span className={styles.jsonPunct}>{"\""}</span>
             </div>

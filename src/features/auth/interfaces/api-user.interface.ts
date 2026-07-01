@@ -8,4 +8,7 @@ export interface ApiUser {
   Bio?: string;
   Theme?: string;
   Avatar?: string | null;
+  EmailVerified?: boolean;
+  TwoFactorEnabled?: boolean;
+  IsAdmin?: boolean;
 }

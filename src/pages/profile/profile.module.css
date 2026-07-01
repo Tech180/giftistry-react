@@ -4,80 +4,12 @@
   width: 100%;
 }
 
-.sidebar {
-  width: 260px;
-  background-color: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-
-.sidebarNav {
-  padding: 24px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.navSectionTitle {
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  padding: 16px 12px 8px;
-  font-weight: 600;
-}
-
-.navItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  color: var(--text-muted);
-  font-weight: 500;
-  font-size: 0.875rem;
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  width: 100%;
-  text-align: left;
-  transition: all 0.2s ease;
-  text-decoration: none;
-}
-
-.navItem:hover {
-  background-color: var(--surface-hover);
-  color: var(--text);
-}
-
-.navItem:hover .navIcon {
-  color: var(--text);
-}
-
-.active {
-  background-color: rgba(var(--primary-rgb), 0.1) !important;
-  color: var(--primary) !important;
-}
-
-.active .navIcon {
-  color: var(--primary) !important;
-}
-
-.navIcon {
-  color: var(--text-muted);
-  transition: color 0.2s ease;
-  width: 18px;
-  height: 18px;
-}
-
 .mainWrapper {
   flex: 1;
   padding: 48px 64px;
   display: flex;
   flex-direction: column;
-  width: calc(100% - 260px);
+  width: calc(100% - 240px);
   overflow-y: auto;
 }
 
@@ -103,7 +35,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   transform: translateX(120%);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -131,34 +63,7 @@
 }
 
 @media (max-width: 768px) {
-  .appBody {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebarNav {
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 12px 16px;
-    gap: 8px;
-  }
-
-  .navSectionTitle {
-    display: none;
-  }
-
-  .navItem {
-    white-space: nowrap;
-    width: auto;
-  }
-
   .mainWrapper {
-    width: 100%;
     padding: 24px;
   }
 }

@@ -1,19 +1,10 @@
-import React from 'react';
+import { PasswordSectionProps } from './password-section-props.interface';
+import { TwoFactorSectionProps } from './two-factor-section-props.interface';
+import { PasskeysSectionProps } from './passkeys-section-props.interface';
 
-export interface SecurityTabTemplateProps {
-  currentPassword: string;
-  setCurrentPassword: (val: string) => void;
-  newPassword: string;
-  setNewPassword: (val: string) => void;
-  confirmPassword: string;
-  setConfirmPassword: (val: string) => void;
-  isLoading: boolean;
-  showCurrent: boolean;
-  setShowCurrent: (val: boolean) => void;
-  showNew: boolean;
-  setShowNew: (val: boolean) => void;
-  showConfirm: boolean;
-  setShowConfirm: (val: boolean) => void;
-  handleUpdatePassword: (e: React.FormEvent) => void;
-}
+export interface SecurityTabTemplateProps
+  extends PasswordSectionProps,
+    TwoFactorSectionProps,
+    PasskeysSectionProps {}
+
 export default SecurityTabTemplateProps;

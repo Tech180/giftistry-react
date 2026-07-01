@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme, Theme } from 'app/providers/theme-context';
+import { useTheme } from 'app/providers/theme-context';
 import { ThemingTabTemplate } from './theming-tab.html';
 import { PresetThemeInfo } from './interfaces/preset-theme-info.interface';
 import { CustomThemeProfile } from './interfaces/custom-theme-profile.interface';
@@ -69,10 +69,7 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
 
   // Synchronize when theme changes from taskbar
   useEffect(() => {
-    const useCustom = localStorage.getItem('giftistry-use-custom-theme') === 'true';
-    if (!useCustom) {
-      setActiveThemeId(currentAppTheme);
-    }
+    setActiveThemeId(currentAppTheme);
   }, [currentAppTheme]);
 
   // Setup active theme fields
@@ -174,8 +171,7 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
 
     setCustomThemes(prev => [...prev, newCustom]);
     setActiveThemeId(newId);
-    localStorage.setItem('giftistry-use-custom-theme', 'true');
-    localStorage.setItem('giftistry-custom-theme', JSON.stringify(newCustom));
+    setTheme(newId);
     return newId;
   };
 
@@ -226,8 +222,7 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
 
     setCustomThemes(prev => [...prev, newCustom]);
     setActiveThemeId(newId);
-    localStorage.setItem('giftistry-use-custom-theme', 'true');
-    localStorage.setItem('giftistry-custom-theme', JSON.stringify(newCustom));
+    setTheme(newId);
     showToast('New custom theme created!', 'success');
   };
 
@@ -298,18 +293,8 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
 
   const onSelectPreset = (val: string) => {
     setActiveThemeId(val);
-    if (val.startsWith('custom-')) {
-      localStorage.setItem('giftistry-use-custom-theme', 'true');
-      const activeCustom = customThemes.find(t => t.id === val);
-      if (activeCustom) {
-        localStorage.setItem('giftistry-custom-theme', JSON.stringify(activeCustom));
-        applyCustomThemeStyles(activeCustom.colors, activeCustom.advanced);
-      }
-    } else {
-      localStorage.setItem('giftistry-use-custom-theme', 'false');
-      setTheme(val as Theme);
-    }
-    showToast(`Loaded "${val.startsWith('custom-') ? 'Custom Theme' : val}" theme preset.`, 'info');
+    setTheme(val);
+    showToast(`Loaded theme preset.`, 'info');
   };
 
   const onResetTheme = () => {
@@ -373,7 +358,10 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
         text: colors.text,
         'text-muted': colors['text-muted']
       },
-      advanced: advanced
+      advanced: {
+        shadows: advanced.shadows,
+        fonts: advanced.fonts,
+      }
     };
     const jsonStr = JSON.stringify(themeObj, null, 2);
     navigator.clipboard.writeText(jsonStr)

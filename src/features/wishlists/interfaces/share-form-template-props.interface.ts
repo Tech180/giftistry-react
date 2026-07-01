@@ -9,4 +9,5 @@ export interface ShareFormTemplateProps {
   errorMsg: string | null;
   successMsg: string | null;
   handleSubmit: (e: React.SyntheticEvent) => void;
+  isUnverified?: boolean;
 }

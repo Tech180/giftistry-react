@@ -1,21 +1,26 @@
 .tabPane {
-  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   width: 100%;
+  animation: var(--animation-scale-in);
 }
 
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+.settingsContainer {
+  width: 100%;
+  max-width: 1400px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: 32px;
 }
 
 .pageHeader {
+  grid-column: 1 / -1;
   margin-bottom: 32px;
   border-bottom: 1px solid var(--border);
   padding-bottom: 20px;
 }
 
 .pageTitle {
-  font-size: 2rem;
+  font-size: var(--font-size-3xl);
   font-weight: 700;
   color: var(--text);
   margin-bottom: 6px;
@@ -23,149 +28,537 @@
 }
 
 .pageSubtitle {
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
 }
 
-.glassCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 28px;
-  box-shadow: var(--shadow-sm);
-  width: 100%;
-}
-
-/* Form controls */
-.inputContainer {
+.section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
-  width: 100%;
+  min-width: 0;
+  height: 100%;
 }
 
-.inputLabel {
-  font-size: 0.875rem;
+.sectionHeader {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settingList {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+  flex: 1;
+}
+
+.settingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 24px;
+}
+
+.settingRow:last-child {
+  border-bottom: none;
+}
+
+.settingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settingLabel {
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text);
 }
 
-.inputField {
-  width: 100%;
-  font-family: inherit;
-  font-size: 0.9375rem;
-  padding: 10px 14px;
-  border-radius: 8px;
-  background-color: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  outline: none;
-  transition: all 0.2s;
+.settingDesc {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
 }
 
-.inputField:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+.settingAction {
+  flex-shrink: 0;
 }
 
-.inputField:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Forms */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 16px;
 }
 
-.inputWithIcon {
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inputLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.inputBox {
   position: relative;
   display: flex;
   align-items: center;
   width: 100%;
 }
 
-.inputWithIcon .inputField {
-  padding-right: 44px;
+.inputField {
+  width: 100%;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  padding: 8px 12px;
+  border-radius: 6px;
+  outline: none;
+  transition: all 0.1s ease-out;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
 }
 
-.toggleVisibilityBtn {
+.inputField:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.inputIconBtn {
   position: absolute;
-  right: 12px;
+  right: 8px;
   background: transparent;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
   display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 4px;
   border-radius: 4px;
-  transition: color 0.2s;
+  align-items: center;
+  justify-content: center;
 }
 
-.toggleVisibilityBtn:hover {
+.inputIconBtn:hover {
   color: var(--text);
 }
 
-/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   font-family: inherit;
+  font-size: var(--font-size-sm);
   font-weight: 500;
-  border-radius: 8px;
+  padding: 0 12px;
+  height: 28px;
+  border-radius: 4px;
   cursor: pointer;
   border: 1px solid transparent;
-  gap: 8px;
-  transition: all 0.2s;
-  outline: none;
+  transition: all 0.1s ease-out;
+  white-space: nowrap;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btnMd {
-  padding: 10px 20px;
-  font-size: 0.9375rem;
-}
-
 .btnPrimary {
-  background-color: var(--primary);
-  color: var(--primary-text);
+  background-color: var(--text);
+  color: var(--bg);
 }
 
 .btnPrimary:hover:not(:disabled) {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
+  opacity: 0.9;
 }
 
-/* Spinner */
+.btnSecondary {
+  background-color: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background-color: var(--surface-hover);
+  border-color: var(--border-hover, var(--border));
+}
+
+.btnDanger {
+  color: var(--error, #e5484d);
+  background-color: transparent;
+  border: 1px solid color-mix(in srgb, var(--error, #e5484d) 20%, transparent);
+}
+
+.btnDanger:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--error, #e5484d) 10%, transparent);
+}
+
+.btnDangerSolid {
+  color: #ffffff;
+  background-color: var(--error, #e5484d);
+  border: 1px solid var(--error, #e5484d);
+}
+
+.btnDangerSolid:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.expandableArea {
+  display: none;
+  padding: 16px;
+  background-color: var(--bg);
+  border-top: 1px solid var(--border);
+  flex-direction: column;
+  gap: 16px;
+}
+
+.expandableArea.active {
+  display: flex;
+}
+
+.qrCodeWrapper {
+  padding: 8px;
+  background-color: #fff;
+  border-radius: 6px;
+  display: inline-block;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.totpSecretCode {
+  display: block;
+  padding: 8px 12px;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: var(--font-size-xs);
+  font-family: monospace;
+  word-break: break-all;
+  color: var(--primary);
+  margin-top: 8px;
+}
+
 .spinner {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   border: 2px solid currentColor;
   border-bottom-color: transparent;
   border-radius: 50%;
-  animation: rotation 0.6s linear infinite;
+  animation: var(--animation-rotation);
   display: inline-block;
 }
 
-@keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.passkeyWarning {
+  padding: 12px 16px;
+  background-color: color-mix(in srgb, var(--warning, #f5a623) 5%, transparent);
+  border-top: 1px solid var(--border);
+  color: var(--warning, #f5a623);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
 }
 
-.securityCard {
-  max-width: 550px;
+.badge {
+  font-size: var(--font-size-xs);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
 }
 
-.securityForm {
+.badgeInfo {
+  background-color: rgba(var(--primary-rgb, 94, 106, 210), 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(var(--primary-rgb, 94, 106, 210), 0.2);
+}
+
+.badgeSuccess {
+  background-color: color-mix(in srgb, var(--success, #30a46c) 10%, transparent);
+  color: var(--success, #30a46c);
+  border: 1px solid color-mix(in srgb, var(--success, #30a46c) 20%, transparent);
+}
+
+.deleteIconBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  padding: 6px;
+  border-radius: 4px;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease-in-out;
+}
+
+.deleteIconBtn:hover {
+  color: var(--error, #e5484d);
+  background-color: var(--surface-hover);
+}
+
+.dangerText {
+  color: var(--error, #e5484d);
+}
+
+@media (max-width: 900px) {
+  .settingsContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Helper alignment and flex classes */
+.flexCol {
   display: flex;
   flex-direction: column;
 }
 
-.actionRow {
-  margin-top: 8px;
+.flexRow {
+  display: flex;
+  flex-direction: row;
+}
+
+.alignCenter {
+  align-items: center;
+}
+
+.justifyBetween {
+  justify-content: space-between;
+}
+
+.wFull {
+  width: 100%;
+}
+
+.gap2 {
+  gap: 8px;
+}
+
+.gap3 {
+  gap: 12px;
+}
+
+.gap4 {
+  gap: 16px;
+}
+
+.fullWidthSection {
+  grid-column: 1 / -1;
+}
+
+/* Status colors and text settings */
+.activeStatus {
+  color: var(--text) !important;
+  font-weight: 500;
+}
+
+.inactiveStatus {
+  color: var(--text-muted) !important;
+  font-weight: 500;
+}
+
+.settingDescSmall {
+  font-size: var(--font-size-xs);
+  margin-top: 6px;
+  max-width: 650px;
+  line-height: 1.4;
+}
+
+/* Success alert component styles */
+.successAlert {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--success, #15803d);
+  background-color: color-mix(in srgb, var(--success, #30a46c) 8%, transparent);
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--success, #30a46c) 20%, transparent);
+}
+
+.successAlertIcon {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+}
+
+.successAlertTitle {
+  display: block;
+  font-size: var(--font-size-sm);
+  margin-bottom: 2px;
+}
+
+.successAlertDesc {
+  font-size: var(--font-size-xs);
+  color: var(--success, #166534);
+}
+
+/* Recovery codes dashboard */
+.recoveryCodeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  padding: 10px 0;
+}
+
+.recoveryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  background-color: var(--surface-hover);
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-family: monospace;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: center;
+}
+
+.recoveryCodeBox {
+  padding: 8px;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  background-color: var(--bg);
+  letter-spacing: 0.5px;
+}
+
+/* Info and tip banners */
+.tipText {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.tipEmoji {
+  color: var(--primary);
+}
+
+/* Button placement rows */
+.btnRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.btnRightAligned {
+  margin-left: auto;
+}
+
+/* Password page grid */
+.passwordFieldsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.passwordSubmitRow {
   display: flex;
   justify-content: flex-end;
+  border-top: 1px solid var(--border);
+  padding-top: 0;
+}
+
+.passwordSubmitBtn {
+  margin-top: 16px;
+}
+
+/* Setup steps layout */
+.setupGrid {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.qrImage {
+  display: block;
+  width: 110px;
+  height: 110px;
+}
+
+.setupRightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.labelBold {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.lineHeightNormal {
+  line-height: 1.4;
+}
+
+.descMaxWidth {
+  line-height: 1.4;
+  max-width: 650px;
+}
+
+.manualSecretWrapper {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manualSecretTitle {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.inlineForm {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.verificationInputWrapper {
+  width: 140px;
+}
+
+.fullWidthInput {
+  width: 100%;
+}
+
+.flexWrap {
+  flex-wrap: wrap;
+}
+
+.gap1 {
+  gap: 4px;
+}
+
+.mutedIcon {
+  color: var(--text-muted);
 }

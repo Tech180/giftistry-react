@@ -20,6 +20,7 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
   setCategory,
   customCategory,
   setCustomCategory,
+  isUnverified = false,
 }) => {
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
@@ -116,6 +117,7 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
         type="submit"
         variant="primary"
         isLoading={isLoading}
+        disabled={isUnverified}
         className={styles.submitBtn}
       >
         Create Wishlist

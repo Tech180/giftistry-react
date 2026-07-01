@@ -20,6 +20,7 @@ export interface NavigationTemplateProps {
   handleLogout: () => void;
   standardThemes: { value: Theme; label: string }[];
   holidayThemes: { value: Theme; label: string }[];
+  customThemes?: { id: string; name: string }[];
   isHolidayOpen: boolean;
   setIsHolidayOpen: (open: boolean) => void;
   appearances: { value: Appearance; label: string; icon: any }[];

@@ -2,13 +2,63 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { ThemeContextType } from './interfaces/theme-context-type.interface';
 import { AuthContext } from './auth-context';
 
-export type Theme = "default" | "neon" | "cyberpunk" | "mystic" | "burnt-forest" | "valentines" | "st-patricks" | "earth-day" | "independence" | "halloween" | "thanksgiving" | "christmas";
+export type Theme = "default" | "neon" | "cyberpunk" | "mystic" | "burnt-forest" | "valentines" | "st-patricks" | "earth-day" | "independence" | "halloween" | "thanksgiving" | "christmas" | string;
 export type Appearance = "light" | "dark" | "system";
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 let lastRequestedUrl = "";
+
+/**
+ * Loads the core design variables stylesheet in the background dynamically
+ * from the backend server.
+ */
+function loadCoreVariables(): Promise<void> {
+  return new Promise((resolve) => {
+    const url = `${BASE_URL}/api/themes/core/css`;
+
+    // Check if the current core stylesheet already has this URL
+    const activeLink = document.getElementById("core-theme-stylesheet") as HTMLLinkElement | null;
+    if (activeLink && activeLink.href === url) {
+      resolve();
+      return;
+    }
+
+    // Create new temporary link element
+    const newLink = document.createElement("link");
+    newLink.rel = "stylesheet";
+    newLink.href = url;
+    newLink.setAttribute("data-core-style", "pending");
+
+    newLink.onload = () => {
+      const oldLink = document.getElementById("core-theme-stylesheet");
+      newLink.id = "core-theme-stylesheet";
+      newLink.removeAttribute("data-core-style");
+      
+      if (oldLink && oldLink !== newLink) {
+        oldLink.parentNode?.removeChild(oldLink);
+      }
+      resolve();
+    };
+
+    newLink.onerror = () => {
+      console.error(`Failed to load core theme variables from: ${url}`);
+      if (newLink.parentNode) {
+        newLink.parentNode.removeChild(newLink);
+      }
+      resolve();
+    };
+
+    const existingLink = document.getElementById("core-theme-stylesheet");
+    if (!existingLink) {
+      newLink.id = "core-theme-stylesheet";
+      newLink.removeAttribute("data-core-style");
+    }
+
+    document.head.appendChild(newLink);
+  });
+}
 
 /**
  * Loads the theme stylesheet in the background and swaps it into the DOM once loaded
@@ -99,6 +149,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return savedAppearance || "system";
   });
 
+  // Load core design variables from backend on startup/reload
+  useEffect(() => {
+    loadCoreVariables();
+  }, []);
+
   // Check for holiday theme unlocking
   useEffect(() => {
     const defaults: Theme[] = ["default", "neon", "cyberpunk", "mystic", "burnt-forest"];
@@ -140,7 +195,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Fallback to default if the current theme is locked
   useEffect(() => {
-    if (!unlockedThemes.includes(theme)) {
+    if (!unlockedThemes.includes(theme) && !theme.startsWith('custom-')) {
       setThemeState("default");
       localStorage.setItem("giftistry-theme", "default");
     }
@@ -163,14 +218,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute("data-appearance", effectiveAppearance);
 
     // Trigger Double Link Swap
-    updateThemeStylesheet(theme, effectiveAppearance);
+    updateThemeStylesheet(theme.startsWith('custom-') ? 'default' : theme, effectiveAppearance);
 
     // Listen for system appearance updates if system mode is active
     const handleSystemChange = () => {
       if (appearance === "system") {
         const nextEffective = mediaQuery.matches ? "dark" : "light";
         document.documentElement.setAttribute("data-appearance", nextEffective);
-        updateThemeStylesheet(theme, nextEffective);
+        updateThemeStylesheet(theme.startsWith('custom-') ? 'default' : theme, nextEffective);
       }
     };
 
@@ -180,7 +235,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Apply custom theme CSS variables if enabled
   useEffect(() => {
-    const useCustom = localStorage.getItem('giftistry-use-custom-theme') === 'true';
+    const useCustom = localStorage.getItem('giftistry-use-custom-theme') === 'true' || theme.startsWith('custom-');
     const savedCustom = localStorage.getItem('giftistry-custom-theme');
     if (useCustom && savedCustom) {
       try {
@@ -224,8 +279,24 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme, appearance]);
 
   const setTheme = (newTheme: Theme) => {
-    if (unlockedThemes.includes(newTheme)) {
-      localStorage.setItem('giftistry-use-custom-theme', 'false');
+    if (unlockedThemes.includes(newTheme) || newTheme.startsWith('custom-')) {
+      if (newTheme.startsWith('custom-')) {
+        localStorage.setItem('giftistry-use-custom-theme', 'true');
+        const customThemesRaw = localStorage.getItem('giftistry-custom-themes');
+        if (customThemesRaw) {
+          try {
+            const list = JSON.parse(customThemesRaw);
+            const found = list.find((ct: any) => ct.id === newTheme);
+            if (found) {
+              localStorage.setItem('giftistry-custom-theme', JSON.stringify(found));
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      } else {
+        localStorage.setItem('giftistry-use-custom-theme', 'false');
+      }
       setThemeState(newTheme);
       localStorage.setItem("giftistry-theme", newTheme);
     } else {

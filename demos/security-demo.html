@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default" data-appearance="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giftistry - Password & Security</title>
+  
+  <!-- Outfit & Inter Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ==========================================================================
+       1. CORE DESIGN SYSTEM & THEME TOKENS
+       ========================================================================== */
+    :root {
+      --error: #ef4444;
+      --error-rgb: 239, 68, 68;
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: rgba(239, 68, 68, 0.2);
+      
+      --success: #10b981;
+      --success-rgb: 16, 185, 129;
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --success-border: rgba(16, 185, 129, 0.2);
+
+      --backdrop-bg: rgba(0, 0, 0, 0.6);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.4);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.24);
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+      
+      --radius: 12px;
+      --sidebar-width: 260px;
+      --navbar-height: 64px;
+    }
+
+    /* --- THEMES (DARK MODE) --- */
+    [data-appearance="dark"][data-theme="default"] {
+      --primary: #5e6ad2; --primary-hover: #4d59c2; --primary-rgb: 94, 106, 210; --primary-text: #ffffff;
+      --bg: #0f0f10; --surface: #151516; --surface-hover: #1e1e20; --text: #f7f8f8; --text-muted: #8a8f98;
+      --border: #262629; --surface-glass: rgba(21, 21, 22, 0.7);
+    }
+    [data-appearance="dark"][data-theme="neon"] {
+      --primary: #ff007f; --primary-hover: #e0006c; --primary-rgb: 255, 0, 127; --primary-text: #ffffff;
+      --bg: #0d021a; --surface: #17072e; --surface-hover: #260e47; --text: #f7f8f8; --text-muted: #a372eb;
+      --border: #38126b; --surface-glass: rgba(23, 7, 46, 0.7);
+    }
+    [data-appearance="dark"][data-theme="cyberpunk"] {
+      --primary: #fcee0a; --primary-hover: #d2c700; --primary-rgb: 252, 238, 10; --primary-text: #000000;
+      --bg: #000411; --surface: #080f26; --surface-hover: #0d1b40; --text: #f7f8f8; --text-muted: #5e83a6;
+      --border: #142861; --surface-glass: rgba(8, 15, 38, 0.7);
+    }
+    [data-appearance="dark"][data-theme="mystic"] {
+      --primary: #2d7a4d; --primary-hover: #1e5c36; --primary-rgb: 45, 122, 77; --primary-text: #ffffff;
+      --bg: #0f1c13; --surface: #162a1d; --surface-hover: #223f2c; --text: #e1efe6; --text-muted: #7a9c84;
+      --border: #234530; --surface-glass: rgba(22, 42, 29, 0.7);
+    }
+    [data-appearance="dark"][data-theme="burnt-forest"] {
+      --primary: #ff5500; --primary-hover: #cc4400; --primary-rgb: 255, 85, 0; --primary-text: #ffffff;
+      --bg: #0a0705; --surface: #140e0a; --surface-hover: #1e150f; --text: #f0e6df; --text-muted: #a68c7c;
+      --border: #2b1d14; --surface-glass: rgba(20, 14, 10, 0.7);
+    }
+
+    /* --- THEMES (LIGHT MODE) --- */
+    [data-appearance="light"] {
+      --backdrop-bg: rgba(0, 0, 0, 0.3); --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05); --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    }
+    [data-appearance="light"][data-theme="default"] {
+      --primary: #5e6ad2; --primary-hover: #4d59c2; --primary-rgb: 94, 106, 210; --primary-text: #ffffff;
+      --bg: #fafafa; --surface: #ffffff; --surface-hover: #f3f3f4; --text: #111111; --text-muted: #6b6b7b;
+      --border: #e4e4e7; --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="neon"] {
+      --primary: #ff007f; --primary-hover: #e0006c; --primary-rgb: 255, 0, 127; --primary-text: #ffffff;
+      --bg: #fcf8fd; --surface: #ffffff; --surface-hover: #f6ecf9; --text: #2c0054; --text-muted: #7b688c;
+      --border: #f0d6f5; --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; font-weight: 600; letter-spacing: -0.02em; }
+
+    .topbar {
+      height: var(--navbar-height);
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .nav-left, .nav-right { display: flex; align-items: center; gap: 16px; }
+
+    .logo {
+      display: flex; align-items: center; gap: 8px; text-decoration: none;
+      color: var(--text); font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.25rem;
+    }
+    .logoIcon { color: var(--primary); display: inline-block; }
+
+    .navButton {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+    .navButton:hover { background-color: var(--surface-hover); color: var(--text); }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: var(--primary-text);
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .app-body {
+      display: flex;
+      flex: 1;
+      position: relative;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      position: fixed;
+      left: 0;
+      top: var(--navbar-height);
+      bottom: 0;
+      background-color: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .sidebar-nav { padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
+    .nav-section-title { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); padding: 16px 12px 8px; font-weight: 600; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      border-radius: 8px; color: var(--text-muted); font-weight: 500; font-size: 0.875rem;
+      cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; transition: all 0.2s ease;
+    }
+    .nav-item:hover { background-color: var(--surface-hover); color: var(--text); }
+    .nav-item.active { background-color: rgba(var(--primary-rgb), 0.1); color: var(--primary); }
+    .nav-icon { color: var(--text-muted); width: 18px; height: 18px; }
+
+    /* Main Content Area */
+    .main-wrapper {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 48px 64px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: calc(100% - var(--sidebar-width));
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-wrapper { margin-left: 0; width: 100%; padding: 24px 16px; }
+    }
+
+    .tab-pane {
+      width: 100%;
+      max-width: 1000px;
+      animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .pageHeader { margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+    .pageTitle { font-size: 2rem; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -0.02em; }
+    .pageSubtitle { font-size: 0.95rem; color: var(--text-muted); }
+
+    /* Two-column responsive grid layout */
+    .securityGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+      width: 100%;
+    }
+
+    @media (max-width: 1024px) {
+      .securityGrid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .glassCard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+      width: 100%;
+    }
+
+    .sectionTitle {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cardDescription {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    /* Form controls */
+    .inputContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    .inputLabel {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .inputField {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .inputField:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+    }
+
+    .inputWithIcon {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .toggleVisibilityBtn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 4px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      font-weight: 500;
+      font-size: 0.9375rem;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      gap: 8px;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .btnPrimary {
+      background-color: var(--primary);
+      color: var(--primary-text);
+    }
+
+    .btnPrimary:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btnSecondary {
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btnSecondary:hover {
+      background-color: var(--surface-hover);
+    }
+
+    .btnDanger {
+      background-color: var(--error);
+      color: white;
+    }
+
+    .btnDanger:hover {
+      background-color: #dc2626;
+      transform: translateY(-1px);
+    }
+
+    /* QR Code & setup styling */
+    .qrCodeWrapper {
+      padding: 12px;
+      background-color: #fff;
+      border-radius: 8px;
+      display: inline-block;
+      border: 1px solid var(--border);
+    }
+
+    .totpSecretCode {
+      display: block;
+      padding: 10px 14px;
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      font-family: monospace;
+      word-break: break-all;
+      color: var(--primary);
+      margin-top: 8px;
+    }
+
+    .infoState {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #10b981;
+      font-weight: 500;
+      font-size: 0.9375rem;
+    }
+
+    /* Passkeys List Styling */
+    .passkeyListHeader {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .passkeyList {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .passkeyItem {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .passkeyItem:hover {
+      border-color: var(--text-muted);
+    }
+
+    .passkeyItemLeft {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .passkeyMeta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .passkeyName {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .passkeyBadges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .badgeInfo {
+      background-color: rgba(94, 106, 210, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(94, 106, 210, 0.2);
+    }
+
+    .badgeSuccess {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .btnDeletePasskey {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btnDeletePasskey:hover {
+      color: #ef4444;
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    .passkeyWarning {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background-color: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 8px;
+      color: #f59e0b;
+      font-size: 0.875rem;
+      line-height: 1.4;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    /* Toast System styles */
+    .toastContainer {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10000;
+    }
+
+    .toast {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text);
+      animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      min-width: 250px;
+    }
+
+    @keyframes toastIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Theme dropdown list styling */
+    .themeMenu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: 180px;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 6px;
+      z-index: 201;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .themeMenuItem {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: left;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .themeMenuItem:hover {
+      background-color: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .actionRow {
+      margin-top: 8px;
+      display: flex;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="nav-left">
+      <a href="#" class="logo">
+        <svg class="logoIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <g class="giftLid">
+            <path d="M4 7h16v3H4z" />
+            <path d="M12 7c-1.5-2.5-4-2.5-4 0 0 1.5 2.5 2.5 4 0z" />
+            <path d="M12 7c1.5-2.5 4-2.5 4 0 0 1.5-2.5 2.5-4 0z" />
+          </g>
+          <path d="M5 10h14v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V10z" />
+          <path d="M12 10v12" />
+        </svg>
+        <span style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.25rem;">Giftistry</span>
+      </a>
+    </div>
+    <div class="nav-right">
+      <!-- Appearance button -->
+      <button class="navButton" id="appearanceBtn" title="Toggle Appearance">
+        <i data-lucide="sun"></i>
+      </button>
+      <!-- Theme Palette button -->
+      <div style="position: relative;">
+        <button class="navButton" id="themeBtn" title="Change Theme">
+          <i data-lucide="palette"></i>
+        </button>
+        <div class="themeMenu" id="themeMenu">
+          <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); padding: 8px 10px; font-weight: 600;">Themes</div>
+          <button class="themeMenuItem" onclick="setTheme('default')">Default</button>
+          <button class="themeMenuItem" onclick="setTheme('neon')">Neon</button>
+          <button class="themeMenuItem" onclick="setTheme('cyberpunk')">Cyberpunk</button>
+          <button class="themeMenuItem" onclick="setTheme('mystic')">Mystic Green</button>
+          <button class="themeMenuItem" onclick="setTheme('burnt-forest')">Burnt Forest</button>
+        </div>
+      </div>
+      <div class="avatar">TU</div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Account</div>
+        <button class="nav-item">
+          <i data-lucide="user" class="nav-icon"></i> Profile Settings
+        </button>
+        <button class="nav-item active">
+          <i data-lucide="shield" class="nav-icon"></i> Password & Security
+        </button>
+        <button class="nav-item">
+          <i data-lucide="bell" class="nav-icon"></i> Notifications
+        </button>
+        <div class="nav-section-title" style="margin-top: 16px;">Design System</div>
+        <button class="nav-item">
+          <i data-lucide="palette" class="nav-icon"></i> Theming
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="main-wrapper">
+      <div class="tab-pane">
+        <div class="pageHeader">
+          <h2 class="pageTitle">Password & Security</h2>
+          <p class="pageSubtitle">Manage your account password, Two-Factor Authentication, and biometric Passkeys.</p>
+        </div>
+
+        <div class="securityGrid">
+          <!-- Password Reset Card -->
+          <div class="glassCard">
+            <h3 class="sectionTitle">
+              <i data-lucide="key" style="width: 16px; height: 16px;"></i> Update Password
+            </h3>
+            <form id="passwordForm">
+              <div class="inputContainer">
+                <label class="inputLabel">Current Password</label>
+                <div class="inputWithIcon">
+                  <input type="password" id="currentPass" class="inputField" placeholder="Enter current password" required />
+                  <button type="button" class="toggleVisibilityBtn" onclick="togglePassVisibility('currentPass')">
+                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="inputContainer">
+                <label class="inputLabel">New Password</label>
+                <div class="inputWithIcon">
+                  <input type="password" id="newPass" class="inputField" placeholder="At least 6 characters" required />
+                  <button type="button" class="toggleVisibilityBtn" onclick="togglePassVisibility('newPass')">
+                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="inputContainer">
+                <label class="inputLabel">Confirm New Password</label>
+                <div class="inputWithIcon">
+                  <input type="password" id="confirmPass" class="inputField" placeholder="Confirm new password" required />
+                  <button type="button" class="toggleVisibilityBtn" onclick="togglePassVisibility('confirmPass')">
+                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="actionRow">
+                <button type="submit" class="btn btnPrimary">Update Password</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Multi-Factor Auth & Passkeys column -->
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- 2FA Card -->
+            <div class="glassCard" id="twoFactorCard">
+              <h3 class="sectionTitle">
+                <i data-lucide="smartphone" style="width: 16px; height: 16px;"></i> Two-Factor Authentication (2FA)
+              </h3>
+              <p class="cardDescription">
+                Add an extra layer of protection by requiring a temporary verification code from your authenticator app during login.
+              </p>
+
+              <div id="twoFactorStatus" class="infoState" style="display: none; margin-bottom: 16px;">
+                <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                <span>Two-Factor Authentication is currently active.</span>
+              </div>
+
+              <div id="twoFactorActions">
+                <button class="btn btnPrimary" onclick="showTwoFactorSetup()">Enable 2FA</button>
+              </div>
+            </div>
+
+            <!-- Passkey Card -->
+            <div class="glassCard">
+              <h3 class="sectionTitle">
+                <i data-lucide="shield" style="width: 16px; height: 16px;"></i> Biometric Passkeys (WebAuthn)
+              </h3>
+              <p class="cardDescription">
+                Register a secure passkey to sign in instantly with biometrics (Touch ID / Face ID) or Windows Hello. Bypasses the need for passwords or 2FA codes.
+              </p>
+
+              <div style="margin-bottom: 16px;">
+                <button class="btn btnPrimary" style="font-size: 12px; padding: 8px 14px;" onclick="mockRegisterPasskey()">
+                  <i data-lucide="shield" style="width: 14px; height: 14px;"></i> Register New Passkey
+                </button>
+              </div>
+
+              <!-- Passkey list -->
+              <div id="passkeyListHeader" class="passkeyListHeader" style="display: none;">
+                Your Registered Passkeys (<span id="passkeyCount">0</span>)
+              </div>
+              
+              <div id="passkeysContainer" class="passkeyList"></div>
+
+              <!-- Passkey single warning -->
+              <div id="passkeyWarning" class="passkeyWarning" style="display: none;">
+                <i data-lucide="alert-triangle" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+                <div>
+                  You only have one passkey registered. If you delete it, you will need to sign in using your account password or email codes.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toastContainer" id="toastContainer"></div>
+
+<script>
+  // Initial database/state definition for passkeys
+  let passkeys = [
+    { id: "pk-1", credentialId: "x98f21Hj2l1", backedUp: true, transports: ["internal"] },
+    { id: "pk-2", credentialId: "q4o91Pks02b", backedUp: false, transports: ["hybrid", "usb"] }
+  ];
+
+  let isTwoFactorEnabled = false;
+
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // Handle forms
+  document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const newPass = document.getElementById('newPass').value;
+    const confirmPass = document.getElementById('confirmPass').value;
+
+    if (newPass.length < 6) {
+      showToast("New password must be at least 6 characters long.", "error");
+      return;
+    }
+    if (newPass !== confirmPass) {
+      showToast("Passwords do not match.", "error");
+      return;
+    }
+
+    showToast("Password updated successfully!", "success");
+    document.getElementById('currentPass').value = '';
+    document.getElementById('newPass').value = '';
+    document.getElementById('confirmPass').value = '';
+  });
+
+  // Render passkeys list
+  function renderPasskeys() {
+    const container = document.getElementById('passkeysContainer');
+    const header = document.getElementById('passkeyListHeader');
+    const warning = document.getElementById('passkeyWarning');
+    const countSpan = document.getElementById('passkeyCount');
+    
+    container.innerHTML = '';
+    countSpan.textContent = passkeys.length;
+
+    if (passkeys.length > 0) {
+      header.style.display = 'block';
+      if (passkeys.length === 1) {
+        warning.style.display = 'flex';
+      } else {
+        warning.style.display = 'none';
+      }
+    } else {
+      header.style.display = 'none';
+      warning.style.display = 'none';
+    }
+
+    passkeys.forEach(pk => {
+      const item = document.createElement('div');
+      item.className = 'passkeyItem';
+      item.id = `passkey-item-${pk.id}`;
+      item.style.flexDirection = 'column';
+      item.style.alignItems = 'stretch';
+      item.style.gap = '4px';
+
+      const label = `Passkey (••••${pk.credentialId.slice(-6)})`;
+
+      item.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;" id="passkey-normal-${pk.id}">
+          <div class="passkeyItemLeft">
+            <i data-lucide="key" style="width: 14px; height: 14px; color: var(--primary);"></i>
+            <div class="passkeyMeta">
+              <span class="passkeyName">${label}</span>
+              <div class="passkeyBadges">
+                ${pk.backedUp ? '<span class="badge badgeSuccess">Synced</span>' : ''}
+                ${pk.transports.map(t => `<span class="badge badgeInfo">${t}</span>`).join('')}
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btnDeletePasskey" onclick="startDelete('${pk.id}')" title="Delete passkey">
+            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+          </button>
+        </div>
+        <div style="display: none; flex-direction: column; gap: 8px;" id="passkey-confirm-${pk.id}">
+          <span style="font-size: 12px; color: var(--text); font-weight: 500;">
+            Are you sure you want to delete this passkey? You won't be able to log in with it again.
+          </span>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btnPrimary" style="background-color: #ef4444; border-color: #ef4444; padding: 6px 12px; font-size: 11px;" onclick="confirmDelete('${pk.id}')">
+              Delete
+            </button>
+            <button type="button" class="btn btnSecondary" style="padding: 6px 12px; font-size: 11px;" onclick="cancelDelete('${pk.id}')">
+              Cancel
+            </button>
+          </div>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+
+    lucide.createIcons();
+  }
+
+  // Deletion logic
+  function startDelete(id) {
+    document.getElementById(`passkey-normal-${id}`).style.display = 'none';
+    document.getElementById(`passkey-confirm-${id}`).style.display = 'flex';
+  }
+
+  function cancelDelete(id) {
+    document.getElementById(`passkey-confirm-${id}`).style.display = 'none';
+    document.getElementById(`passkey-normal-${id}`).style.display = 'flex';
+  }
+
+  // Confirm delete
+  function confirmDelete(id) {
+    passkeys = passkeys.filter(pk => pk.id !== id);
+    showToast("Passkey deleted successfully.", "success");
+    renderPasskeys();
+  }
+
+  // Mock register
+  function mockRegisterPasskey() {
+    const confirmAdd = confirm("Mock Biometric Prompt: Add a passkey on this platform?");
+    if (confirmAdd) {
+      const newId = `pk-${Date.now()}`;
+      const randomCred = Math.random().toString(36).substring(2, 13);
+      passkeys.push({
+        id: newId,
+        credentialId: randomCred,
+        backedUp: Math.random() > 0.5,
+        transports: ["internal"]
+      });
+      showToast("Passkey registered successfully! You can now use it to sign in.", "success");
+      renderPasskeys();
+    }
+  }
+
+  // 2FA mock flow
+  function showTwoFactorSetup() {
+    const actions = document.getElementById('twoFactorActions');
+    actions.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 16px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+          <div class="qrCodeWrapper">
+            <div style="width: 120px; height: 120px; background-color: #000; display: flex; flex-wrap: wrap; padding: 6px;">
+              ${Array.from({length: 16}).map(() => `<div style="width: 27px; height: 27px; background-color: ${Math.random() > 0.5 ? '#fff' : '#000'}"></div>`).join('')}
+            </div>
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <p style="font-weight: 600; color: var(--text); margin-bottom: 8px; font-size: 13px;">Scan the QR Code</p>
+            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px; line-height: 1.5;">
+              Open your authenticator app and scan this QR code. If you can't scan it, enter the text key manually:
+            </p>
+            <code class="totpSecretCode">JBSWY3DPEHPK3PXP</code>
+          </div>
+        </div>
+
+        <div class="inputContainer" style="max-width: 320px;">
+          <label class="inputLabel">Enter 6-Digit Code</label>
+          <input type="text" pattern="[0-9]*" maxlength="6" id="twoFactorCode" class="inputField" placeholder="123456" required />
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btnPrimary" onclick="enableTwoFactor()">Confirm & Enable</button>
+          <button class="btn btnSecondary" onclick="resetTwoFactorCard()">Cancel</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function enableTwoFactor() {
+    const code = document.getElementById('twoFactorCode').value;
+    if (code.length !== 6) {
+      showToast("Please enter a valid 6-digit code.", "error");
+      return;
+    }
+    isTwoFactorEnabled = true;
+    showToast("Two-Factor Authentication enabled successfully!", "success");
+    resetTwoFactorCard();
+  }
+
+  function disableTwoFactorConfirm() {
+    const actions = document.getElementById('twoFactorActions');
+    actions.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 16px; max-width: 320px; margin-top: 16px;">
+        <div class="inputContainer">
+          <label class="inputLabel">Confirm 2FA Code to Disable</label>
+          <input type="text" pattern="[0-9]*" maxlength="6" id="disable2faCode" class="inputField" placeholder="123456" required />
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btnPrimary" style="background-color: #ef4444; border-color: #ef4444;" onclick="disableTwoFactor()">Disable 2FA</button>
+          <button class="btn btnSecondary" onclick="resetTwoFactorCard()">Cancel</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function disableTwoFactor() {
+    const code = document.getElementById('disable2faCode').value;
+    if (code.length !== 6) {
+      showToast("Please enter a valid 6-digit code.", "error");
+      return;
+    }
+    isTwoFactorEnabled = false;
+    showToast("Two-Factor Authentication has been disabled.", "info");
+    resetTwoFactorCard();
+  }
+
+  function resetTwoFactorCard() {
+    const status = document.getElementById('twoFactorStatus');
+    const actions = document.getElementById('twoFactorActions');
+
+    if (isTwoFactorEnabled) {
+      status.style.display = 'flex';
+      actions.innerHTML = `<button class="btn btnDanger" onclick="disableTwoFactorConfirm()">Disable 2FA</button>`;
+    } else {
+      status.style.display = 'none';
+      actions.innerHTML = `<button class="btn btnPrimary" onclick="showTwoFactorSetup()">Enable 2FA</button>`;
+    }
+  }
+
+  // Toast notifications
+  function showToast(message, type = "success") {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    
+    let icon = 'check-circle';
+    let iconColor = '#10b981';
+    if (type === 'error') {
+      icon = 'alert-circle';
+      iconColor = '#ef4444';
+    } else if (type === 'info') {
+      icon = 'info';
+      iconColor = 'var(--primary)';
+    }
+
+    toast.innerHTML = `
+      <i data-lucide="${icon}" style="width: 18px; height: 18px; color: ${iconColor};"></i>
+      <span>${message}</span>
+    `;
+
+    container.appendChild(toast);
+    lucide.createIcons();
+
+    setTimeout(() => {
+      toast.style.animation = 'none';
+      toast.offsetHeight;
+      toast.style.animation = 'toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) reverse forwards';
+      setTimeout(() => {
+        toast.remove();
+      }, 250);
+    }, 3000);
+  }
+
+  // Appearance handling
+  document.getElementById('appearanceBtn').addEventListener('click', function() {
+    const current = document.documentElement.getAttribute('data-appearance');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-appearance', next);
+    
+    const icon = this.querySelector('i');
+    if (next === 'light') {
+      icon.setAttribute('data-lucide', 'moon');
+    } else {
+      icon.setAttribute('data-lucide', 'sun');
+    }
+    lucide.createIcons();
+  });
+
+  // Theme changing
+  document.getElementById('themeBtn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    const menu = document.getElementById('themeMenu');
+    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+  });
+
+  document.addEventListener('click', function() {
+    document.getElementById('themeMenu').style.display = 'none';
+  });
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    showToast(`Theme preset set to "${theme}"`, "info");
+  }
+
+  function togglePassVisibility(id) {
+    const input = document.getElementById(id);
+    const btn = input.nextElementSibling;
+    const icon = btn.querySelector('i');
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+      input.type = 'password';
+      icon.setAttribute('data-lucide', 'eye');
+    }
+    lucide.createIcons();
+  }
+
+  renderPasskeys();
+  resetTwoFactorCard();
+</script>
+
+</body>
+</html>

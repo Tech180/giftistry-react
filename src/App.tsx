@@ -1,106 +1,29 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, useLocation } from 'react-router-dom';
 import { ThemeProvider } from 'app/providers/theme-context';
 import { AuthProvider, useAuth } from 'app/providers/auth-context';
-import { Navigation } from 'shared/ui';
-import { Login, Register, Dashboard, WishlistDetail, Profile } from 'pages';
-
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{
-          width: '32px',
-          height: '32px',
-          border: '2px solid var(--border)',
-          borderBottomColor: 'var(--primary)',
-          borderRadius: '50%',
-          animation: 'rotation 0.6s linear infinite'
-        }} />
-      </div>
-    );
-  }
-
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
-};
-
-const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{
-          width: '32px',
-          height: '32px',
-          border: '2px solid var(--border)',
-          borderBottomColor: 'var(--primary)',
-          borderRadius: '50%',
-          animation: 'rotation 0.6s linear infinite'
-        }} />
-      </div>
-    );
-  }
-
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <>{children}</>;
-};
+import { ToastProvider } from 'app/providers/toast-context';
+import { AppLoadingTemplate, AppSetupTemplate, AppContentTemplate } from './App.html';
 
 function AppContent() {
+  const { user, isSystemInitialized, isLoading } = useAuth();
   const location = useLocation();
   const isProfilePage = location.pathname.startsWith('/profile');
+  const hasBanner = !!(user && !user.EmailVerified);
+
+  if (isLoading) {
+    return <AppLoadingTemplate />;
+  }
+
+  if (!isSystemInitialized) {
+    return <AppSetupTemplate />;
+  }
 
   return (
-    <div className="app-container">
-      <Navigation />
-      <main className={`${isProfilePage ? 'profile-main-content' : 'main-content'} animate-fade-in`}>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/wishlists/:listId"
-            element={
-              <ProtectedRoute>
-                <WishlistDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile/*"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
-    </div>
+    <AppContentTemplate
+      isProfilePage={isProfilePage}
+      hasBanner={hasBanner}
+    />
   );
 }
 
@@ -108,9 +31,11 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
+        <ToastProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </ToastProvider>
       </ThemeProvider>
     </AuthProvider>
   );

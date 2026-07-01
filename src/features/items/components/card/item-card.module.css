@@ -5,7 +5,7 @@
   flex-direction: row;
   padding: 0;
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   border-left: 3px solid var(--border);
 }
 
@@ -39,7 +39,7 @@
   cursor: pointer;
   padding: 6px;
   border-radius: var(--radius);
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -53,7 +53,7 @@
 
 .pinBtnLeftSection.pinBtnActive {
   color: var(--primary);
-  background: rgba(var(--primary-rgb), 0.08);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
 .cardDivider {
@@ -88,7 +88,7 @@
   cursor: pointer;
   padding: 6px;
   border-radius: var(--radius);
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -106,7 +106,7 @@
 
 .pinBtn:hover, .pinBtn.active {
   color: var(--primary);
-  background: rgba(var(--primary-rgb), 0.08);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
 .itemInfo {
@@ -129,16 +129,16 @@
 
 .mainPriceTag {
   font-size: 1.125rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--primary);
-  background-color: rgba(var(--primary-rgb), 0.08);
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
   padding: 2px 8px;
   border-radius: var(--radius-sm);
 }
 
 .itemName {
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text);
   margin: 0;
   display: flex;
@@ -148,20 +148,20 @@
 }
 
 .itemDescription {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   margin-top: 4px;
 }
 
 .ideaBadge {
   display: inline-block;
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--primary);
-  background-color: rgba(var(--primary-rgb), 0.05);
-  border: 1px solid rgba(var(--primary-rgb), 0.15);
+  background-color: color-mix(in srgb, var(--primary) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-top: 6px;
 }
 
@@ -170,10 +170,10 @@
 }
 
 .claimBadge {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -192,9 +192,9 @@
 }
 
 .mystery {
-  background-color: rgba(var(--primary-rgb), 0.08);
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
   color: var(--primary);
-  border: 1px solid rgba(var(--primary-rgb), 0.15);
+  border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
 }
 
 .section {
@@ -214,7 +214,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   margin-bottom: 8px;
 }
 
@@ -222,8 +222,8 @@
   background: transparent;
   border: none;
   color: var(--primary);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -263,7 +263,7 @@
   font-size: 0.8125rem;
   color: var(--primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .retailerLink:hover {
@@ -280,8 +280,8 @@
 .fundingHeader {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
   margin-bottom: 6px;
 }
@@ -360,21 +360,21 @@
 }
 
 .priorityBadge {
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   padding: 2px 8px;
-  border-radius: 4px;
-  background-color: rgba(var(--primary-rgb), 0.08);
-  border: 1px solid rgba(var(--primary-rgb), 0.15);
+  border-radius: var(--radius-sm);
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
   color: var(--primary);
   text-transform: capitalize;
 }
 
 .categoryBadge {
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background-color: var(--surface-hover);
   border: 1px solid var(--border);
   color: var(--text-muted);
@@ -395,7 +395,7 @@
   cursor: pointer;
   padding: 6px;
   border-radius: var(--radius);
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -414,13 +414,13 @@
   border: 1px solid var(--error-border);
   padding: 4px 8px;
   border-radius: var(--radius);
-  font-size: 0.75rem;
-  animation: fadeIn 0.2s ease-in-out;
+  font-size: var(--font-size-xs);
+  animation: var(--animation-scale-in);
 }
 
 .deleteConfirmText {
   color: var(--error);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .deleteConfirmBtn {
@@ -428,9 +428,9 @@
   color: var(--primary-text);
   border: none;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   font-size: 0.7rem;
   transition: opacity 0.2s;
 }
@@ -444,7 +444,7 @@
   border: 1px solid var(--border);
   color: var(--text);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.7rem;
   transition: all 0.2s;
@@ -455,10 +455,7 @@
   border-color: var(--text-muted);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
+
 
 .metadataGrid {
   display: flex;
@@ -468,8 +465,8 @@
 }
 
 .metadataBadge {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   padding: 4px 10px;
   border-radius: 9999px;
   background-color: var(--surface-hover);
@@ -478,7 +475,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .metadataBadge:hover {
@@ -496,27 +493,27 @@
 }
 
 .priceTag {
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--primary);
-  background: rgba(var(--primary-rgb), 0.08);
-  border: 1px solid rgba(var(--primary-rgb), 0.15);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .visitStoreBtn {
   display: inline-flex;
   align-items: center;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text);
   background-color: var(--surface-hover);
   border: 1px solid var(--border);
   padding: 6px 12px;
   border-radius: var(--radius);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .visitStoreBtn:hover {
@@ -547,7 +544,7 @@
   cursor: pointer;
   padding: 6px;
   border-radius: var(--radius);
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -555,19 +552,19 @@
 
 .editBtn:hover {
   color: var(--primary);
-  background-color: rgba(var(--primary-rgb), 0.1);
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .suggestionBadge {
   display: inline-flex;
   align-items: center;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--warning);
   background-color: var(--warning-bg);
   border: 1px solid var(--warning-border);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-top: 6px;
   gap: 4px;
 }
@@ -576,7 +573,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   cursor: pointer;
   user-select: none;
@@ -602,13 +599,13 @@
 .myClaimBadge {
   display: inline-flex;
   align-items: center;
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--success);
   background-color: var(--success-bg);
   border: 1px solid var(--success-border);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-left: 8px;
   gap: 4px;
 }
@@ -639,12 +636,12 @@
   text-align: center;
   width: calc(100% - 16px);
   max-width: 110px;
-  background-color: rgba(var(--primary-rgb), 0.02);
+  background-color: color-mix(in srgb, var(--primary) 2%, transparent);
   line-height: 1.2;
 }
 
 .claimedByBoxLabel {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
   font-size: 0.6875rem;
   text-transform: uppercase;
@@ -658,9 +655,9 @@
 }
 
 .claimedByBoxName {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text);
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -681,12 +678,12 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  animation: slideDown 0.2s ease-out;
+  animation: var(--animation-slide-down);
 }
 
 .confirmPrompt {
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--text);
 }
 
@@ -708,7 +705,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   cursor: pointer;
   user-select: none;
@@ -725,7 +722,7 @@
 }
 
 .fundLabel {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
@@ -733,7 +730,7 @@
   width: 60px;
   height: 24px;
   padding: 2px 6px;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background-color: var(--background);
@@ -746,16 +743,7 @@
   gap: 6px;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 
 .pinBtnInline {
   display: inline-flex;
@@ -765,23 +753,23 @@
   border: 1px solid var(--border);
   color: var(--text-muted);
   padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   width: fit-content;
 }
 
 .pinBtnInline:hover {
   border-color: var(--primary);
   color: var(--primary);
-  background-color: rgba(var(--primary-rgb), 0.05);
+  background-color: color-mix(in srgb, var(--primary) 5%, transparent);
 }
 
 .pinBtnActive {
   border-color: var(--primary);
-  background-color: rgba(var(--primary-rgb), 0.1);
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
   color: var(--primary);
 }
 
@@ -789,17 +777,17 @@
 .taggingModeCard {
   cursor: pointer;
   position: relative;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition: transform var(--transition-normal), border-color var(--transition-normal);
 }
 
 .taggingModeCard:hover {
   transform: translateY(-2px);
-  border-color: rgba(var(--primary-rgb), 0.5);
+  border-color: color-mix(in srgb, var(--primary) 50%, transparent);
 }
 
 .taggedCard {
   border-color: var(--primary) !important;
-  background-color: rgba(var(--primary-rgb), 0.03) !important;
+  background-color: color-mix(in srgb, var(--primary) 3%, transparent) !important;
 }
 
 .taggingCardClickOverlay {
@@ -829,7 +817,7 @@
 .selectIndicatorCircle {
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   border: 2px solid var(--text-muted);
   background: var(--surface);
   display: flex;
@@ -837,14 +825,14 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   color: transparent;
   outline: none;
 }
 
 .selectIndicatorCircle:hover {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
 }
 
 .selectIndicatorCircle.checked {
@@ -898,7 +886,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .compactStarBtn:hover {
@@ -919,8 +907,8 @@
 }
 
 .compactItemName {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
@@ -935,7 +923,7 @@
   background-color: var(--surface-hover);
   color: var(--text-muted);
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   white-space: nowrap;
 }
@@ -969,10 +957,10 @@
 .compactStoreLink {
   display: inline-flex;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -983,7 +971,7 @@
 }
 
 .compactNoLinks {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   opacity: 0.5;
 }
@@ -995,8 +983,8 @@
 }
 
 .compactPriceTag {
-  font-size: 0.875rem;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: var(--text);
 }
 
@@ -1015,12 +1003,12 @@
 
 .compactActionBtn {
   padding: 4px 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 4px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .compactClaimBtn {
@@ -1044,8 +1032,8 @@
 }
 
 .compactClaimedStatus {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
   opacity: 0.7;
 }
@@ -1067,7 +1055,7 @@
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1126,7 +1114,7 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: var(--surface-hover);
   border: 1px solid var(--border);
   color: var(--text-muted);
@@ -1144,11 +1132,11 @@
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .gridStarBtn:hover {
@@ -1176,8 +1164,8 @@
 }
 
 .gridItemName {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text);
   margin: 0;
   display: -webkit-box;
@@ -1190,13 +1178,13 @@
 
 .gridPriceTag {
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--primary);
   letter-spacing: -0.01em;
 }
 
 .gridNoPrice {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   opacity: 0.5;
 }
@@ -1204,14 +1192,14 @@
 .gridStoreLink {
   display: inline-flex;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   background-color: var(--surface-hover);
   padding: 3px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .gridStoreLink:hover {
@@ -1220,7 +1208,7 @@
 }
 
 .gridNoStore {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   opacity: 0.5;
 }
@@ -1239,7 +1227,7 @@
   border: 1px solid var(--border);
   color: var(--text-muted);
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .gridFooter {
@@ -1269,12 +1257,12 @@
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   padding: 5px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .gridFooterActionBtn:hover {
@@ -1295,20 +1283,20 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(var(--surface-rgb), 0.95);
+  background-color: color-mix(in srgb, var(--surface) 95%, transparent);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 16px;
-  z-index: 100;
-  animation: fadeIn 0.2s ease;
+  z-index: var(--z-index-modal);
+  animation: var(--animation-fade-in);
   backdrop-filter: blur(8px);
 }
 
 .gridOverlayPrompt {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: var(--text);
   margin-bottom: 12px;
   text-align: center;
@@ -1321,15 +1309,12 @@
   justify-content: center;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+
 
 /* Selection border highlight for grid items */
 .selectedGridCard {
   border: 1.5px solid var(--primary) !important;
-  box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.25) !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 25%, transparent) !important;
   transform: scale(1.02);
 }
 
@@ -1352,7 +1337,7 @@
 .expandedSection {
   border-top: 1px solid var(--border);
   background: var(--surface-hover);
-  animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: accordion-slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
@@ -1371,7 +1356,7 @@
 
 .expandedDetailLabel {
   font-size: 0.6875rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
@@ -1407,11 +1392,11 @@
 }
 
 .expandedMetaBadge {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   background: var(--surface-hover);
   color: var(--text);
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   display: inline-flex;
   align-items: center;
@@ -1430,8 +1415,8 @@
 .expandedFundingHeader {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
 }
 
@@ -1462,8 +1447,8 @@
   font-size: 0.8125rem;
   color: var(--primary);
   text-decoration: none;
-  font-weight: 600;
-  transition: all 0.2s ease;
+  font-weight: var(--font-weight-semibold);
+  transition: all var(--transition-normal);
 }
 
 .expandedStoreLink:hover {
@@ -1477,7 +1462,7 @@
   font-style: italic;
 }
 
-@keyframes slideDown {
+@keyframes accordion-slide-down {
   from {
     max-height: 0;
     opacity: 0;
@@ -1498,24 +1483,24 @@
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 10;
+  transition: all var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: var(--z-index-dropdown);
 }
 
 .gridPinBtnAbsolute:hover {
   color: var(--primary);
   background: var(--surface-hover);
-  border-color: rgba(var(--primary-rgb), 0.3);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 .gridPinBtnAbsolute.pinBtnActive {
   color: var(--primary);
-  background: rgba(var(--primary-rgb), 0.08);
-  border-color: rgba(var(--primary-rgb), 0.3);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 /* Absolute Claim Container & Mini Claim Button */
@@ -1532,16 +1517,16 @@
 
 .gridMiniClaimBtn {
   font-size: 0.625rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.03em;
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--primary);
   background: var(--primary);
   color: var(--primary-text);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
   white-space: nowrap;
   text-align: center;
   display: inline-block;
@@ -1592,12 +1577,12 @@
   gap: 8px;
   padding: 8px;
   border-radius: inherit;
-  animation: fadeIn 0.15s ease-out;
+  animation: var(--animation-fade-in);
 }
 
 .gridMiniOverlayPrompt {
   font-size: 0.6875rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: var(--text);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1612,13 +1597,13 @@
 .gridMiniConfirmBtn, .gridMiniCancelBtn {
   flex: 1;
   font-size: 0.625rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   padding: 4px 0;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   border: 1px solid var(--border);
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 }
 
 .gridMiniConfirmBtn {
@@ -1650,7 +1635,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: accordion-slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 

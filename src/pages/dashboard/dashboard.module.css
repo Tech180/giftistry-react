@@ -36,7 +36,7 @@
   color: var(--error);
   padding: 12px 16px;
   border-radius: 8px;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .controlsRow {
@@ -80,10 +80,10 @@
     transparent
   );
   transform: translateX(-100%);
-  animation: loadingShimmer 1.5s infinite;
+  animation: loading-shimmer 1.5s infinite;
 }
 
-@keyframes loadingShimmer {
+@keyframes loading-shimmer {
   100% { transform: translateX(100%); }
 }
 
@@ -122,7 +122,7 @@
 }
 
 .emptyDesc {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   max-width: 380px;
   margin-bottom: 24px;

@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
 import { authApi, ApiUser } from 'features/auth';
 import { apiClient } from 'api/client';
-
 import { AuthContextType } from './interfaces/auth-context-type.interface';
 
 export type User = ApiUser;
@@ -12,6 +11,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSystemInitialized, setIsSystemInitialized] = useState(true);
+
+  // Inactivity state
+  const [showWarning, setShowWarning] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+  const activityTimeoutRef = useRef<any>(null);
+  const countdownIntervalRef = useRef<any>(null);
 
   const clearError = () => setError(null);
 
@@ -31,18 +37,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  useEffect(() => {
-    const removeInterceptor = apiClient.addResponseInterceptor((response) => {
-      if (response.status === 401) {
-        localStorage.removeItem('giftistry-token');
-        setUser(null);
+  const checkSystemStatus = async () => {
+    try {
+      const res = await apiClient.get<{ success: boolean; initialized: boolean }>('/api/system/status');
+      if (res && res.initialized !== undefined) {
+        setIsSystemInitialized(res.initialized);
       }
-    });
-    fetchCurrentUser();
-    return () => {
-      removeInterceptor();
-    };
-  }, []);
+    } catch (err) {
+      setIsSystemInitialized(false);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     setError(null);
@@ -54,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res && res.User) {
         setUser(res.User);
       }
+      return res;
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Login failed';
       setError(errMsg);
@@ -77,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res && res.User) {
         setUser(res.User);
       }
+      return res;
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Signup failed';
       setError(errMsg);
@@ -86,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     setError(null);
+    cleanupInactivityTimers();
     try {
       await authApi.logout();
     } catch (err) {
@@ -93,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       localStorage.removeItem('giftistry-token');
       setUser(null);
+      setShowWarning(false);
     }
   };
 
@@ -110,6 +118,106 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Inactivity Logic
+  const resetInactivityTimer = () => {
+    if (!user) return;
+    
+    // Clear existing main inactivity timer
+    if (activityTimeoutRef.current) {
+      clearTimeout(activityTimeoutRef.current);
+    }
+
+    // If warning is currently showing, don't auto-reset it silently (user must click to extend)
+    if (showWarning) return;
+
+    const timeoutDuration = localStorage.getItem('dev-inactivity-timeout')
+      ? parseInt(localStorage.getItem('dev-inactivity-timeout') || '7200000', 10)
+      : 2 * 60 * 60 * 1000; // 2 hours default
+
+    activityTimeoutRef.current = setTimeout(() => {
+      setShowWarning(true);
+      setCountdown(60);
+    }, timeoutDuration);
+  };
+
+  const extendSession = () => {
+    setShowWarning(false);
+    setCountdown(60);
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    resetInactivityTimer();
+  };
+
+  const cleanupInactivityTimers = () => {
+    if (activityTimeoutRef.current) {
+      clearTimeout(activityTimeoutRef.current);
+      activityTimeoutRef.current = null;
+    }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+  };
+
+  // Listen for user activity
+  useEffect(() => {
+    if (user) {
+      resetInactivityTimer();
+      const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+      const handleActivity = () => resetInactivityTimer();
+
+      events.forEach(event => window.addEventListener(event, handleActivity));
+      return () => {
+        events.forEach(event => window.removeEventListener(event, handleActivity));
+        cleanupInactivityTimers();
+      };
+    } else {
+      cleanupInactivityTimers();
+      setShowWarning(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, showWarning]);
+
+  // Countdown timer for warning modal
+  useEffect(() => {
+    if (showWarning) {
+      countdownIntervalRef.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownIntervalRef.current!);
+            countdownIntervalRef.current = null;
+            logout();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showWarning]);
+
+  useEffect(() => {
+    const removeInterceptor = apiClient.addResponseInterceptor((response) => {
+      if (response.status === 401) {
+        localStorage.removeItem('giftistry-token');
+        setUser(null);
+      }
+    });
+    checkSystemStatus().then(() => {
+      fetchCurrentUser();
+    });
+    return () => {
+      removeInterceptor();
+    };
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -122,9 +230,86 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateProfile,
         error,
         clearError,
+        refreshUser: fetchCurrentUser,
+        isSystemInitialized,
+        checkSystemStatus,
       }}
     >
       {children}
+      
+      {showWarning && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--surface, #1e1e1e)',
+            border: '1px solid var(--border, #333)',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '450px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
+            color: 'var(--text, #fff)',
+            fontFamily: 'inherit'
+          }}>
+            <h3 style={{ fontSize: '24px', marginBottom: '16px', fontWeight: 600 }}>Inactivity Warning</h3>
+            <p style={{ fontSize: '15px', color: 'var(--text-muted, #aaa)', marginBottom: '24px', lineHeight: 1.5 }}>
+              You have been inactive for a while. For your security, you will be automatically logged out in{' '}
+              <strong style={{ color: 'var(--primary, #ff00ff)', fontSize: '18px' }}>{countdown}</strong> seconds.
+            </p>
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+              <button
+                onClick={extendSession}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--primary, #ff00ff)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+              >
+                Keep Me Logged In
+              </button>
+              <button
+                onClick={logout}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-muted, #aaa)',
+                  border: '1px solid var(--border, #333)',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                Sign Out Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthContext.Provider>
   );
 }

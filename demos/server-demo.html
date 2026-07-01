@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default" data-appearance="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giftistry - Server Configuration</title>
+  
+  <!-- Outfit & Inter Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ==========================================================================
+       1. CORE DESIGN SYSTEM & THEME TOKENS
+       ========================================================================== */
+    :root {
+      --error: #ef4444;
+      --error-rgb: 239, 68, 68;
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: rgba(239, 68, 68, 0.2);
+      
+      --success: #10b981;
+      --success-rgb: 16, 185, 129;
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --success-border: rgba(16, 185, 129, 0.2);
+
+      --backdrop-bg: rgba(0, 0, 0, 0.6);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.4);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.24);
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+      
+      --radius: 12px;
+      --sidebar-width: 260px;
+      --navbar-height: 64px;
+    }
+
+    /* --- THEMES (DARK MODE) --- */
+    [data-appearance="dark"][data-theme="default"] {
+      --primary: #5e6ad2; --primary-hover: #4d59c2; --primary-rgb: 94, 106, 210; --primary-text: #ffffff;
+      --bg: #0f0f10; --surface: #151516; --surface-hover: #1e1e20; --text: #f7f8f8; --text-muted: #8a8f98;
+      --border: #262629; --surface-glass: rgba(21, 21, 22, 0.7);
+    }
+    [data-appearance="dark"][data-theme="neon"] {
+      --primary: #ff007f; --primary-hover: #e0006c; --primary-rgb: 255, 0, 127; --primary-text: #ffffff;
+      --bg: #0d021a; --surface: #17072e; --surface-hover: #260e47; --text: #f7f8f8; --text-muted: #a372eb;
+      --border: #38126b; --surface-glass: rgba(23, 7, 46, 0.7);
+    }
+    [data-appearance="dark"][data-theme="cyberpunk"] {
+      --primary: #fcee0a; --primary-hover: #d2c700; --primary-rgb: 252, 238, 10; --primary-text: #000000;
+      --bg: #000411; --surface: #080f26; --surface-hover: #0d1b40; --text: #f7f8f8; --text-muted: #5e83a6;
+      --border: #142861; --surface-glass: rgba(8, 15, 38, 0.7);
+    }
+    [data-appearance="dark"][data-theme="mystic"] {
+      --primary: #2d7a4d; --primary-hover: #1e5c36; --primary-rgb: 45, 122, 77; --primary-text: #ffffff;
+      --bg: #0f1c13; --surface: #162a1d; --surface-hover: #223f2c; --text: #e1efe6; --text-muted: #7a9c84;
+      --border: #234530; --surface-glass: rgba(22, 42, 29, 0.7);
+    }
+    [data-appearance="dark"][data-theme="burnt-forest"] {
+      --primary: #ff5500; --primary-hover: #cc4400; --primary-rgb: 255, 85, 0; --primary-text: #ffffff;
+      --bg: #0a0705; --surface: #140e0a; --surface-hover: #1e150f; --text: #f0e6df; --text-muted: #a68c7c;
+      --border: #2b1d14; --surface-glass: rgba(20, 14, 10, 0.7);
+    }
+
+    /* --- THEMES (LIGHT MODE) --- */
+    [data-appearance="light"] {
+      --backdrop-bg: rgba(0, 0, 0, 0.3); --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05); --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    }
+    [data-appearance="light"][data-theme="default"] {
+      --primary: #5e6ad2; --primary-hover: #4d59c2; --primary-rgb: 94, 106, 210; --primary-text: #ffffff;
+      --bg: #fafafa; --surface: #ffffff; --surface-hover: #f3f3f4; --text: #111111; --text-muted: #6b6b7b;
+      --border: #e4e4e7; --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+    [data-appearance="light"][data-theme="neon"] {
+      --primary: #ff007f; --primary-hover: #e0006c; --primary-rgb: 255, 0, 127; --primary-text: #ffffff;
+      --bg: #fcf8fd; --surface: #ffffff; --surface-hover: #f6ecf9; --text: #2c0054; --text-muted: #7b688c;
+      --border: #f0d6f5; --surface-glass: rgba(255, 255, 255, 0.7);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; font-weight: 600; letter-spacing: -0.02em; }
+
+    .topbar {
+      height: var(--navbar-height);
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .nav-left, .nav-right { display: flex; align-items: center; gap: 16px; }
+
+    .logo {
+      display: flex; align-items: center; gap: 8px; text-decoration: none;
+      color: var(--text); font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.25rem;
+    }
+    .logoIcon { color: var(--primary); display: inline-block; }
+
+    .navButton {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+    .navButton:hover { background-color: var(--surface-hover); color: var(--text); }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: var(--primary-text);
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .app-body {
+      display: flex;
+      flex: 1;
+      position: relative;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      position: fixed;
+      left: 0;
+      top: var(--navbar-height);
+      bottom: 0;
+      background-color: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .sidebar-nav { padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
+    .nav-section-title { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); padding: 16px 12px 8px; font-weight: 600; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      border-radius: 8px; color: var(--text-muted); font-weight: 500; font-size: 0.875rem;
+      cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .nav-item:hover { background-color: var(--surface-hover); color: var(--text); }
+    .nav-item.active { background-color: rgba(var(--primary-rgb), 0.1); color: var(--primary); }
+    .nav-icon { color: var(--text-muted); width: 18px; height: 18px; }
+
+    /* Main Content Area */
+    .main-wrapper {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 48px 64px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: calc(100% - var(--sidebar-width));
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-wrapper { margin-left: 0; width: 100%; padding: 24px 16px; }
+    }
+
+    .tab-pane {
+      width: 100%;
+      max-width: 800px;
+      animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .pageHeader { margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+    .pageTitle { font-size: 2rem; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -0.02em; }
+    .pageSubtitle { font-size: 0.95rem; color: var(--text-muted); }
+
+    .cardsContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .glassCard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      width: 100%;
+    }
+
+    .cardHeader {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+
+    .cardTitle {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .cardIcon {
+      color: var(--primary);
+    }
+
+    /* Form controls */
+    .inputGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .fullWidth {
+      grid-column: span 2;
+    }
+
+    .inputContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    .inputLabel {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .inputField {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .inputField:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+    }
+
+    .inputField:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .inputWithIcon {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .inputWithIcon .inputField {
+      padding-right: 44px;
+    }
+
+    .toggleVisibilityBtn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+
+    .toggleVisibilityBtn:hover {
+      color: var(--text);
+    }
+
+    .checkboxContainer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      margin-top: 10px;
+    }
+
+    .checkboxInput {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Button Group / Select Type Toggle */
+    .typeSelector {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .typeButton {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-muted);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .typeButton:hover:not(.typeButtonActive) {
+      border-color: var(--primary);
+      color: var(--text);
+    }
+
+    .typeButtonActive {
+      background: var(--primary);
+      color: var(--primary-text);
+      border-color: var(--primary);
+      box-shadow: 0 4px 6px rgba(var(--primary-rgb), 0.15);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      gap: 8px;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btnMd {
+      padding: 12px 24px;
+      font-size: 0.95rem;
+    }
+
+    .btnPrimary {
+      background-color: var(--primary);
+      color: var(--primary-text);
+    }
+
+    .btnPrimary:hover:not(:disabled) {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid currentColor;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      animation: rotation 0.6s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes rotation {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .actionRow {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
+    }
+
+    /* Toast System styles */
+    .toastContainer {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10000;
+    }
+
+    .toast {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text);
+      animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      min-width: 250px;
+    }
+
+    @keyframes toastIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Theme dropdown list styling */
+    .themeMenu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: 180px;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 6px;
+      z-index: 201;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .themeMenuItem {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: left;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .themeMenuItem:hover {
+      background-color: var(--surface-hover);
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="nav-left">
+      <a href="#" class="logo">
+        <svg class="logoIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <g class="giftLid">
+            <path d="M4 7h16v3H4z" />
+            <path d="M12 7c-1.5-2.5-4-2.5-4 0 0 1.5 2.5 2.5 4 0z" />
+            <path d="M12 7c1.5-2.5 4-2.5 4 0 0 1.5-2.5 2.5-4 0z" />
+          </g>
+          <path d="M5 10h14v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V10z" />
+          <path d="M12 10v12" />
+        </svg>
+        <span style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.25rem;">Giftistry</span>
+      </a>
+    </div>
+    <div class="nav-right">
+      <!-- Appearance button -->
+      <button class="navButton" id="appearanceBtn" title="Toggle Appearance">
+        <i data-lucide="sun"></i>
+      </button>
+      <!-- Theme Palette button -->
+      <div style="position: relative;">
+        <button class="navButton" id="themeBtn" title="Change Theme">
+          <i data-lucide="palette"></i>
+        </button>
+        <div class="themeMenu" id="themeMenu">
+          <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); padding: 8px 10px; font-weight: 600;">Themes</div>
+          <button class="themeMenuItem" onclick="setTheme('default')">Default</button>
+          <button class="themeMenuItem" onclick="setTheme('neon')">Neon</button>
+          <button class="themeMenuItem" onclick="setTheme('cyberpunk')">Cyberpunk</button>
+          <button class="themeMenuItem" onclick="setTheme('mystic')">Mystic Green</button>
+          <button class="themeMenuItem" onclick="setTheme('burnt-forest')">Burnt Forest</button>
+        </div>
+      </div>
+      <div class="avatar">TU</div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Account</div>
+        <a href="profile-demo.html" class="nav-item">
+          <i data-lucide="user" class="nav-icon"></i> Profile Settings
+        </a>
+        <a href="security-demo.html" class="nav-item">
+          <i data-lucide="shield" class="nav-icon"></i> Password & Security
+        </a>
+        <button class="nav-item">
+          <i data-lucide="bell" class="nav-icon"></i> Notifications
+        </button>
+        <div class="nav-section-title" style="margin-top: 16px;">Administration</div>
+        <a href="#" class="nav-item active">
+          <i data-lucide="server" class="nav-icon"></i> Server Configuration
+        </a>
+        <div class="nav-section-title" style="margin-top: 16px;">Design System</div>
+        <a href="giftistry_sidebar_theming.html" class="nav-item">
+          <i data-lucide="palette" class="nav-icon"></i> Theming
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="main-wrapper">
+      <div class="tab-pane">
+        <div class="pageHeader">
+          <h2 class="pageTitle">Server Configuration</h2>
+          <p class="pageSubtitle">Configure database connection settings and mail delivery options for this homelab instance.</p>
+        </div>
+
+        <form id="serverSettingsForm" class="cardsContainer">
+          <!-- Database Configuration -->
+          <div class="glassCard">
+            <div class="cardHeader">
+              <i data-lucide="database" class="cardIcon" style="width: 20px; height: 20px;"></i>
+              <h3 class="cardTitle">PostgreSQL Database</h3>
+            </div>
+
+            <div class="inputContainer">
+              <label class="inputLabel">Database Server Location</label>
+              <div class="typeSelector">
+                <button
+                  type="button"
+                  id="dbLocalBtn"
+                  class="typeButton typeButtonActive"
+                  onclick="setDbType('local')"
+                >
+                  Local (Embedded Nix-managed)
+                </button>
+                <button
+                  type="button"
+                  id="dbRemoteBtn"
+                  class="typeButton"
+                  onclick="setDbType('remote')"
+                >
+                  Remote (External Instance)
+                </button>
+              </div>
+            </div>
+
+            <div class="inputContainer" id="dbUrlContainer" style="display: none;">
+              <label class="inputLabel">Database Connection URL</label>
+              <input
+                type="text"
+                id="dbUrl"
+                class="inputField"
+                placeholder="postgresql://username:password@hostname:5432/database"
+                value=""
+              />
+            </div>
+          </div>
+
+          <!-- Mail Configuration -->
+          <div class="glassCard">
+            <div class="cardHeader">
+              <i data-lucide="mail" class="cardIcon" style="width: 20px; height: 20px;"></i>
+              <h3 class="cardTitle">SMTP Mail Server</h3>
+            </div>
+
+            <div class="inputContainer">
+              <label class="inputLabel">Mail Transport Service</label>
+              <div class="typeSelector">
+                <button
+                  type="button"
+                  id="smtpLocalBtn"
+                  class="typeButton typeButtonActive"
+                  onclick="setSmtpType('local')"
+                >
+                  Local (Mailpit SMTP Catcher)
+                </button>
+                <button
+                  type="button"
+                  id="smtpRemoteBtn"
+                  class="typeButton"
+                  onclick="setSmtpType('remote')"
+                >
+                  Remote (External Server)
+                </button>
+              </div>
+            </div>
+
+            <div class="inputGrid" id="smtpRemoteFields" style="display: none;">
+              <div class="inputContainer">
+                <label class="inputLabel">SMTP Host</label>
+                <input
+                  type="text"
+                  id="smtpHost"
+                  class="inputField"
+                  placeholder="smtp.example.com"
+                  value=""
+                />
+              </div>
+
+              <div class="inputContainer">
+                <label class="inputLabel">SMTP Port</label>
+                <input
+                  type="number"
+                  id="smtpPort"
+                  class="inputField"
+                  placeholder="587"
+                  value="587"
+                />
+              </div>
+
+              <div class="inputContainer">
+                <label class="inputLabel">Username (Optional)</label>
+                <input
+                  type="text"
+                  id="smtpUser"
+                  class="inputField"
+                  placeholder="user@example.com"
+                  value=""
+                />
+              </div>
+
+              <div class="inputContainer">
+                <label class="inputLabel">Password (Optional)</label>
+                <div class="inputWithIcon">
+                  <input
+                    type="password"
+                    id="smtpPass"
+                    class="inputField"
+                    placeholder="Enter SMTP password"
+                    value=""
+                  />
+                  <button
+                    type="button"
+                    class="toggleVisibilityBtn"
+                    onclick="togglePassVisibility('smtpPass')"
+                  >
+                    <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="inputContainer fullWidth">
+                <label class="checkboxContainer">
+                  <input
+                    type="checkbox"
+                    id="smtpSecure"
+                    class="checkboxInput"
+                  />
+                  <span class="inputLabel" style="margin-bottom: 0;">Use TLS/SSL Connection (Secure)</span>
+                </label>
+              </div>
+
+              <div class="inputContainer fullWidth">
+                <label class="inputLabel">Sender Address (From)</label>
+                <input
+                  type="email"
+                  id="smtpFrom"
+                  class="inputField"
+                  placeholder="noreply@yourdomain.com"
+                  value="noreply@giftistry.local"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="actionRow">
+            <button
+              type="submit"
+              id="saveBtn"
+              class="btn btnPrimary btnMd"
+            >
+              <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+              <span id="saveBtnText">Save Configuration</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toastContainer" id="toastContainer"></div>
+
+<script>
+  let dbType = 'local';
+  let smtpType = 'local';
+
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // Set database type
+  function setDbType(type) {
+    dbType = type;
+    const localBtn = document.getElementById('dbLocalBtn');
+    const remoteBtn = document.getElementById('dbRemoteBtn');
+    const urlContainer = document.getElementById('dbUrlContainer');
+    const urlInput = document.getElementById('dbUrl');
+
+    if (type === 'local') {
+      localBtn.classList.add('typeButtonActive');
+      remoteBtn.classList.remove('typeButtonActive');
+      urlContainer.style.display = 'none';
+      urlInput.removeAttribute('required');
+    } else {
+      localBtn.classList.remove('typeButtonActive');
+      remoteBtn.classList.add('typeButtonActive');
+      urlContainer.style.display = 'flex';
+      urlInput.setAttribute('required', 'true');
+    }
+  }
+
+  // Set SMTP type
+  function setSmtpType(type) {
+    smtpType = type;
+    const localBtn = document.getElementById('smtpLocalBtn');
+    const remoteBtn = document.getElementById('smtpRemoteBtn');
+    const remoteFields = document.getElementById('smtpRemoteFields');
+    const hostInput = document.getElementById('smtpHost');
+    const portInput = document.getElementById('smtpPort');
+    const fromInput = document.getElementById('smtpFrom');
+
+    if (type === 'local') {
+      localBtn.classList.add('typeButtonActive');
+      remoteBtn.classList.remove('typeButtonActive');
+      remoteFields.style.display = 'none';
+      hostInput.removeAttribute('required');
+      portInput.removeAttribute('required');
+      fromInput.removeAttribute('required');
+    } else {
+      localBtn.classList.remove('typeButtonActive');
+      remoteBtn.classList.add('typeButtonActive');
+      remoteFields.style.display = 'grid';
+      hostInput.setAttribute('required', 'true');
+      portInput.setAttribute('required', 'true');
+      fromInput.setAttribute('required', 'true');
+    }
+  }
+
+  // Handle form submission
+  document.getElementById('serverSettingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const saveBtn = document.getElementById('saveBtn');
+    const saveBtnText = document.getElementById('saveBtnText');
+    
+    // Disable button and show spinner
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner"></span> <span>Verifying & Saving...</span>';
+
+    setTimeout(() => {
+      // Success toast
+      showToast("Server configuration saved and verified successfully!", "success");
+      
+      // Re-enable button
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i data-lucide="save" style="width: 16px; height: 16px;"></i> <span id="saveBtnText">Save Configuration</span>';
+      lucide.createIcons();
+    }, 1200);
+  });
+
+  // Toast notifications
+  function showToast(message, type = "success") {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    
+    let icon = 'check-circle';
+    let iconColor = '#10b981';
+    if (type === 'error') {
+      icon = 'alert-circle';
+      iconColor = '#ef4444';
+    } else if (type === 'info') {
+      icon = 'info';
+      iconColor = 'var(--primary)';
+    }
+
+    toast.innerHTML = `
+      <i data-lucide="${icon}" style="width: 18px; height: 18px; color: ${iconColor};"></i>
+      <span>${message}</span>
+    `;
+
+    container.appendChild(toast);
+    lucide.createIcons();
+
+    setTimeout(() => {
+      toast.style.animation = 'none';
+      toast.offsetHeight;
+      toast.style.animation = 'toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) reverse forwards';
+      setTimeout(() => {
+        toast.remove();
+      }, 250);
+    }, 3000);
+  }
+
+  // Appearance handling
+  document.getElementById('appearanceBtn').addEventListener('click', function() {
+    const current = document.documentElement.getAttribute('data-appearance');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-appearance', next);
+    
+    const icon = this.querySelector('i');
+    if (next === 'light') {
+      icon.setAttribute('data-lucide', 'moon');
+    } else {
+      icon.setAttribute('data-lucide', 'sun');
+    }
+    lucide.createIcons();
+  });
+
+  // Theme changing
+  document.getElementById('themeBtn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    const menu = document.getElementById('themeMenu');
+    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+  });
+
+  document.addEventListener('click', function() {
+    document.getElementById('themeMenu').style.display = 'none';
+  });
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    showToast(`Theme preset set to "${theme}"`, "info");
+  }
+
+  function togglePassVisibility(id) {
+    const input = document.getElementById(id);
+    const btn = input.nextElementSibling;
+    const icon = btn.querySelector('i');
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+      input.type = 'password';
+      icon.setAttribute('data-lucide', 'eye');
+    }
+    lucide.createIcons();
+  }
+</script>
+
+</body>
+</html>

@@ -13,6 +13,7 @@ export const ShareFormTemplate: React.FC<ShareFormTemplateProps> = ({
   errorMsg,
   successMsg,
   handleSubmit,
+  isUnverified = false,
 }) => {
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
@@ -56,6 +57,7 @@ export const ShareFormTemplate: React.FC<ShareFormTemplateProps> = ({
         type="submit"
         variant="primary"
         isLoading={isLoading}
+        disabled={isUnverified}
         className={styles.submitBtn}
       >
         Share Access

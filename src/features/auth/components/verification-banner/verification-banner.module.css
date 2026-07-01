@@ -1,0 +1,45 @@
+.banner {
+  position: fixed;
+  top: 48px;
+  left: 0;
+  right: 0;
+  background-color: var(--warning-bg, #fef3c7);
+  border-bottom: 1px solid var(--warning-border, #f59e0b);
+  color: var(--warning-text, #d97706);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  box-shadow: var(--shadow-sm);
+  z-index: calc(var(--zindex-dropdown) - 1);
+}
+
+.textContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resendBtn {
+  background-color: var(--warning-text, #d97706);
+  color: var(--color-white, #fff);
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  transition: background-color var(--transition-normal);
+}
+
+.resendBtn:hover {
+  background-color: var(--warning-text, #d97706);
+  filter: brightness(0.9);
+}
+
+.resendBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
