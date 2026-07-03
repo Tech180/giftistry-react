@@ -1,38 +1,37 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 
-// Mock react-router-dom first
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => jest.fn(),
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => vi.fn(),
   Link: ({ children, to }: any) => <a href={to}>{children}</a>,
 }));
 
-jest.mock('app/providers/auth-context', () => ({
+vi.mock('app/providers/auth-context', () => ({
   useAuth: () => ({ user: { Id: 'test-user-id' } }),
 }));
 
 import { AddItemForm } from './add-item-form.component';
 import { itemsApi } from '../../api/items.api';
 
-// Mock the APIs
-jest.mock('../../api/items.api', () => ({
+vi.mock('../../api/items.api', () => ({
   itemsApi: {
-    getFieldDefinitions: jest.fn(),
-    addItem: jest.fn(),
-    updateItem: jest.fn(),
+    getFieldDefinitions: vi.fn(),
+    addItem: vi.fn(),
+    updateItem: vi.fn(),
   },
 }));
 
-jest.mock('features/wishlists', () => ({
+vi.mock('features/wishlists', () => ({
   wishlistsApi: {
-    listPriorities: jest.fn().mockResolvedValue([]),
-    deletePriority: jest.fn().mockResolvedValue(undefined),
+    listPriorities: vi.fn().mockResolvedValue([]),
+    deletePriority: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
 describe('AddItemForm - Dynamic Fields & Dependencies', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('loads dynamic fields and evaluates dependencies', async () => {
@@ -64,7 +63,7 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
       },
     ];
 
-    (itemsApi.getFieldDefinitions as jest.Mock).mockResolvedValue(mockDefinitions);
+    vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue(mockDefinitions);
 
     render(
       <AddItemForm
@@ -79,26 +78,21 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
       />
     );
 
-    // Click 'Apparel & Accessories' category chip
     const categoryChip = screen.getByText('Apparel & Accessories');
     fireEvent.click(categoryChip);
 
-    // Toggle extra fields drawer
     const toggleBtn = screen.getByText(/Show Custom Fields/);
     fireEvent.click(toggleBtn);
 
-    // Wait for definitions to load and confirm pants size is rendered, waist fit is hidden
     await waitFor(() => {
       expect(screen.getByText(/Apparel & Accessories.*Sizing \/ Options/i)).toBeInTheDocument();
       expect(screen.getByText('Pants Size')).toBeInTheDocument();
     });
     expect(screen.queryByText('Waist Fit')).not.toBeInTheDocument();
 
-    // Type into Pants Size to satisfy 'any' value dependency
     const pantsInput = screen.getByPlaceholderText('32x30');
     fireEvent.change(pantsInput, { target: { value: '32x30' } });
 
-    // Verify Waist Fit appears dynamically
     await waitFor(() => {
       expect(screen.getByText('Waist Fit')).toBeInTheDocument();
     });

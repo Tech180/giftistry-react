@@ -4,17 +4,6 @@ import { Button, Card } from 'shared/ui';
 import { ItemShowcaseTemplateProps } from '../../interfaces/item-showcase-template-props.interface';
 import styles from './item-showcase.module.css';
 
-const getSiteName = (url: string, retailerName?: string | null) => {
-  if (retailerName) return retailerName;
-  try {
-    const hostname = new URL(url).hostname;
-    const domain = hostname.replace(/^www\./, '');
-    return domain.charAt(0).toUpperCase() + domain.slice(1);
-  } catch (_) {
-    return 'View Store';
-  }
-};
-
 export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   item,
   priorityLabel,
@@ -55,6 +44,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   progressPercent,
   onClose,
   onEdit,
+  getSiteName,
 }) => {
   return (
     <Card className={styles.showcaseCard} padding="none" glass={true}>

@@ -1,4 +1,4 @@
-.commentBubble {
+.comment-bubble{
   background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -9,74 +9,74 @@
   overflow: hidden;
 }
 
-.commentBubbleTopRow {
+.comment-bubble-top-row{
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 10px 12px;
+  padding: var(--spacing-sm) var(--spacing-base);
   gap: 0;
 }
 
-.ownComment {
-  border-left: 2px solid var(--primary);
+.own-comment{
+  border-left: var(--spacing-xs) solid var(--primary);
 }
 
-.commentVisibilityIndicator {
+.comment-visibility-indicator{
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  width: 20px;
-  padding: 4px 8px 4px 0;
-  margin-right: 8px;
-  border-right: 1.5px solid var(--border);
+  width: var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm) var(--spacing-xs) 0;
+  margin-right: var(--spacing-sm);
+  border-right: 0.0938rem solid var(--border);
   align-self: stretch;
   box-sizing: border-box;
 }
 
-.visibleEye {
+.visible-eye{
   color: var(--primary);
 }
 
-.hiddenEye {
+.hidden-eye{
   color: var(--text-muted);
 }
 
-.commentDeleteBtnLeft {
+.comment-delete-btn-left{
   background: transparent;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 2px;
+  padding: var(--spacing-xs);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
   transition: all var(--transition-normal);
-  margin-top: 4px;
+  margin-top: var(--spacing-xs);
 }
 
-.commentDeleteBtnLeft:hover {
+.comment-delete-btn-left:hover{
   background: var(--error-bg);
   color: var(--error);
 }
 
-.commentMainContent {
+.comment-main-content{
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.commentMeta {
+.comment-meta{
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
 }
 
-.author {
+.author{
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   color: var(--text);
@@ -85,54 +85,54 @@
   transition: color var(--transition-normal), border-color var(--transition-normal);
 }
 
-.author:hover {
+.author:hover{
   color: var(--primary);
   border-color: var(--primary);
 }
 
-.date {
+.date{
   font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
-.rolloverBadge {
+.rollover-badge{
   font-size: var(--font-size-xs);
   background-color: var(--primary-light);
   color: var(--primary);
-  padding: 1px 4px;
+  padding: 1px var(--spacing-xs);
   border-radius: var(--radius-sm);
   font-weight: var(--font-weight-medium);
 }
 
-.commentContent {
+.comment-content{
   font-size: var(--font-size-sm);
   color: var(--text);
   line-height: 1.4;
   word-break: break-word;
 }
 
-.commentTagsContainer {
+.comment-tags-container{
   display: flex;
   flex-direction: column;
   flex-wrap: wrap-reverse;
   align-content: flex-end;
-  gap: 4px;
-  margin-left: 12px;
-  padding-left: 8px;
-  border-left: 1.5px solid var(--border);
+  gap: var(--spacing-xs);
+  margin-left: var(--spacing-base);
+  padding-left: var(--spacing-sm);
+  border-left: 0.0938rem solid var(--border);
   align-self: stretch;
   justify-content: center;
   flex-shrink: 0;
-  max-height: 48px;
+  max-height: var(--spacing-2xl);
 }
 
-.commentTagIconBtn {
+.comment-tag-icon-btn{
   background-color: var(--surface-hover);
   color: var(--primary);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  width: 20px;
-  height: 20px;
+  width: var(--spacing-md);
+  height: var(--spacing-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,38 +140,38 @@
   transition: all var(--transition-normal);
 }
 
-.commentTagIconBtn:hover {
+.comment-tag-icon-btn:hover{
   background-color: var(--primary-light);
   border-color: var(--primary);
 }
 
 /* Bottom row of comment bubble for full-width delete confirmation dropdown */
-.commentBubbleBottomRow {
+.comment-bubble-bottom-row{
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid var(--border);
   background-color: var(--error-bg);
-  padding: 8px 12px;
+  padding: var(--spacing-sm) var(--spacing-base);
   overflow: hidden;
   animation: slide-down-confirm var(--transition-slow) cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.deleteConfirmText {
+.delete-confirm-text{
   font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
-.deleteConfirmActions {
+.delete-confirm-actions{
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
-.deleteConfirmBtn {
+.delete-confirm-btn{
   background-color: var(--error);
   color: var(--primary-text);
   border: none;
-  padding: 3px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   border-radius: var(--radius-sm);
@@ -179,16 +179,16 @@
   transition: background-color var(--transition-fast);
 }
 
-.deleteConfirmBtn:hover {
+.delete-confirm-btn:hover{
   background-color: var(--error);
   filter: brightness(0.9);
 }
 
-.deleteCancelBtn {
+.delete-cancel-btn{
   background-color: transparent;
   color: var(--text-muted);
   border: 1px solid var(--border);
-  padding: 2px 8px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   border-radius: var(--radius-sm);
@@ -196,19 +196,19 @@
   transition: all var(--transition-fast);
 }
 
-.deleteCancelBtn:hover {
+.delete-cancel-btn:hover{
   background-color: var(--surface-hover);
   color: var(--text);
 }
 
-.deletedCommentBubble {
+.deleted-comment-bubble{
   background-color: var(--surface-hover);
   border: 1px dashed var(--border);
   opacity: 0.65;
-  padding: 10px 12px;
+  padding: var(--spacing-sm) var(--spacing-base);
 }
 
-.deletedCommentText {
+.deleted-comment-text{
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   font-style: italic;
@@ -222,11 +222,11 @@
     padding-bottom: 0;
     border-top-color: transparent;
   }
-  to {
-    max-height: 100px;
+  to{
+    max-height: 6.25rem;
     opacity: 1;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-top: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
     border-top-color: var(--border);
   }
 }

@@ -1,4 +1,4 @@
-.overlay {
+.overlay{
   position: fixed;
   top: 0;
   left: 0;
@@ -14,12 +14,12 @@
   animation: var(--animation-fade-in);
 }
 
-.modal {
+.modal{
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   width: 90%;
-  max-width: 480px;
+  max-width: 30rem;
   padding: 1.5rem;
   box-shadow: var(--shadow-lg);
   display: flex;
@@ -29,7 +29,7 @@
   animation: var(--animation-slide-up);
 }
 
-.header {
+.header{
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -37,13 +37,13 @@
   padding-bottom: 0.75rem;
 }
 
-.title {
+.title{
   font-size: 1.25rem;
   font-weight: var(--font-weight-semibold);
   margin: 0;
 }
 
-.closeButton {
+.close-button{
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -56,12 +56,12 @@
   transition: all var(--transition-normal);
 }
 
-.closeButton:hover {
+.close-button:hover{
   background: var(--surface-hover);
   color: var(--text);
 }
 
-.cropArea {
+.crop-area{
   position: relative;
   width: 100%;
   aspect-ratio: 1;
@@ -73,7 +73,7 @@
   align-items: center;
 }
 
-.image {
+.image{
   position: absolute;
   max-width: none;
   max-height: none;
@@ -82,10 +82,10 @@
   transition: transform 0.05s linear;
 }
 
-.cropRing {
+.crop-ring{
   position: absolute;
-  width: 200px;
-  height: 200px;
+  width: 12.5rem;
+  height: 12.5rem;
   border-radius: var(--radius-full);
   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
   border: 2px dashed var(--primary);
@@ -93,56 +93,56 @@
   box-sizing: border-box;
 }
 
-.controls {
+.controls{
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.controlGroup {
+.control-group{
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.label {
+.label{
   font-size: 0.85rem;
   font-weight: var(--font-weight-medium);
   color: var(--text-muted);
-  width: 60px;
+  width: 3.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.slider {
+.slider{
   flex: 1;
   -webkit-appearance: none;
   appearance: none;
-  height: 6px;
+  height: var(--spacing-xs);
   border-radius: var(--radius-sm);
   background: var(--border);
   outline: none;
   cursor: pointer;
 }
 
-.slider::-webkit-slider-thumb {
+.slider::-webkit-slider-thumb{
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: var(--spacing-md);
+  height: var(--spacing-md);
   border-radius: var(--radius-full);
   background: var(--primary);
   cursor: pointer;
   transition: transform 0.1s ease;
 }
 
-.slider::-webkit-slider-thumb:hover {
+.slider::-webkit-slider-thumb:hover{
   transform: scale(1.25);
 }
 
-.slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+.slider::-moz-range-thumb{
+  width: var(--spacing-md);
+  height: var(--spacing-md);
   border-radius: var(--radius-full);
   background: var(--primary);
   cursor: pointer;
@@ -150,11 +150,11 @@
   transition: transform 0.1s ease;
 }
 
-.slider::-moz-range-thumb:hover {
+.slider::-moz-range-thumb:hover{
   transform: scale(1.25);
 }
 
-.actions {
+.actions{
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
@@ -162,7 +162,7 @@
   padding-top: 0.75rem;
 }
 
-.btn {
+.btn{
   padding: 0.625rem 1.25rem;
   border-radius: var(--radius-md);
   font-weight: var(--font-weight-semibold);
@@ -172,22 +172,22 @@
   border: none;
 }
 
-.btnSecondary {
+.btn-secondary{
   background: var(--surface-hover);
   color: var(--text);
   border: 1px solid var(--border);
 }
 
-.btnSecondary:hover {
+.btn-secondary:hover{
   background: var(--border);
 }
 
-.btnPrimary {
+.btn-primary{
   background: var(--primary);
   color: var(--primary-text);
 }
 
-.btnPrimary:hover {
+.btn-primary:hover{
   background: var(--primary-hover);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 20%, transparent);
 }

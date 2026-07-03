@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
-import { authApi, ApiUser } from 'features/auth';
-import { apiClient } from 'api/client';
+import { authApi } from 'features/auth';
+import { InactivityModal } from 'features/auth/components/inactivity-modal/inactivity-modal.component';
+import { apiClient } from 'core/api/client';
 import { AuthContextType } from './interfaces/auth-context-type.interface';
+import { User } from './interfaces/user.interface';
 
-export type User = ApiUser;
+export type { User } from './interfaces/user.interface';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -237,79 +239,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     >
       {children}
       
-      {showWarning && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '20px'
-        }}>
-          <div style={{
-            backgroundColor: 'var(--surface, #1e1e1e)',
-            border: '1px solid var(--border, #333)',
-            borderRadius: '16px',
-            padding: '32px',
-            maxWidth: '450px',
-            width: '100%',
-            textAlign: 'center',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
-            color: 'var(--text, #fff)',
-            fontFamily: 'inherit'
-          }}>
-            <h3 style={{ fontSize: '24px', marginBottom: '16px', fontWeight: 600 }}>Inactivity Warning</h3>
-            <p style={{ fontSize: '15px', color: 'var(--text-muted, #aaa)', marginBottom: '24px', lineHeight: 1.5 }}>
-              You have been inactive for a while. For your security, you will be automatically logged out in{' '}
-              <strong style={{ color: 'var(--primary, #ff00ff)', fontSize: '18px' }}>{countdown}</strong> seconds.
-            </p>
-            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-              <button
-                onClick={extendSession}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: 'var(--primary, #ff00ff)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
-                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
-              >
-                Keep Me Logged In
-              </button>
-              <button
-                onClick={logout}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: 'transparent',
-                  color: 'var(--text-muted, #aaa)',
-                  border: '1px solid var(--border, #333)',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                Sign Out Now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <InactivityModal
+        isOpen={showWarning}
+        countdown={countdown}
+        onExtendSession={extendSession}
+        onSignOut={logout}
+      />
     </AuthContext.Provider>
   );
 }

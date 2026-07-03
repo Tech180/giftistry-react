@@ -40,4 +40,5 @@ export interface ItemShowcaseTemplateProps {
   progressPercent: number;
   onClose: () => void;
   onEdit: () => void;
+  getSiteName: (url: string, retailerName?: string | null) => string;
 }

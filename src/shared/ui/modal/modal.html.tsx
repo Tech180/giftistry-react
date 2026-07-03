@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { ModalTemplateProps } from 'shared/interfaces/modal-template-props.interface';
+import { ModalTemplateProps } from './interfaces/modal-template-props.interface';
 import styles from './modal.module.css';
 
 export const ModalTemplate: React.FC<ModalTemplateProps> = ({

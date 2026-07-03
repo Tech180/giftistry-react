@@ -91,5 +91,7 @@ Items:
     - should be extracted using AI and stored in a review table linked to a item id. this should extract all reviews from links and give an overall pros and cons summary. then give like 2 reviews (from the source) of each that completely describe and summarize the item.
  - images on items
  - file attachments up to 100mb, limit to 5 files (on each item), store them efficiently
- -
+ - implement a proper friends list
+    - allow visability for everyone or specific friends.
+    -
 

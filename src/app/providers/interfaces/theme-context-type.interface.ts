@@ -1,4 +1,5 @@
-import { Theme, Appearance } from '../theme-context';
+import { Theme } from './theme.interface';
+import { Appearance } from './appearance.interface';
 
 export interface ThemeContextType {
   theme: Theme;

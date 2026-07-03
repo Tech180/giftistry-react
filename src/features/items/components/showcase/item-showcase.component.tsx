@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { itemsApi } from '../../api/items.api';
 import { useAuth } from 'app/providers/auth-context';
 import { ItemShowcaseProps } from '../../interfaces/item-showcase-props.interface';
 import { ItemShowcaseTemplate } from './item-showcase.html';
+import { getSiteName } from 'shared/utils/get-site-name.util';
+import {
+  getItemFavoriteFlag,
+  parseItemDescription,
+} from 'shared/utils/parse-item-description.util';
 
 export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   item,
@@ -32,23 +37,13 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const [claimQty, setClaimQty] = useState(1);
   const [showDependencyModal, setShowDependencyModal] = useState(false);
 
-  // Parse JSON description and metadata helper
-  let displayDescription = item.Description || '';
-  let metadata: any = null;
-  if (item.Description) {
-    try {
-      if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
-        const parsed = JSON.parse(item.Description);
-        if (parsed && typeof parsed === 'object') {
-          displayDescription = parsed.text || '';
-          metadata = parsed;
-        }
-      }
-    } catch (_) { }
-  }
+  const { text: displayDescription, metadata } = useMemo(
+    () => parseItemDescription(item.Description),
+    [item.Description]
+  );
 
   useEffect(() => {
-    if (metadata && metadata.multiCount && metadata.variations && metadata.variations.length > 0) {
+    if (metadata?.multiCount && metadata.variations && metadata.variations.length > 0) {
       setSelectedVariation(metadata.variations[0].name);
     } else {
       setSelectedVariation('');
@@ -57,18 +52,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   }, [item, metadata]);
 
   useEffect(() => {
-    let descIsFavorite = false;
-
-    if (item.Description) {
-      try {
-        if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
-          const parsed = JSON.parse(item.Description);
-          descIsFavorite = !!parsed.isFavorite;
-        }
-      } catch (_) { }
-    }
-
-    setLocalIsFavorite(descIsFavorite);
+    setLocalIsFavorite(getItemFavoriteFlag(item.Description));
   }, [item.Description]);
 
   const handleClaim = async (e?: React.SyntheticEvent, skipLinkedCheck = false) => {
@@ -214,7 +198,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       setClaimQty={setClaimQty}
       showDependencyModal={showDependencyModal}
       setShowDependencyModal={setShowDependencyModal}
-      displayDescription={displayDescription}
+      displayDescription={displayDescription || ''}
       metadata={metadata}
       handleClaim={handleClaim}
       handleBulkClaim={handleBulkClaim}
@@ -229,6 +213,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       progressPercent={progressPercent}
       onClose={onClose}
       onEdit={onEdit}
+      getSiteName={getSiteName}
     />
   );
 };

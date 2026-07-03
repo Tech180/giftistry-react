@@ -1,5 +1,5 @@
 import React from 'react';
-import { ButtonTemplateProps } from 'shared/interfaces/button-template-props.interface';
+import { ButtonTemplateProps } from './interfaces/button-template-props.interface';
 import styles from './button.module.css';
 
 export const ButtonTemplate: React.FC<ButtonTemplateProps> = ({

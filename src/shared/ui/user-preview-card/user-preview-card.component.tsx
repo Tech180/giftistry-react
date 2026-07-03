@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { authApi } from 'features/auth/api/auth.api';
-import { ApiUser } from 'features/auth/interfaces/api-user.interface';
-import { UserPreviewCardProps } from './user-preview-card-props.interface';
+import { authApi, ApiUser } from 'features/auth';
+import { UserPreviewCardProps } from './interfaces/user-preview-card-props.interface';
 import { UserPreviewCardTemplate } from './user-preview-card.html';
+import styles from './user-preview-card.module.css';
+import { getFallbackInitials, getJoinedDate, getUserInitials } from './utils/user-preview-card.utils';
 
 // In-memory cache to prevent repeated fetches for the same user
 const previewCache: Record<string, ApiUser> = {};
@@ -136,6 +137,13 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
     }, 250);
   };
 
+  const userInitials = userPreview ? getUserInitials(userPreview) : undefined;
+  const fallbackInitials = getFallbackInitials(displayName);
+  const joinedDate = userPreview ? getJoinedDate(userPreview.CreatedAt) : 'Unknown Join Date';
+  const cardClass = `${styles.userProfileCard} ${
+    placement === 'top' ? styles.showTop : styles.showBottom
+  } ${styles.isVisible}`;
+
   return (
     <>
       <span
@@ -158,6 +166,10 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
             onMouseLeave={handleCardMouseLeave}
             displayName={displayName}
             isOnline={isOnline}
+            userInitials={userInitials}
+            fallbackInitials={fallbackInitials}
+            joinedDate={joinedDate}
+            cardClass={cardClass}
           />,
           document.body
         )}

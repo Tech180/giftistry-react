@@ -3,23 +3,16 @@ import { itemsApi, FieldDefinition } from '../../api/items.api';
 import { AddItemFormProps } from '../../interfaces/add-item-form-props.interface';
 import { AddItemFormTemplate } from './add-item-form.html';
 import { useAuth } from 'app/providers/auth-context';
+import { getFriendlyCategoryLabel } from '../../utils/category-label.util';
+import { STANDARD_CATEGORIES } from '../../constants/standard-categories';
+import { getItemFavoriteFlag, parseItemDescription } from 'shared/utils/parse-item-description.util';
+import { isValidUrl } from 'shared/utils/is-valid-url.util';
 
-const STANDARD_CATEGORIES = [
-  { id: 'digital_tech', label: 'Digital & Tech' },
-  { id: 'cash_funds', label: 'Cash Funds' },
-  { id: 'home_kitchen', label: 'Home & Kitchen' },
-  { id: 'baby_kids', label: 'Baby & Kids' },
-  { id: 'apparel_accessories', label: 'Apparel & Accessories' },
-  { id: 'health_wellness', label: 'Health & Wellness' },
-  { id: 'outdoors_travel', label: 'Outdoors & Travel' },
-  { id: 'hobbies_entertainment', label: 'Hobbies & Entertainment' },
+const DYNAMIC_FIELD_KEYS = [
+  'text', 'custom', 'multiCount', 'desiredQuantity', 'variations', 'linkedItemIds',
+  'pantsSize', 'shirtSize', 'shoesSize', 'socksSize', 'color', 'otherUsersCanSee',
+  'isFavorite', 'isPinned',
 ];
-
-const getFriendlyLabel = (id: string) => {
-  const found = STANDARD_CATEGORIES.find(c => c.id === id);
-  if (found) return found.label;
-  return id.split(/[_-]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-};
 
 export const AddItemForm: React.FC<AddItemFormProps> = ({
   listId,
@@ -127,72 +120,48 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   useEffect(() => {
     if (item) {
       setName(item.Name || '');
-      
-      // Parse description if it's JSON
-      let parsedDesc = '';
-      if (item.Description) {
-        try {
-          if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
-            const parsed = JSON.parse(item.Description);
-            parsedDesc = parsed.text || '';
-            
-            const dynValues: Record<string, string> = {};
-            const keysToExclude = ['text', 'custom', 'multiCount', 'desiredQuantity', 'variations', 'linkedItemIds', 'pantsSize', 'shirtSize', 'shoesSize', 'socksSize', 'color', 'otherUsersCanSee'];
-            for (const key of Object.keys(parsed)) {
-              if (!keysToExclude.includes(key)) {
-                dynValues[key] = String(parsed[key] || '');
-              }
-            }
-            setDynamicValues(dynValues);
 
-            setPantsSize(parsed.pantsSize || '');
-            setShirtSize(parsed.shirtSize || '');
-            setShoesSize(parsed.shoesSize || '');
-            setSocksSize(parsed.socksSize || '');
-            setColor(parsed.color || '');
-            
-            setDesiredQuantity(parsed.desiredQuantity || 1);
-            setVariations(parsed.variations || []);
-            setLinkedItemIds(parsed.linkedItemIds || []);
+      const parsed = parseItemDescription(item.Description);
+      if (parsed.isJson && parsed.metadata) {
+        const meta = parsed.metadata;
+        setDescription(parsed.metadata.text || '');
 
-            if (parsed.custom) {
-              setCustomFields(parsed.custom.map((f: any) => ({ id: Math.random().toString(), name: f.name, value: f.value })));
-            }
-            if (parsed.otherUsersCanSee !== undefined) {
-              setOtherUsersCanSee(parsed.otherUsersCanSee);
-            } else {
-              setOtherUsersCanSee(true);
-            }
-            setShowExtraFields(true);
-          } else {
-            parsedDesc = item.Description;
-            setOtherUsersCanSee(true);
-            setDynamicValues({});
-            setDesiredQuantity(1);
-            setVariations([]);
-            setLinkedItemIds([]);
+        const dynValues: Record<string, string> = {};
+        for (const key of Object.keys(meta)) {
+          if (!DYNAMIC_FIELD_KEYS.includes(key)) {
+            dynValues[key] = String(meta[key] || '');
           }
-        } catch (_) {
-          parsedDesc = item.Description;
-          setDynamicValues({});
-          setDesiredQuantity(1);
-          setVariations([]);
-          setLinkedItemIds([]);
         }
+        setDynamicValues(dynValues);
+
+        setPantsSize(meta.pantsSize || '');
+        setShirtSize(meta.shirtSize || '');
+        setShoesSize(meta.shoesSize || '');
+        setSocksSize(meta.socksSize || '');
+        setColor(meta.color || '');
+        setDesiredQuantity(meta.desiredQuantity || 1);
+        setVariations(meta.variations || []);
+        setLinkedItemIds(meta.linkedItemIds || []);
+
+        if (meta.custom) {
+          setCustomFields(meta.custom.map((f) => ({
+            id: Math.random().toString(),
+            name: f.name,
+            value: f.value,
+          })));
+        }
+        setOtherUsersCanSee(meta.otherUsersCanSee !== undefined ? meta.otherUsersCanSee : true);
+        setShowExtraFields(true);
+      } else {
+        setDescription(parsed.text || item.Description || '');
+        setOtherUsersCanSee(true);
+        setDynamicValues({});
+        setDesiredQuantity(1);
+        setVariations([]);
+        setLinkedItemIds([]);
       }
-      setDescription(parsedDesc);
-      
-      let isFav = false;
-      if (item.Description) {
-        try {
-          if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
-            const parsed = JSON.parse(item.Description);
-            isFav = !!parsed.isFavorite;
-          }
-        } catch (_) {}
-      }
-      
-      setIsFavorite(isFav);
+
+      setIsFavorite(getItemFavoriteFlag(item.Description));
       setPriorityWeight(item.Priority !== undefined && item.Priority !== null ? item.Priority.toString() : '');
       setIsHiddenIdea(item.IsHiddenIdea || false);
       setCategory(item.Category || 'uncategorized');
@@ -362,9 +331,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     e.preventDefault();
     if (!linkUrl.trim()) return;
 
-    try {
-      new URL(linkUrl.trim());
-    } catch (_) {
+    if (!isValidUrl(linkUrl)) {
       setErrorMsg('Please enter a valid URL.');
       return;
     }
@@ -573,19 +540,19 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   if (existingCategories) {
     existingCategories.forEach(cat => {
       if (cat && cat !== 'uncategorized' && !STANDARD_CATEGORIES.some(s => s.id === cat) && !renderedCategories.some(r => r.id === cat) && !deletedCategories.includes(cat)) {
-        renderedCategories.push({ id: cat, label: getFriendlyLabel(cat), isCustom: true });
+        renderedCategories.push({ id: cat, label: getFriendlyCategoryLabel(cat), isCustom: true });
       }
     });
   }
 
   sessionCustomCategories.forEach(cat => {
     if (cat && !renderedCategories.some(r => r.id === cat) && !deletedCategories.includes(cat)) {
-      renderedCategories.push({ id: cat, label: getFriendlyLabel(cat), isCustom: true });
+      renderedCategories.push({ id: cat, label: getFriendlyCategoryLabel(cat), isCustom: true });
     }
   });
 
   if (category && category !== 'uncategorized' && !renderedCategories.some(r => r.id === category) && !deletedCategories.includes(category)) {
-    renderedCategories.push({ id: category, label: getFriendlyLabel(category), isCustom: true });
+    renderedCategories.push({ id: category, label: getFriendlyCategoryLabel(category), isCustom: true });
   }
 
   const handleAddCustomCategory = () => {
@@ -611,16 +578,53 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     }
   };
 
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url.trim());
-      return true;
-    } catch (_) {
-      return false;
+  const isScrapeButtonPulsing = isValidUrl(linkUrl) && !hasScraped && !isAutopopulating;
+
+  const [varName, setVarName] = useState('');
+  const [varQty, setVarQty] = useState<number | ''>(1);
+  const [varError, setVarError] = useState<string | null>(null);
+  const showOptionalSizing = (category && category !== 'uncategorized') || hasScraped;
+
+  useEffect(() => {
+    setVarError(null);
+  }, [desiredQuantity, variations]);
+
+  const handleVarQtyChange = (val: string) => {
+    if (val === '') {
+      setVarQty('');
+    } else {
+      const num = parseInt(val, 10);
+      if (!isNaN(num)) {
+        setVarQty(Math.max(1, num));
+      }
     }
   };
 
-  const isScrapeButtonPulsing = isValidUrl(linkUrl) && !hasScraped && !isAutopopulating;
+  const handleAddVariation = () => {
+    if (!varName.trim()) return;
+    if (varQty === '') {
+      setVarError('Please enter a quantity for the variation.');
+      return;
+    }
+    const limit = Number(desiredQuantity) || 1;
+    const currentVarTotal = variations.reduce((sum, v) => sum + v.quantity, 0);
+    const remaining = limit - currentVarTotal;
+
+    if (remaining <= 0) {
+      setVarError('Cannot exceed the total quantity limit.');
+      return;
+    }
+
+    if (Number(varQty) > remaining) {
+      setVarError('Cannot exceed the total quantity limit.');
+      return;
+    }
+
+    setVarError(null);
+    setVariations((prev) => [...prev, { name: varName.trim(), quantity: Number(varQty) }]);
+    setVarName('');
+    setVarQty(1);
+  };
 
   return (
     <AddItemFormTemplate
@@ -694,6 +698,15 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       itemId={item?.Id}
       isLinkingModeActive={isLinkingModeActive}
       setIsLinkingModeActive={setIsLinkingModeActive}
+      getFriendlyCategoryLabel={getFriendlyCategoryLabel}
+      showOptionalSizing={showOptionalSizing}
+      varName={varName}
+      setVarName={setVarName}
+      varQty={varQty}
+      setVarQty={setVarQty}
+      varError={varError}
+      handleAddVariation={handleAddVariation}
+      handleVarQtyChange={handleVarQtyChange}
     />
   );
 };

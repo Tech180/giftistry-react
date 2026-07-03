@@ -1,6 +1,6 @@
 {
   "name": "giftistry-react",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "dependencies": {
     "@simplewebauthn/browser": "^13.3.0",
@@ -12,29 +12,35 @@
     "lucide-react": "^1.18.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router-dom": "^7.17.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "react-router-dom": "^7.17.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.2.1",
+    "eslint": "^10.6.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "jsdom": "^26.1.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.1",
+    "vite": "^6.3.5",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "dev:all": "concurrently \"npm start\" \"cd ../giftistry-bun && bun run dev\""
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "jest": {
-    "moduleNameMapper": {
-      "^react-router-dom$": "<rootDir>/node_modules/react-router-dom/dist/index.js",
-      "^react-router/dom$": "<rootDir>/node_modules/react-router/dist/development/dom-export.js",
-      "^react-router$": "<rootDir>/node_modules/react-router/dist/development/index.js"
-    }
+    "dev": "vite",
+    "start": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "audit:colors": "bun run scripts/audit-theme-colors.ts",
+    "audit:css": "bun run scripts/audit-css-conventions.ts",
+    "audit": "bun run audit:colors && bun run audit:css",
+    "lint": "eslint src",
+    "dev:all": "concurrently \"bun run dev\" \"cd ../giftistry-bun && bun run dev\""
   },
   "browserslist": {
     "production": [
@@ -47,12 +53,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@types/jest": "^30.0.0",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "concurrently": "^9.2.1",
-    "typescript": "^6.0.3"
   }
 }

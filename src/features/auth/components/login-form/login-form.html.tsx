@@ -37,10 +37,8 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
   handleRemoveSwitcherAccount,
 }) => {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', maxWidth: '420px', margin: '40px auto' }}>
-      
-      {/* Main Login Card */}
-      <Card className={`${styles.loginCard} animate-scale-in`} padding="lg" glass={true} style={{ margin: 0 }}>
+    <div className={styles.pageWrapper}>
+      <Card className={`${styles.loginCard} animate-scale-in`} padding="lg" glass={true}>
         {localError && (
           <div className={`${styles.alert} animate-slide-up`}>
             <AlertCircle size={16} />
@@ -48,7 +46,6 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
           </div>
         )}
 
-        {/* STEP 1: Credentials Form */}
         {step === 'credentials' && (
           <>
             <div className={styles.header}>
@@ -93,36 +90,36 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
               </Button>
             </form>
 
-            <div style={{ margin: '16px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <span style={{ height: '1px', flex: 1, backgroundColor: 'var(--border)' }}></span>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>OR</span>
-              <span style={{ height: '1px', flex: 1, backgroundColor: 'var(--border)' }}></span>
+            <div className={styles.divider}>
+              <span className={styles.dividerLine} />
+              <span className={styles.dividerText}>OR</span>
+              <span className={styles.dividerLine} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className={styles.altActions}>
               <Button
                 onClick={handlePasskeyLogin}
                 variant="secondary"
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                className={styles.fullWidthBtn}
               >
                 <Fingerprint size={16} /> Sign In with Passkey
               </Button>
 
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div className={styles.splitActions}>
                 <Button
                   onClick={handleGitHubLogin}
                   variant="secondary"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  className={styles.flexBtn}
                 >
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={styles.githubIcon}>
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
                   </svg> GitHub
                 </Button>
 
                 <Button
                   onClick={handleEmailOtpSend}
                   variant="secondary"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  className={styles.flexBtn}
                 >
                   <Mail size={16} /> Magic Link
                 </Button>
@@ -131,12 +128,11 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
           </>
         )}
 
-        {/* STEP 2: TOTP Verification Form */}
         {step === '2fa' && (
           <>
             <div className={styles.header}>
-              <h2 className={styles.title} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <Shield size={24} style={{ color: 'var(--primary)' }} /> Two-Factor Verification
+              <h2 className={`${styles.title} ${styles.titleWithIcon}`}>
+                <Shield size={24} className={styles.titleIcon} /> Two-Factor Verification
               </h2>
               <p className={styles.subtitle}>Enter the 6-digit code from your app or a recovery code</p>
             </div>
@@ -168,18 +164,7 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
               <button
                 type="button"
                 onClick={() => setStep('credentials')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  marginTop: '8px'
-                }}
+                className={styles.backBtn}
               >
                 <ArrowLeft size={14} /> Back to Sign In
               </button>
@@ -187,7 +172,6 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
           </>
         )}
 
-        {/* STEP 3: Email OTP Verification Form */}
         {step === 'email-otp' && (
           <>
             <div className={styles.header}>
@@ -222,18 +206,7 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
               <button
                 type="button"
                 onClick={() => setStep('credentials')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  marginTop: '8px'
-                }}
+                className={styles.backBtn}
               >
                 <ArrowLeft size={14} /> Back to Sign In
               </button>
@@ -249,91 +222,42 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
         </div>
       </Card>
 
-      {/* Account Switcher Widget */}
       {step === 'credentials' && switcherAccounts.length > 0 && (
-        <Card glass={true} padding="md" style={{ border: '1px solid var(--border)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <UserCheck size={18} style={{ color: 'var(--primary)' }} />
-            <h3 style={{ fontSize: '15px', fontWeight: 600, margin: 0 }}>Quick Sign-In</h3>
+        <Card glass={true} padding="md" className={styles.switcherCard}>
+          <div className={styles.switcherHeader}>
+            <UserCheck size={18} className={styles.switcherHeaderIcon} />
+            <h3 className={styles.switcherTitle}>Quick Sign-In</h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className={styles.switcherList}>
             {switcherAccounts.map((acc) => (
-              <div
-                key={acc.Email}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  transition: 'background-color 0.2s'
-                }}
-              >
+              <div key={acc.Email} className={styles.switcherItem}>
                 <div
                   onClick={() => handleSwitcherSelect(acc.Email)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    cursor: 'pointer',
-                    flex: 1
-                  }}
+                  className={styles.switcherItemMain}
                 >
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 600,
-                    color: '#fff',
-                    fontSize: '14px'
-                  }}>
+                  <div className={styles.switcherAvatar}>
                     {acc.Avatar ? (
-                      <img src={acc.Avatar} alt={acc.Username} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                      <img src={acc.Avatar} alt={acc.Username} className={styles.switcherAvatarImg} />
                     ) : (
                       (acc.FirstName ? acc.FirstName[0] : acc.Username[0]).toUpperCase()
                     )}
                   </div>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 600 }}>{acc.FirstName ? `${acc.FirstName} ${acc.LastName}` : acc.Username}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{acc.Email}</div>
+                  <div className={styles.switcherInfo}>
+                    <div className={styles.switcherName}>{acc.FirstName ? `${acc.FirstName} ${acc.LastName}` : acc.Username}</div>
+                    <div className={styles.switcherEmail}>{acc.Email}</div>
                   </div>
                 </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
+                <div className={styles.switcherActions}>
                   <button
                     onClick={() => handleSwitcherSelect(acc.Email)}
-                    style={{
-                      padding: '6px 12px',
-                      backgroundColor: 'rgba(255, 0, 255, 0.1)',
-                      border: '1px solid var(--primary)',
-                      color: 'var(--primary)',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer'
-                    }}
+                    className={styles.passkeyBtn}
                   >
                     Passkey
                   </button>
                   <button
                     onClick={() => handleRemoveSwitcherAccount(acc.Email)}
-                    style={{
-                      padding: '6px',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      color: '#ef4444',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
+                    className={styles.removeBtn}
                   >
                     <Trash2 size={14} />
                   </button>

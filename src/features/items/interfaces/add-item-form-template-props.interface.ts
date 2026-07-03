@@ -1,6 +1,6 @@
 import React from 'react';
 import { Priority } from 'features/wishlists';
-import { FieldDefinition } from './item-field.interface';
+import { FieldDefinition } from './field-definition.interface';
 
 export interface AddItemFormTemplateProps {
   name: string;
@@ -85,4 +85,13 @@ export interface AddItemFormTemplateProps {
   itemId?: string;
   isLinkingModeActive: boolean;
   setIsLinkingModeActive: React.Dispatch<React.SetStateAction<boolean>>;
+  getFriendlyCategoryLabel: (id: string) => string;
+  showOptionalSizing: boolean;
+  varName: string;
+  setVarName: (val: string) => void;
+  varQty: number | '';
+  setVarQty: (val: number | '') => void;
+  varError: string | null;
+  handleAddVariation: () => void;
+  handleVarQtyChange: (val: string) => void;
 }

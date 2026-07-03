@@ -1,21 +1,15 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { Toast as ToastComponent } from 'shared/ui';
+import { ToastItem } from './interfaces/toast-item.interface';
+import { ToastContextType } from './interfaces/toast-context-type.interface';
 import styles from './toast-context.module.css';
 
-export interface Toast {
-  id: number;
-  message: string;
-  type: 'success' | 'error' | 'info';
-}
-
-interface ToastContextType {
-  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
-}
+export type { ToastItem } from './interfaces/toast-item.interface';
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Date.now();
@@ -25,17 +19,22 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, 3000);
   }, []);
 
+  const dismissToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div className={styles.toastContainer}>
         {toasts.map((toast) => (
-          <div key={toast.id} className={styles.toast}>
-            {toast.type === 'success' && <CheckCircle size={18} className={`${styles.toastIcon} ${styles.success}`} />}
-            {toast.type === 'error' && <AlertCircle size={18} className={`${styles.toastIcon} ${styles.error}`} />}
-            {toast.type === 'info' && <Info size={18} className={`${styles.toastIcon} ${styles.info}`} />}
-            <span style={{ whiteSpace: 'pre-line', textAlign: 'left' }}>{toast.message}</span>
-          </div>
+          <ToastComponent
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onDismiss={() => dismissToast(toast.id)}
+            className={styles.toastItem}
+          />
         ))}
       </div>
     </ToastContext.Provider>

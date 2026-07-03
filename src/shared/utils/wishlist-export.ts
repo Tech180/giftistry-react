@@ -1,4 +1,11 @@
 import ExcelJS from 'exceljs';
+import { formatCategoryLabel } from 'shared/utils/category-label.util';
+import { getSiteName } from 'shared/utils/get-site-name.util';
+import {
+  formatDescriptionForExport,
+  getItemFavoriteOrPinnedFlag,
+  parseItemDescription,
+} from 'shared/utils/parse-item-description.util';
 
 const escapeCsvValue = (val: any) => {
   if (val === null || val === undefined) return '""';
@@ -31,63 +38,13 @@ const getExportFilename = (title: string, ownerFirstName: string | undefined, ex
   return `${pascalTitle}_${dateStr}_${ownerClean}.${ext}`;
 };
 
-const parseDescriptionForExport = (desc: string | null): string => {
-  if (!desc) return '';
-  try {
-    if (desc.startsWith('{') && desc.endsWith('}')) {
-      const parsed = JSON.parse(desc);
-      if (parsed && typeof parsed === 'object') {
-        const parts: string[] = [];
-        if (parsed.text) parts.push(parsed.text);
-        
-        const metaParts: string[] = [];
-        if (parsed.pantsSize) metaParts.push(`Pants: ${parsed.pantsSize}`);
-        if (parsed.shirtSize) metaParts.push(`Shirt: ${parsed.shirtSize}`);
-        if (parsed.shoesSize) metaParts.push(`Shoes: ${parsed.shoesSize}`);
-        if (parsed.socksSize) metaParts.push(`Socks: ${parsed.socksSize}`);
-        if (parsed.color) metaParts.push(`Color: ${parsed.color}`);
-        if (Array.isArray(parsed.custom)) {
-          for (const f of parsed.custom) {
-            if (f.name && f.value) {
-              metaParts.push(`${f.name}: ${f.value}`);
-            }
-          }
-        }
-        if (metaParts.length > 0) {
-          parts.push(`[${metaParts.join(', ')}]`);
-        }
-        return parts.join(' ');
-      }
-    }
-  } catch (_) {}
-  return desc;
-};
-
-// Helper to format category labels
-const formatCategory = (cat: string | null | undefined): string => {
-  if (!cat || cat.toLowerCase() === 'uncategorized') return 'Uncategorized';
-  return cat.charAt(0).toUpperCase() + cat.slice(1);
-};
-
 // Process and sort items by Category (alphabetical), then Favorite/Starred status (top), then Priority (ascending), then Name (alphabetical)
 function getSortedItemsWithPriority(items: any[]) {
-  const isItemFavorite = (item: any) => {
-    if (item.Description) {
-      try {
-        if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
-          const parsed = JSON.parse(item.Description);
-          return !!parsed.isFavorite || !!parsed.isPinned;
-        }
-      } catch (_) {}
-    }
-    return false;
-  };
-
   return items
     .map(item => ({
       ...item,
-      isFav: isItemFavorite(item),
-      categoryFormatted: formatCategory(item.Category)
+      isFav: getItemFavoriteOrPinnedFlag(item.Description),
+      categoryFormatted: formatCategoryLabel(item.Category)
     }))
     .sort((a, b) => {
       // 1. Sort by Category (Uncategorized always goes last)
@@ -144,7 +101,7 @@ export function exportToCsv(title: string, items: any[], priorities: any[] = [],
     for (const item of catItems) {
       const priorityVal = item.Priority !== null && item.Priority !== undefined ? item.Priority : '';
       const starVal = item.isFav ? '*' : '';
-      const formattedDesc = parseDescriptionForExport(item.Description);
+      const formattedDesc = formatDescriptionForExport(item.Description);
 
       if (item.Links && item.Links.length > 0) {
         for (const link of item.Links) {
@@ -261,7 +218,7 @@ export async function exportToXlsx(title: string, items: any[], priorities: any[
     for (const item of catItems) {
       const priorityVal = item.Priority !== null && item.Priority !== undefined ? item.Priority : '';
       const starVal = item.isFav ? '*' : '';
-      const formattedDesc = parseDescriptionForExport(item.Description);
+      const formattedDesc = formatDescriptionForExport(item.Description);
 
       let priceVal = '';
       let websiteLabel = '';
@@ -273,15 +230,6 @@ export async function exportToXlsx(title: string, items: any[], priorities: any[
           ? `$${link.ExtractedPrice.toFixed(2)}` 
           : '';
         
-        const getSiteName = (url: string) => {
-          try {
-            const hostname = new URL(url).hostname;
-            const part = hostname.startsWith('www.') ? hostname.substring(4) : hostname;
-            return part.charAt(0).toUpperCase() + part.slice(1);
-          } catch (_) {
-            return 'Store';
-          }
-        };
         websiteLabel = link.RetailerName || (link.Url ? getSiteName(link.Url) : 'Store');
         linkUrl = link.Url || '';
       }
@@ -360,7 +308,7 @@ export function exportToTxt(title: string, items: any[], priorities: any[] = [],
     for (const item of catItems) {
       const starPrefix = item.isFav ? '★ ' : '  ';
       const priorityLabel = item.Priority !== null && item.Priority !== undefined ? `(Priority: ${item.Priority})` : '';
-      const descText = parseDescriptionForExport(item.Description);
+      const descText = formatDescriptionForExport(item.Description);
       const descStr = descText ? `\n    Description: ${descText}` : '';
 
       if (item.Links && item.Links.length > 0) {
@@ -398,14 +346,8 @@ export function exportToJson(title: string, items: any[], priorities: any[] = []
   const sorted = getSortedItemsWithPriority(items);
 
   const formattedItems = sorted.map(item => {
-    let parsedDesc = item.Description;
-    if (item.Description) {
-      try {
-        if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
-          parsedDesc = JSON.parse(item.Description);
-        }
-      } catch (_) {}
-    }
+    const parsed = parseItemDescription(item.Description);
+    const parsedDesc = parsed.isJson && parsed.metadata ? parsed.metadata : item.Description;
 
     return {
       name: item.Name,

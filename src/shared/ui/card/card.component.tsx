@@ -1,9 +1,9 @@
 import React from 'react';
-import { CardProps } from 'shared/interfaces/card-props.interface';
+import { CardProps } from './interfaces/card-props.interface';
 import { CardTemplate } from './card.html';
 import styles from './card.module.css';
 
-export type { CardProps } from 'shared/interfaces/card-props.interface';
+export type { CardProps } from './interfaces/card-props.interface';
 
 export const Card: React.FC<CardProps> = ({
   children,

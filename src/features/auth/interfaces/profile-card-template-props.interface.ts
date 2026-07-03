@@ -1,5 +1,5 @@
 import React from 'react';
-import { User } from 'app/providers/auth-context';
+import { User } from 'app/providers/interfaces/user.interface';
 
 export interface ProfileCardTemplateProps {
   user: any;
@@ -21,4 +21,9 @@ export interface ProfileCardTemplateProps {
   handleRemoveAvatar: () => void;
   randomizeAvatarColor: () => void;
   handleDeleteAccount: () => void;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  handleUploadClick: () => void;
+  initials: string;
+  isImageAvatar: boolean;
+  avatarStyle: React.CSSProperties;
 }

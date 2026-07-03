@@ -2,19 +2,7 @@ import React from 'react';
 import { Plus, Star, Trash2, Link, Edit2, Pin, Check } from 'lucide-react';
 import { Button, Card, Input } from 'shared/ui';
 import { ItemCardTemplateProps } from '../../interfaces/item-card-template-props.interface';
-import { getCategoryMeta } from './category-icons';
 import styles from './item-card.module.css';
-
-const getSiteName = (url: string, retailerName?: string | null) => {
-  if (retailerName) return retailerName;
-  try {
-    const hostname = new URL(url).hostname;
-    const domain = hostname.replace(/^www\./, '');
-    return domain.charAt(0).toUpperCase() + domain.slice(1);
-  } catch (_) {
-    return 'View Store';
-  }
-};
 
 export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   item,
@@ -61,30 +49,13 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   onSelect,
   isExpanded = false,
   setIsExpanded,
+  displayDescription,
+  metadata,
+  CategoryIcon,
+  displayCategoryBadge,
+  categoryLabel,
+  getSiteName,
 }) => {
-  // Parse JSON description if applicable
-  let displayDescription: string | null = null;
-  let metadata: any = null;
-  if (item.Description) {
-    try {
-      if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
-        const parsed = JSON.parse(item.Description);
-        if (parsed && typeof parsed === 'object') {
-          displayDescription = parsed.text || null;
-          metadata = parsed;
-        }
-      }
-    } catch (_) { }
-
-    if (displayDescription === null) {
-      displayDescription = item.Description;
-    }
-  }
-
-  const categoryMeta = getCategoryMeta(item.Category);
-  const CategoryIcon = categoryMeta.icon;
-  const displayCategoryBadge = item.Category && item.Category !== 'uncategorized';
-
   if (viewMode === 'compact') {
     return (
       <Card
@@ -161,9 +132,9 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           <div className={styles.compactInfoSection}>
             <span className={styles.compactItemName} title={item.Name}>{item.Name}</span>
             {displayCategoryBadge && (
-              <span className={styles.compactCategoryBadge} title={`Category: ${categoryMeta.label}`}>
+              <span className={styles.compactCategoryBadge} title={`Category: ${categoryLabel}`}>
                 <CategoryIcon size={10} style={{ marginRight: '2px' }} />
-                {categoryMeta.label}
+                {categoryLabel}
               </span>
             )}
 
@@ -386,7 +357,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
         <div className={styles.gridTopBar}>
           <div className={styles.gridCategoryContainer}>
             {displayCategoryBadge && (
-              <span className={styles.gridCategoryBadge} title={`Category: ${categoryMeta.label}`}>
+              <span className={styles.gridCategoryBadge} title={`Category: ${categoryLabel}`}>
                 <CategoryIcon size={10} />
               </span>
             )}
@@ -595,9 +566,9 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
 
           <div className={styles.itemMeta}>
             {displayCategoryBadge && (
-              <span className={styles.categoryBadge} title={`Category: ${categoryMeta.label}`}>
+              <span className={styles.categoryBadge} title={`Category: ${categoryLabel}`}>
                 <CategoryIcon size={12} style={{ marginRight: '4px' }} />
-                {categoryMeta.label}
+                {categoryLabel}
               </span>
             )}
           </div>

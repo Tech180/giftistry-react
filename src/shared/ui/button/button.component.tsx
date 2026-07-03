@@ -1,9 +1,9 @@
 import React from 'react';
-import { ButtonProps } from 'shared/interfaces/button-props.interface';
+import { ButtonProps } from './interfaces/button-props.interface';
 import { ButtonTemplate } from './button.html';
 import styles from './button.module.css';
 
-export type { ButtonProps } from 'shared/interfaces/button-props.interface';
+export type { ButtonProps } from './interfaces/button-props.interface';
 
 export const Button: React.FC<ButtonProps> = ({
   children,

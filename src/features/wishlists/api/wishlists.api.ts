@@ -1,4 +1,4 @@
-import { apiClient } from 'api/client';
+import { apiClient } from 'core/api/client';
 import { Wishlist } from '../interfaces/wishlist.interface';
 import { ListShare } from '../interfaces/list-share.interface';
 import { Priority } from '../interfaces/priority.interface';

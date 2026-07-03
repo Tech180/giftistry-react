@@ -3,9 +3,12 @@ import { useCommentController } from '../../hooks/use-comment-controller';
 import { useAuth } from 'app/providers/auth-context';
 import { CommentSectionProps } from '../../interfaces/comment-section-props.interface';
 import { CommentSectionTemplate } from './comment-section.html';
+import { formatCommentDate } from 'shared/utils/format-date.util';
+
+import { env } from 'core/config/env';
 
 const getWsUrl = (listId: string) => {
-  const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  const apiBaseUrl = env.apiUrl;
   let protocol = 'ws:';
   let host = 'localhost:3001';
 
@@ -218,17 +221,6 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     }
   };
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const displayError = error || localError;
   const typingUsers = Object.values(typingUsersMap);
 
@@ -258,7 +250,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       setIsRollover={setIsRollover}
       isSubmitLoading={isSubmitLoading}
       handleSubmit={handleSubmit}
-      formatDate={formatDate}
+      formatDate={formatCommentDate}
       items={items}
       onlineUsers={onlineUsers}
       typingUsers={typingUsers}

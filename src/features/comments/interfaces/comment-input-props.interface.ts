@@ -1,4 +1,4 @@
-import { Item } from '../../../features/items/interfaces/item.interface';
+import { Item } from 'features/items';
 
 export interface CommentInputProps {
   isOwner: boolean;

@@ -1,21 +1,8 @@
 import React from 'react';
 import styles from './image-cropper.module.css';
+import { ImageCropperTemplateProps } from './interfaces/image-cropper-template-props.interface';
 
-interface ImageCropperHtmlProps {
-  imageSrc: string;
-  zoom: number;
-  setZoom: (v: number) => void;
-  offsetX: number;
-  setOffsetX: (v: number) => void;
-  offsetY: number;
-  setOffsetY: (v: number) => void;
-  onCropClick: () => void;
-  onCancelClick: () => void;
-  imgRef: React.RefObject<HTMLImageElement | null>;
-  canvasRef: React.RefObject<HTMLCanvasElement | null>;
-}
-
-export const ImageCropperHtml: React.FC<ImageCropperHtmlProps> = ({
+export const ImageCropperHtml: React.FC<ImageCropperTemplateProps> = ({
   imageSrc,
   zoom,
   setZoom,

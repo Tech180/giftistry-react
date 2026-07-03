@@ -1,8 +1,8 @@
-import { apiClient } from 'api/client';
+import { apiClient } from 'core/api/client';
 import { ItemLink } from '../interfaces/item-link.interface';
 import { Claim } from '../interfaces/item-claim.interface';
 import { Item } from '../interfaces/item.interface';
-import { FieldDefinition } from '../interfaces/item-field.interface';
+import { FieldDefinition } from '../interfaces/field-definition.interface';
 
 export const itemsApi = {
   listItems: (listId: string) =>

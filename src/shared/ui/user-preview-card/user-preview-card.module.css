@@ -1,136 +1,137 @@
-.userProfileCard {
-  width: 300px;
-  background: var(--surface-glass, rgba(10, 15, 30, 0.75));
+.user-profile-card{
+  width: 18.75rem;
+  background: var(--surface-glass);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border, rgba(0, 242, 254, 0.2));
-  border-radius: var(--radius-lg, 12px);
-  box-shadow: var(--shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.5)), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, var(--radius-lg));
+  box-shadow: var(--shadow-lg, var(--shadow)), 0 0 0 1px color-mix(in srgb, var(--text) 5%, transparent) inset;
+  padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--spacing-base);
   cursor: default;
   font-family: inherit;
   transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  color: var(--text, #e2e8f0);
+  color: var(--text);
 }
 
-.showBottom {
+.show-bottom{
   transform-origin: top left;
   transform: translateY(12px) scale(0.95);
 }
 
-.showTop {
+.show-top{
   transform-origin: bottom left;
   transform: translateY(-12px) scale(0.95);
 }
 
-.isVisible {
+.is-visible{
   transform: translateY(0) scale(1);
 }
 
-.userProfileCardHeader {
+.user-profile-card-header{
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.userProfileCardAvatar {
-  width: 48px;
-  height: 48px;
+.user-profile-card-avatar{
+  width: var(--spacing-2xl);
+  height: var(--spacing-2xl);
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary, #00f2fe) 0%, #8b96eb 100%);
-  color: #0b0f19;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  color: var(--primary-text);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
   font-weight: 700;
-  border: 2px solid var(--primary, #00f2fe);
-  box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.3);
 }
 
-.userProfileCardStatus {
+.user-profile-card-status{
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
+  gap: var(--spacing-xs);
 }
 
-.statusDot {
-  width: 10px;
-  height: 10px;
+.status-dot{
+  width: var(--spacing-sm);
+  height: var(--spacing-sm);
   border-radius: 50%;
   display: inline-block;
 }
 
-.statusOnline {
-  background-color: var(--success, #10b981);
-  box-shadow: 0 0 8px var(--success, #10b981);
+.status-online{
+  background-color: var(--success);
+  box-shadow: 0 0 8px var(--success);
 }
 
-.statusOffline {
-  background-color: var(--text-muted, #64748b);
+.status-offline{
+  background-color: var(--text-muted);
 }
 
-.userProfileCardTheme {
+.user-profile-card-theme{
   font-size: 0.7rem;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
-.userProfileCardBody {
+.user-profile-card-body{
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
-.userProfileCardDisplayName {
+.user-profile-card-display-name{
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text, #f8fafc);
+  color: var(--text);
   letter-spacing: -0.01em;
 }
 
-.userProfileCardUsername {
+.user-profile-card-username{
   font-size: 0.8rem;
-  color: var(--primary, #00f2fe);
+  color: var(--primary);
   font-weight: 500;
 }
 
-.userProfileCardBio {
+.user-profile-card-bio{
   font-size: 0.85rem;
-  color: var(--text, #cbd5e1);
-  margin: 8px 0 0 0;
+  color: var(--text);
+  opacity: 0.85;
+  margin: var(--spacing-sm) 0 0 0;
   line-height: 1.4;
 }
 
-.userProfileCardFooter {
+.user-profile-card-footer{
   font-size: var(--font-size-xs);
-  color: var(--text-muted, #94a3b8);
-  border-top: 1px solid var(--border, rgba(255, 255, 255, 0.1));
-  padding-top: 8px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: var(--spacing-sm);
   display: flex;
   justify-content: space-between;
   font-weight: 500;
 }
 
-.loadingContainer {
+.loading-container{
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 120px;
+  height: 7.5rem;
   width: 100%;
 }
 
-.spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid rgba(0, 242, 254, 0.1);
-  border-top-color: var(--primary, #00f2fe);
+.spinner{
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
+  border: 2px solid rgba(var(--primary-rgb), 0.1);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: var(--animation-rotation);
-  box-shadow: 0 0 8px rgba(0, 242, 254, 0.2);
+  box-shadow: 0 0 8px rgba(var(--primary-rgb), 0.2);
 }

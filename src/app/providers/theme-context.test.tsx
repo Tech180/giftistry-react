@@ -3,7 +3,7 @@ import { render, screen, act } from "@testing-library/react";
 import { ThemeProvider, useTheme } from "./theme-context";
 import { AuthContext } from "app/providers/auth-context";
 
-jest.mock("app/providers/auth-context", () => {
+vi.mock("app/providers/auth-context", () => {
   const React = require("react");
   const mockAuthContext = React.createContext({
     user: null,
@@ -67,11 +67,11 @@ describe("ThemeProvider and useTheme", () => {
   beforeEach(() => {
     localStorage.clear();
     // Clean up any link elements created during test runs
-    const links = document.querySelectorAll('link[id="theme-stylesheet"], link[data-theme-style="pending"]');
+    const links = document.querySelectorAll('link[id="theme-stylesheet"], link[id="core-theme-stylesheet"], link[data-theme-style="pending"]');
     links.forEach(l => l.parentNode?.removeChild(l));
     document.documentElement.removeAttribute("data-theme");
     document.documentElement.removeAttribute("data-appearance");
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test("initializes with default values and writes attributes to documentElement", () => {
@@ -139,8 +139,8 @@ describe("ThemeProvider and useTheme", () => {
   describe("Holiday Theme Access Control", () => {
     test("locks holiday themes by default for anonymous users or outside holiday periods", () => {
       // Current date is June 15, 2026 (non-holiday)
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date(2026, 5, 15));
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 5, 15));
 
       render(
         <AuthContext.Provider value={{ user: null, isAuthenticated: false, isLoading: false } as any}>
@@ -156,8 +156,8 @@ describe("ThemeProvider and useTheme", () => {
 
     test("unlocks Halloween when active in October and user has registered before/during October", () => {
       // Current date is October 10, 2026 (currentMonth = 9)
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date(2026, 9, 10));
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 9, 10));
 
       const mockUser = {
         Id: "user-123",
@@ -184,8 +184,8 @@ describe("ThemeProvider and useTheme", () => {
 
     test("unlocks Christmas when active in December and user has registered before/during December", () => {
       // Current date is December 25, 2026 (currentMonth = 11)
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date(2026, 11, 25));
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 11, 25));
 
       const mockUser = {
         Id: "user-123",
@@ -211,8 +211,8 @@ describe("ThemeProvider and useTheme", () => {
 
     test("does not unlock Halloween if active in October but user registered in November (future)", () => {
       // Current date is October 10, 2026
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date(2026, 9, 10));
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 9, 10));
 
       const mockUser = {
         Id: "user-123",
@@ -240,8 +240,8 @@ describe("ThemeProvider and useTheme", () => {
       );
 
       // Current date is June 15, 2026
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date(2026, 5, 15));
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 5, 15));
 
       render(
         <AuthContext.Provider value={{ user: null, isAuthenticated: false, isLoading: false } as any}>
@@ -258,8 +258,8 @@ describe("ThemeProvider and useTheme", () => {
     test("unlocks Valentines in Feb, St Patricks in Mar, Earth Day in Apr, Independence in Jul, Thanksgiving in Nov", () => {
       // 1. Valentines (February -> month 1)
       {
-        jest.useFakeTimers();
-        jest.setSystemTime(new Date(2026, 1, 14));
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 1, 14));
         const mockUser = {
           Id: "user-123",
           CreatedAt: new Date(2026, 1, 10).toISOString(),
@@ -279,8 +279,8 @@ describe("ThemeProvider and useTheme", () => {
 
       // 2. St Patrick's (March -> month 2)
       {
-        jest.useFakeTimers();
-        jest.setSystemTime(new Date(2026, 2, 17));
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 2, 17));
         const mockUser = {
           Id: "user-123",
           CreatedAt: new Date(2026, 2, 5).toISOString(),
@@ -300,8 +300,8 @@ describe("ThemeProvider and useTheme", () => {
 
       // 3. Earth Day (April -> month 3)
       {
-        jest.useFakeTimers();
-        jest.setSystemTime(new Date(2026, 3, 22));
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 3, 22));
         const mockUser = {
           Id: "user-123",
           CreatedAt: new Date(2026, 3, 20).toISOString(),
@@ -321,8 +321,8 @@ describe("ThemeProvider and useTheme", () => {
 
       // 4. Independence (July -> month 6)
       {
-        jest.useFakeTimers();
-        jest.setSystemTime(new Date(2026, 6, 4));
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 6, 4));
         const mockUser = {
           Id: "user-123",
           CreatedAt: new Date(2026, 6, 2).toISOString(),
@@ -342,8 +342,8 @@ describe("ThemeProvider and useTheme", () => {
 
       // 5. Thanksgiving (November -> month 10)
       {
-        jest.useFakeTimers();
-        jest.setSystemTime(new Date(2026, 10, 26));
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 10, 26));
         const mockUser = {
           Id: "user-123",
           CreatedAt: new Date(2026, 10, 15).toISOString(),

@@ -1,30 +1,12 @@
 import React from 'react';
-import { SidebarProps } from './sidebar.interface';
+import { SidebarProps } from './interfaces/sidebar-props.interface';
 import { SidebarTemplate } from './sidebar.html';
 import styles from './sidebar.module.css';
 
-export const Sidebar: React.FC<SidebarProps> = ({
-  isOpen,
-  position,
-  title,
-  onClose,
-  children,
-  overflowVisible = false,
-  miniSidebar,
-}) => {
-  const sidebarClass = `${styles.sidebarWrapper} ${
-    position === 'left' ? styles.left : styles.right
-  } ${isOpen ? styles.active : ''} ${overflowVisible ? styles.overflowVisible : ''}`;
+export type { SidebarProps } from './interfaces/sidebar-props.interface';
 
-  return (
-    <SidebarTemplate
-      sidebarClass={sidebarClass}
-      title={title}
-      onClose={onClose}
-      overflowVisible={overflowVisible}
-      miniSidebar={miniSidebar}
-    >
-      {children}
-    </SidebarTemplate>
-  );
+export const Sidebar: React.FC<SidebarProps> = ({ children, className = '' }) => {
+  const containerClass = [styles.sidebar, className].filter(Boolean).join(' ');
+
+  return <SidebarTemplate containerClass={containerClass}>{children}</SidebarTemplate>;
 };

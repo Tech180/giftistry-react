@@ -7,3 +7,4 @@ export * from './interfaces/item-link.interface';
 export * from './interfaces/item-claim.interface';
 export * from './interfaces/category-meta.interface';
 export * from './components/showcase/item-showcase.component';
+export { getCategoryMeta } from './components/card/category-icons';

@@ -4,22 +4,6 @@ import { Input, Button } from 'shared/ui';
 import { AddItemFormTemplateProps } from '../../interfaces/add-item-form-template-props.interface';
 import styles from './add-item-form.module.css';
 
-const getFriendlyCategoryLabel = (id: string) => {
-  const STANDARD_CATEGORIES = [
-    { id: 'digital_tech', label: 'Digital & Tech' },
-    { id: 'cash_funds', label: 'Cash Funds' },
-    { id: 'home_kitchen', label: 'Home & Kitchen' },
-    { id: 'baby_kids', label: 'Baby & Kids' },
-    { id: 'apparel_accessories', label: 'Apparel & Accessories' },
-    { id: 'health_wellness', label: 'Health & Wellness' },
-    { id: 'outdoors_travel', label: 'Outdoors & Travel' },
-    { id: 'hobbies_entertainment', label: 'Hobbies & Entertainment' },
-  ];
-  const found = STANDARD_CATEGORIES.find(c => c.id === id);
-  if (found) return found.label;
-  return id.split(/[_-]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-};
-
 export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   name,
   setName,
@@ -91,16 +75,15 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   itemId,
   isLinkingModeActive,
   setIsLinkingModeActive,
+  getFriendlyCategoryLabel,
+  showOptionalSizing,
+  varName,
+  setVarName,
+  varQty,
+  varError,
+  handleAddVariation,
+  handleVarQtyChange,
 }) => {
-  const showOptionalSizing = (category && category !== 'uncategorized') || hasScraped;
-  const [varName, setVarName] = React.useState('');
-  const [varQty, setVarQty] = React.useState<number | ''>(1);
-  const [varError, setVarError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    setVarError(null);
-  }, [desiredQuantity, variations]);
-
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       {errorMsg && (
@@ -249,17 +232,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                 type="number"
                 min="1"
                 value={varQty}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === '') {
-                    setVarQty('');
-                  } else {
-                    const num = parseInt(val, 10);
-                    if (!isNaN(num)) {
-                      setVarQty(Math.max(1, num));
-                    }
-                  }
-                }}
+                onChange={(e) => handleVarQtyChange(e.target.value)}
                 className={styles.variationQtyInput}
                 style={{ width: '60px' }}
               />
@@ -267,32 +240,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                 type="button"
                 variant="secondary"
                 size="sm"
-                onClick={() => {
-                  if (varName.trim()) {
-                    if (varQty === '') {
-                      setVarError('Please enter a quantity for the variation.');
-                      return;
-                    }
-                    const limit = Number(desiredQuantity) || 1;
-                    const currentVarTotal = variations.reduce((sum, v) => sum + v.quantity, 0);
-                    const remaining = limit - currentVarTotal;
-
-                    if (remaining <= 0) {
-                      setVarError('Cannot exceed the total quantity limit.');
-                      return;
-                    }
-
-                    if (Number(varQty) > remaining) {
-                      setVarError('Cannot exceed the total quantity limit.');
-                      return;
-                    }
-
-                    setVarError(null);
-                    setVariations(prev => [...prev, { name: varName.trim(), quantity: Number(varQty) }]);
-                    setVarName('');
-                    setVarQty(1);
-                  }
-                }}
+                onClick={handleAddVariation}
               >
                 Add
               </Button>

@@ -1,9 +1,9 @@
 import React, { forwardRef } from 'react';
-import { InputProps } from 'shared/interfaces/input-props.interface';
+import { InputProps } from './interfaces/input-props.interface';
 import { InputTemplate } from './input.html';
 import styles from './input.module.css';
 
-export type { InputProps } from 'shared/interfaces/input-props.interface';
+export type { InputProps } from './interfaces/input-props.interface';
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(({
   label,

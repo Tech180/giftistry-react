@@ -1,4 +1,4 @@
-.section {
+.section{
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -8,64 +8,64 @@
   position: relative;
 }
 
-.sectionHeader {
+.section-header{
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   border-bottom: 1px solid var(--border);
-  padding: 12px 1.25rem;
+  padding: var(--spacing-base) 1.25rem;
   background-color: var(--surface);
 }
 
-.headerIcon {
+.header-icon{
   color: var(--primary);
 }
 
-.title {
+.title{
   font-size: 1.125rem;
   font-weight: var(--font-weight-semibold);
   color: var(--text);
   margin: 0;
 }
 
-.alert {
+.alert{
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--spacing-sm);
   background-color: var(--error-bg);
   border: 1px solid var(--error-border);
   color: var(--error);
-  padding: 10px 12px;
+  padding: var(--spacing-sm) var(--spacing-base);
   border-radius: var(--radius);
   font-size: var(--font-size-xs);
-  margin: 12px 1.25rem 0 1.25rem;
+  margin: var(--spacing-base) 1.25rem 0 1.25rem;
 }
 
-.listContainer {
+.list-container{
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-base);
   flex: 1;
   overflow-y: auto;
-  padding: 12px 1.25rem;
+  padding: var(--spacing-base) 1.25rem;
   min-height: 0;
 }
 
-.commentsList {
+.comments-list{
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-base);
 }
 
-.emptyText {
+.empty-text{
   font-size: var(--font-size-sm);
   color: var(--text-muted);
   text-align: center;
-  padding: 32px 0;
+  padding: var(--spacing-xl) 0;
   font-style: italic;
 }
 
-.bottomSeamlessContainer {
+.bottom-seamless-container{
   margin-top: auto;
   background-color: var(--surface);
   border-top: 1px solid var(--border);
@@ -75,42 +75,42 @@
   box-sizing: border-box;
 }
 
-.onlinePresenceBar {
+.online-presence-bar{
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 1.25rem;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) 1.25rem;
   border-bottom: 1px solid var(--border);
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   background-color: var(--background);
 }
 
-.onlineDot {
-  width: 6px;
-  height: 6px;
+.online-dot{
+  width: var(--spacing-xs);
+  height: var(--spacing-xs);
   background-color: var(--success);
   border-radius: var(--radius-full);
   display: inline-block;
   box-shadow: 0 0 0 2px var(--success-border);
 }
 
-.onlineUsersList {
+.online-users-list{
   font-weight: var(--font-weight-semibold);
   color: var(--text);
 }
 
-.loadingSpinner {
+.loading-spinner{
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 0;
+  padding: var(--spacing-xl) 0;
   flex: 1;
 }
 
-.spinner {
-  width: 24px;
-  height: 24px;
+.spinner{
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
   border: 2px solid var(--border);
   border-top-color: var(--primary);
   border-radius: var(--radius-full);

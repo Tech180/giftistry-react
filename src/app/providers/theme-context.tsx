@@ -1,64 +1,19 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { ThemeContextType } from './interfaces/theme-context-type.interface';
+import { Theme } from './interfaces/theme.interface';
+import { Appearance } from './interfaces/appearance.interface';
 import { AuthContext } from './auth-context';
+import { applyCustomTheme, clearCustomTheme } from 'core/theme/apply-custom-theme';
+import { env } from 'core/config/env';
 
-export type Theme = "default" | "neon" | "cyberpunk" | "mystic" | "burnt-forest" | "valentines" | "st-patricks" | "earth-day" | "independence" | "halloween" | "thanksgiving" | "christmas" | string;
-export type Appearance = "light" | "dark" | "system";
+export type { Theme } from './interfaces/theme.interface';
+export type { Appearance } from './interfaces/appearance.interface';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
+const BASE_URL = env.apiUrl;
 
 let lastRequestedUrl = "";
-
-/**
- * Loads the core design variables stylesheet in the background dynamically
- * from the backend server.
- */
-function loadCoreVariables(): Promise<void> {
-  return new Promise((resolve) => {
-    const url = `${BASE_URL}/api/themes/core/css`;
-
-    // Check if the current core stylesheet already has this URL
-    const activeLink = document.getElementById("core-theme-stylesheet") as HTMLLinkElement | null;
-    if (activeLink && activeLink.href === url) {
-      resolve();
-      return;
-    }
-
-    // Create new temporary link element
-    const newLink = document.createElement("link");
-    newLink.rel = "stylesheet";
-    newLink.href = url;
-    newLink.setAttribute("data-core-style", "pending");
-
-    newLink.onload = () => {
-      const oldLink = document.getElementById("core-theme-stylesheet");
-      newLink.id = "core-theme-stylesheet";
-      newLink.removeAttribute("data-core-style");
-      
-      if (oldLink && oldLink !== newLink) {
-        oldLink.parentNode?.removeChild(oldLink);
-      }
-      resolve();
-    };
-
-    newLink.onerror = () => {
-      console.error(`Failed to load core theme variables from: ${url}`);
-      if (newLink.parentNode) {
-        newLink.parentNode.removeChild(newLink);
-      }
-      resolve();
-    };
-
-    const existingLink = document.getElementById("core-theme-stylesheet");
-    if (!existingLink) {
-      newLink.id = "core-theme-stylesheet";
-      newLink.removeAttribute("data-core-style");
-    }
-
-    document.head.appendChild(newLink);
-  });
-}
 
 /**
  * Loads the theme stylesheet in the background and swaps it into the DOM once loaded
@@ -149,11 +104,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return savedAppearance || "system";
   });
 
-  // Load core design variables from backend on startup/reload
-  useEffect(() => {
-    loadCoreVariables();
-  }, []);
-
   // Check for holiday theme unlocking
   useEffect(() => {
     const defaults: Theme[] = ["default", "neon", "cyberpunk", "mystic", "burnt-forest"];
@@ -239,42 +189,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const savedCustom = localStorage.getItem('giftistry-custom-theme');
     if (useCustom && savedCustom) {
       try {
-        const obj = JSON.parse(savedCustom);
-        const colors = obj.colors;
-        if (colors) {
-          const hexToRgb = (hex: string): string => {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0,0,0';
-          };
-          document.documentElement.style.setProperty('--primary', colors.primary);
-          document.documentElement.style.setProperty('--primary-hover', `${colors.primary}dd`);
-          document.documentElement.style.setProperty('--primary-rgb', hexToRgb(colors.primary));
-          document.documentElement.style.setProperty('--bg', colors.bg);
-          document.documentElement.style.setProperty('--surface', colors.surface);
-          document.documentElement.style.setProperty('--border', colors.border);
-          document.documentElement.style.setProperty('--text', colors.text);
-          document.documentElement.style.setProperty('--text-muted', colors['text-muted'] || colors.textMuted);
-        }
-        if (obj.advanced) {
-          const adv = obj.advanced;
-          if (adv.shadows) {
-            if (adv.shadows.sm) document.documentElement.style.setProperty('--shadow-sm', adv.shadows.sm);
-            if (adv.shadows.md) document.documentElement.style.setProperty('--shadow', adv.shadows.md);
-            if (adv.shadows.lg) document.documentElement.style.setProperty('--shadow-lg', adv.shadows.lg);
-          }
-          if (adv.fonts && adv.fonts.sans) {
-            document.documentElement.style.setProperty('--font-family', adv.fonts.sans);
-          }
-          if (adv.radius && adv.radius.default) {
-            document.documentElement.style.setProperty('--radius', adv.radius.default);
-          }
-        }
+        applyCustomTheme(JSON.parse(savedCustom));
       } catch (e) {
         console.error("Error applying custom theme", e);
       }
     } else {
-      const vars = ['--primary', '--primary-hover', '--primary-rgb', '--bg', '--surface', '--border', '--text', '--text-muted', '--shadow-sm', '--shadow', '--shadow-lg', '--font-family', '--radius'];
-      vars.forEach(v => document.documentElement.style.removeProperty(v));
+      clearCustomTheme();
     }
   }, [theme, appearance]);
 

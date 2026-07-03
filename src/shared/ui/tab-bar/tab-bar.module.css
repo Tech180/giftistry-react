@@ -1,0 +1,13 @@
+.tabs-container{
+  display: flex;
+  padding: var(--spacing-xs);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+@media (max-width: 48rem) {
+  .tabs-container{
+    flex-direction: column;
+  }
+}

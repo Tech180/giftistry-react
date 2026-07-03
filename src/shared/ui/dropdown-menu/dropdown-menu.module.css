@@ -1,0 +1,16 @@
+.menu{
+  position: absolute;
+  top: calc(100% + var(--spacing-xs));
+  right: 0;
+  z-index: 50;
+  min-width: 11.25rem;
+  padding: var(--spacing-xs);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.hidden{
+  display: none;
+}

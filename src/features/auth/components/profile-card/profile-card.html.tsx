@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Check, AlertCircle, Dices, Upload, Trash2 } from 'lucide-react';
 import { ProfileCardTemplateProps } from '../../interfaces/profile-card-template-props.interface';
 import styles from './profile-card.module.css';
@@ -22,34 +22,12 @@ export const ProfileCardTemplate: React.FC<ProfileCardTemplateProps> = ({
   handleRemoveAvatar,
   randomizeAvatarColor,
   handleDeleteAccount,
+  fileInputRef,
+  handleUploadClick,
+  initials,
+  isImageAvatar,
+  avatarStyle,
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const getInitials = () => {
-    const f = firstName.trim();
-    const l = lastName.trim();
-    return (f.charAt(0) + l.charAt(0)).toUpperCase() || 'U';
-  };
-
-  // Determine avatar background style and whether it's an image
-  const isImageAvatar = avatar && !avatar.startsWith('hsl');
-  
-  const avatarStyle: React.CSSProperties = {};
-  if (isImageAvatar) {
-    avatarStyle.backgroundImage = `url(${avatar})`;
-    avatarStyle.backgroundSize = 'cover';
-    avatarStyle.backgroundPosition = 'center';
-  } else if (avatar && avatar.startsWith('hsl')) {
-    avatarStyle.backgroundColor = avatar;
-  } else {
-    // Default fallback color
-    avatarStyle.backgroundColor = 'var(--primary)';
-  }
-
   return (
     <div className={styles.container}>
       <div className={styles.pageHeader}>
@@ -76,7 +54,7 @@ export const ProfileCardTemplate: React.FC<ProfileCardTemplateProps> = ({
         <div className={styles.avatarColumn}>
           <div className={styles.avatarWrapper}>
             <div className={styles.avatarPreview} style={avatarStyle}>
-              {!isImageAvatar && <span className={styles.avatarInitials}>{getInitials()}</span>}
+              {!isImageAvatar && <span className={styles.avatarInitials}>{initials}</span>}
             </div>
           </div>
           

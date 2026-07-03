@@ -1,0 +1,29 @@
+.wrapper{
+  width: 15rem;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.sidebar{
+  width: 100%;
+  min-width: unset;
+  height: 100%;
+  border-radius: 0;
+  border: none;
+  border-right: 1px solid var(--border);
+  background-color: var(--surface);
+  padding: var(--spacing-md) var(--spacing-base);
+}
+
+.nav-group-label{
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: var(--spacing-md) 0 var(--spacing-xs) var(--spacing-base);
+}
+
+.system-group{
+  margin-top: var(--spacing-md);
+}

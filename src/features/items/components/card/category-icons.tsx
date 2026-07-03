@@ -1,5 +1,6 @@
 import { Laptop, Wallet, Home, Baby, Shirt, Sparkles, Compass, Book, Tag } from 'lucide-react';
 import { CategoryMeta } from '../../interfaces/category-meta.interface';
+import { getFriendlyCategoryLabel } from '../../utils/category-label.util';
 
 export const CategoryDetails: Record<string, CategoryMeta> = {
   tech: { label: 'Tech', icon: Laptop },
@@ -19,9 +20,7 @@ export const getCategoryMeta = (category: string | null | undefined): CategoryMe
     return CategoryDetails[key];
   }
   // For custom categories, use the title-cased value and fallback to Tag icon
-  const label = category
-    ? category.trim().charAt(0).toUpperCase() + category.trim().slice(1)
-    : 'Uncategorized';
+  const label = category ? getFriendlyCategoryLabel(category) : 'Uncategorized';
   return {
     label,
     icon: Tag,

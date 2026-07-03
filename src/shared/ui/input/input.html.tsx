@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { InputTemplateProps } from 'shared/interfaces/input-template-props.interface';
+import { InputTemplateProps } from './interfaces/input-template-props.interface';
 import styles from './input.module.css';
 
 export const InputTemplate = forwardRef<HTMLInputElement, InputTemplateProps>(({

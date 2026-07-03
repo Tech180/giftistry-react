@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { getInitialsFromNames } from 'shared/utils/get-initials.util';
 import { useAuth } from 'app/providers/auth-context';
 import { ProfileCardTemplate } from './profile-card.html';
 import { ImageCropper } from '../image-cropper/image-cropper.component';
@@ -103,6 +104,33 @@ export const ProfileCard: React.FC = () => {
     }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const initials = useMemo(
+    () => getInitialsFromNames(firstName, lastName),
+    [firstName, lastName]
+  );
+
+  const isImageAvatar = !!(avatar && !avatar.startsWith('hsl'));
+
+  const avatarStyle = useMemo((): React.CSSProperties => {
+    if (isImageAvatar && avatar) {
+      return {
+        backgroundImage: `url(${avatar})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      };
+    }
+    if (avatar && avatar.startsWith('hsl')) {
+      return { backgroundColor: avatar };
+    }
+    return { backgroundColor: 'var(--primary)' };
+  }, [avatar, isImageAvatar]);
+
   if (!user) return null;
 
   return (
@@ -127,6 +155,11 @@ export const ProfileCard: React.FC = () => {
         handleRemoveAvatar={handleRemoveAvatar}
         randomizeAvatarColor={randomizeAvatarColor}
         handleDeleteAccount={handleDeleteAccount}
+        fileInputRef={fileInputRef}
+        handleUploadClick={handleUploadClick}
+        initials={initials}
+        isImageAvatar={isImageAvatar}
+        avatarStyle={avatarStyle}
       />
       {cropperSrc && (
         <ImageCropper

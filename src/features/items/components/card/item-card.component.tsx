@@ -1,8 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { itemsApi } from '../../api/items.api';
 import { useAuth } from 'app/providers/auth-context';
 import { ItemCardProps } from '../../interfaces/item-card-props.interface';
 import { ItemCardTemplate } from './item-card.html';
+import { getCategoryMeta } from './category-icons';
+import { getSiteName } from 'shared/utils/get-site-name.util';
+import {
+  getItemFavoriteFlag,
+  parseItemDescription,
+  serializeItemDescription,
+} from 'shared/utils/parse-item-description.util';
 
 export const ItemCard: React.FC<ItemCardProps> = ({
   item,
@@ -43,18 +50,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const [localIsFavorite, setLocalIsFavorite] = useState(false);
 
   useEffect(() => {
-    let descIsFavorite = false;
-
-    if (item.Description) {
-      try {
-        if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
-          const parsed = JSON.parse(item.Description);
-          descIsFavorite = !!parsed.isFavorite;
-        }
-      } catch (_) { }
-    }
-
-    setLocalIsFavorite(descIsFavorite);
+    setLocalIsFavorite(getItemFavoriteFlag(item.Description));
   }, [item.Description]);
 
   const toggleFavorite = async (e?: React.MouseEvent) => {
@@ -63,24 +59,17 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     }
 
     try {
-      let descObj: any = { text: item.Description || '' };
-      if (item.Description) {
-        try {
-          if (item.Description.startsWith('{') && item.Description.endsWith('}')) {
-            descObj = JSON.parse(item.Description);
-          }
-        } catch (_) { }
-      }
-
+      const parsed = parseItemDescription(item.Description);
+      const metadata = parsed.metadata ?? { text: item.Description || '' };
       const newFavoriteState = !localIsFavorite;
 
       if (isOwner) {
-        descObj.isFavorite = newFavoriteState;
+        metadata.isFavorite = newFavoriteState;
       } else {
-        descObj.isPinned = newFavoriteState;
+        metadata.isPinned = newFavoriteState;
       }
 
-      const updatedDescription = JSON.stringify(descObj);
+      const updatedDescription = serializeItemDescription(parsed.text, metadata);
 
       // Preserve the item's existing PriorityId (no overrides to a favorite section!)
       await itemsApi.updateItem(
@@ -189,6 +178,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     } catch (_) { }
   };
 
+  const { text: displayDescription, metadata } = useMemo(
+    () => parseItemDescription(item.Description),
+    [item.Description]
+  );
+
+  const categoryMeta = getCategoryMeta(item.Category);
+  const displayCategoryBadge = !!(item.Category && item.Category !== 'uncategorized');
+
   return (
     <ItemCardTemplate
       item={item}
@@ -235,6 +232,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       onSelect={onSelect}
       isExpanded={isExpanded}
       setIsExpanded={setIsExpanded}
+      displayDescription={displayDescription}
+      metadata={metadata}
+      CategoryIcon={categoryMeta.icon}
+      displayCategoryBadge={displayCategoryBadge}
+      categoryLabel={categoryMeta.label}
+      getSiteName={getSiteName}
     />
   );
 };

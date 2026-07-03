@@ -1,5 +1,5 @@
 import { Comment } from './comment.interface';
-import { Item } from '../../../features/items/interfaces/item.interface';
+import { Item } from 'features/items';
 
 export interface CommentItemTemplateProps {
   comment: Comment;

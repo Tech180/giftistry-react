@@ -1,4 +1,4 @@
-import { apiClient } from 'api/client';
+import { apiClient } from 'core/api/client';
 import { ApiUser } from '../interfaces/api-user.interface';
 import { AuthResponse } from '../interfaces/auth-response.interface';
 

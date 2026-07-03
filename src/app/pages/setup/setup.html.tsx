@@ -1,0 +1,341 @@
+import React from 'react';
+import styles from './setup.module.css';
+import { Database, Mail, User, Server, ArrowRight, ArrowLeft } from 'lucide-react';
+import { SetupTemplateProps } from './interfaces/setup-props.interface';
+import { SetupTimeline } from './components/timeline/setup-timeline.component';
+
+export const SetupTemplate: React.FC<SetupTemplateProps> = ({
+  step,
+  dbType,
+  dbUrl,
+  smtpType,
+  smtpHost,
+  smtpPort,
+  smtpUser,
+  smtpPass,
+  smtpSecure,
+  smtpFrom,
+  adminUsername,
+  adminEmail,
+  adminPassword,
+  adminConfirmPassword,
+  adminFirstName,
+  adminLastName,
+  errors,
+  isSubmitting,
+  onFieldChange,
+  onNext,
+  onPrev,
+}) => {
+  const renderDatabaseStep = () => (
+    <div className={styles.formSection}>
+      <h3 className={styles.sectionTitle}>
+        <Database size={16} className={styles.sectionIcon} />
+        Configure PostgreSQL Database
+      </h3>
+
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Database Location</label>
+        <div className={styles.toggleContainer}>
+          <button
+            type="button"
+            className={`${styles.toggleBtn} ${dbType === 'local' ? styles.toggleBtnActive : ''}`}
+            onClick={() => onFieldChange('dbType', 'local')}
+          >
+            Local (Embedded PostgreSQL)
+          </button>
+          <button
+            type="button"
+            className={`${styles.toggleBtn} ${dbType === 'remote' ? styles.toggleBtnActive : ''}`}
+            onClick={() => onFieldChange('dbType', 'remote')}
+          >
+            Remote / External Server
+          </button>
+        </div>
+      </div>
+
+      {dbType === 'local' ? (
+        <div className={`${styles.banner} ${styles.bannerInfo}`}>
+          <Server size={16} className={styles.bannerIcon} />
+          <div>
+            This option uses the local PostgreSQL database built into the Nix environment. Perfect for plug-and-play setups.
+          </div>
+        </div>
+      ) : (
+        <div className={styles.formGroup}>
+          <label htmlFor="dbUrl" className={styles.label}>PostgreSQL Connection URL</label>
+          <input
+            id="dbUrl"
+            type="text"
+            className={styles.input}
+            placeholder="postgresql://user:password@host:port/database"
+            value={dbUrl}
+            onChange={(e) => onFieldChange('dbUrl', e.target.value)}
+          />
+          {errors.dbUrl && <span className={styles.fieldError}>{errors.dbUrl}</span>}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderSMTPStep = () => (
+    <div className={styles.formSection}>
+      <h3 className={styles.sectionTitle}>
+        <Mail size={16} className={styles.sectionIcon} />
+        Configure Mail Server (SMTP)
+      </h3>
+
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Mail Transport Location</label>
+        <div className={styles.toggleContainer}>
+          <button
+            type="button"
+            className={`${styles.toggleBtn} ${smtpType === 'local' ? styles.toggleBtnActive : ''}`}
+            onClick={() => onFieldChange('smtpType', 'local')}
+          >
+            Local (Embedded Mailpit)
+          </button>
+          <button
+            type="button"
+            className={`${styles.toggleBtn} ${smtpType === 'remote' ? styles.toggleBtnActive : ''}`}
+            onClick={() => onFieldChange('smtpType', 'remote')}
+          >
+            Remote / External SMTP
+          </button>
+        </div>
+      </div>
+
+      {smtpType === 'local' ? (
+        <div className={`${styles.banner} ${styles.bannerInfo}`}>
+          <Server size={16} className={styles.bannerIcon} />
+          <div>
+            Emails will be sent to the Mailpit server interface running locally in the development sandbox.
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className={styles.formGroupInline}>
+            <div>
+              <label htmlFor="smtpHost" className={styles.label}>SMTP Host</label>
+              <input
+                id="smtpHost"
+                type="text"
+                className={styles.input}
+                placeholder="smtp.example.com"
+                value={smtpHost}
+                onChange={(e) => onFieldChange('smtpHost', e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="smtpPort" className={styles.label}>SMTP Port</label>
+              <input
+                id="smtpPort"
+                type="number"
+                className={styles.input}
+                placeholder="587"
+                value={smtpPort || ''}
+                onChange={(e) => onFieldChange('smtpPort', e.target.value ? parseInt(e.target.value) : '')}
+              />
+            </div>
+          </div>
+
+          <div className={styles.formGroupInline}>
+            <div>
+              <label htmlFor="smtpUser" className={styles.label}>SMTP Username</label>
+              <input
+                id="smtpUser"
+                type="text"
+                className={styles.input}
+                placeholder="user@example.com"
+                value={smtpUser}
+                onChange={(e) => onFieldChange('smtpUser', e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="smtpPass" className={styles.label}>SMTP Password</label>
+              <input
+                id="smtpPass"
+                type="password"
+                className={styles.input}
+                placeholder="••••••••"
+                value={smtpPass}
+                onChange={(e) => onFieldChange('smtpPass', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={styles.formGroupInline}>
+            <div>
+              <label htmlFor="smtpFrom" className={styles.label}>Sender Address (From)</label>
+              <input
+                id="smtpFrom"
+                type="email"
+                className={styles.input}
+                placeholder="noreply@giftistry.local"
+                value={smtpFrom}
+                onChange={(e) => onFieldChange('smtpFrom', e.target.value)}
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', paddingTop: 24 }}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={smtpSecure}
+                  onChange={(e) => onFieldChange('smtpSecure', e.target.checked)}
+                />
+                Secure connection
+              </label>
+            </div>
+          </div>
+          {errors.smtp && <span className={styles.fieldError}>{errors.smtp}</span>}
+        </>
+      )}
+    </div>
+  );
+
+  const renderAdminStep = () => (
+    <div className={styles.formSection}>
+      <h3 className={styles.sectionTitle}>
+        <User size={16} className={styles.sectionIcon} />
+        Create Administrator Account
+      </h3>
+
+      <div className={styles.formGroupInline}>
+        <div>
+          <label htmlFor="adminFirstName" className={styles.label}>First Name</label>
+          <input
+            id="adminFirstName"
+            type="text"
+            className={styles.input}
+            placeholder="John"
+            value={adminFirstName}
+            onChange={(e) => onFieldChange('adminFirstName', e.target.value)}
+          />
+          {errors.adminFirstName && <span className={styles.fieldError}>{errors.adminFirstName}</span>}
+        </div>
+        <div>
+          <label htmlFor="adminLastName" className={styles.label}>Last Name</label>
+          <input
+            id="adminLastName"
+            type="text"
+            className={styles.input}
+            placeholder="Doe"
+            value={adminLastName}
+            onChange={(e) => onFieldChange('adminLastName', e.target.value)}
+          />
+          {errors.adminLastName && <span className={styles.fieldError}>{errors.adminLastName}</span>}
+        </div>
+      </div>
+
+      <div className={styles.formGroupInline}>
+        <div>
+          <label htmlFor="adminUsername" className={styles.label}>Username</label>
+          <input
+            id="adminUsername"
+            type="text"
+            className={styles.input}
+            placeholder="admin"
+            value={adminUsername}
+            onChange={(e) => onFieldChange('adminUsername', e.target.value)}
+          />
+          {errors.adminUsername && <span className={styles.fieldError}>{errors.adminUsername}</span>}
+        </div>
+        <div>
+          <label htmlFor="adminEmail" className={styles.label}>Email Address</label>
+          <input
+            id="adminEmail"
+            type="email"
+            className={styles.input}
+            placeholder="admin@example.com"
+            value={adminEmail}
+            onChange={(e) => onFieldChange('adminEmail', e.target.value)}
+          />
+          {errors.adminEmail && <span className={styles.fieldError}>{errors.adminEmail}</span>}
+        </div>
+      </div>
+
+      <div className={styles.formGroupInline}>
+        <div>
+          <label htmlFor="adminPassword" className={styles.label}>Password</label>
+          <input
+            id="adminPassword"
+            type="password"
+            className={styles.input}
+            placeholder="••••••••"
+            value={adminPassword}
+            onChange={(e) => onFieldChange('adminPassword', e.target.value)}
+          />
+          {errors.adminPassword && <span className={styles.fieldError}>{errors.adminPassword}</span>}
+        </div>
+        <div>
+          <label htmlFor="adminConfirmPassword" className={styles.label}>Confirm Password</label>
+          <input
+            id="adminConfirmPassword"
+            type="password"
+            className={styles.input}
+            placeholder="••••••••"
+            value={adminConfirmPassword}
+            onChange={(e) => onFieldChange('adminConfirmPassword', e.target.value)}
+          />
+          {errors.adminConfirmPassword && <span className={styles.fieldError}>{errors.adminConfirmPassword}</span>}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderInstallingStep = () => (
+    <div className={styles.installingContainer}>
+      <div className={styles.spinner} />
+      <h3 className={styles.installingText}>Setting up your homelab...</h3>
+      <p className={styles.installingSubtext}>
+        Initializing PostgreSQL tables, seeding dynamic fields, writing config.json, and registering your administrator credentials.
+      </p>
+    </div>
+  );
+
+  return (
+    <div className={styles.setupContainer}>
+      <aside className={styles.setupSidebar}>
+        <div className={styles.sidebarHeader}>
+          <h1 className={styles.setupTitle}>Giftistry Setup</h1>
+          <p className={styles.setupSubtitle}>Configure instance settings to finish installation</p>
+        </div>
+        <SetupTimeline step={step} />
+      </aside>
+
+      <main className={styles.setupContent}>
+        <form onSubmit={(e) => e.preventDefault()} style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+          <div>
+            {step === 1 && renderDatabaseStep()}
+            {step === 2 && renderSMTPStep()}
+            {step === 3 && renderAdminStep()}
+            {step === 4 && renderInstallingStep()}
+          </div>
+
+          {step < 4 && (
+            <div className={styles.setupFooter}>
+              {step > 1 ? (
+                <button type="button" className={styles.btnPrev} onClick={onPrev}>
+                  <ArrowLeft size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                  Back
+                </button>
+              ) : (
+                <div />
+              )}
+              <button
+                type="button"
+                className={styles.btnNext}
+                onClick={onNext}
+                disabled={isSubmitting}
+              >
+                {step === 3 ? 'Install & Bootstrap' : 'Continue'}
+                <ArrowRight size={14} style={{ marginLeft: 6, verticalAlign: 'middle' }} />
+              </button>
+            </div>
+          )}
+        </form>
+      </main>
+    </div>
+  );
+};

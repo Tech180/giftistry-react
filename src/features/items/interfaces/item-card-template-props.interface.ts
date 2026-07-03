@@ -53,4 +53,10 @@ export interface ItemCardTemplateProps {
   onSelect?: () => void;
   isExpanded?: boolean;
   setIsExpanded?: (val: boolean) => void;
+  displayDescription: string | null;
+  metadata: Record<string, any> | null;
+  CategoryIcon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+  displayCategoryBadge: boolean;
+  categoryLabel: string;
+  getSiteName: (url: string, retailerName?: string | null) => string;
 }

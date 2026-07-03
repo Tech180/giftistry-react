@@ -1,0 +1,56 @@
+.toast{
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-base);
+  padding: var(--spacing-base) var(--spacing-md);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: var(--font-size-sm);
+  color: var(--text);
+  max-width: 25rem;
+}
+
+.success{
+  border-color: var(--success);
+  background-color: color-mix(in srgb, var(--success) 10%, var(--surface));
+}
+
+.error{
+  border-color: var(--error);
+  background-color: var(--error-bg);
+  color: var(--error);
+}
+
+.info{
+  border-color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.08);
+}
+
+.message{
+  flex: 1;
+  line-height: var(--line-height-normal, 1.5);
+}
+
+.dismiss-button{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  background-color: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast, 0.15s) ease;
+}
+
+.dismiss-button:hover{
+  opacity: 1;
+}

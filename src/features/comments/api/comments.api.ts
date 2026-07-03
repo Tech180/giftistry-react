@@ -1,4 +1,4 @@
-import { apiClient } from 'api/client';
+import { apiClient } from 'core/api/client';
 import { Comment } from '../interfaces/comment.interface';
 
 export const commentsApi = {

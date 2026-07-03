@@ -1,0 +1,17 @@
+.loading-container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.loading-spinner{
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: var(--radius-full);
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  animation: var(--animation-rotation);
+}
