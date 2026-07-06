@@ -93,10 +93,10 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       )}
 
       {/* 1. Link / URL & Website Name (First) */}
-      <div className={styles.grid2Col}>
-        <div className={styles.fieldGroup}>
+      <div className={styles['grid2-col']}>
+        <div className={styles['field-group']}>
           <Input
-            label="Link / URL (Optional)"
+            label="Link / URL"
             type="url"
             placeholder="https://example.com/gift-link"
             value={linkUrl}
@@ -107,7 +107,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                 type="button"
                 onClick={handleScrapeClick}
                 disabled={isAutopopulating || !linkUrl.trim()}
-                className={`${styles.scrapeButton} ${isScrapeButtonPulsing ? styles.pulseClickMe : ''
+                className={`${styles['scrape-button']} ${isScrapeButtonPulsing ? styles['pulse-click-me'] : ''
                   }`}
                 title="Click to automatically fill item details"
               >
@@ -116,15 +116,15 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             }
           />
           {isAutopopulating && (
-            <div className={styles.autopopulateLoader}>
+            <div className={styles['autopopulate-loader']}>
               <div className={styles.spinner} />
               <span>Fetching product details...</span>
             </div>
           )}
         </div>
-        <div className={styles.fieldGroup}>
+        <div className={styles['field-group']}>
           <Input
-            label="Website Name (Optional)"
+            label="Website Name"
             type="text"
             placeholder="Amazon, Target"
             value={websiteName}
@@ -135,7 +135,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       </div>
 
       {/* 2. Item Name & Price & Favorite */}
-      <div className={styles.formRow}>
+      <div className={styles['form-row']}>
         <Input
           label="Item Name *"
           type="text"
@@ -146,10 +146,10 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           required
         />
       </div>
-      <div className={styles.priceRow}>
-        <div className={styles.priceInputWrapper} style={{ flex: 2 }}>
+      <div className={styles['price-row']}>
+        <div className={styles['price-input-wrapper']} style={{ flex: 2 }}>
           <Input
-            label="Price (Optional)"
+            label="Price"
             type="text"
             placeholder="49.99"
             value={price}
@@ -162,7 +162,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             leftIcon={<DollarSign size={16} />}
           />
         </div>
-        <div className={styles.priceInputWrapper} style={{ flex: 1 }}>
+        <div className={styles['price-input-wrapper']} style={{ flex: 1 }}>
           <Input
             label="Quantity"
             type="number"
@@ -181,26 +181,26 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             }}
           />
         </div>
-        <div className={styles.starWrapper}>
-          <span className={styles.starLabel}>{isOwner ? 'Favorite' : 'Pin'}</span>
+        <div className={styles['star-wrapper']}>
+          <span className={styles['star-label']}>{isOwner ? 'Favorite' : 'Pin'}</span>
           <button
             type="button"
             onClick={() => setIsFavorite(!isFavorite)}
-            className={`${styles.starToggleBtn} ${isOwner ? (isFavorite ? styles.starToggleBtnActive : '') : (isFavorite ? styles.pinToggleBtnActive : styles.pinToggleBtn)}`}
+            className={`${styles['star-toggle-btn']} ${isOwner ? (isFavorite ? styles['star-toggle-btn-active'] : '') : (isFavorite ? styles['pin-toggle-btn-active'] : styles['pin-toggle-btn'])}`}
             title={isOwner ? (isFavorite ? 'Remove Favorite' : 'Mark as Favorite') : (isFavorite ? 'Unpin Item' : 'Pin Item')}
             style={{ height: '40px' }}
           >
             {isOwner ? (
               <Star
                 size={18}
-                fill={isFavorite ? 'var(--warning)' : 'none'}
-                stroke={isFavorite ? 'var(--warning)' : 'currentColor'}
+                fill={isFavorite ? 'currentColor' : 'none'}
+                stroke="currentColor"
               />
             ) : (
               <Pin
                 size={18}
-                fill={isFavorite ? 'var(--primary)' : 'none'}
-                stroke={isFavorite ? 'var(--primary)' : 'currentColor'}
+                fill={isFavorite ? 'currentColor' : 'none'}
+                stroke="currentColor"
                 style={{ transform: isFavorite ? 'rotate(45deg)' : 'none' }}
               />
             )}
@@ -209,32 +209,31 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       </div>
 
       {typeof desiredQuantity === 'number' && desiredQuantity > 1 && (
-        <div className={styles.checkboxWrapper} style={{ display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
-          <div className={styles.variationBoxQtyBadge}>
+        <div className={styles['checkbox-wrapper']} style={{ display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
+          <div className={styles['variation-box-qty-badge']}>
             {variations.reduce((sum, v) => sum + v.quantity, 0)}/{desiredQuantity}
           </div>
-          <div className={styles.fieldGroup}>
+          <div className={styles['field-group']}>
             <label className={styles.label} style={{ marginBottom: '8px', display: 'block' }}>Item Variations</label>
             {varError && (
               <div className={`${styles.alert} animate-slide-up`} style={{ marginBottom: '12px', marginTop: '4px' }}>
                 <span>{varError}</span>
               </div>
             )}
-            <div className={styles.variationInputRow}>
-              <input
+            <div className={styles['variation-input-row']}>
+              <Input
                 type="text"
                 placeholder="e.g. Red, Blue, Size M"
                 value={varName}
                 onChange={(e) => setVarName(e.target.value)}
-                className={styles.variationNameInput}
+                className={styles['variation-name-field']}
               />
-              <input
+              <Input
                 type="number"
                 min="1"
                 value={varQty}
                 onChange={(e) => handleVarQtyChange(e.target.value)}
-                className={styles.variationQtyInput}
-                style={{ width: '60px' }}
+                className={styles['variation-qty-field']}
               />
               <Button
                 type="button"
@@ -245,14 +244,14 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                 Add
               </Button>
             </div>
-            <div className={styles.variationsList}>
+            <div className={styles['variations-list']}>
               {variations.map((v, idx) => (
-                <span key={idx} className={styles.variationChip}>
+                <span key={idx} className={styles['variation-chip']}>
                   {v.name} ({v.quantity})
                   <button
                     type="button"
                     onClick={() => setVariations(prev => prev.filter((_, i) => i !== idx))}
-                    className={styles.removeVariationBtn}
+                    className={styles['remove-variation-btn']}
                   >
                     &times;
                   </button>
@@ -264,16 +263,19 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       )}
 
       {/* 3. Gift Category Matrix */}
-      <div className={styles.fieldGroup}>
-        <label className={styles.label}>Gift Category (Optional)</label>
-        <div className={styles.categoryChipsContainer}>
+      <div className={styles['field-group']}>
+        <label className={styles['field-label']}>Gift Category</label>
+        <div className="input-panel input-panel-padded">
+            <div className={styles['category-chips-container']}>
           {renderedCategories.map((cat) => {
             const isSelected = category === cat.id;
             return (
-              <button
+              <Button
                 key={cat.id}
                 type="button"
-                className={`${styles.categoryChip} ${isSelected ? styles.categoryChipSelected : ''} ${cat.isCustom ? styles.categoryChipCustom : ''}`}
+                variant={isSelected ? 'primary' : 'secondary'}
+                size="sm"
+                className={cat.isCustom ? styles['category-chip-custom'] : ''}
                 onClick={() => {
                   if (isSelected) {
                     setCategory('uncategorized');
@@ -285,7 +287,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                 <span>{cat.label}</span>
                 {cat.isCustom && (
                   <span
-                    className={styles.deleteCategoryBtn}
+                    className={styles['delete-category-btn']}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteCustomCategory(cat.id);
@@ -295,14 +297,15 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                     &times;
                   </span>
                 )}
-              </button>
+              </Button>
             );
           })}
 
           {isAddingCustom ? (
-            <div className={`${styles.customCategoryInputWrapper} animate-slide-up`}>
-              <input
+            <div className={`${styles['custom-category-row']} animate-slide-up`}>
+              <Input
                 type="text"
+                variant="inline"
                 placeholder="Category name..."
                 value={newCustomInput}
                 onChange={(e) => setNewCustomInput(e.target.value)}
@@ -312,64 +315,69 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                     handleAddCustomCategory();
                   }
                 }}
-                className={styles.customCategoryInput}
+                className={styles['custom-category-input-field']}
                 autoFocus
               />
-              <button
+              <Button
                 type="button"
+                variant="primary"
+                size="sm"
                 onClick={handleAddCustomCategory}
-                className={styles.customCategoryAddBtn}
               >
                 Add
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 onClick={() => setIsAddingCustom(false)}
-                className={styles.customCategoryCancelBtn}
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           ) : (
-            <button
+            <Button
               type="button"
-              className={`${styles.categoryChip} ${styles.addCustomChip}`}
+              variant="secondary"
+              size="sm"
+              className={styles['add-custom-chip']}
               onClick={() => {
                 setIsAddingCustom(true);
                 setNewCustomInput('');
               }}
             >
               + Custom
-            </button>
+            </Button>
           )}
+            </div>
         </div>
       </div>
 
       {/* 4. Description Section */}
-      <div className={styles.fieldGroup}>
-        <label className={styles.label}>Description (Optional)</label>
-        <div className={styles.textareaWrapper}>
-          <span className={styles.textareaIcon}><FileText size={16} /></span>
+      <div className={`${styles['field-group']} ${styles['field-group-labeled']}`}>
+        <label className={styles['field-label']}>Description</label>
+        <div className={`input-panel ${styles['textarea-panel']}`}>
+          <span className={styles['textarea-icon']}><FileText size={16} /></span>
           <textarea
             placeholder="Add details, size details, or notes..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className={styles.textarea}
+            className={`input-panel-field ${styles['textarea-inner']}`}
             rows={3}
           />
         </div>
       </div>
 
       {/* Collapsible Optional & Custom Description Fields */}
-      <div className={styles.extraFieldsToggleRow}>
+      <div className={styles['extra-fields-toggle-row']}>
         <button
           type="button"
           onClick={() => setShowExtraFields(!showExtraFields)}
-          className={styles.extraFieldsToggleBtn}
+          className={styles['extra-fields-toggle-btn']}
         >
           <span>{showExtraFields ? 'Hide Custom Fields ▲' : 'Show Custom Fields ▼'}</span>
           {customFields.length > 0 && (
-            <span className={styles.customFieldCountBubble}>
+            <span className={styles['custom-field-count-bubble']}>
               {customFields.length}
             </span>
           )}
@@ -377,121 +385,104 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       </div>
 
       {showExtraFields && (
-        <div className={`${styles.extraFieldsPanel} animate-slide-up`}>
+        <div className={`${styles['extra-fields-panel']} animate-slide-up`}>
           {showOptionalSizing && (
             definitions.length > 0 ? (
               <>
-                <h4 className={styles.panelTitle}>{getFriendlyCategoryLabel(category)} Sizing / Options</h4>
-                <div className={styles.grid2Col}>
+                <h4 className={styles['panel-title']}>{getFriendlyCategoryLabel(category)} Sizing / Options</h4>
+                <div className={styles['grid2-col']}>
                   {definitions.filter(isFieldVisible).map((def) => (
-                    <div key={def.Id} className={styles.fieldGroup}>
-                      <label className={styles.panelLabel}>{def.Label}</label>
-                      <input
-                        type="text"
-                        placeholder={def.Placeholder || ''}
-                        value={dynamicValues[def.FieldKey] || ''}
-                        onChange={(e) => handleUpdateDynamicValue(def.FieldKey, e.target.value)}
-                        className={styles.panelInput}
-                      />
-                    </div>
+                    <Input
+                      key={def.Id}
+                      label={def.Label}
+                      type="text"
+                      placeholder={def.Placeholder || ''}
+                      value={dynamicValues[def.FieldKey] || ''}
+                      onChange={(e) => handleUpdateDynamicValue(def.FieldKey, e.target.value)}
+                    />
                   ))}
                 </div>
               </>
             ) : (
               <>
-                <h4 className={styles.panelTitle}>Clothing Sizes</h4>
-                <div className={styles.grid2Col}>
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.panelLabel}>Pants Size</label>
-                    <input
-                      type="text"
-                      placeholder="32x30"
-                      value={pantsSize}
-                      onChange={(e) => setPantsSize(e.target.value)}
-                      className={styles.panelInput}
-                    />
-                  </div>
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.panelLabel}>Shirt Size</label>
-                    <input
-                      type="text"
-                      placeholder="Medium, 15.5"
-                      value={shirtSize}
-                      onChange={(e) => setShirtSize(e.target.value)}
-                      className={styles.panelInput}
-                    />
-                  </div>
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.panelLabel}>Shoes Size</label>
-                    <input
-                      type="text"
-                      placeholder="10.5"
-                      value={shoesSize}
-                      onChange={(e) => setShoesSize(e.target.value)}
-                      className={styles.panelInput}
-                    />
-                  </div>
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.panelLabel}>Socks Size</label>
-                    <input
-                      type="text"
-                      placeholder="9-11"
-                      value={socksSize}
-                      onChange={(e) => setSocksSize(e.target.value)}
-                      className={styles.panelInput}
-                    />
-                  </div>
-                </div>
-
-                <div className={styles.fieldGroup} style={{ marginTop: '8px' }}>
-                  <label className={styles.panelLabel}>Preferred Color</label>
-                  <input
+                <h4 className={styles['panel-title']}>Clothing Sizes</h4>
+                <div className={styles['grid2-col']}>
+                  <Input
+                    label="Pants Size"
                     type="text"
-                    placeholder="Navy Blue, Matte Black"
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
-                    className={styles.panelInput}
+                    placeholder="32x30"
+                    value={pantsSize}
+                    onChange={(e) => setPantsSize(e.target.value)}
+                  />
+                  <Input
+                    label="Shirt Size"
+                    type="text"
+                    placeholder="Medium, 15.5"
+                    value={shirtSize}
+                    onChange={(e) => setShirtSize(e.target.value)}
+                  />
+                  <Input
+                    label="Shoes Size"
+                    type="text"
+                    placeholder="10.5"
+                    value={shoesSize}
+                    onChange={(e) => setShoesSize(e.target.value)}
+                  />
+                  <Input
+                    label="Socks Size"
+                    type="text"
+                    placeholder="9-11"
+                    value={socksSize}
+                    onChange={(e) => setSocksSize(e.target.value)}
                   />
                 </div>
+
+                <Input
+                  label="Preferred Color"
+                  type="text"
+                  placeholder="Navy Blue, Matte Black"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                />
               </>
             )
           )}
 
-          <div className={styles.customFieldsSectionHeader}>
-            <h4 className={styles.panelTitle} style={{ margin: 0, border: 'none', padding: 0 }}>Custom Fields</h4>
+          <div className={styles['custom-fields-section-header']}>
+            <h4 className={styles['panel-title']} style={{ margin: 0, border: 'none', padding: 0 }}>Custom Fields</h4>
             <button
               type="button"
               onClick={handleAddCustomField}
-              className={styles.addCustomFieldBtn}
+              className={styles['add-custom-field-btn']}
             >
               <Plus size={12} /> Add Field
             </button>
           </div>
 
           {customFields.length === 0 ? (
-            <p className={styles.noCustomFieldsText}>No custom fields added yet.</p>
+            <p className={styles['no-custom-fields-text']}>No custom fields added yet.</p>
           ) : (
-            <div className={styles.customFieldsList}>
+            <div className={styles['custom-fields-list']}>
               {customFields.map((field) => (
-                <div key={field.id} className={styles.customFieldRow}>
-                  <input
+                <div key={field.id} className={styles['custom-field-row']}>
+                  <Input
                     type="text"
                     placeholder="Field Name"
                     value={field.name}
                     onChange={(e) => handleUpdateCustomField(field.id, 'name', e.target.value)}
-                    className={styles.customFieldInput}
+                    className={styles['custom-field-input-grow']}
                   />
-                  <input
+                  <Input
                     type="text"
                     placeholder="Value"
                     value={field.value}
                     onChange={(e) => handleUpdateCustomField(field.id, 'value', e.target.value)}
-                    className={styles.customFieldInput}
+                    className={styles['custom-field-input-grow']}
                   />
                   <button
                     type="button"
                     onClick={() => handleRemoveCustomField(field.id)}
-                    className={styles.removeCustomFieldBtn}
+                    className={styles['remove-custom-field-btn']}
                     title="Remove field"
                   >
                     <Trash2 size={14} />
@@ -504,43 +495,40 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       )}
 
       {/* 5. Priority Weight Number Selection */}
-      <div className={styles.fieldGroup}>
-        <label className={styles.label} htmlFor="item-priority-input">Item Priority (Optional)</label>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <input
-            id="item-priority-input"
-            type="number"
-            min="1"
-            placeholder="Enter priority (lowest e.g. 1 is highest priority)"
-            value={priorityWeight}
-            onChange={(e) => setPriorityWeight(e.target.value)}
-            className={styles.inlineInputFull}
-            style={{ maxWidth: '300px' }}
-          />
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Note: Lower numbers (e.g. 1) sort to the top.
-          </span>
-        </div>
+      <div className={styles['field-group']}>
+        <Input
+          id="item-priority-input"
+          label="Item Priority"
+          type="number"
+          min="1"
+          placeholder="Enter priority (lowest e.g. 1 is highest priority)"
+          value={priorityWeight}
+          onChange={(e) => setPriorityWeight(e.target.value)}
+          className={styles['priority-input-field']}
+        />
+        <span className={styles['priority-hint']}>
+          Note: Lower numbers (e.g. 1) sort to the top.
+        </span>
       </div>
 
       {/* Linked Items / Dependencies */}
       {wishlistItems && wishlistItems.filter(i => i.Id !== itemId).length > 0 && (
-        <div className={styles.fieldGroup}>
+        <div className={styles['field-group']}>
           <label className={styles.label}>Linked Items / Dependencies</label>
-          <div className={styles.descriptionRow}>
-            <span className={styles.checkboxSubtext} style={{ flex: 1, margin: 0 }}>
+          <div className={styles['description-row']}>
+            <span className={styles['checkbox-subtext']} style={{ flex: 1, margin: 0 }}>
               Link this item to other gifts to warn viewers of dependencies and let them claim them together.
             </span>
             <button
               type="button"
               onClick={() => setIsLinkingModeActive(prev => !prev)}
-              className={`${styles.dependencyBoxBtn} ${isLinkingModeActive ? styles.dependencyBoxActive : ''}`}
+              className={`${styles['dependency-box-btn']} ${isLinkingModeActive ? styles['dependency-box-active'] : ''}`}
               title={isLinkingModeActive ? 'Finish Selecting Items' : 'Select Items from Wishlist'}
               style={{ width: '56px', height: 'auto', alignSelf: 'stretch' }}
             >
               <Link size={16} />
               {linkedItemIds.length > 0 && (
-                <span className={styles.dependencyBadge}>
+                <span className={styles['dependency-badge']}>
                   {linkedItemIds.length}
                 </span>
               )}
@@ -551,34 +539,34 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
 
       {!isOwner && (
         <>
-          <div className={styles.checkboxWrapper}>
-            <label className={styles.checkboxLabel}>
+          <div className={styles['checkbox-wrapper']}>
+            <label className={styles['checkbox-label']}>
               <input
                 type="checkbox"
                 checked={isHiddenIdea}
                 onChange={(e) => setIsHiddenIdea(e.target.checked)}
                 className={styles.checkbox}
               />
-              <span className={styles.checkboxText}>
+              <span className={styles['checkbox-text']}>
                 <strong>Suggest as Surprise Idea</strong>
-                <span className={styles.checkboxSubtext}>
+                <span className={styles['checkbox-subtext']}>
                   This item will be hidden from the owner's view until their wishlist expires.
                 </span>
               </span>
             </label>
           </div>
 
-          <div className={styles.checkboxWrapper}>
-            <label className={styles.checkboxLabel}>
+          <div className={styles['checkbox-wrapper']}>
+            <label className={styles['checkbox-label']}>
               <input
                 type="checkbox"
                 checked={otherUsersCanSee}
                 onChange={(e) => setOtherUsersCanSee(e.target.checked)}
                 className={styles.checkbox}
               />
-              <span className={styles.checkboxText}>
+              <span className={styles['checkbox-text']}>
                 <strong>Visible to Other Collaborators</strong>
-                <span className={styles.checkboxSubtext}>
+                <span className={styles['checkbox-subtext']}>
                   Allow other users to see this recommendation.
                 </span>
               </span>
@@ -586,17 +574,17 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           </div>
 
           {!isEdit && (
-            <div className={styles.checkboxWrapper}>
-              <label className={styles.checkboxLabel}>
+            <div className={styles['checkbox-wrapper']}>
+              <label className={styles['checkbox-label']}>
                 <input
                   type="checkbox"
                   checked={claimOnCreate}
                   onChange={(e) => setClaimOnCreate(e.target.checked)}
                   className={styles.checkbox}
                 />
-                <span className={styles.checkboxText}>
+                <span className={styles['checkbox-text']}>
                   <strong>Claim this Item Immediately</strong>
-                  <span className={styles.checkboxSubtext}>
+                  <span className={styles['checkbox-subtext']}>
                     Mark this item as claimed by you as soon as it is created.
                   </span>
                 </span>
@@ -610,7 +598,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
         type="submit"
         variant="primary"
         isLoading={isLoading}
-        className={styles.submitBtn}
+        className={styles['submit-btn']}
       >
         {isEdit ? 'Save Changes' : 'Add Item'}
       </Button>

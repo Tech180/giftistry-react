@@ -1,0 +1,47 @@
+import React from 'react';
+
+export interface ServerSettingsTabTemplateProps {
+  dbType: 'local' | 'remote';
+  setDbType: (type: 'local' | 'remote') => void;
+  dbUrl: string;
+  setDbUrl: (url: string) => void;
+  smtpType: 'local' | 'remote';
+  setSmtpType: (type: 'local' | 'remote') => void;
+  smtpHost: string;
+  setSmtpHost: (host: string) => void;
+  smtpPort: string;
+  setSmtpPort: (port: string) => void;
+  smtpUser: string;
+  setSmtpUser: (user: string) => void;
+  smtpPass: string;
+  setSmtpPass: (pass: string) => void;
+  smtpSecure: boolean;
+  setSmtpSecure: (secure: boolean) => void;
+  smtpFrom: string;
+  setSmtpFrom: (from: string) => void;
+  aiEnabled: boolean;
+  setAiEnabled: (val: boolean) => void;
+  aiProvider: 'gemini' | 'openai' | 'anthropic' | 'local' | 'openrouter';
+  setAiProvider: (val: 'gemini' | 'openai' | 'anthropic' | 'local' | 'openrouter') => void;
+  aiApiKey: string;
+  setAiApiKey: (val: string) => void;
+  aiModel: string;
+  setAiModel: (val: string) => void;
+  aiPrompt: string;
+  setAiPrompt: (val: string) => void;
+  aiEndpoint: string;
+  setAiEndpoint: (val: string) => void;
+  showPassword: boolean;
+  setShowPassword: (show: boolean) => void;
+  showAiKey: boolean;
+  setShowAiKey: (val: boolean) => void;
+  openrouterModels: Array<{ id: string; name: string; company: string; displayName: string }>;
+  isLoadingModels: boolean;
+  companies: string[];
+  selectedCompany: string;
+  setSelectedCompany: (val: string) => void;
+  filteredModels: Array<{ id: string; name: string; company: string; displayName: string }>;
+  isLoading: boolean;
+  isSaving: boolean;
+  handleSave: (e: React.SubmitEvent<HTMLFormElement>) => void;
+}

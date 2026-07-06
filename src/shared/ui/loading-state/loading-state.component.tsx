@@ -12,7 +12,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 }) => {
   const containerClass = [
     styles.container,
-    fullHeight ? styles.fullHeight : '',
+    fullHeight ? styles['full-height'] : '',
     className,
   ]
     .filter(Boolean)

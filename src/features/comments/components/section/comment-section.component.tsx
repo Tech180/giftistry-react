@@ -1,31 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCommentController } from '../../hooks/use-comment-controller';
 import { useAuth } from 'app/providers/auth-context';
+import { wishlistsApi } from 'features/wishlists';
 import { CommentSectionProps } from '../../interfaces/comment-section-props.interface';
 import { CommentSectionTemplate } from './comment-section.html';
 import { formatCommentDate } from 'shared/utils/format-date.util';
-
-import { env } from 'core/config/env';
-
-const getWsUrl = (listId: string) => {
-  const apiBaseUrl = env.apiUrl;
-  let protocol = 'ws:';
-  let host = 'localhost:3001';
-
-  if (apiBaseUrl.startsWith('http')) {
-    protocol = apiBaseUrl.startsWith('https') ? 'wss:' : 'ws:';
-    host = apiBaseUrl.replace(/^https?:\/\//, '');
-  } else {
-    protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    host = window.location.host;
-  }
-
-  const token = localStorage.getItem('giftistry-token') || '';
-  return `${protocol}//${host}/ws/wishlist/${listId}?token=${encodeURIComponent(token)}`;
-};
+import { OnlineUser } from '../../interfaces/online-user.interface';
+import { ListParticipant } from '../../interfaces/list-participant.interface';
+import { convertMentionsToMarkdown } from '../../utils/comment-content.util';
+import { getCommentWsUrl } from '../../utils/comment-ws.util';
+import {
+  COMMENT_ANON_STORAGE_KEY,
+  ANONYMOUS_COMMENTER_NAME,
+} from '../../constants/comment-settings';
+import {
+  COMMENT_TYPING_STOP_DELAY_MS,
+  COMMENT_TYPING_USER_TTL_MS,
+} from '../../constants/comment-presence';
 
 export const CommentSection: React.FC<CommentSectionProps> = ({
   listId,
+  listOwnerId,
+  ownerUsername,
+  ownerDisplayName,
   isOwner,
   items = [],
   onItemTaggedClick,
@@ -33,8 +30,12 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   setIsTaggingModeActive,
   taggedItemIds,
   setTaggedItemIds,
+  isReplyTaggingModeActive,
+  setIsReplyTaggingModeActive,
+  replyTaggedItemIds,
+  setReplyTaggedItemIds,
 }) => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const {
     comments,
@@ -42,51 +43,190 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     error,
     fetchComments,
     addComment,
+    toggleReaction: toggleReactionHook,
     deleteComment,
   } = useCommentController();
 
   const [content, setContent] = useState('');
   const [commenterName, setCommenterName] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(() => {
-    return localStorage.getItem('giftistry-comment-anon') === 'true';
+    return localStorage.getItem(COMMENT_ANON_STORAGE_KEY) === 'true';
   });
   const [isOwnerVisible, setIsOwnerVisible] = useState(false); // Surprise is default!
   const [isRollover, setIsRollover] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<ListParticipant[]>([]);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  const handleSetMainTaggingActive = (active: boolean) => {
+    setIsTaggingModeActive(active);
+    if (active) {
+      setIsReplyTaggingModeActive(false);
+      setReplyTaggedItemIds([]);
+    }
+  };
+
+  const handleSetReplyTaggingActive = (active: boolean) => {
+    setIsReplyTaggingModeActive(active);
+    if (active) {
+      setIsTaggingModeActive(false);
+      setTaggedItemIds([]);
+    }
+  };
+
+  const handleReplyOpen = (commentId: string | null) => {
+    setActiveReplyId(commentId);
+    if (!commentId) {
+      setIsReplyTaggingModeActive(false);
+      setReplyTaggedItemIds([]);
+    }
+  };
+
+  useEffect(() => {
+    if (!activeReplyId) {
+      setIsReplyTaggingModeActive(false);
+      setReplyTaggedItemIds([]);
+    }
+  }, [activeReplyId, setIsReplyTaggingModeActive, setReplyTaggedItemIds]);
 
   // Real-time states
-  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [typingUsersMap, setTypingUsersMap] = useState<Record<string, string>>({});
   const typingTimeoutRefs = useRef<Record<string, any>>({});
   const socketRef = useRef<WebSocket | null>(null);
   const typingTimeoutRef = useRef<any>(null);
   const isTypingRef = useRef(false);
 
+  // Compute comment tree structure
+  const parentComments = React.useMemo(() => {
+    return comments.filter((c) => !c.ParentId);
+  }, [comments]);
+
+  const repliesMap = React.useMemo(() => {
+    const map: Record<string, any[]> = {};
+    for (const c of comments) {
+      if (c.ParentId) {
+        if (!map[c.ParentId]) {
+          map[c.ParentId] = [];
+        }
+        map[c.ParentId].push(c);
+      }
+    }
+    for (const parentId of Object.keys(map)) {
+      map[parentId].sort(
+        (a, b) => new Date(a.CreatedAt ?? 0).getTime() - new Date(b.CreatedAt ?? 0).getTime()
+      );
+    }
+    return map;
+  }, [comments]);
+
+  const handleReplySubmit = async (
+    parentId: string,
+    replyContent: string,
+    replyCommenterName?: string | null,
+    replyIsOwnerVisible?: boolean,
+    replyIsRollover?: boolean,
+    replyImageUrl?: string | null
+  ) => {
+    setIsSubmitLoading(true);
+    setLocalError(null);
+    try {
+      const resolvedCommenterName = replyCommenterName?.trim() || commenterName?.trim() || user?.Username;
+      const formattedReplyContent = convertMentionsToMarkdown(replyContent, participants);
+      await addComment(
+        listId,
+        formattedReplyContent,
+        resolvedCommenterName || null,
+        replyIsOwnerVisible !== undefined ? replyIsOwnerVisible : (isOwner ? true : isOwnerVisible),
+        replyIsRollover !== undefined ? replyIsRollover : isRollover,
+        parentId,
+        replyImageUrl
+      );
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : 'Failed to post reply.');
+      throw err;
+    } finally {
+      setIsSubmitLoading(false);
+    }
+  };
+
+  const handleToggleReaction = async (commentId: string, reaction: string) => {
+    if (!isAuthenticated || !user) return;
+    try {
+      await toggleReactionHook(commentId, reaction, user.Id, user.Username);
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : 'Failed to toggle reaction.');
+    }
+  };
+
   useEffect(() => {
     fetchComments(listId);
   }, [listId, fetchComments]);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setParticipants([]);
+      return;
+    }
+
+    const loadParticipants = async () => {
+      const participantMap = new Map<string, ListParticipant>();
+
+      if (listOwnerId && ownerUsername) {
+        participantMap.set(listOwnerId, {
+          userId: listOwnerId,
+          username: ownerUsername,
+          displayName: ownerDisplayName || ownerUsername,
+        });
+      }
+
+      try {
+        const shares = await wishlistsApi.listShares(listId);
+        for (const share of shares || []) {
+          if (!share.UserId || !share.Username) continue;
+          participantMap.set(share.UserId, {
+            userId: share.UserId,
+            username: share.Username,
+            displayName: share.FirstName
+              ? `${share.FirstName} ${share.LastName || ''}`.trim()
+              : share.Username,
+          });
+        }
+      } catch {
+        // Fall back to owner-only list when share lookup fails.
+      }
+
+      setParticipants(Array.from(participantMap.values()));
+    };
+
+    loadParticipants();
+  }, [listId, listOwnerId, ownerUsername, ownerDisplayName, isAuthenticated]);
+
+  useEffect(() => {
     if (user) {
-      const realName = user.FirstName ? `${user.FirstName} ${user.LastName}` : user.Username;
-      setCommenterName(isAnonymous ? 'Anonymous' : realName);
+      setCommenterName(isAnonymous ? ANONYMOUS_COMMENTER_NAME : user.Username);
     } else {
-      setCommenterName(isAnonymous ? 'Anonymous' : '');
+      setCommenterName('');
     }
   }, [user, isAnonymous]);
 
   const handleSetIsAnonymous = (anon: boolean) => {
     setIsAnonymous(anon);
-    localStorage.setItem('giftistry-comment-anon', anon ? 'true' : 'false');
+    localStorage.setItem(COMMENT_ANON_STORAGE_KEY, anon ? 'true' : 'false');
   };
 
-  // WebSocket Connection
+  // WebSocket Connection (authenticated users only)
   useEffect(() => {
-    if (isOwner) return; // Owners don't connect to ws discussion chat
+    if (!isAuthenticated || !user) {
+      setOnlineUsers([]);
+      setTypingUsersMap({});
+      return;
+    }
 
-    const wsUrl = getWsUrl(listId);
+    const wsUrl = getCommentWsUrl(listId);
     const socket = new WebSocket(wsUrl);
     socketRef.current = socket;
 
@@ -94,7 +234,14 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'presence') {
-          setOnlineUsers(data.users || []);
+          const users: OnlineUser[] = Array.isArray(data.users)
+            ? data.users.map((entry: OnlineUser | string) =>
+                typeof entry === 'string'
+                  ? { userId: entry, username: entry }
+                  : { userId: entry.userId, username: entry.username || entry.userId }
+              )
+            : [];
+          setOnlineUsers(users);
         } else if (data.type === 'typing') {
           if (data.userId !== user?.Id) {
             if (data.isTyping) {
@@ -113,7 +260,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                   delete updated[data.userId];
                   return updated;
                 });
-              }, 5000);
+              }, COMMENT_TYPING_USER_TTL_MS);
             } else {
               setTypingUsersMap(prev => {
                 const updated = { ...prev };
@@ -142,12 +289,11 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       socketRef.current = null;
       Object.values(currentTimeoutMap).forEach(clearTimeout);
     };
-  }, [listId, user, isOwner]);
+  }, [listId, user, isAuthenticated]);
 
   const handleContentChange = (val: string) => {
     setContent(val);
 
-    if (isOwner) return;
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) return;
 
     if (!isTypingRef.current) {
@@ -164,7 +310,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         socketRef.current.send(JSON.stringify({ type: 'typing', isTyping: false }));
         isTypingRef.current = false;
       }
-    }, 2000);
+    }, COMMENT_TYPING_STOP_DELAY_MS);
   };
 
   const handleSelectTagItem = (itemId: string, itemName: string) => {
@@ -173,6 +319,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    if (!isAuthenticated || !user) return;
     if (!content.trim()) return;
 
     setIsSubmitLoading(true);
@@ -187,7 +334,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       clearTimeout(typingTimeoutRef.current);
     }
 
-    let finalContent = content.trim();
+    let finalContent = convertMentionsToMarkdown(content.trim(), participants);
     if (taggedItemIds.length > 0) {
       const tagLinks = taggedItemIds
         .map(id => {
@@ -208,9 +355,12 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         finalContent,
         commenterName.trim() || null,
         isOwner ? true : isOwnerVisible,
-        isRollover
+        isRollover,
+        null,
+        imageUrl
       );
       setContent('');
+      setImageUrl(null);
       setIsRollover(false);
       setTaggedItemIds([]);
       setIsTaggingModeActive(false);
@@ -236,8 +386,15 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   return (
     <CommentSectionTemplate
       isOwner={isOwner}
+      listOwnerId={listOwnerId}
+      isAuthenticated={isAuthenticated}
       currentUserId={user?.Id}
+      participants={participants}
       comments={comments}
+      parentComments={parentComments}
+      repliesMap={repliesMap}
+      handleReplySubmit={handleReplySubmit}
+      toggleReaction={handleToggleReaction}
       isLoading={isLoading}
       displayError={displayError}
       content={content}
@@ -257,7 +414,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       onItemTaggedClick={onItemTaggedClick}
       handleSelectTagItem={handleSelectTagItem}
       isTaggingModeActive={isTaggingModeActive}
-      setIsTaggingModeActive={setIsTaggingModeActive}
+      setIsTaggingModeActive={handleSetMainTaggingActive}
       taggedItemIds={taggedItemIds}
       setTaggedItemIds={setTaggedItemIds}
       handleDeleteComment={handleDeleteComment}
@@ -265,6 +422,14 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       setDeletingCommentId={setDeletingCommentId}
       isAnonymous={isAnonymous}
       setIsAnonymous={handleSetIsAnonymous}
+      imageUrl={imageUrl}
+      setImageUrl={setImageUrl}
+      activeReplyId={activeReplyId}
+      onReplyOpen={handleReplyOpen}
+      isReplyTaggingModeActive={isReplyTaggingModeActive}
+      setIsReplyTaggingModeActive={handleSetReplyTaggingActive}
+      replyTaggedItemIds={replyTaggedItemIds}
+      setReplyTaggedItemIds={setReplyTaggedItemIds}
     />
   );
 };

@@ -1,8 +1,27 @@
 .card{
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: var(--card-border-width) solid var(--border);
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color var(--transition-pop),
+    border-color var(--transition-pop),
+    box-shadow var(--transition-pop),
+    transform var(--transition-pop) cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--card-shadow);
+  position: relative;
+}
+
+.card::before{
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  border-radius: calc(var(--radius) - 4px);
+  background-image: var(--card-inner-stitch);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .flat{
@@ -11,7 +30,7 @@
 
 .glass{
   background: var(--surface-glass);
-  box-shadow: var(--shadow);
+  box-shadow: var(--card-shadow);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -19,7 +38,6 @@
 .hoverable:hover{
   transform: translateY(-2px);
   border-color: var(--text-muted);
-  box-shadow: var(--shadow-hover);
 }
 
 /* --- Padding Options --- */

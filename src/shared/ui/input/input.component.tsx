@@ -10,6 +10,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   error,
   leftIcon,
   leftIconClickable,
+  variant = 'default',
   className = '',
   id,
   type = 'text',
@@ -18,8 +19,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
   const inputClass = [
     styles.input,
-    leftIcon ? styles.hasLeftIcon : '',
-    error ? styles.hasError : '',
+    leftIcon ? styles['has-left-icon'] : '',
+  ].filter(Boolean).join(' ');
+
+  const wrapperClass = [
+    variant === 'inline' ? styles['wrapper-inline'] : styles.wrapper,
+    error ? styles['wrapper-has-error'] : '',
   ].filter(Boolean).join(' ');
 
   return (
@@ -33,6 +38,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       type={type}
       inputId={inputId}
       inputClass={inputClass}
+      wrapperClass={wrapperClass}
       {...props}
     />
   );

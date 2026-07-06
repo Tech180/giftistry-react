@@ -16,5 +16,8 @@ export interface CreateListFormTemplateProps {
   setCategory: (val: string) => void;
   customCategory: string;
   setCustomCategory: (val: string) => void;
+  aiEnabled: boolean;
+  setAiEnabled: (val: boolean) => void;
+  globalAiEnabled: boolean;
   isUnverified?: boolean;
 }

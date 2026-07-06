@@ -11,7 +11,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   right,
   className = '',
 }) => {
-  const containerClass = [styles.topBar, className].filter(Boolean).join(' ');
+  const containerClass = [styles['top-bar'], className].filter(Boolean).join(' ');
 
   return (
     <TopBarTemplate

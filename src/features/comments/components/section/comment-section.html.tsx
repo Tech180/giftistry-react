@@ -1,5 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
+import { UserPreviewCard } from 'shared/ui';
 import { CommentSectionTemplateProps } from '../../interfaces/comment-section-template-props.interface';
 import { CommentItem } from '../item/comment-item.component';
 import { CommentInput } from '../input/comment-input.component';
@@ -7,8 +9,15 @@ import styles from './comment-section.module.css';
 
 export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   isOwner,
+  listOwnerId,
+  isAuthenticated,
   currentUserId,
+  participants,
   comments,
+  parentComments,
+  repliesMap,
+  handleReplySubmit,
+  toggleReaction,
   isLoading,
   displayError,
   content,
@@ -26,6 +35,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   onlineUsers,
   typingUsers,
   onItemTaggedClick,
+  handleSelectTagItem,
   isTaggingModeActive,
   setIsTaggingModeActive,
   taggedItemIds,
@@ -35,16 +45,33 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   setDeletingCommentId,
   isAnonymous,
   setIsAnonymous,
+  imageUrl,
+  setImageUrl,
+  activeReplyId,
+  onReplyOpen,
+  isReplyTaggingModeActive,
+  setIsReplyTaggingModeActive,
+  replyTaggedItemIds,
+  setReplyTaggedItemIds,
 }) => {
   return (
     <div className={styles.section}>
 
 
       {onlineUsers.length > 0 && (
-        <div className={styles.onlinePresenceBar}>
-          <span className={styles.onlineDot} />
+        <div className={styles['online-presence-bar']}>
+          <span className={styles['online-dot']} />
           <span>Online: </span>
-          <span className={styles.onlineUsersList}>{onlineUsers.join(', ')}</span>
+          <span className={styles['online-users-list']}>
+            {onlineUsers.map((onlineUser, idx) => (
+              <React.Fragment key={onlineUser.userId}>
+                {idx > 0 && ', '}
+                <UserPreviewCard userId={onlineUser.userId} displayName={onlineUser.username} isOnline>
+                  <span className={styles['online-user-name']}>@{onlineUser.username}</span>
+                </UserPreviewCard>
+              </React.Fragment>
+            ))}
+          </span>
         </div>
       )}
 
@@ -56,17 +83,19 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
       )}
 
       {/* Comment history list */}
-      <div className={styles.listContainer}>
+      <div className={styles['list-container']}>
         {isLoading ? (
-          <div className={styles.loadingSpinner}>
+          <div className={styles['loading-spinner']}>
             <div className={styles.spinner} />
           </div>
-        ) : comments.length > 0 ? (
-          <div className={styles.commentsList}>
-            {comments.map((comment) => (
+        ) : parentComments.length > 0 ? (
+          <div className={styles['comments-list']}>
+            {parentComments.map((comment) => (
               <CommentItem
                 key={comment.Id}
                 comment={comment}
+                replies={repliesMap[comment.Id] || []}
+                listOwnerId={listOwnerId}
                 currentUserId={currentUserId}
                 items={items}
                 formatDate={formatDate}
@@ -75,37 +104,57 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
                 deletingCommentId={deletingCommentId}
                 setDeletingCommentId={setDeletingCommentId}
                 onlineUsers={onlineUsers}
+                participants={participants}
+                toggleReaction={toggleReaction}
+                handleReplySubmit={handleReplySubmit}
+                activeReplyId={activeReplyId}
+                onReplyOpen={onReplyOpen}
+                isReplyTaggingModeActive={isReplyTaggingModeActive}
+                setIsReplyTaggingModeActive={setIsReplyTaggingModeActive}
+                replyTaggedItemIds={replyTaggedItemIds}
+                setReplyTaggedItemIds={setReplyTaggedItemIds}
               />
             ))}
           </div>
         ) : (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <p className={styles.emptyText}>No comments yet. Start the conversation!</p>
+          <div className={styles['empty-state-wrap']}>
+            <p className={styles['empty-text']}>No comments yet. Start the conversation!</p>
           </div>
         )}
       </div>
 
       {/* Bottom Chat Message section */}
-      <div className={styles.bottomSeamlessContainer}>
-        <CommentInput
-          isOwner={isOwner}
-          isOwnerVisible={isOwnerVisible}
-          setIsOwnerVisible={setIsOwnerVisible}
-          isRollover={isRollover}
-          setIsRollover={setIsRollover}
-          content={content}
-          setContent={setContent}
-          commenterName={commenterName}
-          setCommenterName={setCommenterName}
-          isSubmitLoading={isSubmitLoading}
-          handleSubmit={handleSubmit}
-          items={items}
-          isTaggingModeActive={isTaggingModeActive}
-          setIsTaggingModeActive={setIsTaggingModeActive}
-          typingUsers={typingUsers}
-          isAnonymous={isAnonymous}
-          setIsAnonymous={setIsAnonymous}
-        />
+      <div className={styles['bottom-seamless-container']}>
+        {!isAuthenticated ? (
+          <div className={styles['auth-prompt']}>
+            <p className={styles['auth-prompt-text']}>Sign in to join the conversation.</p>
+            <Link to="/login" className={styles['auth-prompt-link']}>Sign in</Link>
+          </div>
+        ) : (
+          <CommentInput
+            isOwner={isOwner}
+            isOwnerVisible={isOwnerVisible}
+            setIsOwnerVisible={setIsOwnerVisible}
+            isRollover={isRollover}
+            setIsRollover={setIsRollover}
+            content={content}
+            setContent={setContent}
+            commenterName={commenterName}
+            setCommenterName={setCommenterName}
+            isSubmitLoading={isSubmitLoading}
+            handleSubmit={handleSubmit}
+            items={items}
+            isTaggingModeActive={isTaggingModeActive}
+            setIsTaggingModeActive={setIsTaggingModeActive}
+            typingUsers={typingUsers}
+            isAnonymous={isAnonymous}
+            setIsAnonymous={setIsAnonymous}
+            participants={participants}
+            currentUserId={currentUserId}
+            imageUrl={imageUrl}
+            setImageUrl={setImageUrl}
+          />
+        )}
       </div>
     </div>
   );

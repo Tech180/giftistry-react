@@ -1,6 +1,5 @@
 .container{
   width: 100%;
-  animation: var(--animation-scale-in);
 }
 
 .page-header{
@@ -78,19 +77,59 @@
   padding: var(--spacing-xs);
   background: linear-gradient(135deg, var(--primary) 0%, var(--border) 100%);
   box-shadow: var(--shadow);
+  overflow: visible;
 }
 
 .avatar-preview{
+  position: relative;
   width: 8.75rem;
   height: 8.75rem;
   border-radius: var(--radius-full);
-  background-color: var(--primary);
+  border: 4px solid var(--bg);
+  overflow: visible;
+}
+
+.avatar-media{
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-slow);
   overflow: hidden;
-  border: 4px solid var(--bg);
+}
+
+.avatar-action{
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  padding: 0;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--bg);
+  background-color: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background-color var(--transition-normal), transform var(--transition-normal);
+}
+
+.avatar-action:hover{
+  background-color: var(--surface-hover);
+  transform: scale(1.05);
+}
+
+.avatar-action-left{
+  left: 1.25rem;
+  bottom: 1.25rem;
+}
+
+.avatar-action-right{
+  right: 1.25rem;
+  bottom: 1.25rem;
 }
 
 .avatar-initials{
@@ -99,13 +138,6 @@
   color: var(--primary-text);
   user-select: none;
   font-family: inherit;
-}
-
-.avatar-buttons{
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  width: 100%;
 }
 
 .form-column{

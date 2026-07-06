@@ -1,0 +1,52 @@
+.list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 0.375rem);
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  max-height: 10rem;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.option-active,
+.option:hover {
+  background: var(--surface-hover);
+}
+
+.option-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.username {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary);
+}
+
+.name {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}

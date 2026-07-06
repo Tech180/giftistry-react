@@ -11,4 +11,5 @@ export interface ItemShowcaseProps {
   onEdit: () => void;
   onClose: () => void;
   wishlistItems?: Item[];
+  aiEnabled?: boolean;
 }

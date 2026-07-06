@@ -1,0 +1,11 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--error-bg);
+  border-bottom: 1px solid var(--error-border);
+  color: var(--error);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}

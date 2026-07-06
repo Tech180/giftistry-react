@@ -17,6 +17,6 @@ describe('LoadingState', () => {
 
   test('applies fullHeight class when enabled', () => {
     const { container } = render(<LoadingState fullHeight />);
-    expect(container.firstChild).toHaveClass(styles.fullHeight);
+    expect(container.firstChild).toHaveClass(styles['full-height']);
   });
 });

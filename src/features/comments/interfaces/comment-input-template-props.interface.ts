@@ -1,21 +1,13 @@
-import { Item } from 'features/items';
+import React from 'react';
 
 export interface CommentInputTemplateProps {
-  isOwner: boolean;
-  isOwnerVisible: boolean;
-  setIsOwnerVisible: (visible: boolean) => void;
-  isRollover: boolean;
-  setIsRollover: (rollover: boolean) => void;
-  content: string;
-  setContent: (content: string) => void;
-  commenterName: string;
-  setCommenterName: (name: string) => void;
-  isSubmitLoading: boolean;
   handleSubmit: (e: React.SyntheticEvent) => void;
-  items: Item[];
-  isTaggingModeActive: boolean;
-  setIsTaggingModeActive: (active: boolean) => void;
-  typingUsers: string[];
-  isAnonymous: boolean;
-  setIsAnonymous: (anonymous: boolean) => void;
+  typingIndicator: React.ReactNode;
+  ownerWarning: React.ReactNode;
+  uploadErrorBar: React.ReactNode;
+  metaRow: React.ReactNode;
+  attachmentPreview: React.ReactNode;
+  editor: React.ReactNode;
+  toolbar: React.ReactNode;
+  footer: React.ReactNode;
 }

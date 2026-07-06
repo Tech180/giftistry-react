@@ -5,15 +5,12 @@ import {
   getJoinedDate as formatJoinedDate,
 } from 'shared/utils/get-initials.util';
 
-export function getUserInitials(user: ApiUser): string {
+export function getUserInitials(user: Partial<ApiUser>): string {
+  const usernameFallback = user.Username?.slice(0, 2).toUpperCase() ?? '??';
   if (user.FirstName && user.LastName) {
-    return getInitialsFromNames(
-      user.FirstName,
-      user.LastName,
-      user.Username.slice(0, 2).toUpperCase()
-    );
+    return getInitialsFromNames(user.FirstName, user.LastName, usernameFallback);
   }
-  return user.Username.slice(0, 2).toUpperCase();
+  return usernameFallback;
 }
 
 export function getFallbackInitials(nameStr: string): string {

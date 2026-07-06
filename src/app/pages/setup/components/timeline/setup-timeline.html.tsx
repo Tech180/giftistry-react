@@ -17,16 +17,16 @@ export const SetupTimelineTemplate: React.FC<SetupTimelineTemplateProps> = ({
         return (
           <div
             key={s.id}
-            className={`${styles.step} ${isActive ? styles.stepActive : ''} ${
-              isCompleted ? styles.stepCompleted : ''
+            className={`${styles.step} ${isActive ? styles['step-active'] : ''} ${
+              isCompleted ? styles['step-completed'] : ''
             }`}
           >
-            <div className={styles.stepCircle}>
+            <div className={styles['step-circle']}>
               {isCompleted ? <Check size={14} /> : <Icon size={14} />}
             </div>
-            <div className={styles.stepInfo}>
-              <span className={styles.stepLabel}>{s.label}</span>
-              <span className={styles.stepDesc}>{s.desc}</span>
+            <div className={styles['step-info']}>
+              <span className={styles['step-label']}>{s.label}</span>
+              <span className={styles['step-desc']}>{s.desc}</span>
             </div>
           </div>
         );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { EnterPanel } from 'shared/ui';
 import { AppShellProps } from './interfaces/app-shell-props.interface';
 import styles from './app-shell.module.css';
 
@@ -6,20 +7,21 @@ export const AppShellTemplate: React.FC<AppShellProps> = ({
   navigation,
   banner,
   children,
-  isProfilePage = false,
+  isSettingsPage = false,
   hasBanner = false,
 }) => (
   <div className={styles.container}>
     {navigation}
     {banner}
-    <main
+    <EnterPanel
+      as="main"
+      animation="fade"
       className={[
-        isProfilePage ? styles.profileMain : styles.main,
-        hasBanner ? styles.hasBanner : '',
-        'animate-fade-in',
+        isSettingsPage ? styles['settings-main'] : styles.main,
+        hasBanner ? styles['has-banner'] : '',
       ].filter(Boolean).join(' ')}
     >
       {children}
-    </main>
+    </EnterPanel>
   </div>
 );

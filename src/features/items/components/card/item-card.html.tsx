@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, Star, Trash2, Link, Edit2, Pin, Check } from 'lucide-react';
-import { Button, Card, Input } from 'shared/ui';
+import { Button, Card, Input, EnterPanel } from 'shared/ui';
 import { ItemCardTemplateProps } from '../../interfaces/item-card-template-props.interface';
 import styles from './item-card.module.css';
 
@@ -59,7 +59,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   if (viewMode === 'compact') {
     return (
       <Card
-        className={`${styles.itemCard} ${styles.compactCard} ${isExpanded ? styles.expandedCard : ''} ${isFullyClaimed ? styles.claimedCard : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles.nonOwnerClaimed : ''} ${claimedByCurrentUser ? styles.userClaimedCard : ''} ${isTaggingModeActive ? styles.taggingModeCard : ''} ${isTaggedSelection ? styles.taggedCard : ''}`}
+        className={`${styles['item-card']} ${styles['compact-card']} ${isExpanded ? styles['expanded-card'] : ''} ${isFullyClaimed ? styles['claimed-card'] : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles['non-owner-claimed'] : ''} ${claimedByCurrentUser ? styles['user-claimed-card'] : ''} ${isTaggingModeActive ? styles['tagging-mode-card'] : ''} ${isTaggedSelection ? styles['tagged-card'] : ''}`}
         padding="none"
         glass={true}
       >
@@ -71,13 +71,13 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
               e.stopPropagation();
               onSelectTag?.();
             }}
-            className={styles.taggingCardClickOverlay}
+            className={styles['tagging-card-click-overlay']}
             aria-label="Toggle selection"
           />
         )}
 
         <div
-          className={styles.compactRow}
+          className={styles['compact-row']}
           onClick={(e) => {
             const target = e.target as HTMLElement;
             if (target.closest('button') || target.closest('a') || target.closest('input')) {
@@ -89,7 +89,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
         >
           {/* Tag Select indicator */}
           {isTaggingModeActive && (
-            <div className={styles.compactSelectSection}>
+            <div className={styles['compact-select-section']}>
               <button
                 type="button"
                 onClick={(e) => {
@@ -97,7 +97,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                   e.stopPropagation();
                   onSelectTag?.();
                 }}
-                className={`${styles.selectIndicatorCircle} ${isTaggedSelection ? styles.checked : ''}`}
+                className={`${styles['select-indicator-circle']} ${isTaggedSelection ? styles.checked : ''}`}
                 aria-label={isTaggedSelection ? "Deselect item" : "Select item"}
               >
                 {isTaggedSelection && <Check size={12} strokeWidth={3.5} />}
@@ -106,11 +106,11 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           )}
 
           {/* Star Favorite */}
-          <div className={styles.compactStarSection}>
+          <div className={styles['compact-star-section']}>
             {isOwner ? (
               <button
                 onClick={toggleFavorite}
-                className={`${styles.compactStarBtn} ${isFavorite ? styles.active : ''}`}
+                className={`${styles['compact-star-btn']} ${isFavorite ? styles.active : ''}`}
                 title="Toggle favorite"
               >
                 <Star
@@ -129,10 +129,10 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           </div>
 
           {/* Item details */}
-          <div className={styles.compactInfoSection}>
-            <span className={styles.compactItemName} title={item.Name}>{item.Name}</span>
+          <div className={styles['compact-info-section']}>
+            <span className={styles['compact-item-name']} title={item.Name}>{item.Name}</span>
             {displayCategoryBadge && (
-              <span className={styles.compactCategoryBadge} title={`Category: ${categoryLabel}`}>
+              <span className={styles['compact-category-badge']} title={`Category: ${categoryLabel}`}>
                 <CategoryIcon size={10} style={{ marginRight: '2px' }} />
                 {categoryLabel}
               </span>
@@ -140,7 +140,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
 
             {/* Show tiny sizing details directly if present */}
             {metadata && (
-              <div className={styles.compactMetaRow}>
+              <div className={styles['compact-meta-row']}>
                 {metadata.pantsSize && <span>Pants: {metadata.pantsSize}</span>}
                 {metadata.shirtSize && <span>Shirt: {metadata.shirtSize}</span>}
                 {metadata.shoesSize && <span>Shoes: {metadata.shoesSize}</span>}
@@ -151,61 +151,61 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           </div>
 
           {/* Links / Store indicator */}
-          <div className={styles.compactLinksSection}>
+          <div className={styles['compact-links-section']}>
             {item.Links.length > 0 ? (
               <a
                 href={item.Links[0].Url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={styles.compactStoreLink}
+                className={styles['compact-store-link']}
                 title={`Visit ${getSiteName(item.Links[0].Url, item.Links[0].RetailerName)}`}
               >
                 <Link size={12} style={{ marginRight: '4px' }} />
                 <span>{getSiteName(item.Links[0].Url, item.Links[0].RetailerName)}</span>
               </a>
             ) : (
-              <span className={styles.compactNoLinks}>No link</span>
+              <span className={styles['compact-no-links']}>No link</span>
             )}
           </div>
 
           {/* Price */}
-          <div className={styles.compactPriceSection}>
+          <div className={styles['compact-price-section']}>
             {item.Links.length > 0 && item.Links[0].ExtractedPrice !== null ? (
-              <span className={styles.compactPriceTag}>${item.Links[0].ExtractedPrice}</span>
+              <span className={styles['compact-price-tag']}>${item.Links[0].ExtractedPrice}</span>
             ) : (
-              <span className={styles.compactNoPrice}>—</span>
+              <span className={styles['compact-no-price']}>—</span>
             )}
           </div>
 
           {/* Claim Action */}
-          <div className={styles.compactClaimSection}>
+          <div className={styles['compact-claim-section']}>
             {!isOwner && (
               claimedByCurrentUser ? (
                 <button
                   onClick={handleUnclaim}
                   disabled={claimLoading}
-                  className={`${styles.compactActionBtn} ${styles.compactUnclaimBtn}`}
+                  className={`${styles['compact-action-btn']} ${styles['compact-unclaim-btn']}`}
                 >
                   Unclaim
                 </button>
               ) : isFullyClaimed ? (
-                <span className={styles.compactClaimedStatus}>Claimed</span>
+                <span className={styles['compact-claimed-status']}>Claimed</span>
               ) : (
                 <button
                   onClick={() => setShowClaimForm(true)}
-                  className={`${styles.compactActionBtn} ${styles.compactClaimBtn}`}
+                  className={`${styles['compact-action-btn']} ${styles['compact-claim-btn']}`}
                 >
                   Claim
                 </button>
               )
             )}
 
-            {isOwner && (
-              <div className={styles.compactOwnerActions}>
-                <button onClick={onEdit} className={styles.compactIconBtn} title="Edit Item">
+            {canCollaborate && (
+              <div className={styles['compact-owner-actions']}>
+                <button onClick={onEdit} className={styles['compact-icon-btn']} title="Edit Item">
                   <Edit2 size={14} />
                 </button>
-                <button onClick={() => setShowDeleteConfirm(true)} className={styles.compactIconBtn} title="Delete Item">
+                <button onClick={() => setShowDeleteConfirm(true)} className={styles['compact-icon-btn']} title="Delete Item">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -214,74 +214,74 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
         </div>
 
         {showClaimForm && (
-          <div className={styles.compactConfirmExtension}>
-            <div className={styles.confirmPromptColumn}>
-              <span className={styles.confirmPrompt}>Claim this item?</span>
-              <label className={styles.anonLabel}>
+          <EnterPanel animation="dropdown" className={styles['compact-confirm-extension']}>
+            <div className={styles['confirm-prompt-column']}>
+              <span className={styles['confirm-prompt']}>Claim this item?</span>
+              <label className={styles['anon-label']}>
                 <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} />
                 <span>Anonymously</span>
               </label>
             </div>
-            <div className={styles.confirmButtons}>
+            <div className={styles['confirm-buttons']}>
               <Button variant="primary" size="sm" onClick={() => handleClaim()} isLoading={claimLoading}>Yes</Button>
               <Button variant="ghost" size="sm" onClick={() => setShowClaimForm(false)}>Cancel</Button>
             </div>
-          </div>
+          </EnterPanel>
         )}
 
         {showDeleteConfirm && (
-          <div className={styles.compactConfirmExtension}>
-            <span className={styles.confirmPrompt}>Delete this item?</span>
-            <div className={styles.confirmButtons}>
+          <EnterPanel animation="dropdown" className={styles['compact-confirm-extension']}>
+            <span className={styles['confirm-prompt']}>Delete this item?</span>
+            <div className={styles['confirm-buttons']}>
               <Button variant="primary" size="sm" onClick={handleDelete} isLoading={deleteLoading}>Yes</Button>
               <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>No</Button>
             </div>
-          </div>
+          </EnterPanel>
         )}
 
         {/* Accordion Expanded Details */}
         {isExpanded && (
-          <div className={styles.expandedSection}>
-            <div className={styles.expandedContent}>
+          <EnterPanel animation="accordion" className={styles['expanded-section']}>
+            <div className={styles['expanded-content']}>
               {displayDescription && (
-                <div className={styles.expandedDetailRow}>
-                  <span className={styles.expandedDetailLabel}>Description:</span>
-                  <p className={styles.expandedDescriptionText}>{displayDescription}</p>
+                <div className={styles['expanded-detail-row']}>
+                  <span className={styles['expanded-detail-label']}>Description:</span>
+                  <p className={styles['expanded-description-text']}>{displayDescription}</p>
                 </div>
               )}
 
               {metadata && (metadata.pantsSize || metadata.shirtSize || metadata.shoesSize || metadata.socksSize || metadata.color) && (
-                <div className={styles.expandedDetailRow}>
-                  <span className={styles.expandedDetailLabel}>Sizing & Details:</span>
-                  <div className={styles.expandedMetaBadges}>
-                    {metadata.pantsSize && <span className={styles.expandedMetaBadge}>👖 Pants: {metadata.pantsSize}</span>}
-                    {metadata.shirtSize && <span className={styles.expandedMetaBadge}>👕 Shirt: {metadata.shirtSize}</span>}
-                    {metadata.shoesSize && <span className={styles.expandedMetaBadge}>👟 Shoes: {metadata.shoesSize}</span>}
-                    {metadata.socksSize && <span className={styles.expandedMetaBadge}>🧦 Socks: {metadata.socksSize}</span>}
-                    {metadata.color && <span className={styles.expandedMetaBadge}>🎨 Color: {metadata.color}</span>}
+                <div className={styles['expanded-detail-row']}>
+                  <span className={styles['expanded-detail-label']}>Sizing & Details:</span>
+                  <div className={styles['expanded-meta-badges']}>
+                    {metadata.pantsSize && <span className={styles['expanded-meta-badge']}>👖 Pants: {metadata.pantsSize}</span>}
+                    {metadata.shirtSize && <span className={styles['expanded-meta-badge']}>👕 Shirt: {metadata.shirtSize}</span>}
+                    {metadata.shoesSize && <span className={styles['expanded-meta-badge']}>👟 Shoes: {metadata.shoesSize}</span>}
+                    {metadata.socksSize && <span className={styles['expanded-meta-badge']}>🧦 Socks: {metadata.socksSize}</span>}
+                    {metadata.color && <span className={styles['expanded-meta-badge']}>🎨 Color: {metadata.color}</span>}
                   </div>
                 </div>
               )}
 
               {metadata?.custom?.map((f: any, idx: number) => (
-                <div key={idx} className={styles.expandedDetailRow}>
-                  <span className={styles.expandedDetailLabel}>{f.name}:</span>
-                  <div className={styles.expandedDetailValue}>{f.value}</div>
+                <div key={idx} className={styles['expanded-detail-row']}>
+                  <span className={styles['expanded-detail-label']}>{f.name}:</span>
+                  <div className={styles['expanded-detail-value']}>{f.value}</div>
                 </div>
               ))}
 
               {/* Group Funding Progress */}
               {allowGroupFunds && totalExtractedPrice > 0 && (
-                <div className={styles.expandedDetailRow}>
-                  <span className={styles.expandedDetailLabel}>Funding Progress:</span>
-                  <div className={styles.expandedFundingWrapper}>
-                    <div className={styles.expandedFundingHeader}>
+                <div className={styles['expanded-detail-row']}>
+                  <span className={styles['expanded-detail-label']}>Funding Progress:</span>
+                  <div className={styles['expanded-funding-wrapper']}>
+                    <div className={styles['expanded-funding-header']}>
                       <span>${totalClaimedAmount.toFixed(2)} funded of ${totalExtractedPrice.toFixed(2)}</span>
                       <span>{Math.min(100, Math.round((totalClaimedAmount / totalExtractedPrice) * 100))}%</span>
                     </div>
-                    <div className={styles.expandedProgressBarBg}>
+                    <div className={styles['expanded-progress-bar-bg']}>
                       <div
-                        className={styles.expandedProgressBarFill}
+                        className={styles['expanded-progress-bar-fill']}
                         style={{ width: `${Math.min(100, (totalClaimedAmount / totalExtractedPrice) * 100)}%` }}
                       />
                     </div>
@@ -290,17 +290,17 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
               )}
 
               {/* Links */}
-              <div className={styles.expandedDetailRow}>
-                <span className={styles.expandedDetailLabel}>Links:</span>
+              <div className={styles['expanded-detail-row']}>
+                <span className={styles['expanded-detail-label']}>Links:</span>
                 {item.Links.length > 0 ? (
-                  <div className={styles.expandedLinksContainer}>
+                  <div className={styles['expanded-links-container']}>
                     {item.Links.map((link) => (
                       <a
                         key={link.Id}
                         href={link.Url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={styles.expandedStoreLink}
+                        className={styles['expanded-store-link']}
                       >
                         <Link size={12} style={{ marginRight: '4px' }} />
                         {getSiteName(link.Url, link.RetailerName)}
@@ -308,11 +308,11 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <span className={styles.expandedNoLinks}>No links added yet.</span>
+                  <span className={styles['expanded-no-links']}>No links added yet.</span>
                 )}
               </div>
             </div>
-          </div>
+          </EnterPanel>
         )}
 
 
@@ -323,7 +323,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   if (viewMode === 'grid') {
     return (
       <Card
-        className={`${styles.itemCard} ${styles.gridCard} ${isSelected ? styles.selectedGridCard : ''} ${isFullyClaimed ? styles.claimedCard : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles.nonOwnerClaimed : ''} ${claimedByCurrentUser ? styles.userClaimedCard : ''} ${isTaggingModeActive ? styles.taggingModeCard : ''} ${isTaggedSelection ? styles.taggedCard : ''}`}
+        className={`${styles['item-card']} ${styles['grid-card']} ${isSelected ? styles['selected-grid-card'] : ''} ${isFullyClaimed ? styles['claimed-card'] : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles['non-owner-claimed'] : ''} ${claimedByCurrentUser ? styles['user-claimed-card'] : ''} ${isTaggingModeActive ? styles['tagging-mode-card'] : ''} ${isTaggedSelection ? styles['tagged-card'] : ''}`}
         padding="none"
         glass={true}
         onClick={onSelect}
@@ -337,7 +337,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
               e.stopPropagation();
               onSelectTag?.();
             }}
-            className={styles.taggingCardClickOverlay}
+            className={styles['tagging-card-click-overlay']}
             aria-label="Toggle selection"
           />
         )}
@@ -346,7 +346,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
         {!isOwner && (
           <button
             onClick={togglePin}
-            className={`${styles.gridPinBtnAbsolute} ${isPinned ? styles.pinBtnActive : ''}`}
+            className={`${styles['grid-pin-btn-absolute']} ${isPinned ? styles['pin-btn-active'] : ''}`}
             title={isPinned ? 'Unpin Item' : 'Pin Item'}
           >
             <Pin size={10} style={{ transform: isPinned ? 'rotate(45deg)' : 'none' }} />
@@ -354,21 +354,21 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
         )}
 
         {/* Top bar with category and favorite indicator */}
-        <div className={styles.gridTopBar}>
-          <div className={styles.gridCategoryContainer}>
+        <div className={styles['grid-top-bar']}>
+          <div className={styles['grid-category-container']}>
             {displayCategoryBadge && (
-              <span className={styles.gridCategoryBadge} title={`Category: ${categoryLabel}`}>
+              <span className={styles['grid-category-badge']} title={`Category: ${categoryLabel}`}>
                 <CategoryIcon size={10} />
               </span>
             )}
           </div>
 
-          <div className={styles.gridActionsContainer}>
+          <div className={styles['grid-actions-container']}>
             {isOwner ? (
               <button
                 type="button"
                 onClick={toggleFavorite}
-                className={`${styles.gridStarBtn} ${isFavorite ? styles.active : ''}`}
+                className={`${styles['grid-star-btn']} ${isFavorite ? styles.active : ''}`}
                 title={isFavorite ? 'Remove Favorite' : 'Mark as Favorite'}
                 style={{ zIndex: 50 }}
               >
@@ -387,19 +387,19 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
         </div>
 
         {/* Main content */}
-        <div className={styles.gridContent}>
-          <h4 className={styles.gridItemName} title={item.Name}>{item.Name}</h4>
+        <div className={styles['grid-content']}>
+          <h4 className={styles['grid-item-name']} title={item.Name}>{item.Name}</h4>
 
           {item.Links.length > 0 && item.Links[0].ExtractedPrice !== null ? (
-            <div className={styles.gridPriceTag}>${item.Links[0].ExtractedPrice}</div>
+            <div className={styles['grid-price-tag']}>${item.Links[0].ExtractedPrice}</div>
           ) : (
-            <div className={styles.gridNoPrice}>—</div>
+            <div className={styles['grid-no-price']}>—</div>
           )}
         </div>
 
         {/* Claim button at bottom center */}
         {!isOwner && (
-          <div className={styles.gridClaimContainerAbsolute}>
+          <div className={styles['grid-claim-container-absolute']}>
             {claimedByCurrentUser ? (
               <button
                 onClick={(e) => {
@@ -407,12 +407,12 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                   handleUnclaim();
                 }}
                 disabled={claimLoading}
-                className={`${styles.gridMiniClaimBtn} ${styles.gridMiniClaimed}`}
+                className={`${styles['grid-mini-claim-btn']} ${styles['grid-mini-claimed']}`}
               >
                 Unclaim
               </button>
             ) : isFullyClaimed ? (
-              <span className={`${styles.gridMiniClaimBtn} ${styles.gridMiniClaimedDisabled}`}>
+              <span className={`${styles['grid-mini-claim-btn']} ${styles['grid-mini-claimed-disabled']}`}>
                 Claimed
               </span>
             ) : (
@@ -421,7 +421,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                   e.stopPropagation();
                   setShowClaimForm(true);
                 }}
-                className={styles.gridMiniClaimBtn}
+                className={styles['grid-mini-claim-btn']}
               >
                 Claim
               </button>
@@ -431,16 +431,20 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
 
         {/* Mini claim confirmation overlay */}
         {showClaimForm && (
-          <div className={styles.gridMiniOverlay} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.gridMiniOverlayPrompt}>Claim?</div>
-            <div className={styles.gridMiniOverlayActions}>
+          <EnterPanel
+            animation="fade"
+            className={styles['grid-mini-overlay']}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles['grid-mini-overlay-prompt']}>Claim?</div>
+            <div className={styles['grid-mini-overlay-actions']}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleClaim();
                 }}
                 disabled={claimLoading}
-                className={styles.gridMiniConfirmBtn}
+                className={styles['grid-mini-confirm-btn']}
               >
                 Yes
               </button>
@@ -449,12 +453,12 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                   e.stopPropagation();
                   setShowClaimForm(false);
                 }}
-                className={styles.gridMiniCancelBtn}
+                className={styles['grid-mini-cancel-btn']}
               >
                 No
               </button>
             </div>
-          </div>
+          </EnterPanel>
         )}
       </Card>
     );
@@ -462,7 +466,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
 
   return (
     <Card
-      className={`${styles.itemCard} ${isFullyClaimed ? styles.claimedCard : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles.nonOwnerClaimed : ''} ${claimedByCurrentUser ? styles.userClaimedCard : ''} ${isTaggingModeActive ? styles.taggingModeCard : ''} ${isTaggedSelection ? styles.taggedCard : ''}`}
+      className={`${styles['item-card']} ${isFullyClaimed ? styles['claimed-card'] : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles['non-owner-claimed'] : ''} ${claimedByCurrentUser ? styles['user-claimed-card'] : ''} ${isTaggingModeActive ? styles['tagging-mode-card'] : ''} ${isTaggedSelection ? styles['tagged-card'] : ''}`}
       padding="none"
       glass={true}
     >
@@ -475,7 +479,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
             e.stopPropagation();
             onSelectTag?.();
           }}
-          className={styles.taggingCardClickOverlay}
+          className={styles['tagging-card-click-overlay']}
           aria-label="Toggle selection"
         />
       )}
@@ -483,7 +487,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
       {/* Circle Tagging Select Section (before the star) */}
       {isTaggingModeActive && (
         <>
-          <div className={styles.cardSelectSection}>
+          <div className={styles['card-select-section']}>
             <button
               type="button"
               onClick={(e) => {
@@ -491,23 +495,23 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                 e.stopPropagation();
                 onSelectTag?.();
               }}
-              className={`${styles.selectIndicatorCircle} ${isTaggedSelection ? styles.checked : ''}`}
+              className={`${styles['select-indicator-circle']} ${isTaggedSelection ? styles.checked : ''}`}
               aria-label={isTaggedSelection ? "Deselect item" : "Select item"}
             >
               {isTaggedSelection && <Check size={12} strokeWidth={3.5} />}
             </button>
           </div>
-          <div className={styles.cardDivider}></div>
+          <div className={styles['card-divider']}></div>
         </>
       )}
 
       {/* Left Section - Favorite Star */}
       <>
-        <div className={styles.cardLeftSection}>
+        <div className={styles['card-left-section']}>
           {isOwner ? (
             <button
               onClick={toggleFavorite}
-              className={`${styles.cardActionBtn} ${styles.starBtn} ${isFavorite ? styles.active : ''}`}
+              className={`${styles['card-action-btn']} ${styles['star-btn']} ${isFavorite ? styles.active : ''}`}
               title="Toggle favorite"
             >
               <Star
@@ -536,37 +540,37 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           {!isOwner && (
             <button
               onClick={togglePin}
-              className={`${styles.pinBtnLeftSection} ${isPinned ? styles.pinBtnActive : ''}`}
+              className={`${styles['pin-btn-left-section']} ${isPinned ? styles['pin-btn-active'] : ''}`}
               title={isPinned ? 'Unpin Item' : 'Pin Item'}
             >
               <Pin size={16} style={{ transform: isPinned ? 'rotate(45deg)' : 'none' }} />
             </button>
           )}
         </div>
-        <div className={styles.cardDivider}></div>
+        <div className={styles['card-divider']}></div>
       </>
 
       {/* Main Content Area */}
-      <div className={styles.cardMainContent}>
-        <div className={styles.itemInfo}>
-          <div className={styles.itemTitleRow}>
-            <span className={styles.itemName}>{item.Name}</span>
-            <div className={styles.itemTitleRight}>
+      <div className={styles['card-main-content']}>
+        <div className={styles['item-info']}>
+          <div className={styles['item-title-row']}>
+            <span className={styles['item-name']}>{item.Name}</span>
+            <div className={styles['item-title-right']}>
               {item.Links.length > 0 && item.Links[0].ExtractedPrice !== null && (
-                <span className={styles.mainPriceTag}>${item.Links[0].ExtractedPrice}</span>
+                <span className={styles['main-price-tag']}>${item.Links[0].ExtractedPrice}</span>
               )}
               {claimedByCurrentUser && (
-                <span className={styles.myClaimBadge} title="You have claimed this item">
+                <span className={styles['my-claim-badge']} title="You have claimed this item">
                   🎁 You claimed this!
                 </span>
               )}
             </div>
           </div>
-          {displayDescription && <p className={styles.itemDescription}>{displayDescription}</p>}
+          {displayDescription && <p className={styles['item-description']}>{displayDescription}</p>}
 
-          <div className={styles.itemMeta}>
+          <div className={styles['item-meta']}>
             {displayCategoryBadge && (
-              <span className={styles.categoryBadge} title={`Category: ${categoryLabel}`}>
+              <span className={styles['category-badge']} title={`Category: ${categoryLabel}`}>
                 <CategoryIcon size={12} style={{ marginRight: '4px' }} />
                 {categoryLabel}
               </span>
@@ -574,34 +578,34 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           </div>
 
           {metadata && (
-            <div className={styles.metadataGrid}>
+            <div className={styles['metadata-grid']}>
               {metadata.pantsSize && (
-                <span className={styles.metadataBadge} title="Pants Size">
+                <span className={styles['metadata-badge']} title="Pants Size">
                   👖 Pants: {metadata.pantsSize}
                 </span>
               )}
               {metadata.shirtSize && (
-                <span className={styles.metadataBadge} title="Shirt Size">
+                <span className={styles['metadata-badge']} title="Shirt Size">
                   👕 Shirt: {metadata.shirtSize}
                 </span>
               )}
               {metadata.shoesSize && (
-                <span className={styles.metadataBadge} title="Shoes Size">
+                <span className={styles['metadata-badge']} title="Shoes Size">
                   👟 Shoes: {metadata.shoesSize}
                 </span>
               )}
               {metadata.socksSize && (
-                <span className={styles.metadataBadge} title="Socks Size">
+                <span className={styles['metadata-badge']} title="Socks Size">
                   🧦 Socks: {metadata.socksSize}
                 </span>
               )}
               {metadata.color && (
-                <span className={styles.metadataBadge} title="Color">
+                <span className={styles['metadata-badge']} title="Color">
                   🎨 Color: {metadata.color}
                 </span>
               )}
               {metadata.custom?.map((f: any, idx: number) => (
-                <span key={idx} className={styles.metadataBadge} title={f.name}>
+                <span key={idx} className={styles['metadata-badge']} title={f.name}>
                   {f.name}: {f.value}
                 </span>
               ))}
@@ -609,10 +613,10 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           )}
 
           {item.IsHiddenIdea && !item.IsSuggestion && (
-            <span className={styles.ideaBadge}>Collaborator Suggestion (Hidden from list owner)</span>
+            <span className={styles['idea-badge']}>Collaborator Suggestion (Hidden from list owner)</span>
           )}
           {item.IsSuggestion && (
-            <span className={styles.suggestionBadge}>
+            <span className={styles['suggestion-badge']}>
               🎁 Suggestion by {item.SuggestedByUsername || 'Collaborator'}
             </span>
           )}
@@ -620,12 +624,12 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
 
         {/* Retail links list */}
         <div className={styles.section}>
-          <div className={styles.sectionHeader}>
+          <div className={styles['section-header']}>
             <h5>Links</h5>
             {!isOwner && canCollaborate && (
               <button
                 onClick={() => setShowAddLink(!showAddLink)}
-                className={styles.addLinkToggle}
+                className={styles['add-link-toggle']}
               >
                 <Plus size={14} /> Add Link
               </button>
@@ -633,14 +637,14 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           </div>
 
           {showAddLink && (
-            <form onSubmit={handleAddLink} className={styles.linkForm}>
+            <form onSubmit={handleAddLink} className={styles['link-form']}>
               <Input
                 type="url"
                 placeholder="https://example.com/product"
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 required
-                className={styles.linkInput}
+                className={styles['link-input']}
               />
               <Button type="submit" variant="secondary" size="sm" isLoading={linkLoading}>
                 Add
@@ -649,14 +653,14 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           )}
 
           {item.Links.length > 0 ? (
-            <ul className={styles.linksList}>
+            <ul className={styles['links-list']}>
               {item.Links.map((link) => (
-                <li key={link.Id} className={styles.linkItem}>
+                <li key={link.Id} className={styles['link-item']}>
                   <a
                     href={link.Url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={styles.retailerLink}
+                    className={styles['retailer-link']}
                     style={{ display: 'inline-flex', alignItems: 'center' }}
                   >
                     <Link size={12} style={{ marginRight: '4px' }} />
@@ -668,22 +672,22 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
               ))}
             </ul>
           ) : (
-            <p className={styles.emptyText}>No links added yet.</p>
+            <p className={styles['empty-text']}>No links added yet.</p>
           )}
         </div>
 
         {/* Group funding progress */}
         {allowGroupFunds && totalExtractedPrice > 0 && (
           <div className={styles.section}>
-            <div className={styles.fundingHeader}>
+            <div className={styles['funding-header']}>
               <span>Group Funding Progress</span>
               <span>
                 ${totalClaimedAmount.toFixed(2)} / ${totalExtractedPrice.toFixed(2)}
               </span>
             </div>
-            <div className={styles.progressBarBg}>
+            <div className={styles['progress-bar-bg']}>
               <div
-                className={styles.progressBarFill}
+                className={styles['progress-bar-fill']}
                 style={{
                   width: `${Math.min(100, (totalClaimedAmount / totalExtractedPrice) * 100)}%`,
                 }}
@@ -694,11 +698,11 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
 
         {/* Claim confirmation dropdown */}
         {showClaimForm && (
-          <div className={styles.claimConfirmationDropdown}>
-            <div className={styles.confirmPrompt}>Are you sure you want to claim this item?</div>
-            <div className={styles.confirmActionsRow}>
-              <div className={styles.confirmLeft}>
-                <label className={styles.anonLabel}>
+          <EnterPanel animation="dropdown" className={styles['claim-confirmation-dropdown']}>
+            <div className={styles['confirm-prompt']}>Are you sure you want to claim this item?</div>
+            <div className={styles['confirm-actions-row']}>
+              <div className={styles['confirm-left']}>
+                <label className={styles['anon-label']}>
                   <input
                     type="checkbox"
                     checked={anonymous}
@@ -707,8 +711,8 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                   <span>Anonymous</span>
                 </label>
                 {allowGroupFunds && totalExtractedPrice > 0 && (
-                  <div className={styles.confirmFundWrapper}>
-                    <label className={styles.fundLabel}>Amount:</label>
+                  <div className={styles['confirm-fund-wrapper']}>
+                    <label className={styles['fund-label']}>Amount:</label>
                     <input
                       type="number"
                       min="1"
@@ -716,12 +720,12 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                       placeholder="Amt"
                       value={claimAmount}
                       onChange={(e) => setClaimAmount(e.target.value)}
-                      className={styles.fundInputSmall}
+                      className={styles['fund-input-small']}
                     />
                   </div>
                 )}
               </div>
-              <div className={styles.confirmButtons}>
+              <div className={styles['confirm-buttons']}>
                 <Button
                   variant="primary"
                   size="sm"
@@ -739,63 +743,63 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                 </Button>
               </div>
             </div>
-          </div>
+          </EnterPanel>
         )}
       </div>
 
       {/* Right Actions Section */}
-      <div className={styles.cardRightSection}>
+      <div className={styles['card-right-section']}>
         {/* Center Actions Section */}
-        <div className={styles.centerActions}>
-          {isOwner ? (
-            <div className={styles.ownerActions}>
+        <div className={styles['center-actions']}>
+          {canCollaborate ? (
+            <div className={styles['owner-actions']}>
               {!showDeleteConfirm && (
                 <button
                   onClick={onEdit}
-                  className={styles.editBtn}
+                  className={styles['edit-btn']}
                   title="Edit Item"
                 >
                   <Edit2 size={16} />
                 </button>
               )}
               {showDeleteConfirm ? (
-                <div className={styles.deleteConfirmBox}>
-                  <span className={styles.deleteConfirmText}>Delete?</span>
+                <EnterPanel animation="dropdown" className={styles['delete-confirm-box']}>
+                  <span className={styles['delete-confirm-text']}>Delete?</span>
                   <button
                     onClick={handleDelete}
                     disabled={deleteLoading}
-                    className={styles.deleteConfirmBtn}
+                    className={styles['delete-confirm-btn']}
                   >
                     Yes
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
                     disabled={deleteLoading}
-                    className={styles.deleteCancelBtn}
+                    className={styles['delete-cancel-btn']}
                   >
                     No
                   </button>
-                </div>
+                </EnterPanel>
               ) : (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
                   disabled={deleteLoading}
-                  className={styles.deleteBtn}
+                  className={styles['delete-btn']}
                   title="Delete Item"
                 >
                   <Trash2 size={16} />
                 </button>
               )}
             </div>
-          ) : (
-            <div className={styles.claimStatusButtonBox}>
+          ) : null}
+          {!isOwner && (
+            <div className={styles['claim-status-button-box']}>
               {claimedByCurrentUser ? (
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={handleUnclaim}
                   isLoading={claimLoading}
-                  className={styles.unclaimBtn}
                 >
                   Unclaim
                 </Button>
@@ -804,7 +808,6 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                   variant="secondary"
                   size="sm"
                   disabled={true}
-                  className={styles.claimedDisabledBtn}
                 >
                   Claimed
                 </Button>
@@ -813,7 +816,6 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                   variant="primary"
                   size="sm"
                   onClick={() => setShowClaimForm(true)}
-                  className={styles.claimBtn}
                 >
                   Claim
                 </Button>
@@ -823,12 +825,12 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
         </div>
 
         {item.Claims.length > 0 && (!isOwner || isExpired) && (
-          <div className={styles.claimedByBox} title="Claim Details">
-            <div className={styles.claimedByBoxLabel}>
+          <div className={styles['claimed-by-box']} title="Claim Details">
+            <div className={styles['claimed-by-box-label']}>
               {allowGroupFunds ? 'Funded' : 'Claimed'}
             </div>
-            <div className={styles.claimedByBoxSub}>by</div>
-            <div className={styles.claimedByBoxName}>
+            <div className={styles['claimed-by-box-sub']}>by</div>
+            <div className={styles['claimed-by-box-name']}>
               {item.Claims.map((c) => c.ClaimedByName || 'Anonymous').join(', ')}
             </div>
           </div>

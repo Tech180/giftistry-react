@@ -54,7 +54,7 @@
 .comments-list{
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-base);
+  gap: 1.5rem;
 }
 
 .empty-text{
@@ -63,6 +63,12 @@
   text-align: center;
   padding: var(--spacing-xl) 0;
   font-style: italic;
+}
+
+.empty-state-wrap{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .bottom-seamless-container{
@@ -115,5 +121,30 @@
   border-top-color: var(--primary);
   border-radius: var(--radius-full);
   animation: var(--animation-rotation);
+}
+
+.auth-prompt{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-base);
+  padding: var(--spacing-base) 1.25rem;
+}
+
+.auth-prompt-text{
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.auth-prompt-link{
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.auth-prompt-link:hover{
+  text-decoration: underline;
 }
 

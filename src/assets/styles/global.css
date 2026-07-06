@@ -15,8 +15,21 @@
   --primary-hover: var(--theme-primary-hover);
   --primary-text: var(--theme-primary-text);
   --primary-rgb: var(--theme-primary-rgb);
+  --primary-light: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  --primary-subtle: color-mix(in srgb, var(--primary) 12%, var(--surface));
   --accent: var(--theme-accent);
   --background: var(--theme-bg);
+  --text-primary: var(--text);
+  --border-subtle: var(--border);
+  --surface-elevated: var(--surface-hover);
+  --danger: var(--error);
+  --radius-sm: var(--theme-radius-sm, calc(var(--radius) * 0.75));
+  --radius-md: var(--theme-radius-md, var(--radius));
+  --radius-lg: var(--theme-radius-lg, var(--radius));
+  --shadow-sm: var(--theme-shadow-sm, var(--shadow));
+  --shadow-md: var(--theme-shadow-md, var(--shadow));
+  --shadow-lg: var(--theme-shadow-lg, var(--shadow));
+  --shadow-hover: var(--theme-shadow-hover, var(--shadow-lg));
   --error: var(--theme-error);
   --error-bg: var(--theme-error-bg);
   --error-border: var(--theme-error-border);
@@ -25,8 +38,108 @@
   --warning: var(--theme-warning);
   --warning-bg: var(--theme-warning-bg);
 
+  /* Presentation token aliases (neutral fallbacks preserve non-TTYD themes) */
+  --font-family-body: var(--theme-font-body, var(--font-family-main));
+  --font-family-display: var(--theme-font-display, var(--font-family-main));
+  --font-family-mono: var(
+    --theme-font-mono,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace
+  );
+  --font-size-2xs: 0.625rem;
+  --input-fill: var(--theme-input-fill, var(--surface));
+  --input-border-width: var(--theme-input-border-width, 1px);
+  --input-border-color: var(--theme-input-border-color, var(--border));
+  --input-shadow: var(--theme-input-shadow, inset 0 1px 2px rgba(0, 0, 0, 0.02));
+  --input-shadow-focus: var(--theme-input-shadow-focus, 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent));
+  --input-focus-transform: var(--theme-input-focus-transform, none);
+  --input-text-color: var(--theme-input-text-color, var(--text));
+  --input-placeholder-color: var(--theme-input-placeholder-color, var(--text-muted));
+  --input-icon-color: var(--theme-input-icon-color, var(--text-muted));
+  --input-focus-fill: var(--theme-input-focus-fill, var(--surface));
+  --die-cut-filter: var(--theme-die-cut-filter, none);
+  --button-radius: var(--theme-button-radius, var(--radius));
+  --button-border-width: var(--theme-button-border-width, 1px);
+  --button-shadow: var(--theme-button-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
+  --button-shadow-hover: var(--theme-button-shadow-hover, var(--button-shadow));
+  --button-shadow-active: var(--theme-button-shadow-active, var(--button-shadow));
+  --button-gloss: var(--theme-button-gloss, none);
+  --button-primary-border: var(--theme-button-primary-border, var(--border));
+  --button-secondary-bg: var(--theme-button-secondary-bg, var(--surface));
+  --button-secondary-text: var(--theme-button-secondary-text, var(--text));
+  --button-secondary-border: var(--theme-button-secondary-border, var(--border));
+  --button-secondary-shadow: var(--theme-button-secondary-shadow, var(--button-shadow));
+  --button-secondary-shadow-hover: var(--theme-button-secondary-shadow-hover, var(--button-shadow-hover));
+  --button-secondary-shadow-active: var(--theme-button-secondary-shadow-active, var(--button-shadow-active));
+  --button-ghost-border: var(--theme-button-ghost-border, transparent);
+  --label-bg: var(--theme-label-bg, transparent);
+  --label-border: var(--theme-label-border, transparent);
+  --label-rotate: var(--theme-label-rotate, 0deg);
+  --card-border-width: var(--theme-card-border-width, 1px);
+  --card-shadow: var(--theme-card-shadow, var(--shadow));
+  --card-inner-stitch: var(--theme-card-inner-stitch, none);
+  --transition-pop: var(--theme-transition-pop, var(--transition-normal));
+
   /* Spacing fallback until engine rebuild includes --spacing-base */
   --spacing-base: 0.75rem;
+}
+
+/* Transparent bordered panel — matches gift category section */
+.input-panel{
+  background-color: transparent;
+  border: var(--input-border-width) solid var(--input-border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--input-shadow);
+  transition: border-color var(--transition-pop), box-shadow var(--transition-pop);
+  box-sizing: border-box;
+}
+
+.input-panel:focus-within{
+  border-color: var(--accent);
+  box-shadow: var(--input-shadow-focus);
+}
+
+.input-panel-padded{
+  padding: var(--spacing-md);
+}
+
+.input-panel-field{
+  width: 100%;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-base);
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--input-text-color);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.input-panel-field::placeholder{
+  color: var(--input-placeholder-color);
+  opacity: 1;
+}
+
+.input-panel-field:focus{
+  outline: none;
+}
+
+.input-panel.has-error,
+.input-panel.has-error:focus-within{
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 15%, transparent);
+}
+
+/* Dark dialogue panels need light input ink, not warm paper ink */
+[data-theme="paper-mario"][data-appearance="dark"]{
+  --input-text-color: var(--text);
+  --input-placeholder-color: var(--text-muted);
+  --input-icon-color: var(--text);
 }
 
 * {
@@ -37,7 +150,7 @@
 }
 
 body {
-  font-family: var(--font-family-main);
+  font-family: var(--font-family-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg);
@@ -47,7 +160,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: inherit;
+  font-family: var(--font-family-display);
   font-weight: var(--font-weight-semibold);
   letter-spacing: var(--letter-spacing-tight);
 }
@@ -144,17 +257,160 @@ h1, h2, h3, h4, h5, h6 {
   100% { transform: rotate(360deg); }
 }
 
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    max-height: 40rem;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mini-slide-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mini-slide-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/*
+ * Enter animation tokens.
+ * --panel-slide-duration: side drawers + content push (keep snappy).
+ * --enter-duration: dropdowns, modals, fades, accordions.
+ */
+:root {
+  --panel-slide-duration: 0.32s;
+  --panel-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --enter-duration: 0.3s;
+  --enter-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* --- Animation Utility Classes --- */
+.animate-fade-in,
+.animate-slide-up,
+.animate-scale-in,
+.animate-dropdown-in,
+.animate-accordion-down,
+.animate-slide-down,
+.animate-mini-slide-from-left,
+.animate-mini-slide-from-right {
+  transition: none;
+}
+
 .animate-fade-in {
-  animation: var(--animation-fade-in);
+  animation-name: fade-in;
+  animation-duration: var(--enter-duration);
+  animation-timing-function: var(--enter-ease);
+  animation-fill-mode: both;
 }
 
 .animate-slide-up {
-  animation: var(--animation-slide-up);
+  animation-name: slide-up;
+  animation-duration: var(--enter-duration);
+  animation-timing-function: var(--enter-ease);
+  animation-fill-mode: both;
 }
 
 .animate-scale-in {
-  animation: var(--animation-scale-in);
+  animation-name: scale-in;
+  animation-duration: var(--enter-duration);
+  animation-timing-function: var(--enter-ease);
+  animation-fill-mode: both;
+}
+
+/* Popover / menu panels */
+.animate-dropdown-in {
+  animation-name: dropdown-in;
+  animation-duration: var(--enter-duration);
+  animation-timing-function: var(--enter-ease);
+  animation-fill-mode: both;
+  transform-origin: top center;
+  will-change: opacity, transform;
+}
+
+/* Accordion expand panels (item details, inline confirms) */
+.animate-accordion-down {
+  overflow: hidden;
+  animation-name: accordion-down;
+  animation-duration: var(--enter-duration);
+  animation-timing-function: var(--enter-ease);
+  animation-fill-mode: both;
+  will-change: max-height, opacity, transform;
+}
+
+.animate-slide-down {
+  animation-name: slide-down;
+  animation-duration: var(--enter-duration);
+  animation-timing-function: var(--enter-ease);
+  animation-fill-mode: both;
+}
+
+.animate-mini-slide-from-left {
+  animation-name: mini-slide-from-left;
+  animation-duration: var(--panel-slide-duration);
+  animation-timing-function: var(--panel-slide-ease);
+  animation-fill-mode: both;
+}
+
+.animate-mini-slide-from-right {
+  animation-name: mini-slide-from-right;
+  animation-duration: var(--panel-slide-duration);
+  animation-timing-function: var(--panel-slide-ease);
+  animation-fill-mode: both;
+}
+
+.animate-spin {
+  animation-name: rotation;
+  animation-duration: 0.8s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@starting-style {
+  .animate-dropdown-in {
+    opacity: 0;
+    transform: scale(0.94) translateY(-8px);
+  }
+
+  .animate-accordion-down {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  .animate-fade-in {
+    opacity: 0;
+  }
 }
 
 /* Shimmer Loading Skeleton */

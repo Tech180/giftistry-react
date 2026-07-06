@@ -1,0 +1,49 @@
+.wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.textarea {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  flex: 1;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  background: transparent;
+  border: none;
+  color: var(--text);
+  outline: none;
+  min-height: 4.5rem;
+  max-height: 12.5rem;
+  padding: var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) 0;
+  line-height: 1.35;
+  overflow-y: auto;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.textarea:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+  display: block;
+}
+
+.mention-pill {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary);
+  cursor: pointer;
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  padding: 0 4px;
+  margin: 0 2px;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  user-select: none;
+}
+
+.mention-pill:hover {
+  background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  text-decoration: underline;
+}

@@ -1,15 +1,16 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell, AppNavigation } from 'app/layout';
-import { Login, Register, Dashboard, WishlistDetail, Profile, VerifyEmail, Setup } from 'app/pages';
+import { Login, Register, Dashboard, WishlistDetail, Settings, VerifyEmail, Setup, FriendsPage, InviteAcceptPage } from 'app/pages';
 import { VerificationBanner } from 'features/auth';
 import { ProtectedRoute, PublicRoute } from 'app/routes/protected-route.component';
+import { LegacyProfileRedirect } from 'app/routes/legacy-profile-redirect.component';
 import { AppContentTemplateProps } from './interfaces/app-content-template-props.interface';
 import styles from './App.module.css';
 
 export const AppLoadingTemplate: React.FC = () => (
-  <div className={styles.loadingContainer}>
-    <div className={styles.loadingSpinner} />
+  <div className={styles['loading-container']}>
+    <div className={styles['loading-spinner']} />
   </div>
 );
 
@@ -21,13 +22,13 @@ export const AppSetupTemplate: React.FC = () => (
 );
 
 export const AppContentTemplate: React.FC<AppContentTemplateProps> = ({
-  isProfilePage,
+  isSettingsPage,
   hasBanner,
 }) => (
   <AppShell
     navigation={<AppNavigation />}
     banner={<VerificationBanner />}
-    isProfilePage={isProfilePage}
+    isSettingsPage={isSettingsPage}
     hasBanner={hasBanner}
   >
     <Routes>
@@ -66,10 +67,31 @@ export const AppContentTemplate: React.FC<AppContentTemplateProps> = ({
         }
       />
       <Route
-        path="/profile/*"
+        path="/friends"
+        element={<Navigate to="/friends/current" replace />}
+      />
+      <Route
+        path="/friends/:tab"
         element={
           <ProtectedRoute>
-            <Profile />
+            <FriendsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/invite/list/:token"
+        element={
+          <ProtectedRoute>
+            <InviteAcceptPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/profile/*" element={<LegacyProfileRedirect />} />
+      <Route
+        path="/settings/*"
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         }
       />

@@ -14,6 +14,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSystemInitialized, setIsSystemInitialized] = useState(true);
+  const [globalAiEnabled, setGlobalAiEnabled] = useState(false);
 
   // Inactivity state
   const [showWarning, setShowWarning] = useState(false);
@@ -41,12 +42,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkSystemStatus = async () => {
     try {
-      const res = await apiClient.get<{ success: boolean; initialized: boolean }>('/api/system/status');
+      const res = await apiClient.get<{ success: boolean; initialized: boolean; aiEnabled?: boolean }>('/api/system/status');
       if (res && res.initialized !== undefined) {
         setIsSystemInitialized(res.initialized);
       }
+      if (res && res.aiEnabled !== undefined) {
+        setGlobalAiEnabled(res.aiEnabled);
+      }
     } catch (err) {
       setIsSystemInitialized(false);
+      setGlobalAiEnabled(false);
     }
   };
 
@@ -111,8 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await authApi.updateProfile(username, firstName, lastName, bio, theme, avatar);
       if (res && res.User) {
-        setUser(res.User);
+        setUser((prev) => (prev ? { ...prev, ...res.User } : res.User));
+        return res.User;
       }
+      return null;
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Failed to update profile';
       setError(errMsg);
@@ -234,6 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearError,
         refreshUser: fetchCurrentUser,
         isSystemInitialized,
+        globalAiEnabled,
         checkSystemStatus,
       }}
     >

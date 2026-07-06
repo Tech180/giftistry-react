@@ -14,11 +14,11 @@ export interface ProfileCardTemplateProps {
   avatar: string | null;
   setAvatar: (val: string | null) => void;
   isLoading: boolean;
+  hasChanges: boolean;
   errorMsg: string | null;
   successMsg: string | null;
   handleSubmit: (e: React.SyntheticEvent) => void;
   handleAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleRemoveAvatar: () => void;
   randomizeAvatarColor: () => void;
   handleDeleteAccount: () => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;

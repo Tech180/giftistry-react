@@ -15,7 +15,7 @@ export const ErrorStateTemplate: React.FC<ErrorStateTemplateProps> = ({
       </span>
       <p className={styles.message}>{message}</p>
       {onRetry && (
-        <button type="button" className={styles.retryButton} onClick={onRetry}>
+        <button type="button" className={styles['retry-button']} onClick={onRetry}>
           {retryLabel}
         </button>
       )}

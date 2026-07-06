@@ -19,7 +19,7 @@ export const authApi = {
     apiClient.put<{ success: boolean; User: ApiUser }>('/api/auth/profile', { username, firstName, lastName, bio, theme, avatar }, 'Auth'),
 
   getUserPreview: (userId: string) =>
-    apiClient.get<{ success: boolean; User: ApiUser }>(`/api/users/${userId}/preview`),
+    apiClient.get<{ User: ApiUser }>(`/api/users/${userId}/preview`),
 
   verifyEmail: (token: string) =>
     apiClient.post<{ success: boolean }>('/api/auth/verify-email', { token }, 'Auth'),

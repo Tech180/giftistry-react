@@ -13,7 +13,7 @@ export const TabItemTemplate: React.FC<TabItemTemplateProps> = ({
     <button type="button" className={buttonClass} onClick={onClick}>
       {label}
       {count !== undefined && (
-        <span className={`${styles.tabCount} ${countClass}`}>{count}</span>
+        <span className={`${styles['tab-count']} ${countClass}`}>{count}</span>
       )}
     </button>
   );

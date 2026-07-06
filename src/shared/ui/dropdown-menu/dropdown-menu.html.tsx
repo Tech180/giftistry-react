@@ -1,6 +1,6 @@
 import React from 'react';
+import { EnterPanel } from 'shared/ui/enter-panel/enter-panel.component';
 import { DropdownMenuTemplateProps } from './interfaces/dropdown-menu-template-props.interface';
-import styles from './dropdown-menu.module.css';
 
 export const DropdownMenuTemplate: React.FC<DropdownMenuTemplateProps> = ({
   isOpen,
@@ -13,8 +13,8 @@ export const DropdownMenuTemplate: React.FC<DropdownMenuTemplateProps> = ({
   }
 
   return (
-    <div ref={menuRef} className={menuClass} role="menu">
+    <EnterPanel ref={menuRef} animation="dropdown" className={menuClass} role="menu">
       {children}
-    </div>
+    </EnterPanel>
   );
 };

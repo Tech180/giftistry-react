@@ -13,6 +13,11 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const BASE_URL = env.apiUrl;
 
+const CORE_DEFAULT_THEMES: Theme[] = [
+  'default', 'neon', 'cyberpunk', 'mystic', 'burnt-forest',
+  'paper', 'paper-mario', 'retro-80s', 'pixel', 'matrix', 'terminal', 'vaporwave', 'arcade',
+];
+
 let lastRequestedUrl = "";
 
 /**
@@ -80,7 +85,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const user = auth ? auth.user : null;
 
   const [unlockedThemes, setUnlockedThemes] = useState<Theme[]>(() => {
-    const defaults: Theme[] = ["default", "neon", "cyberpunk", "mystic", "burnt-forest"];
+    const defaults: Theme[] = CORE_DEFAULT_THEMES;
     try {
       const saved = localStorage.getItem("giftistry-unlocked-themes");
       if (saved) {
@@ -106,7 +111,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Check for holiday theme unlocking
   useEffect(() => {
-    const defaults: Theme[] = ["default", "neon", "cyberpunk", "mystic", "burnt-forest"];
+    const defaults: Theme[] = CORE_DEFAULT_THEMES;
     let currentUnlocked = [...unlockedThemes];
     let changed = false;
 

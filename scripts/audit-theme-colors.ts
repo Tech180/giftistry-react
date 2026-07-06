@@ -11,8 +11,8 @@ const ALLOWLIST = [
   'features/comments/components/input/comment-input.module.css',
   'features/auth/components/image-cropper/image-cropper.module.css',
   'features/auth/components/profile-card/profile-card.component.tsx',
-  'app/pages/profile/tabs/theming/theming-tab.html.tsx',
-  'app/pages/profile/tabs/theming/theming-tab.component.tsx',
+  'app/pages/settings/tabs/theming/theming-tab.html.tsx',
+  'app/pages/settings/tabs/theming/theming-tab.component.tsx',
 ];
 
 const HEX_PATTERN = /#[0-9a-fA-F]{3,8}\b/g;

@@ -1,4 +1,5 @@
 import { Item } from 'features/items';
+import { ListParticipant } from './list-participant.interface';
 
 export interface CommentInputProps {
   isOwner: boolean;
@@ -18,4 +19,8 @@ export interface CommentInputProps {
   typingUsers: string[];
   isAnonymous: boolean;
   setIsAnonymous: (anonymous: boolean) => void;
+  participants: ListParticipant[];
+  currentUserId?: string;
+  imageUrl?: string | null;
+  setImageUrl?: (url: string | null) => void;
 }

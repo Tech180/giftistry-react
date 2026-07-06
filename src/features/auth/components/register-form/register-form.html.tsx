@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Lock, User as UserIcon, AlertCircle, Smile } from 'lucide-react';
-import { Input, Button, Card } from 'shared/ui';
+import { Input, Button, Card, EnterPanel } from 'shared/ui';
 import { RegisterFormTemplateProps } from '../../interfaces/register-form-template-props.interface';
 import styles from './register-form.module.css';
 
@@ -23,21 +23,22 @@ export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
   handleSubmit,
 }) => {
   return (
-    <Card className={`${styles.registerCard} animate-scale-in`} padding="lg" glass={true}>
+    <EnterPanel animation="scale">
+      <Card className={styles['register-card']} padding="lg" glass={true}>
       <div className={styles.header}>
         <h2 className={styles.title}>Create Account</h2>
         <p className={styles.subtitle}>Get started with your custom gift registry</p>
       </div>
 
       {localError && (
-        <div className={`${styles.alert} animate-slide-up`}>
+        <EnterPanel animation="slide-up" className={styles.alert}>
           <AlertCircle size={16} />
           <span>{localError}</span>
-        </div>
+        </EnterPanel>
       )}
 
       <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.nameRow}>
+        <div className={styles['name-row']}>
           <Input
             label="First Name *"
             type="text"
@@ -102,7 +103,7 @@ export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
           type="submit"
           variant="primary"
           isLoading={isLoading}
-          className={styles.submitBtn}
+          className={styles['submit-btn']}
         >
           Create Account
         </Button>
@@ -115,5 +116,6 @@ export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
         </Link>
       </div>
     </Card>
+    </EnterPanel>
   );
 };

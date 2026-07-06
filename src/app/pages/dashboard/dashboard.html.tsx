@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { WishlistCard, CreateListForm } from 'features/wishlists';
-import { Button, Modal, TabBar, SearchInput, EmptyState, LoadingState } from 'shared/ui';
+import { Button, Modal, TabBar, SearchInput, EmptyState, LoadingState, EnterPanel } from 'shared/ui';
 import styles from './dashboard.module.css';
 import { DashboardTemplateProps } from './interfaces/dashboard-template-props.interface';
 
@@ -23,7 +23,7 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
   emptyDesc,
 }) => {
   return (
-    <div className={`${styles.container} animate-fade-in`}>
+    <EnterPanel animation="fade" className={styles.container}>
       <div className={styles.header}>
         <div>
           <h1 className={styles.greeting}>{getGreeting()}</h1>
@@ -40,9 +40,9 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
         </Button>
       </div>
 
-      {error && <div className={styles.errorBanner}>{error}</div>}
+      {error && <div className={styles['error-banner']}>{error}</div>}
 
-      <div className={styles.controlsRow}>
+      <div className={styles['controls-row']}>
         <TabBar
           tabs={tabs}
           activeTab={activeTab}
@@ -52,11 +52,11 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
           value={searchQuery}
           onChange={setSearchQuery}
           placeholder="Search wishlists..."
-          className={styles.searchInput}
+          className={styles['search-input']}
         />
       </div>
 
-      <div className={styles.gridSection}>
+      <div className={styles['grid-section']}>
         {isLoading ? (
           <LoadingState message="Loading wishlists..." />
         ) : currentLists.length > 0 ? (
@@ -92,6 +92,6 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
       >
         <CreateListForm onSuccess={handleCreateSuccess} />
       </Modal>
-    </div>
+    </EnterPanel>
   );
 };

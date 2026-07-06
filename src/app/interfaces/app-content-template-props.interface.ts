@@ -1,4 +1,4 @@
 export interface AppContentTemplateProps {
-  isProfilePage: boolean;
+  isSettingsPage: boolean;
   hasBanner: boolean;
 }

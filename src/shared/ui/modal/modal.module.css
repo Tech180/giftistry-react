@@ -12,7 +12,6 @@
   justify-content: center;
   z-index: var(--zindex-overlay);
   padding: var(--spacing-md);
-  animation: var(--animation-fade-in);
 }
 
 .modal{

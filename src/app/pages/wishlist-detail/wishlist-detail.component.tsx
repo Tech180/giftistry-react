@@ -30,6 +30,8 @@ export default function WishlistDetail() {
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isTaggingModeActive, setIsTaggingModeActive] = useState(false);
   const [taggedItemIds, setTaggedItemIds] = useState<string[]>([]);
+  const [isReplyTaggingModeActive, setIsReplyTaggingModeActive] = useState(false);
+  const [replyTaggedItemIds, setReplyTaggedItemIds] = useState<string[]>([]);
   const [isLinkingModeActive, setIsLinkingModeActive] = useState(false);
   const [linkedItemIds, setLinkedItemIds] = useState<string[]>([]);
   const [isDeactivating, setIsDeactivating] = useState(false);
@@ -50,6 +52,12 @@ export default function WishlistDetail() {
 
   const handleSelectTag = useCallback((itemId: string) => {
     setTaggedItemIds((prev) =>
+      prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
+    );
+  }, []);
+
+  const handleSelectReplyTag = useCallback((itemId: string) => {
+    setReplyTaggedItemIds((prev) =>
       prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
     );
   }, []);
@@ -106,6 +114,10 @@ export default function WishlistDetail() {
     return !!(wishlist && user && wishlist.UserId === user.Id);
   }, [wishlist, user]);
 
+  const canCollaborate = useMemo(() => {
+    return isOwner || wishlist?.Role === 'collaborator';
+  }, [isOwner, wishlist?.Role]);
+
   const isExpired = useMemo(() => isWishlistExpired(wishlist?.ExpiresAt), [wishlist]);
 
   const saveTitle = async (newTitle: string) => {
@@ -121,7 +133,9 @@ export default function WishlistDetail() {
         wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
         wishlist.AllowGroupFunds,
         wishlist.Category,
-        wishlist.RevealSuggestions
+        wishlist.RevealSuggestions,
+        wishlist.AiEnabled,
+        wishlist.Visibility
       );
       setWishlist(updated);
     } catch (err) {
@@ -134,9 +148,9 @@ export default function WishlistDetail() {
     const element = document.getElementById(`item-card-${itemId}`);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      element.classList.add(styles.itemCardWrapperHighlighted);
+      element.classList.add(styles['item-card-wrapper-highlighted']);
       setTimeout(() => {
-        element.classList.remove(styles.itemCardWrapperHighlighted);
+        element.classList.remove(styles['item-card-wrapper-highlighted']);
       }, 1500);
     }
   }, []);
@@ -155,7 +169,9 @@ export default function WishlistDetail() {
         expiresAtIso,
         wishlist.AllowGroupFunds,
         wishlist.Category,
-        wishlist.RevealSuggestions
+        wishlist.RevealSuggestions,
+        wishlist.AiEnabled,
+        wishlist.Visibility
       );
       setWishlist(updated);
     } catch (err) {
@@ -173,11 +189,51 @@ export default function WishlistDetail() {
         wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
         wishlist.AllowGroupFunds,
         wishlist.Category,
-        !wishlist.RevealSuggestions
+        !wishlist.RevealSuggestions,
+        wishlist.AiEnabled,
+        wishlist.Visibility
       );
       setWishlist(updated);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to update suggestion visibility');
+    }
+  };
+
+  const toggleAiEnabled = async () => {
+    if (!wishlist) return;
+    try {
+      const updated = await wishlistsApi.updateWishlist(
+        wishlist.Id,
+        wishlist.Title,
+        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
+        wishlist.AllowGroupFunds,
+        wishlist.Category,
+        wishlist.RevealSuggestions,
+        !wishlist.AiEnabled,
+        wishlist.Visibility
+      );
+      setWishlist(updated);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to toggle AI reviews');
+    }
+  };
+
+  const saveVisibility = async (visibility: 'private' | 'friends' | 'link') => {
+    if (!wishlist || wishlist.Visibility === visibility) return;
+    try {
+      const updated = await wishlistsApi.updateWishlist(
+        wishlist.Id,
+        wishlist.Title,
+        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
+        wishlist.AllowGroupFunds,
+        wishlist.Category,
+        wishlist.RevealSuggestions,
+        wishlist.AiEnabled,
+        visibility
+      );
+      setWishlist(updated);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update visibility');
     }
   };
 
@@ -303,6 +359,7 @@ export default function WishlistDetail() {
       items={items}
       priorities={priorities}
       isOwner={isOwner}
+      canCollaborate={canCollaborate}
       isExpired={isExpired}
       isAddOpen={isAddOpen}
       setIsAddOpen={setIsAddOpen}
@@ -323,6 +380,8 @@ export default function WishlistDetail() {
       saveTitle={saveTitle}
       saveDate={saveDate}
       toggleRevealSuggestions={toggleRevealSuggestions}
+      toggleAiEnabled={toggleAiEnabled}
+      saveVisibility={saveVisibility}
       formatDate={formatWishlistExpirationDate}
       isCommentsOpen={isCommentsOpen}
       setIsCommentsOpen={setIsCommentsOpen}
@@ -343,7 +402,12 @@ export default function WishlistDetail() {
       setIsTaggingModeActive={setIsTaggingModeActive}
       taggedItemIds={taggedItemIds}
       setTaggedItemIds={setTaggedItemIds}
+      isReplyTaggingModeActive={isReplyTaggingModeActive}
+      setIsReplyTaggingModeActive={setIsReplyTaggingModeActive}
+      replyTaggedItemIds={replyTaggedItemIds}
+      setReplyTaggedItemIds={setReplyTaggedItemIds}
       handleSelectTag={handleSelectTag}
+      handleSelectReplyTag={handleSelectReplyTag}
       isLoading={isItemsLoading}
     />
   );

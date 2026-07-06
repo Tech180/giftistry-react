@@ -5,7 +5,7 @@ import { CreateListFormTemplate } from './create-list-form.html';
 import { useAuth } from 'app/providers/auth-context';
 
 export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => {
-  const { user } = useAuth();
+  const { user, globalAiEnabled } = useAuth();
   const isUnverified = user ? !user.EmailVerified : false;
 
   const [title, setTitle] = useState('');
@@ -14,6 +14,7 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
   const [revealSuggestions, setRevealSuggestions] = useState(true);
   const [category, setCategory] = useState('generic');
   const [customCategory, setCustomCategory] = useState('');
+  const [aiEnabled, setAiEnabled] = useState(false);
   
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -46,7 +47,8 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
         expiresAt ? new Date(expiresAt).toISOString() : null,
         allowGroupFunds,
         finalCategory,
-        revealSuggestions
+        revealSuggestions,
+        aiEnabled
       );
       setTitle('');
       setExpiresAt('');
@@ -54,6 +56,7 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
       setRevealSuggestions(true);
       setCategory('generic');
       setCustomCategory('');
+      setAiEnabled(false);
       onSuccess(res);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to create wishlist.');
@@ -79,6 +82,9 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
       setCategory={setCategory}
       customCategory={customCategory}
       setCustomCategory={setCustomCategory}
+      aiEnabled={aiEnabled}
+      setAiEnabled={setAiEnabled}
+      globalAiEnabled={globalAiEnabled}
       isUnverified={isUnverified}
     />
   );

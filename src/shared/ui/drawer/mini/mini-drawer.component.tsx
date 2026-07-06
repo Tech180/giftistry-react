@@ -9,8 +9,8 @@ export const MiniDrawer: React.FC<MiniDrawerProps> = (props) => {
 
   if (!isActive && selectedIds.length === 0) return null;
 
-  const drawerClass = `${styles.miniDrawer} ${
-    position === 'right' ? styles.positionRight : styles.positionLeft
+  const drawerClass = `${styles['mini-drawer']} ${
+    position === 'right' ? styles['position-right'] : styles['position-left']
   }`;
 
   const matchedItems = selectedIds

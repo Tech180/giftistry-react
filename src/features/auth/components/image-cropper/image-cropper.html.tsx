@@ -1,4 +1,5 @@
 import React from 'react';
+import { EnterPanel } from 'shared/ui/enter-panel/enter-panel.component';
 import styles from './image-cropper.module.css';
 import { ImageCropperTemplateProps } from './interfaces/image-cropper-template-props.interface';
 
@@ -16,11 +17,11 @@ export const ImageCropperHtml: React.FC<ImageCropperTemplateProps> = ({
   canvasRef,
 }) => {
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
+    <EnterPanel animation="fade" className={styles.overlay}>
+      <EnterPanel animation="scale" className={styles.modal}>
         <div className={styles.header}>
           <h3 className={styles.title}>Crop Profile Picture</h3>
-          <button className={styles.closeButton} onClick={onCancelClick} aria-label="Close modal">
+          <button className={styles['close-button']} onClick={onCancelClick} aria-label="Close modal">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -38,7 +39,7 @@ export const ImageCropperHtml: React.FC<ImageCropperTemplateProps> = ({
           </button>
         </div>
 
-        <div className={styles.cropArea}>
+        <div className={styles['crop-area']}>
           <img
             ref={imgRef}
             src={imageSrc}
@@ -48,11 +49,11 @@ export const ImageCropperHtml: React.FC<ImageCropperTemplateProps> = ({
               transform: `translate(${offsetX}px, ${offsetY}px) scale(${zoom})`,
             }}
           />
-          <div className={styles.cropRing}></div>
+          <div className={styles['crop-ring']}></div>
         </div>
 
         <div className={styles.controls}>
-          <div className={styles.controlGroup}>
+          <div className={styles['control-group']}>
             <label className={styles.label}>Zoom</label>
             <input
               type="range"
@@ -65,7 +66,7 @@ export const ImageCropperHtml: React.FC<ImageCropperTemplateProps> = ({
             />
           </div>
 
-          <div className={styles.controlGroup}>
+          <div className={styles['control-group']}>
             <label className={styles.label}>Move X</label>
             <input
               type="range"
@@ -78,7 +79,7 @@ export const ImageCropperHtml: React.FC<ImageCropperTemplateProps> = ({
             />
           </div>
 
-          <div className={styles.controlGroup}>
+          <div className={styles['control-group']}>
             <label className={styles.label}>Move Y</label>
             <input
               type="range"
@@ -93,16 +94,16 @@ export const ImageCropperHtml: React.FC<ImageCropperTemplateProps> = ({
         </div>
 
         <div className={styles.actions}>
-          <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={onCancelClick}>
+          <button className={`${styles.btn} ${styles['btn-secondary']}`} onClick={onCancelClick}>
             Cancel
           </button>
-          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={onCropClick}>
+          <button className={`${styles.btn} ${styles['btn-primary']}`} onClick={onCropClick}>
             Apply & Save
           </button>
         </div>
 
         <canvas ref={canvasRef} style={{ display: 'none' }} width={200} height={200} />
-      </div>
-    </div>
+      </EnterPanel>
+    </EnterPanel>
   );
 };

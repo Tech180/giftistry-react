@@ -20,8 +20,9 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   onEdit,
   onClose,
   wishlistItems = [],
+  aiEnabled,
 }) => {
-  const { user } = useAuth();
+  const { user, globalAiEnabled } = useAuth();
   const claimedByCurrentUser = !!(user && item.Claims.some(c => c.UserId === user.Id));
 
   const [claimAmount, setClaimAmount] = useState('');
@@ -31,6 +32,11 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [localIsFavorite, setLocalIsFavorite] = useState(false);
+
+  // AI Reviews States
+  const [reviews, setReviews] = useState<{ summary: string; pros: string[]; cons: string[]; reviews: string[] } | null>(null);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
 
   // Advanced States
   const [selectedVariation, setSelectedVariation] = useState('');
@@ -54,6 +60,42 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   useEffect(() => {
     setLocalIsFavorite(getItemFavoriteFlag(item.Description));
   }, [item.Description]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchReviews = async () => {
+      if (!globalAiEnabled || !aiEnabled || !item.Links || item.Links.length === 0) {
+        setReviews(null);
+        setReviewsError(null);
+        return;
+      }
+      
+      setReviewsLoading(true);
+      setReviewsError(null);
+      try {
+        const response = await itemsApi.getItemReviews(item.Id);
+        if (active) {
+          if (response && response.data) {
+            setReviews(response.data);
+          } else {
+            setReviews(null);
+          }
+        }
+      } catch (err: any) {
+        if (active) {
+          setReviewsError(err.message || 'Failed to load AI reviews');
+        }
+      } finally {
+        if (active) {
+          setReviewsLoading(false);
+        }
+      }
+    };
+    fetchReviews();
+    return () => {
+      active = false;
+    };
+  }, [item.Id, globalAiEnabled, aiEnabled, item.Links]);
 
   const handleClaim = async (e?: React.SyntheticEvent, skipLinkedCheck = false) => {
     if (e) e.preventDefault();
@@ -177,6 +219,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       item={item}
       priorityLabel={priorityLabel}
       isOwner={isOwner}
+      canCollaborate={canCollaborate}
       isExpired={isExpired}
       allowGroupFunds={allowGroupFunds}
       wishlistItems={wishlistItems}
@@ -214,6 +257,11 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       onClose={onClose}
       onEdit={onEdit}
       getSiteName={getSiteName}
+      reviews={reviews}
+      reviewsLoading={reviewsLoading}
+      reviewsError={reviewsError}
+      aiEnabled={aiEnabled}
+      globalAiEnabled={globalAiEnabled}
     />
   );
 };

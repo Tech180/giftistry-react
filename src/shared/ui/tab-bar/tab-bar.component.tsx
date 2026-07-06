@@ -12,7 +12,7 @@ export const TabBar: React.FC<TabBarProps> = ({
   onTabChange,
   className = '',
 }) => {
-  const containerClass = [styles.tabsContainer, className].filter(Boolean).join(' ');
+  const containerClass = [styles['tabs-container'], className].filter(Boolean).join(' ');
 
   return (
     <TabBarTemplate

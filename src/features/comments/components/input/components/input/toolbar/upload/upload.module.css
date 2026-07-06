@@ -1,0 +1,26 @@
+.picker-wrapper-relative {
+  position: relative;
+}
+
+.chat-tool-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.chat-tool-btn:hover {
+  color: var(--primary);
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.hidden-file-input {
+  display: none;
+}

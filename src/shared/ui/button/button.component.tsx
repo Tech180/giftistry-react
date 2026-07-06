@@ -10,6 +10,7 @@ export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',
   isLoading = false,
+  iconOnly = false,
   leftIcon,
   rightIcon,
   className = '',
@@ -19,7 +20,7 @@ export const Button: React.FC<ButtonProps> = ({
     styles.button,
     styles[variant],
     styles[size],
-    isLoading ? styles.loading : '',
+    iconOnly ? styles['icon-only'] : '',
     className,
   ].filter(Boolean).join(' ');
 

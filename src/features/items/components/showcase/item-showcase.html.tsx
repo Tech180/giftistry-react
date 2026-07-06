@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Link as LinkIcon, Edit2, Trash2, Tag } from 'lucide-react';
+import { Star, Link as LinkIcon, Edit2, Trash2, Tag, Sparkles } from 'lucide-react';
 import { Button, Card } from 'shared/ui';
 import { ItemShowcaseTemplateProps } from '../../interfaces/item-showcase-template-props.interface';
 import styles from './item-showcase.module.css';
@@ -8,6 +8,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   item,
   priorityLabel,
   isOwner,
+  canCollaborate,
   isExpired,
   allowGroupFunds,
   wishlistItems,
@@ -45,83 +46,155 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   onClose,
   onEdit,
   getSiteName,
+  reviews,
+  reviewsLoading,
+  reviewsError,
+  aiEnabled,
+  globalAiEnabled,
 }) => {
   return (
-    <Card className={styles.showcaseCard} padding="none" glass={true}>
-      <div className={styles.showcaseHeader}>
-        <div className={styles.showcaseTitleArea}>
-          <div className={styles.showcaseMetaLine}>
-            <span className={styles.showcaseCategory}>
+    <Card className={styles['showcase-card']} padding="none" glass={true}>
+      <div className={styles['showcase-header']}>
+        <div className={styles['showcase-title-area']}>
+          <div className={styles['showcase-meta-line']}>
+            <span className={styles['showcase-category']}>
               <Tag size={12} style={{ marginRight: '4px' }} />
               {item.Category || 'General'}
             </span>
           </div>
-          <h3 className={styles.showcaseTitle}>{item.Name}</h3>
+          <h3 className={styles['showcase-title']}>{item.Name}</h3>
         </div>
-        <div className={styles.showcaseHeaderActions}>
+        <div className={styles['showcase-header-actions']}>
           {localIsFavorite && (
-            <span className={styles.detailStarIcon} title="Favorite Item">
+            <span className={styles['detail-star-icon']} title="Favorite Item">
               <Star size={18} fill="currentColor" />
             </span>
           )}
-          <button onClick={onClose} className={styles.closeBtn} title="Close Preview">
+          <button onClick={onClose} className={styles['close-btn']} title="Close Preview">
             &times;
           </button>
         </div>
       </div>
 
-      <div className={styles.showcaseBody}>
-        <div className={styles.showcaseGrid}>
+      <div className={styles['showcase-body']}>
+        <div className={styles['showcase-grid']}>
           {/* Left Column: Info & Description */}
-          <div className={styles.infoCol}>
+          <div className={styles['info-col']}>
             {displayDescription ? (
-              <div className={styles.descriptionBox}>
-                <h4 className={styles.sectionTitle}>Description</h4>
-                <p className={styles.descriptionText}>{displayDescription}</p>
+              <div className={styles['description-box']}>
+                <h4 className={styles['section-title']}>Description</h4>
+                <p className={styles['description-text']}>{displayDescription}</p>
               </div>
             ) : (
-              <div className={styles.descriptionBoxEmpty}>
+              <div className={styles['description-box-empty']}>
                 <p>No description provided for this item.</p>
+              </div>
+            )}
+
+            {/* AI Reviews Section */}
+            {globalAiEnabled && aiEnabled && item.Links && item.Links.length > 0 && (
+              <div className={styles['ai-reviews-box']}>
+                <h4 className={styles['section-title']}>
+                  <Sparkles size={12} className={styles['sparkles-icon']} />
+                  AI Review Synthesis
+                </h4>
+
+                {reviewsLoading ? (
+                  <div className={styles['ai-reviews-loading']}>
+                    <div className={styles['skeleton-pulse']} style={{ height: '16px', marginBottom: '8px', width: '90%' }}></div>
+                    <div className={styles['skeleton-pulse']} style={{ height: '16px', marginBottom: '8px', width: '75%' }}></div>
+                    <div className={styles['skeleton-pulse']} style={{ height: '16px', width: '50%' }}></div>
+                  </div>
+                ) : reviewsError ? (
+                  <p className={styles['reviews-error-text']}>{reviewsError}</p>
+                ) : reviews ? (
+                  <>
+                    <div className={styles['reviews-summary']}>
+                      <p>{reviews.summary}</p>
+                    </div>
+
+                    <div className={styles['pros-cons-grid']}>
+                      <div className={styles['pros-col']}>
+                        <h5 className={styles['pros-title']}>Pros</h5>
+                        <ul className={styles['pros-list']}>
+                          {reviews.pros.map((pro, index) => (
+                            <li key={index} className={styles['pro-item']}>
+                              <span className={styles['pro-bullet']}>✓</span> {pro}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div className={styles['cons-col']}>
+                        <h5 className={styles['cons-title']}>Cons</h5>
+                        <ul className={styles['cons-list']}>
+                          {reviews.cons.map((con, index) => (
+                            <li key={index} className={styles['con-item']}>
+                              <span className={styles['con-bullet']}>✗</span> {con}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {reviews.reviews && reviews.reviews.length > 0 && (
+                      <div className={styles['quotes-section']}>
+                        <h5 className={styles['quotes-title']}>What Buyers Say</h5>
+                        <div className={styles['quotes-list']}>
+                          {reviews.reviews.map((rev, index) => (
+                            <blockquote key={index} className={styles['review-quote']}>
+                              "{rev}"
+                            </blockquote>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className={styles['ai-reviews-box-empty']}>
+                    <p>AI Review Synthesis is pending for this product link. It will automatically populate shortly.</p>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Custom metadata fields */}
             {metadata && (metadata.shirtSize || metadata.pantsSize || metadata.shoesSize || metadata.socksSize || metadata.color) ? (
-              <div className={styles.metaSection}>
-                <h4 className={styles.sectionTitle}>Details / Sizing</h4>
-                <div className={styles.metaBadges}>
-                  {metadata.shirtSize && <span className={styles.metaBadge}>👕 Shirt: {metadata.shirtSize}</span>}
-                  {metadata.pantsSize && <span className={styles.metaBadge}>👖 Pants: {metadata.pantsSize}</span>}
-                  {metadata.shoesSize && <span className={styles.metaBadge}>👟 Shoes: {metadata.shoesSize}</span>}
-                  {metadata.socksSize && <span className={styles.metaBadge}>🧦 Socks: {metadata.socksSize}</span>}
-                  {metadata.color && <span className={styles.metaBadge}>🎨 Color: {metadata.color}</span>}
+              <div className={styles['meta-section']}>
+                <h4 className={styles['section-title']}>Details / Sizing</h4>
+                <div className={styles['meta-badges']}>
+                  {metadata.shirtSize && <span className={styles['meta-badge']}>👕 Shirt: {metadata.shirtSize}</span>}
+                  {metadata.pantsSize && <span className={styles['meta-badge']}>👖 Pants: {metadata.pantsSize}</span>}
+                  {metadata.shoesSize && <span className={styles['meta-badge']}>👟 Shoes: {metadata.shoesSize}</span>}
+                  {metadata.socksSize && <span className={styles['meta-badge']}>🧦 Socks: {metadata.socksSize}</span>}
+                  {metadata.color && <span className={styles['meta-badge']}>🎨 Color: {metadata.color}</span>}
                 </div>
               </div>
             ) : null}
 
             {metadata?.custom?.map((f: any, idx: number) => (
-              <div key={idx} className={styles.descriptionBox}>
-                <h4 className={styles.sectionTitle}>{f.name}</h4>
-                <p className={styles.descriptionText}>{f.value}</p>
+              <div key={idx} className={styles['description-box']}>
+                <h4 className={styles['section-title']}>{f.name}</h4>
+                <p className={styles['description-text']}>{f.value}</p>
               </div>
             ))}
 
             {/* Variations progress */}
             {isMultiCount && metadata?.variations && metadata.variations.length > 0 && (
-              <div className={styles.variationsSection}>
-                <h4 className={styles.sectionTitle}>Variations Progress</h4>
-                <div className={styles.variationsProgressList}>
+              <div className={styles['variations-section']}>
+                <h4 className={styles['section-title']}>Variations Progress</h4>
+                <div className={styles['variations-progress-list']}>
                   {metadata.variations.map((v: any, idx: number) => {
                     const claimed = item.Claims.filter(c => c.Selection === v.name).reduce((sum: number, c: any) => sum + (c.Quantity || 1), 0);
                     const percent = Math.min(100, Math.round((claimed / v.quantity) * 100));
                     return (
-                      <div key={idx} className={styles.variationProgressCard}>
-                        <div className={styles.variationProgressHeader}>
-                          <span className={styles.variationName}>{v.name}</span>
-                          <span className={styles.variationQty}>{claimed} / {v.quantity} Claimed</span>
+                      <div key={idx} className={styles['variation-progress-card']}>
+                        <div className={styles['variation-progress-header']}>
+                          <span className={styles['variation-name']}>{v.name}</span>
+                          <span className={styles['variation-qty']}>{claimed} / {v.quantity} Claimed</span>
                         </div>
-                        <div className={styles.progressBarBgMini}>
-                          <div className={styles.progressBarFillMini} style={{ width: `${percent}%` }} />
+                        <div className={styles['progress-bar-bg-mini']}>
+                          <div className={styles['progress-bar-fill-mini']} style={{ width: `${percent}%` }} />
                         </div>
                       </div>
                     );
@@ -132,101 +205,102 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
           </div>
 
           {/* Right Column: Pricing, Links, and Funding */}
-          <div className={styles.actionCol}>
-            <div className={styles.priceContainer}>
-              <span className={styles.priceLabel}>Best Price</span>
-              <span className={styles.priceValue}>
+          <div className={styles['action-col']}>
+            <div className={styles['price-container']}>
+              <span className={styles['price-label']}>Best Price</span>
+              <span className={styles['price-value']}>
                 {totalExtractedPrice > 0 ? `$${totalExtractedPrice}` : '—'}
               </span>
             </div>
 
             {/* Progress Bar for Group Funding / Multi-Count Items */}
             {isMultiCount ? (
-              <div className={styles.fundingSection}>
-                <div className={styles.fundingHeader}>
+              <div className={styles['funding-section']}>
+                <div className={styles['funding-header']}>
                   <span>Quantities Claimed</span>
                   <span>{progressPercent}% ({totalClaimedQty} / {desiredQtyVal})</span>
                 </div>
-                <div className={styles.progressBarBg}>
-                  <div className={styles.progressBarFill} style={{ width: `${progressPercent}%` }} />
+                <div className={styles['progress-bar-bg']}>
+                  <div className={styles['progress-bar-fill']} style={{ width: `${progressPercent}%` }} />
                 </div>
               </div>
             ) : (
               allowGroupFunds && totalExtractedPrice > 0 && (
-                <div className={styles.fundingSection}>
-                  <div className={styles.fundingHeader}>
+                <div className={styles['funding-section']}>
+                  <div className={styles['funding-header']}>
                     <span>Group Funding Progress</span>
                     <span>{progressPercent}% (${totalClaimedAmount} / ${totalExtractedPrice})</span>
                   </div>
-                  <div className={styles.progressBarBg}>
-                    <div className={styles.progressBarFill} style={{ width: `${progressPercent}%` }} />
+                  <div className={styles['progress-bar-bg']}>
+                    <div className={styles['progress-bar-fill']} style={{ width: `${progressPercent}%` }} />
                   </div>
                 </div>
               )
             )}
 
             {/* Purchase Links */}
-            <div className={styles.linksSection}>
-              <h4 className={styles.sectionTitle}>Purchase Links</h4>
+            <div className={styles['links-section']}>
+              <h4 className={styles['section-title']}>Purchase Links</h4>
               {item.Links.length > 0 ? (
-                <div className={styles.linksList}>
+                <div className={styles['links-list']}>
                   {item.Links.map((link) => (
                     <a
                       key={link.Id}
                       href={link.Url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={styles.retailerLink}
+                      className={styles['retailer-link']}
                     >
                       <LinkIcon size={12} style={{ marginRight: '6px' }} />
-                      <span className={styles.retailerName}>
+                      <span className={styles['retailer-name']}>
                         {getSiteName(link.Url, link.RetailerName)}
                       </span>
                     </a>
                   ))}
                 </div>
               ) : (
-                <span className={styles.noLinks}>No purchase links available.</span>
+                <span className={styles['no-links']}>No purchase links available.</span>
               )}
             </div>
 
             {/* Action Buttons */}
-            <div className={styles.actionsArea}>
+            <div className={styles['actions-area']}>
               {!isOwner ? (
-                claimedByCurrentUser ? (
-                  <Button
-                    variant="secondary"
-                    className={styles.claimButton}
-                    onClick={handleUnclaim}
-                    isLoading={claimLoading}
-                  >
-                    Unclaim Item
-                  </Button>
-                ) : isFullyClaimed ? (
-                  <Button
-                    variant="secondary"
-                    className={styles.claimButton}
-                    disabled={true}
-                  >
-                    Already Claimed
-                  </Button>
-                ) : (
-                  <div className={styles.claimWidget}>
+                <>
+                  {claimedByCurrentUser ? (
+                    <Button
+                      variant="secondary"
+                      className={styles['claim-button']}
+                      onClick={handleUnclaim}
+                      isLoading={claimLoading}
+                    >
+                      Unclaim Item
+                    </Button>
+                  ) : isFullyClaimed ? (
+                    <Button
+                      variant="secondary"
+                      className={styles['claim-button']}
+                      disabled={true}
+                    >
+                      Already Claimed
+                    </Button>
+                  ) : (
+                    <div className={styles['claim-widget']}>
                     {showClaimForm ? (
                       <form
                         onSubmit={(e) => {
                           e.preventDefault();
                           handleClaim();
                         }}
-                        className={styles.claimForm}
+                        className={styles['claim-form']}
                       >
                         {isMultiCount && metadata?.variations && metadata.variations.length > 0 && (
-                          <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>Choose Variation</label>
+                          <div className={styles['form-group']}>
+                            <label className={styles['form-label']}>Choose Variation</label>
                             <select
                               value={selectedVariation}
                               onChange={(e) => setSelectedVariation(e.target.value)}
-                              className={styles.variationSelect}
+                              className={styles['variation-select']}
                             >
                               {metadata.variations.map((v: any, idx: number) => {
                                 const claimed = item.Claims.filter(c => c.Selection === v.name).reduce((sum: number, c: any) => sum + (c.Quantity || 1), 0);
@@ -242,23 +316,23 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                         )}
 
                         {isMultiCount && (
-                          <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>Quantity to Claim</label>
+                          <div className={styles['form-group']}>
+                            <label className={styles['form-label']}>Quantity to Claim</label>
                             <input
                               type="number"
                               min="1"
                               value={claimQty}
                               onChange={(e) => setClaimQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
                               style={{ width: '80px' }}
-                              className={styles.qtyInput}
+                              className={styles['qty-input']}
                               required
                             />
                           </div>
                         )}
 
                         {!isMultiCount && allowGroupFunds && (
-                          <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>Amount to Contribute</label>
+                          <div className={styles['form-group']}>
+                            <label className={styles['form-label']}>Amount to Contribute</label>
                             <input
                               type="number"
                               step="0.01"
@@ -270,7 +344,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                             />
                           </div>
                         )}
-                        <label className={styles.anonLabel}>
+                        <label className={styles['anon-label']}>
                           <input
                             type="checkbox"
                             checked={anonymous}
@@ -278,7 +352,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                           />
                           <span>Claim Anonymously</span>
                         </label>
-                        <div className={styles.formActions}>
+                        <div className={styles['form-actions']}>
                           <Button
                             variant="primary"
                             size="sm"
@@ -299,23 +373,61 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                     ) : (
                       <Button
                         variant="primary"
-                        className={styles.claimButton}
+                        className={styles['claim-button']}
                         onClick={() => setShowClaimForm(true)}
                       >
                         Claim Item
                       </Button>
                     )}
                   </div>
-                )
+                )}
+                  {canCollaborate && (
+                    <div className={styles['owner-actions']}>
+                      <Button variant="secondary" className={styles['owner-btn']} onClick={onEdit}>
+                        <Edit2 size={12} style={{ marginRight: '4px' }} /> Edit
+                      </Button>
+                      {showDeleteConfirm ? (
+                        <div className={styles['delete-confirm-widget']}>
+                          <span className={styles['confirm-prompt']}>Delete?</span>
+                          <div className={styles['confirm-buttons']}>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={handleDelete}
+                              isLoading={deleteLoading}
+                            >
+                              Yes
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setShowDeleteConfirm(false)}
+                            >
+                              No
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="secondary"
+                          className={`${styles['owner-btn']} ${styles['delete-btn']}`}
+                          onClick={() => setShowDeleteConfirm(true)}
+                        >
+                          <Trash2 size={12} style={{ marginRight: '4px' }} /> Delete
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </>
               ) : (
-                <div className={styles.ownerActions}>
-                  <Button variant="secondary" className={styles.ownerBtn} onClick={onEdit}>
+                <div className={styles['owner-actions']}>
+                  <Button variant="secondary" className={styles['owner-btn']} onClick={onEdit}>
                     <Edit2 size={12} style={{ marginRight: '4px' }} /> Edit
                   </Button>
                   {showDeleteConfirm ? (
-                    <div className={styles.deleteConfirmWidget}>
-                      <span className={styles.confirmPrompt}>Delete?</span>
-                      <div className={styles.confirmButtons}>
+                    <div className={styles['delete-confirm-widget']}>
+                      <span className={styles['confirm-prompt']}>Delete?</span>
+                      <div className={styles['confirm-buttons']}>
                         <Button
                           variant="primary"
                           size="sm"
@@ -336,7 +448,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                   ) : (
                     <Button
                       variant="secondary"
-                      className={`${styles.ownerBtn} ${styles.deleteBtn}`}
+                      className={`${styles['owner-btn']} ${styles['delete-btn']}`}
                       onClick={() => setShowDeleteConfirm(true)}
                     >
                       <Trash2 size={12} style={{ marginRight: '4px' }} /> Delete
@@ -349,27 +461,27 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
         </div>
       </div>
       {showDependencyModal && (
-        <div className={styles.modalOverlay}>
-          <Card className={styles.dependencyModal} glass={true}>
-            <h3 className={styles.modalTitle}>🔗 Connected Gift Items</h3>
-            <p className={styles.modalText}>
+        <div className={styles['modal-overlay']}>
+          <Card className={styles['dependency-modal']} glass={true}>
+            <h3 className={styles['modal-title']}>🔗 Connected Gift Items</h3>
+            <p className={styles['modal-text']}>
               This gift is linked to other items in the wishlist. Would you like to claim them all at once?
             </p>
-            <div className={styles.linkedItemsPreviewList}>
+            <div className={styles['linked-items-preview-list']}>
               {wishlistItems
                 .filter((wi: any) => (metadata?.linkedItemIds || []).includes(wi.Id))
                 .map((wi: any) => {
                   return (
-                    <div key={wi.Id} className={styles.linkedItemPreviewRow}>
+                    <div key={wi.Id} className={styles['linked-item-preview-row']}>
                       <span className={wi.Name}>{wi.Name}</span>
-                      <span className={wi.IsClaimed ? styles.linkedItemStatusClaimed : styles.linkedItemStatusAvailable}>
+                      <span className={wi.IsClaimed ? styles['linked-item-status-claimed'] : styles['linked-item-status-available']}>
                         {wi.IsClaimed ? 'Already Claimed' : 'Available'}
                       </span>
                     </div>
                   );
                 })}
             </div>
-            <div className={styles.modalActions}>
+            <div className={styles['modal-actions']}>
               <Button
                 variant="primary"
                 onClick={handleBulkClaim}

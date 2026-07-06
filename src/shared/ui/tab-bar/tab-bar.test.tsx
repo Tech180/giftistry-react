@@ -29,6 +29,6 @@ describe('TabBar', () => {
   test('marks the active tab button', () => {
     render(<TabBar tabs={tabs} activeTab="active" onTabChange={() => {}} />);
     const activeButton = screen.getByText('Active').closest('button');
-    expect(activeButton?.className).toContain(styles.activeTabButton);
+    expect(activeButton?.className).toContain(styles['active-tab-button']);
   });
 });

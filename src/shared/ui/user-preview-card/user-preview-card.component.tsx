@@ -14,6 +14,7 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
   displayName,
   children,
   isOnline = false,
+  fallbackUser,
 }) => {
   const [userPreview, setUserPreview] = useState<ApiUser | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -103,7 +104,7 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
         setIsLoading(true);
         try {
           const res = await authApi.getUserPreview(userId);
-          if (res.success && res.User) {
+          if (res?.User) {
             previewCache[userId] = res.User;
             setUserPreview(res.User);
           }
@@ -137,12 +138,15 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
     }, 250);
   };
 
-  const userInitials = userPreview ? getUserInitials(userPreview) : undefined;
+  const activeUser: (Partial<ApiUser> & { Id: string }) | null =
+    userPreview || (fallbackUser ? { ...fallbackUser, Id: userId } : null);
+
+  const userInitials = activeUser ? getUserInitials(activeUser) : undefined;
   const fallbackInitials = getFallbackInitials(displayName);
-  const joinedDate = userPreview ? getJoinedDate(userPreview.CreatedAt) : 'Unknown Join Date';
-  const cardClass = `${styles.userProfileCard} ${
-    placement === 'top' ? styles.showTop : styles.showBottom
-  } ${styles.isVisible}`;
+  const joinedDate = activeUser && activeUser.CreatedAt ? getJoinedDate(activeUser.CreatedAt) : 'Unknown Join Date';
+  const cardClass = `${styles['user-profile-card']} ${
+    placement === 'top' ? styles['show-top'] : styles['show-bottom']
+  } ${styles['is-visible']}`;
 
   return (
     <>
@@ -158,7 +162,7 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
         ReactDOM.createPortal(
           <UserPreviewCardTemplate
             ref={cardRef}
-            user={userPreview}
+            user={activeUser}
             isLoading={isLoading}
             placement={placement}
             style={cardStyle}

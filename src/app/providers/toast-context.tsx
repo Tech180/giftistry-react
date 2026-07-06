@@ -26,14 +26,14 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className={styles.toastContainer}>
+      <div className={styles['toast-container']}>
         {toasts.map((toast) => (
           <ToastComponent
             key={toast.id}
             message={toast.message}
             type={toast.type}
             onDismiss={() => dismissToast(toast.id)}
-            className={styles.toastItem}
+            className={styles['toast-item']}
           />
         ))}
       </div>

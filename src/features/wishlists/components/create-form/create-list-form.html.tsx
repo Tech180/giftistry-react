@@ -20,6 +20,9 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
   setCategory,
   customCategory,
   setCustomCategory,
+  aiEnabled,
+  setAiEnabled,
+  globalAiEnabled,
   isUnverified = false,
 }) => {
   return (
@@ -41,9 +44,9 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
         required
       />
 
-      <div className={styles.formGroup}>
+      <div className={styles['form-group']}>
         <label className={styles.label}>Category</label>
-        <div className={styles.selectWrapper}>
+        <div className={styles['select-wrapper']}>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -55,7 +58,7 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
             <option value="wedding">Wedding</option>
             <option value="custom">Custom...</option>
           </select>
-          <ChevronDown size={16} className={styles.selectIcon} />
+          <ChevronDown size={16} className={styles['select-icon']} />
         </div>
       </div>
 
@@ -79,46 +82,65 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
         leftIcon={<Calendar size={16} />}
       />
 
-      <div className={styles.checkboxWrapper}>
-        <label className={styles.checkboxLabel}>
+      <div className={styles['checkbox-wrapper']}>
+        <label className={styles['checkbox-label']}>
           <input
             type="checkbox"
             checked={allowGroupFunds}
             onChange={(e) => setAllowGroupFunds(e.target.checked)}
             className={styles.checkbox}
           />
-          <span className={styles.checkboxText}>
+          <span className={styles['checkbox-text']}>
             <strong>Enable Group Funding</strong>
-            <span className={styles.checkboxSubtext}>
+            <span className={styles['checkbox-subtext']}>
               Allows friends to pool money together to claim high-ticket items.
             </span>
           </span>
         </label>
       </div>
 
-      <div className={styles.checkboxWrapper}>
-        <label className={styles.checkboxLabel}>
+      <div className={styles['checkbox-wrapper']}>
+        <label className={styles['checkbox-label']}>
           <input
             type="checkbox"
             checked={revealSuggestions}
             onChange={(e) => setRevealSuggestions(e.target.checked)}
             className={styles.checkbox}
           />
-          <span className={styles.checkboxText}>
+          <span className={styles['checkbox-text']}>
             <strong>Reveal Suggestions After Expiration</strong>
-            <span className={styles.checkboxSubtext}>
+            <span className={styles['checkbox-subtext']}>
               Collaborators can suggest gifts anonymously. Reveal who suggested what after the list expires.
             </span>
           </span>
         </label>
       </div>
 
+      {globalAiEnabled && (
+        <div className={styles['checkbox-wrapper']}>
+          <label className={styles['checkbox-label']}>
+            <input
+              type="checkbox"
+              checked={aiEnabled}
+              onChange={(e) => setAiEnabled(e.target.checked)}
+              className={styles.checkbox}
+            />
+            <span className={styles['checkbox-text']}>
+              <strong>Enable AI Reviews on Items</strong>
+              <span className={styles['checkbox-subtext']}>
+                Automatically generates product summaries, pros and cons, and compiles representative reviews.
+              </span>
+            </span>
+          </label>
+        </div>
+      )}
+
       <Button
         type="submit"
         variant="primary"
         isLoading={isLoading}
         disabled={isUnverified}
-        className={styles.submitBtn}
+        className={styles['submit-btn']}
       >
         Create Wishlist
       </Button>

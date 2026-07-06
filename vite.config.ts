@@ -7,7 +7,8 @@ export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   css: {
     modules: {
-      localsConvention: 'camelCase',
+      // Export both dashed and camelCase keys so styles['tab-pane'] and styles.tabPane resolve.
+      localsConvention: 'dashes',
     },
   },
   server: {
@@ -28,6 +29,8 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     css: {
       modules: {
+        // Export both dashed and camelCase keys so styles['tab-pane'] and styles.tabPane resolve.
+        localsConvention: 'dashes',
         classNameStrategy: 'non-scoped',
       },
     },

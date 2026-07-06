@@ -94,4 +94,3 @@ Items:
  - implement a proper friends list
     - allow visability for everyone or specific friends.
     -
-

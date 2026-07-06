@@ -8,7 +8,7 @@ import { AppLoadingTemplate, AppSetupTemplate, AppContentTemplate } from './App.
 function AppContent() {
   const { user, isSystemInitialized, isLoading } = useAuth();
   const location = useLocation();
-  const isProfilePage = location.pathname.startsWith('/profile');
+  const isSettingsPage = location.pathname.startsWith('/settings');
   const hasBanner = !!(user && !user.EmailVerified);
 
   if (isLoading) {
@@ -21,7 +21,7 @@ function AppContent() {
 
   return (
     <AppContentTemplate
-      isProfilePage={isProfilePage}
+      isSettingsPage={isSettingsPage}
       hasBanner={hasBanner}
     />
   );

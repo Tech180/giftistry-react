@@ -87,6 +87,16 @@ function checkFile(file: string): number {
 
       const selectors = selector.split(',').map((s) => s.trim());
       for (const sel of selectors) {
+        for (const classMatch of sel.matchAll(/\.([a-zA-Z][a-zA-Z0-9_-]*)/g)) {
+          const className = classMatch[1];
+          if (/[A-Z]/.test(className)) {
+            console.error(
+              `${rel}:${i + 1}: class "${className}" must be kebab-case (e.g. ${className.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()})`
+            );
+            violations++;
+          }
+        }
+
         if (/\.\S+\s+\.\S+/.test(sel)) {
           console.error(`${rel}:${i + 1}: descendant selector "${sel}"`);
           violations++;

@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getInitialsFromNames } from 'shared/utils/get-initials.util';
+import {
+  generateAvatarColor,
+  getAvatarStyle,
+  isAvatarImage,
+} from 'shared/utils/avatar.util';
 import { useAuth } from 'app/providers/auth-context';
 import { ProfileCardTemplate } from './profile-card.html';
 import { ImageCropper } from '../image-cropper/image-cropper.component';
@@ -19,17 +24,28 @@ export const ProfileCard: React.FC = () => {
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      setUsername(user.Username || '');
-      setFirstName(user.FirstName || '');
-      setLastName(user.LastName || '');
-      setBio(user.Bio || '');
-      setAvatar(user.Avatar || null);
-    }
-  }, [user]);
+    if (!user) return;
+    setUsername(user.Username || '');
+    setFirstName(user.FirstName || '');
+    setLastName(user.LastName || '');
+    setBio(user.Bio || '');
+    setAvatar(user.Avatar ?? null);
+  }, [user?.Id]);
+
+  const hasChanges = useMemo(() => {
+    if (!user) return false;
+    return (
+      username !== (user.Username || '') ||
+      firstName !== (user.FirstName || '') ||
+      lastName !== (user.LastName || '') ||
+      bio !== (user.Bio || '') ||
+      avatar !== (user.Avatar ?? null)
+    );
+  }, [user, username, firstName, lastName, bio, avatar]);
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    if (!hasChanges) return;
     if (!username || !firstName || !lastName) {
       setErrorMsg('First Name, Last Name, and Username are required.');
       return;
@@ -40,7 +56,10 @@ export const ProfileCard: React.FC = () => {
     setSuccessMsg(null);
 
     try {
-      await updateProfile(username, firstName, lastName, bio, user?.Theme || 'default', avatar);
+      const updatedUser = await updateProfile(username, firstName, lastName, bio, user?.Theme || 'default', avatar);
+      if (updatedUser) {
+        setAvatar(updatedUser.Avatar ?? null);
+      }
       setSuccessMsg('Profile settings updated successfully!');
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err) {
@@ -80,22 +99,14 @@ export const ProfileCard: React.FC = () => {
     }
   };
 
-  const handleRemoveAvatar = () => {
-    setAvatar(null);
-  };
-
   const randomizeAvatarColor = () => {
-    if (avatar && !avatar.startsWith('hsl')) {
+    if (isAvatarImage(avatar)) {
       const confirm = window.confirm(
         'This will replace your custom profile picture with a randomized color. Are you sure you want to proceed?'
       );
       if (!confirm) return;
     }
-    const h = Math.floor(Math.random() * 360);
-    const s = Math.floor(Math.random() * 40) + 60; // 60-100%
-    const l = Math.floor(Math.random() * 20) + 35; // 35-55%
-    const color = `hsl(${h}, ${s}%, ${l}%)`;
-    setAvatar(color);
+    setAvatar(generateAvatarColor());
   };
 
   const handleDeleteAccount = () => {
@@ -115,21 +126,9 @@ export const ProfileCard: React.FC = () => {
     [firstName, lastName]
   );
 
-  const isImageAvatar = !!(avatar && !avatar.startsWith('hsl'));
+  const isImageAvatar = isAvatarImage(avatar);
 
-  const avatarStyle = useMemo((): React.CSSProperties => {
-    if (isImageAvatar && avatar) {
-      return {
-        backgroundImage: `url(${avatar})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      };
-    }
-    if (avatar && avatar.startsWith('hsl')) {
-      return { backgroundColor: avatar };
-    }
-    return { backgroundColor: 'var(--primary)' };
-  }, [avatar, isImageAvatar]);
+  const avatarStyle = useMemo(() => getAvatarStyle(avatar), [avatar]);
 
   if (!user) return null;
 
@@ -148,11 +147,11 @@ export const ProfileCard: React.FC = () => {
         avatar={avatar}
         setAvatar={setAvatar}
         isLoading={isLoading}
+        hasChanges={hasChanges}
         errorMsg={errorMsg}
         successMsg={successMsg}
         handleSubmit={handleSubmit}
         handleAvatarChange={handleAvatarChange}
-        handleRemoveAvatar={handleRemoveAvatar}
         randomizeAvatarColor={randomizeAvatarColor}
         handleDeleteAccount={handleDeleteAccount}
         fileInputRef={fileInputRef}

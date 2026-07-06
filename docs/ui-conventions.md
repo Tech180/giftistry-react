@@ -102,7 +102,7 @@ Pure helpers live by layer — keep logic out of components and templates.
 |-----------|----------|---------|
 | `Sidebar` / `SidebarItem` | `shared/ui/sidebar/` (+ `item/`) | Persistent nav rail (e.g. profile settings tabs) |
 | `Drawer` / `MiniDrawer` | `shared/ui/drawer/` (+ `mini/`) | Slide-out overlay panels (wishlist add-item, comments) |
-| `ProfileSidebar` | `app/pages/profile/components/profile-sidebar/` | Profile page composition using `Sidebar` + `SidebarItem` |
+| `SettingsSidebar` | `app/pages/settings/components/settings-sidebar/` | Settings page composition using `Sidebar` + `SidebarItem` |
 
 ## Layer boundaries
 

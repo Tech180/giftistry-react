@@ -81,6 +81,9 @@ export const itemsApi = {
   deleteItem: (itemId: string) =>
     apiClient.delete<void>(`/api/items/${itemId}`),
 
+  getItemReviews: (itemId: string) =>
+    apiClient.get<{ success: boolean; data: { summary: string; pros: string[]; cons: string[]; reviews: string[] } | null }>(`/api/items/${itemId}/reviews`),
+
   getFieldDefinitions: (category: string) =>
     apiClient.get<FieldDefinition[]>(`/api/items/field-definitions?category=${category}`),
 };

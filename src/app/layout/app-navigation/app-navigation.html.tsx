@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Gift, Sun, Moon, LogOut, User as UserIcon, Search, ChevronDown, Palette, Lock } from 'lucide-react';
+import { Gift, Sun, Moon, LogOut, Settings, Search, ChevronDown, Palette, Lock, Users } from 'lucide-react';
+import { NotificationBell } from 'features/notifications';
+import { getAvatarStyle, shouldShowAvatarInitials } from 'shared/utils/avatar.util';
 import { NavigationTemplateProps } from './interfaces/navigation-template-props.interface';
+import { EnterPanel } from 'shared/ui/enter-panel/enter-panel.component';
 import styles from './app-navigation.module.css';
 
 export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
@@ -38,18 +41,7 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
   searchRef,
   searchInputRef,
 }) => {
-  const avatarStyle: React.CSSProperties = {};
-  if (user && user.Avatar) {
-    const hasAvatar = user.Avatar;
-    if (!hasAvatar.startsWith('hsl')) {
-      avatarStyle.backgroundImage = `url(${hasAvatar})`;
-      avatarStyle.backgroundSize = 'cover';
-      avatarStyle.backgroundPosition = 'center';
-      avatarStyle.color = 'transparent';
-    } else {
-      avatarStyle.backgroundColor = hasAvatar;
-    }
-  }
+  const avatarStyle: React.CSSProperties = user?.Avatar ? getAvatarStyle(user.Avatar) : getAvatarStyle(null);
 
   return (
     <nav className={styles.navbar}>
@@ -57,7 +49,7 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
         <div className={styles.left}>
           <Link to={isAuthenticated ? '/dashboard' : '/'} className={styles.logo}>
             <svg
-              className={styles.logoIcon}
+              className={styles['logo-icon']}
               width="20"
               height="20"
               viewBox="0 0 24 24"
@@ -67,7 +59,7 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <g className={styles.giftLid}>
+              <g className={styles['gift-lid']}>
                 <path d="M4 7h16v3H4z" />
                 <path d="M12 7c-1.5-2.5-4-2.5-4 0 0 1.5 2.5 2.5 4 0z" />
                 <path d="M12 7c1.5-2.5 4-2.5 4 0 0 1.5-2.5 2.5-4 0z" />
@@ -75,12 +67,12 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
               <path d="M5 10h14v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V10z" />
               <path d="M12 10v12" />
             </svg>
-            <span className={styles.logoText}>Giftistry</span>
+            <span>Giftistry</span>
           </Link>
 
           {isAuthenticated && (
-            <div className={styles.navLinks}>
-              <Link to="/dashboard" className={styles.navLink}>Dashboard</Link>
+            <div className={styles['nav-links']}>
+              <Link to="/dashboard" className={styles['nav-link']}>Dashboard</Link>
             </div>
           )}
         </div>
@@ -115,7 +107,7 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
             </div>
             
             {isSearchOpen && (
-              <div className={`${styles['search-dropdown']} animate-scale-in`}>
+              <EnterPanel animation="dropdown" className={styles['search-dropdown']}>
                 {isSearchLoading ? (
                   <div className={styles['dropdown-status']}>Loading wishlists...</div>
                 ) : searchResults.length > 0 ? (
@@ -145,36 +137,37 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
                 ) : (
                   <div className={styles['dropdown-status']}>Type to search your wishlists...</div>
                 )}
-              </div>
+              </EnterPanel>
             )}
           </div>
         )}
 
         <div className={styles.right}>
-          <div className={styles.dropdownContainer} ref={themeRef}>
+          {isAuthenticated && <NotificationBell />}
+          <div className={styles['dropdown-container']} ref={themeRef}>
             <button
-              className={`${styles.navButton} ${styles.themeNavButton}`}
+              className={`${styles['nav-button']} ${styles['theme-nav-button']}`}
               onClick={() => setIsThemeOpen(!isThemeOpen)}
               aria-label="Theme settings"
               title="Change theme"
             >
-              <div className={styles.themeToggleWrapper}>
-                <Palette size={18} className={styles.paletteIcon} />
-                <div className={styles.miniIndicator}>
+              <div className={styles['theme-toggle-wrapper']}>
+                <Palette size={18} className={styles['palette-icon']} />
+                <div className={styles['mini-indicator']}>
                   {appearance === 'light' ? <Sun size={10} /> : <Moon size={10} />}
                 </div>
               </div>
             </button>
 
             {isThemeOpen && (
-              <div className={`${styles.dropdownMenu} ${styles.themeMenu} animate-scale-in`}>
-                <div className={styles.menuHeader}>Style Theme</div>
+              <EnterPanel animation="dropdown" className={`${styles['dropdown-menu']} ${styles['theme-menu']}`}>
+                <div className={styles['menu-header']}>Style Theme</div>
                 {standardThemes.map((t) => {
                   const unlocked = isThemeUnlocked(t.value);
                   return (
                     <button
                       key={t.value}
-                      className={`${styles.menuItem} ${theme === t.value ? styles.activeItem : ''} ${!unlocked ? styles.lockedItem : ''}`}
+                      className={`${styles['menu-item']} ${theme === t.value ? styles['active-item'] : ''} ${!unlocked ? styles['locked-item'] : ''}`}
                       onClick={() => {
                         if (unlocked) {
                           setTheme(t.value);
@@ -184,7 +177,7 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
                       disabled={!unlocked}
                     >
                       <span>{t.label}</span>
-                      {!unlocked && <Lock size={12} className={styles.lockIcon} />}
+                      {!unlocked && <Lock size={12} className={styles['lock-icon']} />}
                     </button>
                   );
                 })}
@@ -192,7 +185,7 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
                 {holidayThemes.some(t => isThemeUnlocked(t.value)) && (
                   <>
                     <button
-                      className={`${styles.menuItem} ${styles.holidayToggle}`}
+                      className={`${styles['menu-item']} ${styles['holiday-toggle']}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsHolidayOpen(!isHolidayOpen);
@@ -201,18 +194,18 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
                       <span>Holiday</span>
                       <ChevronDown
                         size={12}
-                        className={`${styles.chevron} ${isHolidayOpen ? styles.rotatedChevron : ''}`}
+                        className={`${styles.chevron} ${isHolidayOpen ? styles['rotated-chevron'] : ''}`}
                       />
                     </button>
 
                     {isHolidayOpen && (
-                      <div className={styles.holidaySubMenu}>
+                      <div className={styles['holiday-sub-menu']}>
                         {holidayThemes
                           .filter((t) => isThemeUnlocked(t.value))
                           .map((t) => (
                             <button
                               key={t.value}
-                              className={`${styles.menuItem} ${styles.holidayMenuItem} ${theme === t.value ? styles.activeItem : ''}`}
+                              className={`${styles['menu-item']} ${styles['holiday-menu-item']} ${theme === t.value ? styles['active-item'] : ''}`}
                               onClick={() => {
                                 setTheme(t.value);
                                 setIsThemeOpen(false);
@@ -227,12 +220,12 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
                 )}
                 {customThemes && customThemes.length > 0 && (
                   <>
-                    <div className={styles.menuDivider} />
-                    <div className={styles.menuHeader}>Custom Themes</div>
+                    <div className={styles['menu-divider']} />
+                    <div className={styles['menu-header']}>Custom Themes</div>
                     {customThemes.map((ct) => (
                       <button
                         key={ct.id}
-                        className={`${styles.menuItem} ${theme === ct.id ? styles.activeItem : ''}`}
+                        className={`${styles['menu-item']} ${theme === ct.id ? styles['active-item'] : ''}`}
                         onClick={() => {
                           setTheme(ct.id);
                           setIsThemeOpen(false);
@@ -244,78 +237,89 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
                   </>
                 )}
                 
-                <div className={styles.menuDivider} />
+                <div className={styles['menu-divider']} />
                 
-                <div className={styles.menuHeader}>Appearance</div>
+                <div className={styles['menu-header']}>Appearance</div>
                 {appearances.map((a) => {
                   const Icon = a.icon;
                   return (
                     <button
                       key={a.value}
-                      className={`${styles.menuItem} ${appearance === a.value ? styles.activeItem : ''}`}
+                      className={`${styles['menu-item']} ${appearance === a.value ? styles['active-item'] : ''}`}
                       onClick={() => {
                         setAppearance(a.value);
                         setIsThemeOpen(false);
                       }}
                     >
-                      <Icon size={14} className={styles.itemIcon} />
+                      <Icon size={14} className={styles['item-icon']} />
                       {a.label}
                     </button>
                   );
                 })}
-              </div>
+              </EnterPanel>
             )}
           </div>
 
           {isAuthenticated && user ? (
-            <div className={styles.dropdownContainer} ref={profileRef}>
+            <div className={styles['dropdown-container']} ref={profileRef}>
               <button
-                className={styles.profileTrigger}
+                className={styles['profile-trigger']}
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
               >
                 <div
                   className={styles.avatar}
                   style={avatarStyle}
                 >
-                  {(!user.Avatar || user.Avatar.startsWith('hsl')) && (user.FirstName ? user.FirstName[0].toUpperCase() : user.Username[0].toUpperCase())}
+                  {shouldShowAvatarInitials(user.Avatar) && (user.FirstName ? user.FirstName[0].toUpperCase() : user.Username[0].toUpperCase())}
                 </div>
                 <ChevronDown size={14} className={styles.chevron} />
               </button>
 
               {isProfileOpen && (
-                <div className={`${styles.dropdownMenu} ${styles.profileMenu} animate-scale-in`}>
-                  <div className={styles.userInfo}>
-                    <div className={styles.userName}>{user.FirstName} {user.LastName}</div>
-                    <div className={styles.userEmail}>@{user.Username}</div>
+                <EnterPanel animation="dropdown" className={styles['dropdown-menu']}>
+                  <div className={styles['user-info']}>
+                    <div className={styles['user-name']}>{user.FirstName} {user.LastName}</div>
+                    <div className={styles['user-email']}>@{user.Username}</div>
                   </div>
                   
-                  <div className={styles.menuDivider} />
+                  <div className={styles['menu-divider']} />
                   
                   <button
-                    className={styles.menuItem}
+                    className={styles['menu-item']}
                     onClick={() => {
                       setIsProfileOpen(false);
-                      navigate('/profile');
+                      navigate('/settings/account');
                     }}
                   >
-                    <UserIcon size={14} className={styles.itemIcon} />
-                    Edit Profile
+                    <Settings size={14} className={styles['item-icon']} />
+                    Settings
+                  </button>
+
+                  <button
+                    className={styles['menu-item']}
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      navigate('/friends/current');
+                    }}
+                  >
+                    <Users size={14} className={styles['item-icon']} />
+                    Friends
                   </button>
                   
                   <button
-                    className={`${styles.menuItem} ${styles.dangerItem}`}
+                    className={`${styles['menu-item']} ${styles['danger-item']}`}
                     onClick={handleLogout}
                   >
-                    <LogOut size={14} className={styles.itemIcon} />
+                    <LogOut size={14} className={styles['item-icon']} />
                     Sign Out
                   </button>
-                </div>
+                </EnterPanel>
               )}
             </div>
           ) : (
-            <div className={styles.authButtons}>
-              <Link to="/login" className={styles.loginBtn}>Sign In</Link>
-              <Link to="/register" className={styles.registerBtn}>Get Started</Link>
+            <div className={styles['auth-buttons']}>
+              <Link to="/login" className={styles['login-btn']}>Sign In</Link>
+              <Link to="/register" className={styles['register-btn']}>Get Started</Link>
             </div>
           )}
         </div>

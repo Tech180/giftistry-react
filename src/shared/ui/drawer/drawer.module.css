@@ -6,9 +6,19 @@
   max-width: 100%;
   background: var(--surface);
   z-index: var(--zindex-overlay);
-  transition: transform var(--transition-slow) cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform var(--panel-slide-duration) var(--panel-slide-ease);
   display: flex;
   flex-direction: column;
+  isolation: isolate;
+}
+
+/* Opaque base so rgba surfaces don't show page content through side panels */
+.drawer-wrapper::before{
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg);
+  z-index: -1;
 }
 
 .left{
@@ -55,25 +65,33 @@
 }
 
 .drawer-close{
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 1.5rem;
+  background: var(--button-secondary-bg, transparent);
+  border: var(--button-border-width) solid var(--button-secondary-border, transparent);
+  color: var(--button-secondary-text, var(--text-muted));
+  box-shadow: var(--button-secondary-shadow, none);
+  font-size: 1.25rem;
+  font-family: var(--font-family-display);
   cursor: pointer;
   line-height: 1;
   padding: 0.25rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--button-radius, var(--radius-full));
   width: var(--spacing-xl);
   height: var(--spacing-xl);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-normal);
+  transition: all var(--transition-pop);
 }
 
 .drawer-close:hover{
-  background: var(--surface-hover);
-  color: var(--text);
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+  box-shadow: var(--button-secondary-shadow-hover, none);
+}
+
+.drawer-close:active{
+  transform: translateY(2px);
+  box-shadow: var(--button-secondary-shadow-active, none);
 }
 
 .drawer-body{

@@ -4,6 +4,7 @@ export interface ItemShowcaseTemplateProps {
   item: Item;
   priorityLabel?: string;
   isOwner: boolean;
+  canCollaborate: boolean;
   isExpired: boolean;
   allowGroupFunds: boolean;
   wishlistItems: Item[];
@@ -41,4 +42,9 @@ export interface ItemShowcaseTemplateProps {
   onClose: () => void;
   onEdit: () => void;
   getSiteName: (url: string, retailerName?: string | null) => string;
+  reviews: { summary: string; pros: string[]; cons: string[]; reviews: string[] } | null;
+  reviewsLoading: boolean;
+  reviewsError: string | null;
+  aiEnabled?: boolean;
+  globalAiEnabled: boolean;
 }

@@ -17,12 +17,12 @@ export const WishlistCardTemplate: React.FC<WishlistCardTemplateProps> = ({
 }) => {
   return (
     <Card className={`${styles.card} ${isArchived ? styles.archived : ''}`} hoverable={true} padding="none">
-      <Link to={`/wishlists/${wishlist.Id}`} className={styles.linkWrapper}>
+      <Link to={`/wishlists/${wishlist.Id}`} className={styles['link-wrapper']}>
         <div className={styles.content}>
           <div className={styles.header}>
-            <div className={styles.categoryPill}>
-              <WishlistCategoryIcon category={wishlist.Category} className={styles.categoryIcon} />
-              <span className={styles.categoryName}>{wishlist.Category || 'generic'}</span>
+            <div className={styles['category-pill']}>
+              <WishlistCategoryIcon category={wishlist.Category} className={styles['category-icon']} />
+              <span className={styles['category-name']}>{wishlist.Category || 'generic'}</span>
             </div>
 
             {!isOwner && wishlist.Role && (
@@ -37,26 +37,26 @@ export const WishlistCardTemplate: React.FC<WishlistCardTemplateProps> = ({
             )}
           </div>
 
-          <div className={styles.titleArea}>
+          <div className={styles['title-area']}>
             <h3 className={styles.title}>{wishlist.Title}</h3>
 
             {!isOwner && wishlist.OwnerFirstName && (
-              <div className={styles.ownerAttribution}>
+              <div className={styles['owner-attribution']}>
                 <span>by {wishlist.OwnerFirstName}</span>
-                <div className={`${styles.ownerAvatar} ${ownerAvatarClass}`} />
+                <div className={`${styles['owner-avatar']} ${ownerAvatarClass}`} />
               </div>
             )}
           </div>
 
           <div className={styles.meta}>
-            <div className={`${styles.metaItem} ${expirationClass}`}>
-              {isArchived ? <Archive className={styles.metaIcon} /> : <Calendar className={styles.metaIcon} />}
+            <div className={`${styles['meta-item']} ${expirationClass}`}>
+              {isArchived ? <Archive className={styles['meta-icon']} /> : <Calendar className={styles['meta-icon']} />}
               <span>{isArchived ? `Ended ${formattedDate.replace(/^(Expired |Expires )/, '')}` : formattedDate}</span>
             </div>
 
             {wishlist.AllowGroupFunds && !isArchived && (
-              <div className={styles.metaItem}>
-                <Users className={styles.metaIcon} />
+              <div className={styles['meta-item']}>
+                <Users className={styles['meta-icon']} />
                 <span>Group Funding Enabled</span>
               </div>
             )}
@@ -64,7 +64,7 @@ export const WishlistCardTemplate: React.FC<WishlistCardTemplateProps> = ({
         </div>
 
         <div className={styles.footer}>
-          <span className={styles.viewLink}>
+          <span className={styles['view-link']}>
             {isArchived ? 'View Past Details' : 'Open Wishlist'}
           </span>
           <ArrowRight size={16} className={styles.arrow} />

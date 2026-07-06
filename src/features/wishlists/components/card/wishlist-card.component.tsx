@@ -8,11 +8,11 @@ import { formatWishlistCardDate } from 'shared/utils/format-date.util';
 
 const getAvatarBgColor = (username: string) => {
   const colors = [
-    styles.avatarBg1,
-    styles.avatarBg2,
-    styles.avatarBg3,
-    styles.avatarBg4,
-    styles.avatarBg5,
+    styles['avatar-bg1'],
+    styles['avatar-bg2'],
+    styles['avatar-bg3'],
+    styles['avatar-bg4'],
+    styles['avatar-bg5'],
   ];
   let hash = 0;
   for (let i = 0; i < username.length; i++) {
@@ -27,10 +27,10 @@ export const WishlistCard: React.FC<WishlistCardProps> = ({ wishlist, isArchived
   const isOwner = user?.Id === wishlist.UserId;
 
   const getExpirationClass = (dateStr: string | null) => {
-    if (!dateStr) return styles.noExpire;
+    if (!dateStr) return styles['no-expire'];
     const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return styles.noExpire;
-    return isWishlistExpired(dateStr) ? styles.expired : styles.activeExpire;
+    if (isNaN(date.getTime())) return styles['no-expire'];
+    return isWishlistExpired(dateStr) ? styles.expired : styles['active-expire'];
   };
 
   return (

@@ -14,7 +14,7 @@ export const ToastTemplate: React.FC<ToastTemplateProps> = ({
       {onDismiss && (
         <button
           type="button"
-          className={styles.dismissButton}
+          className={styles['dismiss-button']}
           onClick={onDismiss}
           aria-label="Dismiss notification"
         >

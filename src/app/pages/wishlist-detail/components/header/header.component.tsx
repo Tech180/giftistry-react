@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HeaderProps } from './interfaces/header-props.interface';
 import { HeaderTemplate } from './header.html';
+import { useAuth } from 'app/providers/auth-context';
 
 export const Header: React.FC<HeaderProps> = (props) => {
   const { wishlist } = props;
+  const { globalAiEnabled } = useAuth();
 
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -67,6 +69,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
       tempDate={tempDate}
       setTempDate={setTempDate}
       exportRef={exportRef}
+      globalAiEnabled={globalAiEnabled}
     />
   );
 };

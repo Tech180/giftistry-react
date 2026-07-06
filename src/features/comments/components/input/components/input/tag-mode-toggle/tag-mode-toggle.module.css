@@ -1,0 +1,44 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.tag-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  width: 1.75rem;
+  height: 1.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tag-icon-btn:hover,
+.tag-icon-btn.active,
+.active {
+  color: var(--primary);
+  border-color: var(--primary);
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.tag-check-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  border: none;
+  color: var(--primary-text);
+  border-radius: var(--radius-sm);
+  width: 1.75rem;
+  height: 1.75rem;
+  cursor: pointer;
+}
+
+.tag-check-btn:hover {
+  background: var(--primary-hover);
+}

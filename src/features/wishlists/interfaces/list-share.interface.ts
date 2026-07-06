@@ -4,4 +4,8 @@ export interface ListShare {
   UserId: string;
   Role: 'collaborator' | 'viewer';
   CreatedAt?: string;
+  Username?: string;
+  FirstName?: string;
+  LastName?: string;
+  Email?: string;
 }

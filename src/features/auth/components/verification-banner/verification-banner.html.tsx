@@ -9,13 +9,13 @@ export const VerificationBannerTemplate: React.FC<VerificationBannerTemplateProp
 }) => {
   return (
     <div className={styles.banner}>
-      <div className={styles.textContainer}>
+      <div className={styles['text-container']}>
         <span>⚠️ Please verify your email address to unlock wishlist sharing and list creation. Check your inbox for a verification link.</span>
       </div>
       <button
         onClick={onResend}
         disabled={isLoading}
-        className={styles.resendBtn}
+        className={styles['resend-btn']}
       >
         {cooldown > 0 ? `Resend Email (${cooldown}s)` : 'Resend Email'}
       </button>

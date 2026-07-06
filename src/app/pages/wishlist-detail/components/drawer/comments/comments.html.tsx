@@ -11,10 +11,20 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
   setTaggedItemIds,
   isTaggingModeActive,
   setIsTaggingModeActive,
+  isReplyTaggingModeActive,
+  setIsReplyTaggingModeActive,
+  replyTaggedItemIds,
+  setReplyTaggedItemIds,
   listId,
+  listOwnerId,
+  ownerUsername,
+  ownerDisplayName,
   isOwner,
   handleItemTaggedClick,
 }) => {
+  const drawerTaggingActive = isTaggingModeActive || isReplyTaggingModeActive;
+  const drawerTaggedIds = isReplyTaggingModeActive ? replyTaggedItemIds : taggedItemIds;
+
   return (
     <Drawer
       isOpen={isOpen}
@@ -25,9 +35,15 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
       miniDrawer={
         <MiniDrawer
           items={items}
-          selectedIds={taggedItemIds}
-          onRemoveId={(id) => setTaggedItemIds(taggedItemIds.filter((tid) => tid !== id))}
-          isActive={isTaggingModeActive}
+          selectedIds={drawerTaggedIds}
+          onRemoveId={(id) => {
+            if (isReplyTaggingModeActive) {
+              setReplyTaggedItemIds(replyTaggedItemIds.filter((tagId) => tagId !== id));
+            } else {
+              setTaggedItemIds(taggedItemIds.filter((tagId) => tagId !== id));
+            }
+          }}
+          isActive={drawerTaggingActive}
           position="right"
           label="Tags"
         />
@@ -35,6 +51,9 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
     >
       <CommentSection
         listId={listId}
+        listOwnerId={listOwnerId}
+        ownerUsername={ownerUsername}
+        ownerDisplayName={ownerDisplayName}
         isOwner={isOwner}
         items={items}
         onItemTaggedClick={handleItemTaggedClick}
@@ -42,6 +61,10 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
         setIsTaggingModeActive={setIsTaggingModeActive}
         taggedItemIds={taggedItemIds}
         setTaggedItemIds={setTaggedItemIds}
+        isReplyTaggingModeActive={isReplyTaggingModeActive}
+        setIsReplyTaggingModeActive={setIsReplyTaggingModeActive}
+        replyTaggedItemIds={replyTaggedItemIds}
+        setReplyTaggedItemIds={setReplyTaggedItemIds}
       />
     </Drawer>
   );

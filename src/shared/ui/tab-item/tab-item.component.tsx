@@ -11,11 +11,11 @@ export const TabItem: React.FC<TabItemProps> = ({
   isActive,
   onClick,
 }) => {
-  const buttonClass = [styles.tabButton, isActive ? styles.activeTabButton : '']
+  const buttonClass = [styles['tab-button'], isActive ? styles['active-tab-button'] : '']
     .filter(Boolean)
     .join(' ');
 
-  const countClass = isActive ? styles.activeTabCount : styles.inactiveTabCount;
+  const countClass = isActive ? styles['active-tab-count'] : styles['inactive-tab-count'];
 
   return (
     <TabItemTemplate

@@ -9,6 +9,7 @@ export interface WishlistDetailTemplateProps {
   items: Item[];
   priorities: Priority[];
   isOwner: boolean;
+  canCollaborate: boolean;
   isExpired: boolean;
   isAddOpen: boolean;
   setIsAddOpen: (open: boolean) => void;
@@ -29,6 +30,8 @@ export interface WishlistDetailTemplateProps {
   saveTitle: (title: string) => Promise<void>;
   saveDate: (date: string) => Promise<void>;
   toggleRevealSuggestions: () => void;
+  toggleAiEnabled?: () => void;
+  saveVisibility: (visibility: 'private' | 'friends' | 'link') => Promise<void>;
   formatDate: (dateStr: string | null) => string;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -49,6 +52,11 @@ export interface WishlistDetailTemplateProps {
   setIsTaggingModeActive: (active: boolean) => void;
   taggedItemIds: string[];
   setTaggedItemIds: (ids: string[]) => void;
+  isReplyTaggingModeActive: boolean;
+  setIsReplyTaggingModeActive: (active: boolean) => void;
+  replyTaggedItemIds: string[];
+  setReplyTaggedItemIds: (ids: string[]) => void;
   handleSelectTag: (itemId: string) => void;
+  handleSelectReplyTag: (itemId: string) => void;
   isLoading: boolean;
 }

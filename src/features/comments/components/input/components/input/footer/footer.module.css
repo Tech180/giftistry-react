@@ -1,0 +1,174 @@
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-base);
+}
+
+.tools-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.tag-button-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.tag-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  width: 1.75rem;
+  height: 1.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tag-icon-btn:hover,
+.tag-icon-btn.active,
+.active {
+  color: var(--primary);
+  border-color: var(--primary);
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.tag-check-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  border: none;
+  color: var(--primary-text);
+  border-radius: var(--radius-sm);
+  width: 1.75rem;
+  height: 1.75rem;
+  cursor: pointer;
+}
+
+.tag-check-btn:hover {
+  background: var(--primary-hover);
+}
+
+.rock-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.rock-toggle-wrapper input {
+  display: none;
+}
+
+.rock-toggle-track {
+  position: relative;
+  width: var(--spacing-2xl);
+  height: 1.375rem;
+  background-color: var(--border);
+  border-radius: 1.25rem;
+  transition: background-color 0.4s ease;
+  box-shadow: inset 0 1px var(--spacing-xs) rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  flex-shrink: 0;
+  --rock-tumbler-transform: translateX(0) rotate(0deg);
+  --rock-tumbler-radius: 40% 60% 55% 45% / 50% 45% 55% 50%;
+  --rock-tumbler-bg: radial-gradient(circle at 30% 30%, #a87b51 0%, #6e4b2d 70%, #4a301a 100%);
+}
+
+.rock-tumbler {
+  position: absolute;
+  top: var(--spacing-xs);
+  left: var(--spacing-xs);
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  background: var(--rock-tumbler-bg);
+  border-radius: var(--rock-tumbler-radius);
+  box-shadow:
+    inset var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) rgba(255, 255, 255, 0.15),
+    inset -0.125rem -0.125rem var(--spacing-xs) rgba(0, 0, 0, 0.6),
+    1px 2px 3px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), border-radius 0.5s ease;
+  transform: var(--rock-tumbler-transform);
+}
+
+.rock-texture {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.rock-texture::before {
+  content: '';
+  position: absolute;
+  top: var(--spacing-xs);
+  left: var(--spacing-xs);
+  width: var(--spacing-xs);
+  height: var(--spacing-xs);
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-full);
+  box-shadow: 5px 3px 0 1px rgba(0, 0, 0, 0.25), 2px 7px 0 0 rgba(0, 0, 0, 0.3);
+}
+
+.rock-toggle-wrapper input:checked + .rock-toggle-track {
+  background-color: var(--primary);
+  --rock-tumbler-transform: translateX(1.375rem) rotate(360deg);
+  --rock-tumbler-radius: 55% 45% 40% 60% / 45% 55% 50% 50%;
+  --rock-tumbler-bg: radial-gradient(circle at 70% 30%, #a87b51 0%, #6e4b2d 70%, #4a301a 100%);
+}
+
+.rock-toggle-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  transition: color 0.3s ease;
+}
+
+.rock-toggle-wrapper input:checked ~ .rock-toggle-label {
+  color: var(--text);
+  font-weight: var(--font-weight-medium);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.6875rem;
+  font-weight: var(--font-weight-bold);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.1s ease;
+  font-family: inherit;
+  border: 1px solid transparent;
+  user-select: none;
+  cursor: pointer;
+  background: transparent;
+}
+
+.status-badge:hover {
+  transform: translateY(-1px) scale(1.04);
+}
+
+.visible-to-owner {
+  color: var(--primary);
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.invisible-to-owner {
+  color: var(--error);
+  background-color: var(--error-bg);
+  border-color: var(--error-border);
+}

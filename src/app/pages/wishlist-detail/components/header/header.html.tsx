@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Archive, Trash2, Edit2, Calendar, Users, Eye, EyeOff, Download, MessageSquare, Share2 } from 'lucide-react';
-import { Button } from 'shared/ui';
+import { ArrowLeft, Archive, Trash2, Edit2, Calendar, Users, Eye, EyeOff, Download, MessageSquare, Share2, Sparkles } from 'lucide-react';
+import { Button, EnterPanel } from 'shared/ui';
 import { exportToCsv, exportToXlsx, exportToTxt, exportToJson } from 'shared/utils/wishlist-export';
 import { HeaderTemplateProps } from './interfaces/header-template-props.interface';
 import styles from '../../wishlist-detail.module.css';
@@ -22,6 +22,9 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   saveDate,
   formatDate,
   toggleRevealSuggestions,
+  toggleAiEnabled,
+  saveVisibility,
+  globalAiEnabled,
   isCommentsOpen,
   setIsCommentsOpen,
   setIsShareOpen,
@@ -40,7 +43,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   return (
     <>
       {confirmAction && (
-        <div className={styles['confirm-banner']}>
+        <EnterPanel animation="slide-down" className={styles['confirm-banner']}>
           <span className={styles['confirm-text']}>
             {confirmAction === 'deactivate'
               ? 'Are you sure you want to deactivate and archive this wishlist?'
@@ -60,39 +63,43 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
               No
             </button>
           </div>
-        </div>
+        </EnterPanel>
       )}
 
       {/* Navigation Breadcrumb & Deactivate/Delete Action */}
       <div className={styles['top-row']}>
-        <Link to="/dashboard" className={styles.backLink}>
+        <Link to="/dashboard" className={styles['back-link']}>
           <ArrowLeft size={14} /> Back to Dashboard
         </Link>
         {isOwner && (
           <div className={styles['top-actions']}>
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setConfirmAction('deactivate')}
               disabled={isDeactivating || isDeleting}
-              className={styles['archive-btn']}
               title="Deactivate / Archive Wishlist"
+              aria-label="Deactivate / Archive Wishlist"
             >
               <Archive size={16} />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => setConfirmAction('delete')}
               disabled={isDeactivating || isDeleting}
-              className={styles['deactivate-trash-btn']}
               title="Delete Wishlist and Items"
+              aria-label="Delete Wishlist and Items"
             >
               <Trash2 size={16} />
-            </button>
+            </Button>
           </div>
         )}
       </div>
 
       {/* Main Details Banner */}
       <div className={styles.header}>
-        <div className={styles.headerMeta}>
+        <div>
           {isEditingTitle ? (
             <input
               type="text"
@@ -128,7 +135,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
               )}
             </h1>
           )}
-          <div className={styles.metaRow}>
+          <div className={styles['meta-row']}>
             {isEditingDate ? (
               <input
                 type="date"
@@ -153,19 +160,40 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
               >
                 <Calendar size={14} />
                 <span>{formatDate(wishlist.ExpiresAt)}</span>
-                {isExpired && <span className={styles.expiredLabel}>(Expired)</span>}
+                {isExpired && <span className={styles['expired-label']}>(Expired)</span>}
               </button>
             ) : (
-              <div className={styles.metaItem}>
+              <div className={styles['meta-item']}>
                 <Calendar size={14} />
                 <span>{formatDate(wishlist.ExpiresAt)}</span>
-                {isExpired && <span className={styles.expiredLabel}>(Expired)</span>}
+                {isExpired && <span className={styles['expired-label']}>(Expired)</span>}
               </div>
             )}
             {wishlist.AllowGroupFunds && (
-              <div className={styles.metaItem}>
+              <div className={styles['meta-item']}>
                 <Users size={14} />
                 <span>Group Funding Enabled</span>
+              </div>
+            )}
+            {isOwner && (
+              <div className={styles['visibility-group']}>
+                <Eye size={14} />
+                <select
+                  value={wishlist.Visibility || 'private'}
+                  onChange={(e) => saveVisibility(e.target.value as 'private' | 'friends' | 'link')}
+                  className={styles['visibility-select']}
+                  title="Wishlist visibility"
+                >
+                  <option value="private">Private</option>
+                  <option value="friends">Friends</option>
+                  <option value="link">Link</option>
+                </select>
+              </div>
+            )}
+            {!isOwner && wishlist.Visibility && wishlist.Visibility !== 'private' && (
+              <div className={styles['meta-item']}>
+                <Eye size={14} />
+                <span>{wishlist.Visibility === 'friends' ? 'Friends Only' : 'Link Access'}</span>
               </div>
             )}
             {isOwner && (
@@ -178,8 +206,24 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                 <span>{wishlist.RevealSuggestions ? 'Reveal suggestions after expiration' : 'Hide suggestions permanently'}</span>
               </button>
             )}
+            {globalAiEnabled && isOwner && (
+              <button
+                className={styles['settings-btn']}
+                onClick={toggleAiEnabled}
+                title="Toggle AI-powered item reviews"
+              >
+                <Sparkles size={14} style={{ color: wishlist.AiEnabled ? 'var(--primary)' : 'inherit' }} />
+                <span>{wishlist.AiEnabled ? 'AI Reviews Enabled' : 'AI Reviews Disabled'}</span>
+              </button>
+            )}
+            {globalAiEnabled && !isOwner && wishlist.AiEnabled && (
+              <div className={styles['meta-item']}>
+                <Sparkles size={14} style={{ color: 'var(--primary)' }} />
+                <span>AI Reviews Active</span>
+              </div>
+            )}
             {!isOwner && (
-              <div className={styles.metaItem}>
+              <div className={styles['meta-item']}>
                 <Eye size={14} />
                 <span>Owner: {wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Registry Owner'}</span>
               </div>
@@ -189,19 +233,19 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
 
         <div className={styles.actions}>
           {wishlist && (
-            <div className={styles.exportDropdownContainer} ref={exportRef} title="Export">
+            <div className={styles['export-dropdown-container']} ref={exportRef} title="Export">
               <Button
                 variant="secondary"
-                className={styles.exportDropdownTrigger}
+                className={styles['export-dropdown-trigger']}
                 onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
                 aria-label="Export"
               >
                 <Download size={16} />
               </Button>
               {isExportDropdownOpen && (
-                <div className={styles.exportDropdownMenu}>
+                <EnterPanel animation="dropdown" className={styles['export-dropdown-menu']}>
                   <button
-                    className={styles.exportDropdownItem}
+                    className={styles['export-dropdown-item']}
                     onClick={() => {
                       exportToCsv(
                         wishlist.Title,
@@ -215,7 +259,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                     CSV
                   </button>
                   <button
-                    className={styles.exportDropdownItem}
+                    className={styles['export-dropdown-item']}
                     onClick={() => {
                       exportToXlsx(
                         wishlist.Title,
@@ -229,7 +273,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                     XLSX
                   </button>
                   <button
-                    className={styles.exportDropdownItem}
+                    className={styles['export-dropdown-item']}
                     onClick={() => {
                       exportToTxt(
                         wishlist.Title,
@@ -243,7 +287,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                     TXT
                   </button>
                   <button
-                    className={styles.exportDropdownItem}
+                    className={styles['export-dropdown-item']}
                     onClick={() => {
                       exportToJson(
                         wishlist.Title,
@@ -256,7 +300,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                   >
                     JSON
                   </button>
-                </div>
+                </EnterPanel>
               )}
             </div>
           )}

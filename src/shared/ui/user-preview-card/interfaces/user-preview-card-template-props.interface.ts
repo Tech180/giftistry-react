@@ -2,7 +2,7 @@ import React from 'react';
 import { ApiUser } from 'features/auth';
 
 export interface UserPreviewCardTemplateProps {
-  user: ApiUser | null;
+  user: Partial<ApiUser> | null;
   isLoading: boolean;
   placement: 'top' | 'bottom';
   style: React.CSSProperties;

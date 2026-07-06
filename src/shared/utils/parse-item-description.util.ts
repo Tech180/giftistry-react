@@ -25,7 +25,7 @@ export function parseItemDescription(
     if (parsed && typeof parsed === 'object') {
       const text =
         typeof parsed.text === 'string' && parsed.text.length > 0 ? parsed.text : null;
-      return { text: text ?? description, metadata: parsed, isJson: true };
+      return { text: text, metadata: parsed, isJson: true };
     }
   } catch {
     /* fall through */

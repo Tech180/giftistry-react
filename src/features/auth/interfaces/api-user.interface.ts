@@ -1,13 +1,8 @@
-export interface ApiUser {
+import { PublicUserSummary } from 'shared/interfaces/public-user-summary.interface';
+
+export interface ApiUser extends PublicUserSummary {
   Id: string;
-  Username: string;
   Email: string;
-  FirstName: string;
-  LastName: string;
-  CreatedAt?: string;
-  Bio?: string;
-  Theme?: string;
-  Avatar?: string | null;
   EmailVerified?: boolean;
   TwoFactorEnabled?: boolean;
   IsAdmin?: boolean;

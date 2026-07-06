@@ -1,10 +1,16 @@
 import React from 'react';
 import { Comment } from './comment.interface';
 import { Item } from 'features/items';
+import { OnlineUser } from './online-user.interface';
+import { ListParticipant } from './list-participant.interface';
+import { CommentContentSegment } from '../utils/comment-content.util';
 
 export interface CommentSectionTemplateProps {
   isOwner: boolean;
+  listOwnerId?: string;
+  isAuthenticated: boolean;
   currentUserId: string | undefined;
+  participants: ListParticipant[];
   comments: Comment[];
   isLoading: boolean;
   displayError: string | null;
@@ -24,7 +30,7 @@ export interface CommentSectionTemplateProps {
 
   // Phase 5 additions
   items: Item[];
-  onlineUsers: string[];
+  onlineUsers: OnlineUser[];
   typingUsers: string[];
   onItemTaggedClick?: (itemId: string) => void;
   handleSelectTagItem: (itemId: string, itemName: string) => void;
@@ -37,4 +43,23 @@ export interface CommentSectionTemplateProps {
   setDeletingCommentId: (id: string | null) => void;
   isAnonymous: boolean;
   setIsAnonymous: (anon: boolean) => void;
+  imageUrl: string | null;
+  setImageUrl: (url: string | null) => void;
+  parentComments: Comment[];
+  repliesMap: Record<string, Comment[]>;
+  handleReplySubmit: (
+    parentId: string,
+    replyContent: string,
+    replyCommenterName?: string | null,
+    replyIsOwnerVisible?: boolean,
+    replyIsRollover?: boolean,
+    replyImageUrl?: string | null
+  ) => Promise<void>;
+  toggleReaction: (commentId: string, reaction: string) => void;
+  activeReplyId: string | null;
+  onReplyOpen: (commentId: string | null) => void;
+  isReplyTaggingModeActive: boolean;
+  setIsReplyTaggingModeActive: (active: boolean) => void;
+  replyTaggedItemIds: string[];
+  setReplyTaggedItemIds: (ids: string[]) => void;
 }

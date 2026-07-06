@@ -4,6 +4,6 @@ export interface AppShellProps {
   navigation: ReactNode;
   banner?: ReactNode;
   children: ReactNode;
-  isProfilePage?: boolean;
+  isSettingsPage?: boolean;
   hasBanner?: boolean;
 }
