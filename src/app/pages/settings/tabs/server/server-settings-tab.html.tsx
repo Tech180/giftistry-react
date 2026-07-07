@@ -51,6 +51,9 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   selectedCompany,
   setSelectedCompany,
   filteredModels,
+  isServerOwner,
+  onDeleteServer,
+  isDeletingServer,
 }) => {
   if (isLoading) {
     return (
@@ -134,6 +137,18 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
           filteredModels={filteredModels}
         />
       </form>
+
+      {isServerOwner && (
+        <section className={styles['danger-zone']}>
+            <h2 className={styles['danger-zone-title']}>Delete server</h2>
+            <p className={styles['danger-zone-desc']}>
+              Permanently delete this Giftistry instance and all user data.
+            </p>
+            <Button variant="danger" size="sm" onClick={onDeleteServer} isLoading={isDeletingServer}>
+              Delete server
+            </Button>
+          </section>
+      )}
     </EnterPanel>
   );
 };

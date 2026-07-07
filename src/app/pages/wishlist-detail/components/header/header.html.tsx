@@ -23,7 +23,6 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   formatDate,
   toggleRevealSuggestions,
   toggleAiEnabled,
-  saveVisibility,
   globalAiEnabled,
   isCommentsOpen,
   setIsCommentsOpen,
@@ -173,27 +172,6 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
               <div className={styles['meta-item']}>
                 <Users size={14} />
                 <span>Group Funding Enabled</span>
-              </div>
-            )}
-            {isOwner && (
-              <div className={styles['visibility-group']}>
-                <Eye size={14} />
-                <select
-                  value={wishlist.Visibility || 'private'}
-                  onChange={(e) => saveVisibility(e.target.value as 'private' | 'friends' | 'link')}
-                  className={styles['visibility-select']}
-                  title="Wishlist visibility"
-                >
-                  <option value="private">Private</option>
-                  <option value="friends">Friends</option>
-                  <option value="link">Link</option>
-                </select>
-              </div>
-            )}
-            {!isOwner && wishlist.Visibility && wishlist.Visibility !== 'private' && (
-              <div className={styles['meta-item']}>
-                <Eye size={14} />
-                <span>{wishlist.Visibility === 'friends' ? 'Friends Only' : 'Link Access'}</span>
               </div>
             )}
             {isOwner && (

@@ -6,25 +6,35 @@ import styles from './wishlist-card.module.css';
 import { isWishlistExpired } from '../../utils/is-wishlist-expired.util';
 import { formatWishlistCardDate } from 'shared/utils/format-date.util';
 
-const getAvatarBgColor = (username: string) => {
-  const colors = [
-    styles['avatar-bg1'],
-    styles['avatar-bg2'],
-    styles['avatar-bg3'],
-    styles['avatar-bg4'],
-    styles['avatar-bg5'],
-  ];
-  let hash = 0;
-  for (let i = 0; i < username.length; i++) {
-    hash = username.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % colors.length;
-  return colors[index];
-};
-
 export const WishlistCard: React.FC<WishlistCardProps> = ({ wishlist, isArchived = false }) => {
   const { user } = useAuth();
   const isOwner = user?.Id === wishlist.UserId;
+  const [isSharesSidebarOpen, setIsSharesSidebarOpen] = React.useState(false);
+  const [sidebarPage, setSidebarPage] = React.useState(0);
+  const pageSize = 3;
+
+  const onToggleSharesSidebar = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsSharesSidebarOpen((prev) => {
+      if (!prev) setSidebarPage(0);
+      return !prev;
+    });
+  };
+
+  const onSidebarPageUp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSidebarPage((prev) => Math.max(0, prev - 1));
+  };
+
+  const onSidebarPageDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const totalShares = wishlist.Shares?.length || 0;
+    const maxPage = Math.max(0, Math.ceil(totalShares / pageSize) - 1);
+    setSidebarPage((prev) => Math.min(maxPage, prev + 1));
+  };
 
   const getExpirationClass = (dateStr: string | null) => {
     if (!dateStr) return styles['no-expire'];
@@ -41,7 +51,12 @@ export const WishlistCard: React.FC<WishlistCardProps> = ({ wishlist, isArchived
       expirationClass={getExpirationClass(wishlist.ExpiresAt)}
       isArchived={isArchived}
       isPersonalShared={wishlist.Role === 'owner' || !wishlist.Role}
-      ownerAvatarClass={getAvatarBgColor(wishlist.OwnerUsername || wishlist.OwnerFirstName || '')}
+      isSharesSidebarOpen={isSharesSidebarOpen}
+      onToggleSharesSidebar={onToggleSharesSidebar}
+      sidebarPage={sidebarPage}
+      onSidebarPageUp={onSidebarPageUp}
+      onSidebarPageDown={onSidebarPageDown}
+      pageSize={pageSize}
     />
   );
 };

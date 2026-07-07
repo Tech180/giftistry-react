@@ -5,6 +5,7 @@ import { Appearance } from './interfaces/appearance.interface';
 import { AuthContext } from './auth-context';
 import { applyCustomTheme, clearCustomTheme } from 'core/theme/apply-custom-theme';
 import { env } from 'core/config/env';
+import { apiClient } from "core/api/client";
 
 export type { Theme } from './interfaces/theme.interface';
 export type { Appearance } from './interfaces/appearance.interface';
@@ -109,6 +110,57 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return savedAppearance || "system";
   });
 
+  const [temporaryTheme, setTemporaryTheme] = useState<{ id: string; label: string } | null>(null);
+
+  const [customThemes, setCustomThemes] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem('giftistry-custom-themes');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const fetchCustomThemes = async () => {
+    try {
+      const res = await apiClient.get<{ Themes: any[] }>('/api/themes/custom');
+      if (res && res.Themes) {
+        setCustomThemes(res.Themes);
+        localStorage.setItem('giftistry-custom-themes', JSON.stringify(res.Themes));
+      }
+    } catch (err) {
+      console.error("Failed to fetch custom themes from database:", err);
+    }
+  };
+
+  const saveCustomTheme = async (profile: any) => {
+    const updatedList = [...customThemes.filter(t => t.id !== profile.id), profile];
+    setCustomThemes(updatedList);
+    localStorage.setItem('giftistry-custom-themes', JSON.stringify(updatedList));
+
+    if (user) {
+      try {
+        await apiClient.post('/api/themes/custom', profile, 'Theme');
+      } catch (err) {
+        console.error("Failed to sync saved custom theme to database:", err);
+      }
+    }
+  };
+
+  const deleteCustomTheme = async (id: string) => {
+    const updatedList = customThemes.filter(t => t.id !== id);
+    setCustomThemes(updatedList);
+    localStorage.setItem('giftistry-custom-themes', JSON.stringify(updatedList));
+
+    if (user) {
+      try {
+        await apiClient.delete(`/api/themes/custom/${id}`);
+      } catch (err) {
+        console.error("Failed to sync deleted custom theme to database:", err);
+      }
+    }
+  };
+
   // Check for holiday theme unlocking
   useEffect(() => {
     const defaults: Theme[] = CORE_DEFAULT_THEMES;
@@ -156,6 +208,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [theme, unlockedThemes]);
 
+  // Synchronize theme and custom themes with user preference from database upon login/refresh
+  useEffect(() => {
+    if (user) {
+      fetchCustomThemes();
+      if (user.Theme && user.Theme !== theme) {
+        if (unlockedThemes.includes(user.Theme as Theme) || user.Theme.startsWith('custom-')) {
+          setThemeState(user.Theme as Theme);
+          localStorage.setItem("giftistry-theme", user.Theme);
+        }
+      }
+    }
+  }, [user?.Theme]);
+
   // Effect to handle theme and appearance changes reactively
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -172,15 +237,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute("data-theme", theme);
     document.documentElement.setAttribute("data-appearance", effectiveAppearance);
 
+    // If it's a custom theme, does the user have local configs?
+    const hasLocalCustom = theme.startsWith('custom-') && (() => {
+      try {
+        const savedCustom = localStorage.getItem('giftistry-custom-theme');
+        return savedCustom && JSON.parse(savedCustom).id === theme;
+      } catch {
+        return false;
+      }
+    })();
+
     // Trigger Double Link Swap
-    updateThemeStylesheet(theme.startsWith('custom-') ? 'default' : theme, effectiveAppearance);
+    updateThemeStylesheet(theme.startsWith('custom-') && hasLocalCustom ? 'default' : theme, effectiveAppearance);
 
     // Listen for system appearance updates if system mode is active
     const handleSystemChange = () => {
       if (appearance === "system") {
         const nextEffective = mediaQuery.matches ? "dark" : "light";
         document.documentElement.setAttribute("data-appearance", nextEffective);
-        updateThemeStylesheet(theme.startsWith('custom-') ? 'default' : theme, nextEffective);
+        updateThemeStylesheet(theme.startsWith('custom-') && hasLocalCustom ? 'default' : theme, nextEffective);
       }
     };
 
@@ -192,7 +267,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const useCustom = localStorage.getItem('giftistry-use-custom-theme') === 'true' || theme.startsWith('custom-');
     const savedCustom = localStorage.getItem('giftistry-custom-theme');
-    if (useCustom && savedCustom) {
+
+    let hasLocalCustom = false;
+    if (theme.startsWith('custom-') && savedCustom) {
+      try {
+        const parsed = JSON.parse(savedCustom);
+        if (parsed.id === theme) {
+          hasLocalCustom = true;
+        }
+      } catch {}
+    }
+
+    if (useCustom && hasLocalCustom && savedCustom) {
       try {
         applyCustomTheme(JSON.parse(savedCustom));
       } catch (e) {
@@ -204,6 +290,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme, appearance]);
 
   const setTheme = (newTheme: Theme) => {
+    setTemporaryTheme(null); // Clear temporary try-theme preview on explicit choice
+
     if (unlockedThemes.includes(newTheme) || newTheme.startsWith('custom-')) {
       if (newTheme.startsWith('custom-')) {
         localStorage.setItem('giftistry-use-custom-theme', 'true');
@@ -224,8 +312,36 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       }
       setThemeState(newTheme);
       localStorage.setItem("giftistry-theme", newTheme);
+
+      // Persist theme choice to backend user profile if authenticated
+      if (auth && auth.user && auth.updateProfile) {
+        auth.updateProfile(
+          auth.user.Username,
+          auth.user.FirstName,
+          auth.user.LastName,
+          auth.user.Bio || undefined,
+          newTheme,
+          auth.user.Avatar
+        ).catch((err) => {
+          console.error("Failed to save theme selection to user profile:", err);
+        });
+      }
     } else {
       console.warn(`Attempted to set locked theme: ${newTheme}`);
+    }
+  };
+
+  const tryTheme = (themeId: string, ownerUsername: string) => {
+    const isPreset = CORE_DEFAULT_THEMES.includes(themeId as Theme) || [
+      'valentines', 'st-patricks', 'earth-day', 'independence', 'halloween', 'thanksgiving', 'christmas'
+    ].includes(themeId);
+
+    if (isPreset) {
+      setTheme(themeId as Theme);
+    } else {
+      setTemporaryTheme({ id: themeId, label: `${ownerUsername}'s Theme` });
+      setThemeState(themeId as Theme);
+      localStorage.setItem("giftistry-theme", themeId);
     }
   };
 
@@ -247,7 +363,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, appearance, setTheme, setAppearance, toggleAppearance, unlockedThemes, isThemeUnlocked }}>
+    <ThemeContext.Provider value={{
+      theme,
+      appearance,
+      setTheme,
+      setAppearance,
+      toggleAppearance,
+      unlockedThemes,
+      isThemeUnlocked,
+      temporaryTheme,
+      tryTheme,
+      customThemes,
+      saveCustomTheme,
+      deleteCustomTheme
+    }}>
       {children}
     </ThemeContext.Provider>
   );

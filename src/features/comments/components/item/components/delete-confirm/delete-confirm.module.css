@@ -1,0 +1,70 @@
+/* Delete dropdown confirmation positioned under comment bubble, matching its full width */
+.comment-delete-dropdown {
+  background-color: var(--error-bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-sm) var(--spacing-base);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  animation: dropdown-fade-in 0.15s ease-out;
+  box-sizing: border-box;
+}
+
+.delete-confirm-text{
+  font-size: var(--font-size-xs);
+  color: var(--error);
+  font-weight: var(--font-weight-medium);
+}
+
+.delete-confirm-actions{
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.delete-confirm-btn{
+  background-color: var(--error);
+  color: var(--primary-text);
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+}
+
+.delete-confirm-btn:hover{
+  filter: brightness(0.9);
+}
+
+.delete-cancel-btn{
+  background-color: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.delete-cancel-btn:hover{
+  background-color: var(--surface-hover);
+  color: var(--text);
+}
+
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

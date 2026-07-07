@@ -12,6 +12,9 @@ export function legacyProfilePath(pathname: string): string {
     const suffix = pathname.slice('/profile/settings'.length);
     return suffix ? `/settings${suffix}` : '/settings/account';
   }
+  if (pathname === '/profile/server' || pathname === '/settings/server') {
+    return '/settings/admin/server';
+  }
   if (pathname.startsWith('/profile/')) {
     return `/settings${pathname.slice('/profile'.length)}`;
   }

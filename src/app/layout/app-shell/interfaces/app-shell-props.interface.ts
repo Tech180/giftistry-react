@@ -6,4 +6,5 @@ export interface AppShellProps {
   children: ReactNode;
   isSettingsPage?: boolean;
   hasBanner?: boolean;
+  isFullWidth?: boolean;
 }

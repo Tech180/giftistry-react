@@ -23,4 +23,6 @@ export interface DashboardTemplateProps {
   emptyIcon: React.ReactNode;
   emptyTitle: string;
   emptyDesc: string;
+  gridRef: (node: HTMLDivElement | null) => void;
+  columns: number;
 }

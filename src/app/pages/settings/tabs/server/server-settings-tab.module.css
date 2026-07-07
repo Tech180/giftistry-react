@@ -4,7 +4,6 @@
 
 .settings-container {
   width: 100%;
-  max-width: 87.5rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: stretch;
@@ -50,4 +49,24 @@
   .settings-container {
     grid-template-columns: 1fr;
   }
+}
+
+.danger-zone {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-xl);
+  border-top: 1px solid var(--border);
+}
+
+.danger-zone-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--error);
+  margin-bottom: var(--spacing-xs);
+}
+
+.danger-zone-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin: 0 0 var(--spacing-md);
+  max-width: 40rem;
 }

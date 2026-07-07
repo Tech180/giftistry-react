@@ -25,6 +25,7 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
   standardThemes,
   holidayThemes,
   customThemes,
+  temporaryTheme,
   isHolidayOpen,
   setIsHolidayOpen,
   appearances,
@@ -234,6 +235,22 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
                         <span>{ct.name}</span>
                       </button>
                     ))}
+                  </>
+                )}
+
+                {temporaryTheme && (
+                  <>
+                    <div className={styles['menu-divider']} />
+                    <div className={styles['menu-header']}>Tried Theme</div>
+                    <button
+                      className={`${styles['menu-item']} ${theme === temporaryTheme.id ? styles['active-item'] : ''}`}
+                      onClick={() => {
+                        setTheme(temporaryTheme.id);
+                        setIsThemeOpen(false);
+                      }}
+                    >
+                      <span>{temporaryTheme.label}</span>
+                    </button>
                   </>
                 )}
                 

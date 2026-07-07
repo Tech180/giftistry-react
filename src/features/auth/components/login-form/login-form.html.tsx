@@ -14,25 +14,12 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
   isLoading,
   localError,
   handleSubmit,
-
-  // 2FA step
   step,
   setStep,
   totpCode,
   setTotpCode,
   handleTotpSubmit,
-
-  // Email Magic Link OTP step
-  emailOtpToken,
-  setEmailOtpToken,
-  handleEmailOtpSend,
-  handleEmailOtpVerify,
-
-  // Passwordless & SSO
   handlePasskeyLogin,
-  handleGitHubLogin,
-
-  // Account Switcher
   switcherAccounts,
   handleSwitcherSelect,
   handleRemoveSwitcherAccount,
@@ -106,26 +93,6 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
               >
                 <Fingerprint size={16} /> Sign In with Passkey
               </Button>
-
-              <div className={styles['split-actions']}>
-                <Button
-                  onClick={handleGitHubLogin}
-                  variant="secondary"
-                  className={styles['flex-btn']}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={styles['github-icon']}>
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-                  </svg> GitHub
-                </Button>
-
-                <Button
-                  onClick={handleEmailOtpSend}
-                  variant="secondary"
-                  className={styles['flex-btn']}
-                >
-                  <Mail size={16} /> Magic Link
-                </Button>
-              </div>
             </div>
           </>
         )}
@@ -161,48 +128,6 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
                 className={styles['submit-btn']}
               >
                 Verify Code
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setStep('credentials')}
-                className={styles['back-btn']}
-              >
-                <ArrowLeft size={14} /> Back to Sign In
-              </button>
-            </form>
-          </>
-        )}
-
-        {step === 'email-otp' && (
-          <>
-            <div className={styles.header}>
-              <h2 className={styles.title}>Verify Login Code</h2>
-              <p className={styles.subtitle}>We sent a verification code to {email}</p>
-            </div>
-
-            <form onSubmit={handleEmailOtpVerify} className={styles.form}>
-              <Input
-                label="Verification Code"
-                type="text"
-                id="email-otp-code"
-                name="emailOtpToken"
-                pattern="[0-9]*"
-                maxLength={6}
-                placeholder="123456"
-                value={emailOtpToken}
-                onChange={(e) => setEmailOtpToken(e.target.value.replace(/\D/g, ''))}
-                leftIcon={<Lock size={16} />}
-                required
-              />
-
-              <Button
-                type="submit"
-                variant="primary"
-                isLoading={isLoading}
-                className={styles['submit-btn']}
-              >
-                Verify & Sign In
               </Button>
 
               <button

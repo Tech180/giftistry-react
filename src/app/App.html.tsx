@@ -24,12 +24,14 @@ export const AppSetupTemplate: React.FC = () => (
 export const AppContentTemplate: React.FC<AppContentTemplateProps> = ({
   isSettingsPage,
   hasBanner,
+  isFullWidth,
 }) => (
   <AppShell
     navigation={<AppNavigation />}
     banner={<VerificationBanner />}
     isSettingsPage={isSettingsPage}
     hasBanner={hasBanner}
+    isFullWidth={isFullWidth}
   >
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

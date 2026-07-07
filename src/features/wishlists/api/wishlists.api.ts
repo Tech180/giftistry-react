@@ -17,11 +17,10 @@ export const wishlistsApi = {
     category?: string,
     revealSuggestions?: boolean,
     aiEnabled?: boolean,
-    visibility?: 'private' | 'friends' | 'link',
   ) =>
     apiClient.post<Wishlist>(
       '/api/wishlists',
-      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category, revealSuggestions, aiEnabled, visibility },
+      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category, revealSuggestions, aiEnabled },
       'Lists'
     ),
 
@@ -39,11 +38,10 @@ export const wishlistsApi = {
     category?: string,
     revealSuggestions?: boolean,
     aiEnabled?: boolean,
-    visibility?: 'private' | 'friends' | 'link',
   ) =>
     apiClient.put<Wishlist>(
       `/api/wishlists/${listId}`,
-      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category, revealSuggestions, aiEnabled, visibility },
+      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category, revealSuggestions, aiEnabled },
       'Lists'
     ),
 

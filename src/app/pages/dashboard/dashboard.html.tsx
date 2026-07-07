@@ -21,6 +21,8 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
   emptyIcon,
   emptyTitle,
   emptyDesc,
+  gridRef,
+  columns,
 }) => {
   return (
     <EnterPanel animation="fade" className={styles.container}>
@@ -60,7 +62,7 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
         {isLoading ? (
           <LoadingState message="Loading wishlists..." />
         ) : currentLists.length > 0 ? (
-          <div className={styles.grid}>
+          <div className={styles.grid} ref={gridRef} data-columns={columns}>
             {currentLists.map((list) => (
               <WishlistCard key={list.Id} wishlist={list} isArchived={activeTab === 'archive'} />
             ))}

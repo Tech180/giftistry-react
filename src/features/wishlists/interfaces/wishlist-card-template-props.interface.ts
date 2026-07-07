@@ -7,5 +7,10 @@ export interface WishlistCardTemplateProps {
   expirationClass: string;
   isArchived: boolean;
   isPersonalShared: boolean;
-  ownerAvatarClass: string;
+  isSharesSidebarOpen: boolean;
+  onToggleSharesSidebar: (e: React.MouseEvent) => void;
+  sidebarPage: number;
+  onSidebarPageUp: (e: React.MouseEvent) => void;
+  onSidebarPageDown: (e: React.MouseEvent) => void;
+  pageSize: number;
 }

@@ -1,7 +1,7 @@
 import { Item } from 'features/items';
-import { ListParticipant } from './list-participant.interface';
+import { ListParticipant } from '../../../../../interfaces/list-participant.interface';
 
-export interface CommentReplyInputProps {
+export interface ReplyInputProps {
   replyToName: string;
   participants: ListParticipant[];
   items: Item[];

@@ -134,8 +134,7 @@ export default function WishlistDetail() {
         wishlist.AllowGroupFunds,
         wishlist.Category,
         wishlist.RevealSuggestions,
-        wishlist.AiEnabled,
-        wishlist.Visibility
+        wishlist.AiEnabled
       );
       setWishlist(updated);
     } catch (err) {
@@ -170,8 +169,7 @@ export default function WishlistDetail() {
         wishlist.AllowGroupFunds,
         wishlist.Category,
         wishlist.RevealSuggestions,
-        wishlist.AiEnabled,
-        wishlist.Visibility
+        wishlist.AiEnabled
       );
       setWishlist(updated);
     } catch (err) {
@@ -190,8 +188,7 @@ export default function WishlistDetail() {
         wishlist.AllowGroupFunds,
         wishlist.Category,
         !wishlist.RevealSuggestions,
-        wishlist.AiEnabled,
-        wishlist.Visibility
+        wishlist.AiEnabled
       );
       setWishlist(updated);
     } catch (err) {
@@ -209,8 +206,7 @@ export default function WishlistDetail() {
         wishlist.AllowGroupFunds,
         wishlist.Category,
         wishlist.RevealSuggestions,
-        !wishlist.AiEnabled,
-        wishlist.Visibility
+        !wishlist.AiEnabled
       );
       setWishlist(updated);
     } catch (err) {
@@ -218,24 +214,7 @@ export default function WishlistDetail() {
     }
   };
 
-  const saveVisibility = async (visibility: 'private' | 'friends' | 'link') => {
-    if (!wishlist || wishlist.Visibility === visibility) return;
-    try {
-      const updated = await wishlistsApi.updateWishlist(
-        wishlist.Id,
-        wishlist.Title,
-        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
-        wishlist.AllowGroupFunds,
-        wishlist.Category,
-        wishlist.RevealSuggestions,
-        wishlist.AiEnabled,
-        visibility
-      );
-      setWishlist(updated);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update visibility');
-    }
-  };
+
 
   const handleDeactivateConfirm = async () => {
     if (!wishlist) return;
@@ -381,7 +360,6 @@ export default function WishlistDetail() {
       saveDate={saveDate}
       toggleRevealSuggestions={toggleRevealSuggestions}
       toggleAiEnabled={toggleAiEnabled}
-      saveVisibility={saveVisibility}
       formatDate={formatWishlistExpirationDate}
       isCommentsOpen={isCommentsOpen}
       setIsCommentsOpen={setIsCommentsOpen}

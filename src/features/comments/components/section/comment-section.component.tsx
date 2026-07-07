@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useCommentController } from '../../hooks/use-comment-controller';
 import { useAuth } from 'app/providers/auth-context';
 import { wishlistsApi } from 'features/wishlists';
+import { authApi } from 'features/auth';
 import { CommentSectionProps } from '../../interfaces/comment-section-props.interface';
 import { CommentSectionTemplate } from './comment-section.html';
 import { formatCommentDate } from 'shared/utils/format-date.util';
@@ -97,8 +98,12 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   const [typingUsersMap, setTypingUsersMap] = useState<Record<string, string>>({});
   const typingTimeoutRefs = useRef<Record<string, any>>({});
   const socketRef = useRef<WebSocket | null>(null);
+  const fetchedAvatarsRef = useRef<Set<string>>(new Set());
+  const participantsRef = useRef<ListParticipant[]>([]);
   const typingTimeoutRef = useRef<any>(null);
   const isTypingRef = useRef(false);
+
+  participantsRef.current = participants;
 
   // Compute comment tree structure
   const parentComments = React.useMemo(() => {
@@ -164,6 +169,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   useEffect(() => {
     fetchComments(listId);
+    fetchedAvatarsRef.current.clear();
   }, [listId, fetchComments]);
 
   useEffect(() => {
@@ -180,6 +186,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
           userId: listOwnerId,
           username: ownerUsername,
           displayName: ownerDisplayName || ownerUsername,
+          avatar: listOwnerId === user?.Id ? user.Avatar ?? null : null,
         });
       }
 
@@ -193,6 +200,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
             displayName: share.FirstName
               ? `${share.FirstName} ${share.LastName || ''}`.trim()
               : share.Username,
+            avatar: share.Avatar ?? null,
           });
         }
       } catch {
@@ -203,7 +211,75 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     };
 
     loadParticipants();
-  }, [listId, listOwnerId, ownerUsername, ownerDisplayName, isAuthenticated]);
+  }, [listId, listOwnerId, ownerUsername, ownerDisplayName, isAuthenticated, user?.Id, user?.Avatar]);
+
+  useEffect(() => {
+    if (!isAuthenticated || comments.length === 0) return;
+
+    const authorIds = [
+      ...new Set(
+        comments.map((c) => c.UserId).filter((id): id is string => !!id)
+      ),
+    ];
+
+    const needsFetch = authorIds.filter((id) => {
+      if (fetchedAvatarsRef.current.has(id)) return false;
+      const existing = participantsRef.current.find((p) => p.userId === id);
+      return !existing?.avatar;
+    });
+
+    if (needsFetch.length === 0) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const updates: ListParticipant[] = [];
+
+      for (const userId of needsFetch) {
+        fetchedAvatarsRef.current.add(userId);
+        try {
+          const res = await authApi.getUserPreview(userId);
+          if (!res?.User) continue;
+          const profile = res.User;
+          updates.push({
+            userId,
+            username: profile.Username,
+            displayName: profile.FirstName
+              ? `${profile.FirstName} ${profile.LastName || ''}`.trim()
+              : profile.Username,
+            avatar: profile.Avatar ?? null,
+          });
+        } catch {
+          // Preview unavailable — keep username fallback from comment data.
+        }
+      }
+
+      if (!cancelled && updates.length > 0) {
+        setParticipants((prev) => {
+          const map = new Map(prev.map((p) => [p.userId, p]));
+          for (const update of updates) {
+            const existing = map.get(update.userId);
+            map.set(
+              update.userId,
+              existing
+                ? {
+                    ...existing,
+                    username: update.username || existing.username,
+                    displayName: update.displayName || existing.displayName,
+                    avatar: update.avatar ?? existing.avatar ?? null,
+                  }
+                : update
+            );
+          }
+          return Array.from(map.values());
+        });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [comments, isAuthenticated]);
 
   useEffect(() => {
     if (user) {

@@ -15,6 +15,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [isSystemInitialized, setIsSystemInitialized] = useState(true);
   const [globalAiEnabled, setGlobalAiEnabled] = useState(false);
+  const [registrationMode, setRegistrationMode] = useState<'open' | 'invite_only' | 'disabled'>('open');
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
 
   // Inactivity state
   const [showWarning, setShowWarning] = useState(false);
@@ -42,12 +45,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkSystemStatus = async () => {
     try {
-      const res = await apiClient.get<{ success: boolean; initialized: boolean; aiEnabled?: boolean }>('/api/system/status');
+      const res = await apiClient.get<{
+        success: boolean;
+        initialized: boolean;
+        aiEnabled?: boolean;
+        registrationMode?: 'open' | 'invite_only' | 'disabled';
+        maintenanceMode?: boolean;
+        maintenanceMessage?: string;
+      }>('/api/system/status');
       if (res && res.initialized !== undefined) {
         setIsSystemInitialized(res.initialized);
       }
       if (res && res.aiEnabled !== undefined) {
         setGlobalAiEnabled(res.aiEnabled);
+      }
+      if (res?.registrationMode) {
+        setRegistrationMode(res.registrationMode);
+      }
+      if (res?.maintenanceMode !== undefined) {
+        setMaintenanceMode(res.maintenanceMode);
+      }
+      if (res?.maintenanceMessage) {
+        setMaintenanceMessage(res.maintenanceMessage);
       }
     } catch (err) {
       setIsSystemInitialized(false);
@@ -242,6 +261,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshUser: fetchCurrentUser,
         isSystemInitialized,
         globalAiEnabled,
+        registrationMode,
+        maintenanceMode,
+        maintenanceMessage,
         checkSystemStatus,
       }}
     >

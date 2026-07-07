@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { Plus, Sparkles, Users, Archive } from 'lucide-react';
 import { useWishlistController } from 'features/wishlists';
 import { useAuth } from 'app/providers/auth-context';
@@ -17,6 +17,29 @@ export default function Dashboard() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'my-lists' | 'shared' | 'archive'>('my-lists');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [columns, setColumns] = useState(1);
+  const observerRef = useRef<ResizeObserver | null>(null);
+
+  const gridRefCallback = useCallback((node: HTMLDivElement | null) => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
+
+    if (node) {
+      const observer = new ResizeObserver((entries) => {
+        for (let entry of entries) {
+          const gridStyle = window.getComputedStyle(entry.target);
+          const gridTemplate = gridStyle.getPropertyValue('grid-template-columns');
+          const cols = gridTemplate.trim().split(/\s+/).length;
+          setColumns(cols);
+        }
+      });
+      observer.observe(node);
+      observerRef.current = observer;
+    }
+  }, []);
 
   useEffect(() => {
     fetchWishlists();
@@ -134,6 +157,8 @@ export default function Dashboard() {
       emptyIcon={emptyIcon}
       emptyTitle={emptyTitle}
       emptyDesc={emptyDesc}
+      gridRef={gridRefCallback}
+      columns={columns}
     />
   );
 }

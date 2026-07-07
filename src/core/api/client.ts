@@ -145,6 +145,6 @@ export const apiClient = {
   patch: <T>(path: string, body: any, wrapNamespace?: string, options?: RequestInit) =>
     request<T>(path, { ...options, method: 'PATCH', body }, wrapNamespace),
 
-  delete: <T>(path: string, options?: RequestInit) =>
-    request<T>(path, { ...options, method: 'DELETE' }),
+  delete: <T>(path: string, body?: any, wrapNamespace?: string, options?: RequestInit) =>
+    request<T>(path, { ...options, method: 'DELETE', body }, wrapNamespace),
 };

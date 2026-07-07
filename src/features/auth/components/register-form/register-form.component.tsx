@@ -4,7 +4,7 @@ import { useAuth } from 'app/providers/auth-context';
 import { RegisterFormTemplate } from './register-form.html';
 
 export const RegisterForm: React.FC = () => {
-  const { signup } = useAuth();
+  const { signup, registrationMode } = useAuth();
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
@@ -19,6 +19,10 @@ export const RegisterForm: React.FC = () => {
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    if (registrationMode === 'disabled') {
+      setLocalError('Registration is currently disabled on this server.');
+      return;
+    }
     if (!username || !email || !password || !firstName || !lastName) {
       setLocalError('Please fill out all required fields.');
       return;
@@ -49,6 +53,14 @@ export const RegisterForm: React.FC = () => {
 
   return (
     <RegisterFormTemplate
+      registrationClosed={registrationMode === 'disabled'}
+      registrationClosedMessage={
+        registrationMode === 'disabled'
+          ? 'Registration is currently disabled on this server.'
+          : registrationMode === 'invite_only'
+            ? 'Registration is invite-only. Contact an administrator for access.'
+            : undefined
+      }
       username={username}
       setUsername={setUsername}
       email={email}

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { authApi, ApiUser } from 'features/auth';
+import { useAuth } from 'app/providers/auth-context';
 import { UserPreviewCardProps } from './interfaces/user-preview-card-props.interface';
 import { UserPreviewCardTemplate } from './user-preview-card.html';
 import styles from './user-preview-card.module.css';
+import { useTheme } from 'app/providers/theme-context';
 import { getFallbackInitials, getJoinedDate, getUserInitials } from './utils/user-preview-card.utils';
 
 // In-memory cache to prevent repeated fetches for the same user
@@ -16,7 +18,9 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
   isOnline = false,
   fallbackUser,
 }) => {
+  const { user: currentUser } = useAuth();
   const [userPreview, setUserPreview] = useState<ApiUser | null>(null);
+  const [isDisabledUser, setIsDisabledUser] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [placement, setPlacement] = useState<'top' | 'bottom'>('bottom');
@@ -75,19 +79,45 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (!userId) return;
+    const cached = previewCache[userId];
+    if (cached?.IsDisabled) {
+      setIsDisabledUser(true);
+    }
+  }, [userId]);
+
   if (!userId) {
     return <>{children}</>;
   }
 
   const handleMouseEnter = () => {
+    if (isDisabledUser) return;
+
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
     }
 
     showTimeoutRef.current = setTimeout(async () => {
+      if (currentUser && userId === currentUser.Id) {
+        setUserPreview(currentUser as unknown as ApiUser);
+        setIsVisible(true);
+        return;
+      }
+
+      if (previewCache[userId]) {
+        if (previewCache[userId].IsDisabled) {
+          setIsDisabledUser(true);
+          return;
+        }
+        setUserPreview(previewCache[userId]);
+        setIsVisible(true);
+        return;
+      }
+
+      setIsLoading(true);
       setIsVisible(true);
-      
-      // Initialize with trigger position estimate, but opacity 0
+
       if (triggerRef.current) {
         const rect = triggerRef.current.getBoundingClientRect();
         setCardStyle(prev => ({
@@ -98,21 +128,22 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
         }));
       }
 
-      if (previewCache[userId]) {
-        setUserPreview(previewCache[userId]);
-      } else {
-        setIsLoading(true);
-        try {
-          const res = await authApi.getUserPreview(userId);
-          if (res?.User) {
-            previewCache[userId] = res.User;
-            setUserPreview(res.User);
+      try {
+        const res = await authApi.getUserPreview(userId);
+        if (res?.User) {
+          previewCache[userId] = res.User;
+          if (res.User.IsDisabled) {
+            setIsDisabledUser(true);
+            setIsVisible(false);
+            return;
           }
-        } catch (err) {
-          console.error('Failed to fetch user preview:', err);
-        } finally {
-          setIsLoading(false);
+          setUserPreview(res.User);
         }
+      } catch (err) {
+        console.error('Failed to fetch user preview:', err);
+        setIsVisible(false);
+      } finally {
+        setIsLoading(false);
       }
     }, 300);
   };
@@ -138,8 +169,24 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
     }, 250);
   };
 
-  const activeUser: (Partial<ApiUser> & { Id: string }) | null =
-    userPreview || (fallbackUser ? { ...fallbackUser, Id: userId } : null);
+  const activeUser = currentUser && userId === currentUser.Id
+    ? (currentUser as unknown as ApiUser)
+    : (userPreview
+      ? {
+          ...userPreview,
+          Avatar: userPreview.Avatar ?? fallbackUser?.Avatar,
+        }
+      : fallbackUser
+        ? { ...fallbackUser, Id: userId }
+        : null);
+
+  const { tryTheme } = useTheme();
+
+  const handleTryTheme = (themeId: string) => {
+    if (activeUser && activeUser.Username) {
+      tryTheme(themeId, activeUser.Username);
+    }
+  };
 
   const userInitials = activeUser ? getUserInitials(activeUser) : undefined;
   const fallbackInitials = getFallbackInitials(displayName);
@@ -152,13 +199,18 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
     <>
       <span
         ref={triggerRef}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        className="hoverable-name-trigger"
+        onMouseEnter={isDisabledUser ? undefined : handleMouseEnter}
+        onMouseLeave={isDisabledUser ? undefined : handleMouseLeave}
+        className={isDisabledUser ? styles['disabled-trigger'] : 'hoverable-name-trigger'}
+        style={{ display: 'inline-flex' }}
+        title={isDisabledUser ? 'Account unavailable' : undefined}
       >
         {children}
+        {isDisabledUser && (
+          <span className={styles['unavailable-badge']}>Account unavailable</span>
+        )}
       </span>
-      {isVisible &&
+      {!isDisabledUser && isVisible &&
         ReactDOM.createPortal(
           <UserPreviewCardTemplate
             ref={cardRef}
@@ -174,6 +226,7 @@ export const UserPreviewCard: React.FC<UserPreviewCardProps> = ({
             fallbackInitials={fallbackInitials}
             joinedDate={joinedDate}
             cardClass={cardClass}
+            onTryTheme={handleTryTheme}
           />,
           document.body
         )}

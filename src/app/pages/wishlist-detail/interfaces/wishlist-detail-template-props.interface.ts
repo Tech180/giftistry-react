@@ -31,7 +31,6 @@ export interface WishlistDetailTemplateProps {
   saveDate: (date: string) => Promise<void>;
   toggleRevealSuggestions: () => void;
   toggleAiEnabled?: () => void;
-  saveVisibility: (visibility: 'private' | 'friends' | 'link') => Promise<void>;
   formatDate: (dateStr: string | null) => string;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;

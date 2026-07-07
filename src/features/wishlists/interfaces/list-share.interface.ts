@@ -8,4 +8,5 @@ export interface ListShare {
   FirstName?: string;
   LastName?: string;
   Email?: string;
+  Avatar?: string | null;
 }

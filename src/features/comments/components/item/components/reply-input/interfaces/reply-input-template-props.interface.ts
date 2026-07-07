@@ -1,8 +1,8 @@
 import { Item } from 'features/items';
-import { ListParticipant } from './list-participant.interface';
-import type { CommentEditorHandle } from '../components/input/components/input/editor';
+import { ListParticipant } from '../../../../../interfaces/list-participant.interface';
+import type { CommentEditorHandle } from '../../../../../components/input/components/input/editor';
 
-export interface CommentReplyInputTemplateProps {
+export interface ReplyInputTemplateProps {
   replyToName: string;
   items: Item[];
   taggedItemIds: string[];

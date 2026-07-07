@@ -20,6 +20,8 @@ export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
   setConfirmPassword,
   isLoading,
   localError,
+  registrationClosed = false,
+  registrationClosedMessage,
   handleSubmit,
 }) => {
   return (
@@ -29,6 +31,13 @@ export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
         <h2 className={styles.title}>Create Account</h2>
         <p className={styles.subtitle}>Get started with your custom gift registry</p>
       </div>
+
+      {registrationClosed && registrationClosedMessage && (
+        <EnterPanel animation="slide-up" className={styles.alert}>
+          <AlertCircle size={16} />
+          <span>{registrationClosedMessage}</span>
+        </EnterPanel>
+      )}
 
       {localError && (
         <EnterPanel animation="slide-up" className={styles.alert}>
@@ -103,6 +112,7 @@ export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
           type="submit"
           variant="primary"
           isLoading={isLoading}
+          disabled={registrationClosed}
           className={styles['submit-btn']}
         >
           Create Account

@@ -40,7 +40,6 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   saveDate,
   toggleRevealSuggestions,
   toggleAiEnabled,
-  saveVisibility,
   formatDate,
   isCommentsOpen,
   setIsCommentsOpen,
@@ -137,7 +136,6 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           formatDate={formatDate}
           toggleRevealSuggestions={toggleRevealSuggestions}
           toggleAiEnabled={toggleAiEnabled || (() => {})}
-          saveVisibility={saveVisibility}
           isCommentsOpen={isCommentsOpen}
           setIsCommentsOpen={setIsCommentsOpen}
           setIsShareOpen={setIsShareOpen}

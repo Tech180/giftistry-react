@@ -18,7 +18,6 @@ export interface HeaderTemplateProps {
   formatDate: (dateStr: string | null) => string;
   toggleRevealSuggestions: () => void;
   toggleAiEnabled: () => void;
-  saveVisibility: (visibility: 'private' | 'friends' | 'link') => Promise<void>;
   globalAiEnabled: boolean;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;

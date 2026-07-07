@@ -1,12 +1,12 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { CommentEditor } from '../input/components/input/editor';
-import { AttachmentPreview, UploadErrorBar, TagModeToggle } from '../input/components/input';
-import { ToolbarPickers } from '../input/components/input/toolbar/toolbar-pickers';
-import { CommentReplyInputTemplateProps } from '../../interfaces/comment-reply-input-template-props.interface';
-import styles from './comment-reply-input.module.css';
+import { CommentEditor } from '../../../input/components/input/editor';
+import { AttachmentPreview, UploadErrorBar, TagModeToggle } from '../../../input/components/input';
+import { ToolbarPickers } from '../../../input/components/input/toolbar/toolbar-pickers';
+import { ReplyInputTemplateProps } from './interfaces/reply-input-template-props.interface';
+import styles from './reply-input.module.css';
 
-export const CommentReplyInputTemplate: React.FC<CommentReplyInputTemplateProps> = ({
+export const ReplyInputTemplate: React.FC<ReplyInputTemplateProps> = ({
   replyToName,
   items,
   taggedItemIds,

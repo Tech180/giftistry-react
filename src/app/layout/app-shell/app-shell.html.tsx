@@ -9,6 +9,7 @@ export const AppShellTemplate: React.FC<AppShellProps> = ({
   children,
   isSettingsPage = false,
   hasBanner = false,
+  isFullWidth = false,
 }) => (
   <div className={styles.container}>
     {navigation}
@@ -18,6 +19,7 @@ export const AppShellTemplate: React.FC<AppShellProps> = ({
       animation="fade"
       className={[
         isSettingsPage ? styles['settings-main'] : styles.main,
+        isFullWidth ? styles['full-width'] : '',
         hasBanner ? styles['has-banner'] : '',
       ].filter(Boolean).join(' ')}
     >

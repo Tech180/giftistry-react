@@ -8,22 +8,13 @@ import { AppNavigationTemplate } from './app-navigation.html';
 
 export const AppNavigation: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
-  const { theme, appearance, setTheme, setAppearance, isThemeUnlocked } = useTheme();
+  const { theme, appearance, setTheme, setAppearance, isThemeUnlocked, temporaryTheme, customThemes } = useTheme();
   const navigate = useNavigate();
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [customThemes, setCustomThemes] = useState<{ id: string; name: string }[]>([]);
 
   const handleSetThemeOpen = (open: boolean) => {
-    if (open) {
-      try {
-        const saved = localStorage.getItem('giftistry-custom-themes');
-        setCustomThemes(saved ? JSON.parse(saved) : []);
-      } catch {
-        setCustomThemes([]);
-      }
-    }
     setIsThemeOpen(open);
   };
 
@@ -175,6 +166,7 @@ export const AppNavigation: React.FC = () => {
       setTheme={setTheme}
       setAppearance={setAppearance}
       isThemeUnlocked={isThemeUnlocked}
+      temporaryTheme={temporaryTheme}
       isProfileOpen={isProfileOpen}
       setIsProfileOpen={setIsProfileOpen}
       isThemeOpen={isThemeOpen}

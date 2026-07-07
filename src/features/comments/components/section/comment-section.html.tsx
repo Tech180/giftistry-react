@@ -58,22 +58,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
     <div className={styles.section}>
 
 
-      {onlineUsers.length > 0 && (
-        <div className={styles['online-presence-bar']}>
-          <span className={styles['online-dot']} />
-          <span>Online: </span>
-          <span className={styles['online-users-list']}>
-            {onlineUsers.map((onlineUser, idx) => (
-              <React.Fragment key={onlineUser.userId}>
-                {idx > 0 && ', '}
-                <UserPreviewCard userId={onlineUser.userId} displayName={onlineUser.username} isOnline>
-                  <span className={styles['online-user-name']}>@{onlineUser.username}</span>
-                </UserPreviewCard>
-              </React.Fragment>
-            ))}
-          </span>
-        </div>
-      )}
+
 
       {displayError && (
         <div className={styles.alert}>
@@ -113,6 +98,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
                 setIsReplyTaggingModeActive={setIsReplyTaggingModeActive}
                 replyTaggedItemIds={replyTaggedItemIds}
                 setReplyTaggedItemIds={setReplyTaggedItemIds}
+                isOwner={isOwner}
               />
             ))}
           </div>

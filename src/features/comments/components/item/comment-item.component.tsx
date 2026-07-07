@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CommentItemProps } from '../../interfaces/comment-item-props.interface';
 import { CommentItemTemplate } from './comment-item.html';
-import { CommentReplyInput } from './comment-reply-input.component';
-import { CommentReactionPicker } from './comment-reaction-picker.component';
+import { ReplyInput } from './components/reply-input';
+import { ReactionPicker } from './components/reaction-picker';
 import { parseCommentContent, stripItemTagsFromSegments } from '../../utils/comment-content.util';
 import { CommentReactionGroup } from '../../interfaces/comment-reaction-group.interface';
 import { ANONYMOUS_COMMENTER_NAME } from '../../constants/comment-settings';
+import { useAuth } from 'app/providers/auth-context';
 import styles from './comment-item.module.css';
 
 export const CommentItem: React.FC<CommentItemProps> = ({
@@ -30,7 +31,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   replyTaggedItemIds = [],
   setReplyTaggedItemIds,
   isThreadChild = false,
+  isOwner = false,
 }) => {
+  const { user } = useAuth();
   const { segments, itemIds } = parseCommentContent(comment.Content);
   const displaySegments = stripItemTagsFromSegments(segments);
   const isDeleting = deletingCommentId === comment.Id;
@@ -51,6 +54,23 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     : false;
   const isListOwnerComment = !isAnonymousComment && !!(listOwnerId && comment.UserId && comment.UserId === listOwnerId);
 
+  const authorParticipant = useMemo(
+    () => (comment.UserId ? participants.find((p) => p.userId === comment.UserId) : undefined),
+    [participants, comment.UserId]
+  );
+
+  const authorUsername = useMemo(() => {
+    if (isAnonymousComment || !comment.UserId) return null;
+    return authorParticipant?.username ?? comment.CommenterName;
+  }, [authorParticipant, comment.UserId, comment.CommenterName, isAnonymousComment]);
+
+  const authorAvatar = useMemo(() => {
+    if (!comment.UserId || isAnonymousComment) return null;
+    if (authorParticipant?.avatar) return authorParticipant.avatar;
+    if (comment.UserId === user?.Id) return user.Avatar ?? null;
+    return null;
+  }, [authorParticipant, comment.UserId, isAnonymousComment, user?.Id, user?.Avatar]);
+
   const reactionsMap = useMemo(() => {
     const map: Record<string, CommentReactionGroup> = {};
     for (const rx of comment.Reactions || []) {
@@ -67,7 +87,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   }, [comment.Reactions, currentUserId]);
 
   const handleReplyToggle = () => {
-    onReplyOpen?.(isReplying ? null : comment.Id);
+    const nextReplying = !isReplying;
+    onReplyOpen?.(nextReplying ? comment.Id : null);
+    if (nextReplying && replies.length > 0) {
+      setIsExpanded(true);
+    }
   };
 
   const handleReplyCancel = () => {
@@ -77,7 +101,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   const replyInput = isReplying && handleReplySubmit ? (
-    <CommentReplyInput
+    <ReplyInput
       replyToName={comment.CommenterName}
       participants={participants}
       items={items}
@@ -96,7 +120,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   ) : null;
 
   const reactionPicker = toggleReaction ? (
-    <CommentReactionPicker onSelect={(emoji) => toggleReaction(comment.Id, emoji)} />
+    <ReactionPicker onSelect={(emoji) => toggleReaction(comment.Id, emoji)} />
   ) : null;
 
   const sortedReplies = useMemo(
@@ -125,6 +149,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               participants={participants}
               toggleReaction={toggleReaction}
               isThreadChild
+              isOwner={isOwner}
             />
           </div>
         ))
@@ -149,6 +174,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       isAnonymousComment={isAnonymousComment}
       isOnline={isOnline}
       isListOwnerComment={isListOwnerComment}
+      authorUsername={authorUsername}
+      authorAvatar={authorAvatar}
+      authorParticipant={authorParticipant}
       reactionsMap={reactionsMap}
       isReplying={isReplying}
       onReplyToggle={handleReplyToggle}
@@ -159,6 +187,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       reactionPicker={reactionPicker}
       nestedReplies={nestedReplies}
       isThreadChild={isThreadChild}
+      isOwner={isOwner}
     />
   );
 };

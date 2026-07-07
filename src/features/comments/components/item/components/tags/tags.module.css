@@ -1,0 +1,30 @@
+.comment-tags-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) var(--spacing-sm);
+  border-left: 1.5px solid var(--border);
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+.comment-tag-icon-btn{
+  background-color: var(--surface-hover);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.comment-tag-icon-btn:hover{
+  background-color: var(--primary-light);
+  border-color: var(--primary);
+}

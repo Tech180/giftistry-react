@@ -32,4 +32,5 @@ export interface CommentItemProps {
   replyTaggedItemIds?: string[];
   setReplyTaggedItemIds?: (ids: string[]) => void;
   isThreadChild?: boolean;
+  isOwner?: boolean;
 }

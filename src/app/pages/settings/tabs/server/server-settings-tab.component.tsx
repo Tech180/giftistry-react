@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from 'app/providers/auth-context';
 import { ServerSettingsTabTemplate } from './server-settings-tab.html';
 import { apiClient } from 'core/api/client';
 import { ServerSettingsTabProps } from './interfaces/server-settings-tab-props.interface';
 import { BackendSettings } from './interfaces/backend-settings.interface';
 
 export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast }) => {
+  const { user } = useAuth();
   const [dbType, setDbType] = useState<'local' | 'remote'>('local');
   const [dbUrl, setDbUrl] = useState('');
   const [smtpType, setSmtpType] = useState<'local' | 'remote'>('local');
@@ -25,6 +27,7 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [showAiKey, setShowAiKey] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeletingServer, setIsDeletingServer] = useState(false);
 
   const [openrouterModels, setOpenrouterModels] = useState<Array<{ id: string; name: string; company: string; displayName: string }>>([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
@@ -193,6 +196,34 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     }
   };
 
+  const handleDeleteServer = async () => {
+    if (
+      !window.confirm(
+        'Delete this server and all user data? This action is permanent and cannot be undone.'
+      )
+    ) {
+      return;
+    }
+    if (
+      !window.confirm(
+        'Are you absolutely sure? Every account, wishlist, and setting on this instance will be erased.'
+      )
+    ) {
+      return;
+    }
+    setIsDeletingServer(true);
+    try {
+      await apiClient.post<{ success: boolean }>('/api/system/delete-server', {}, 'Server');
+      localStorage.removeItem('giftistry-token');
+      showToast('Server deleted', 'success');
+      window.location.href = '/setup';
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to delete server', 'error');
+    } finally {
+      setIsDeletingServer(false);
+    }
+  };
+
   return (
     <ServerSettingsTabTemplate
       dbType={dbType}
@@ -238,6 +269,9 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       isLoading={isLoading}
       isSaving={isSaving}
       handleSave={handleSave}
+      isServerOwner={!!user?.IsOwner}
+      onDeleteServer={handleDeleteServer}
+      isDeletingServer={isDeletingServer}
     />
   );
 };

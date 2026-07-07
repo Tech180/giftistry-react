@@ -9,17 +9,14 @@ import { rgbToHex } from 'core/theme/color-conversion.util';
 import { getInputWidth } from './utils/get-input-width.util';
 
 export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
-  const { theme: currentAppTheme, setTheme, unlockedThemes } = useTheme();
-
-  // Custom themes list state
-  const [customThemes, setCustomThemes] = useState<CustomThemeProfile[]>(() => {
-    try {
-      const saved = localStorage.getItem('giftistry-custom-themes');
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      return [];
-    }
-  });
+  const {
+    theme: currentAppTheme,
+    setTheme,
+    unlockedThemes,
+    customThemes,
+    saveCustomTheme,
+    deleteCustomTheme
+  } = useTheme();
 
   // Active Theme ID (preset theme key or custom theme ID)
   const [activeThemeId, setActiveThemeId] = useState<string>(() => {
@@ -63,10 +60,7 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
     }
   });
 
-  // Sync customThemes list to localStorage
-  useEffect(() => {
-    localStorage.setItem('giftistry-custom-themes', JSON.stringify(customThemes));
-  }, [customThemes]);
+  // customThemes sync is handled globally by ThemeContext
 
   // Synchronize when theme changes from taskbar
   useEffect(() => {
@@ -128,15 +122,12 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
   const handleThemeNameChange = (newName: string) => {
     setThemeName(newName);
     if (activeThemeId.startsWith('custom-')) {
-      setCustomThemes(prev => prev.map(t => {
-        if (t.id === activeThemeId) {
-          const updated = { ...t, name: newName };
-          // Save active theme config
-          localStorage.setItem('giftistry-custom-theme', JSON.stringify(updated));
-          return updated;
-        }
-        return t;
-      }));
+      const activeCustom = customThemes.find((t: any) => t.id === activeThemeId);
+      if (activeCustom) {
+        const updated = { ...activeCustom, name: newName };
+        localStorage.setItem('giftistry-custom-theme', JSON.stringify(updated));
+        saveCustomTheme(updated);
+      }
     }
   };
 
@@ -157,7 +148,7 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
       advanced: { ...advanced }
     };
 
-    setCustomThemes(prev => [...prev, newCustom]);
+    saveCustomTheme(newCustom);
     setActiveThemeId(newId);
     setTheme(newId);
     return newId;
@@ -208,7 +199,7 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
       }
     };
 
-    setCustomThemes(prev => [...prev, newCustom]);
+    saveCustomTheme(newCustom);
     setActiveThemeId(newId);
     setTheme(newId);
     showToast('New custom theme created!', 'success');
@@ -220,14 +211,12 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
     setColors(updated);
 
     // Update in list
-    setCustomThemes(prev => prev.map(t => {
-      if (t.id === activeId) {
-        const updatedTheme = { ...t, colors: updated };
-        localStorage.setItem('giftistry-custom-theme', JSON.stringify(updatedTheme));
-        return updatedTheme;
-      }
-      return t;
-    }));
+    const activeCustom = customThemes.find((t: any) => t.id === activeId);
+    if (activeCustom) {
+      const updatedTheme = { ...activeCustom, colors: updated };
+      localStorage.setItem('giftistry-custom-theme', JSON.stringify(updatedTheme));
+      saveCustomTheme(updatedTheme);
+    }
 
     applyCustomThemeStyles(updated, advanced);
   };
@@ -243,14 +232,12 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
       const updated = { ...colors, [key]: cleanVal };
       setColors(updated);
 
-      setCustomThemes(prev => prev.map(t => {
-        if (t.id === activeId) {
-          const updatedTheme = { ...t, colors: updated };
-          localStorage.setItem('giftistry-custom-theme', JSON.stringify(updatedTheme));
-          return updatedTheme;
-        }
-        return t;
-      }));
+      const activeCustom = customThemes.find((t: any) => t.id === activeId);
+      if (activeCustom) {
+        const updatedTheme = { ...activeCustom, colors: updated };
+        localStorage.setItem('giftistry-custom-theme', JSON.stringify(updatedTheme));
+        saveCustomTheme(updatedTheme);
+      }
 
       applyCustomThemeStyles(updated, advanced);
     }
@@ -267,14 +254,12 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
     };
     setAdvanced(updatedAdvanced);
 
-    setCustomThemes(prev => prev.map(t => {
-      if (t.id === activeId) {
-        const updatedTheme = { ...t, advanced: updatedAdvanced };
-        localStorage.setItem('giftistry-custom-theme', JSON.stringify(updatedTheme));
-        return updatedTheme;
-      }
-      return t;
-    }));
+    const activeCustom = customThemes.find((t: any) => t.id === activeId);
+    if (activeCustom) {
+      const updatedTheme = { ...activeCustom, advanced: updatedAdvanced };
+      localStorage.setItem('giftistry-custom-theme', JSON.stringify(updatedTheme));
+      saveCustomTheme(updatedTheme);
+    }
 
     applyCustomThemeStyles(colors, updatedAdvanced);
   };
@@ -288,7 +273,7 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
   const onResetTheme = () => {
     if (activeThemeId.startsWith('custom-')) {
       // Remove it from the list
-      setCustomThemes(prev => prev.filter(t => t.id !== activeThemeId));
+      deleteCustomTheme(activeThemeId);
     }
     localStorage.setItem('giftistry-use-custom-theme', 'false');
     localStorage.removeItem('giftistry-custom-theme');
@@ -298,7 +283,7 @@ export const ThemingTab: React.FC<ThemingTabProps> = ({ showToast }) => {
   };
 
   const onDeleteCustomTheme = (id: string) => {
-    setCustomThemes(prev => prev.filter(t => t.id !== id));
+    deleteCustomTheme(id);
     
     if (activeThemeId === id) {
       localStorage.setItem('giftistry-use-custom-theme', 'false');

@@ -1,27 +1,39 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getInitialsFromNames } from 'shared/utils/get-initials.util';
 import {
+  avatarColorToHex,
   generateAvatarColor,
   getAvatarStyle,
+  hexToHsl,
   isAvatarImage,
 } from 'shared/utils/avatar.util';
 import { useAuth } from 'app/providers/auth-context';
+import { authApi } from '../../api/auth.api';
+import { ApiError } from 'core/api/client';
 import { ProfileCardTemplate } from './profile-card.html';
 import { ImageCropper } from '../image-cropper/image-cropper.component';
 
 export const ProfileCard: React.FC = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [bio, setBio] = useState('');
   const [avatar, setAvatar] = useState<string | null>(null);
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isAccountActionLoading, setIsAccountActionLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -109,9 +121,69 @@ export const ProfileCard: React.FC = () => {
     setAvatar(generateAvatarColor());
   };
 
+  const handleAvatarColorChange = (hex: string) => {
+    if (isAvatarImage(avatar)) {
+      const confirm = window.confirm(
+        'This will replace your custom profile picture with the selected color. Are you sure you want to proceed?'
+      );
+      if (!confirm) return;
+    }
+    setAvatar(hexToHsl(hex));
+  };
+
+  const handleDisableAccount = async () => {
+    const confirmed = window.confirm(
+      'Disable your account? You will be signed out immediately and will not be able to log in again. Your wishlists will become inaccessible to others until an administrator re-enables your account.'
+    );
+    if (!confirmed) return;
+
+    setIsAccountActionLoading(true);
+    setErrorMsg(null);
+    try {
+      await authApi.disableAccount();
+      await logout();
+      navigate('/login');
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to disable account.');
+    } finally {
+      setIsAccountActionLoading(false);
+    }
+  };
+
   const handleDeleteAccount = () => {
-    if (window.confirm('Are you absolutely sure you want to delete your account? This action is permanent and cannot be undone.')) {
-      alert('Delete Account requested. Contact your system administrator to finalize.');
+    setDeletePassword('');
+    setDeleteError(null);
+    setShowDeletePassword(false);
+    setShowDeleteModal(true);
+  };
+
+  const onCloseDeleteModal = () => {
+    if (isAccountActionLoading) return;
+    setShowDeleteModal(false);
+    setDeletePassword('');
+    setDeleteError(null);
+  };
+
+  const onConfirmDeleteAccount = async () => {
+    if (!deletePassword) {
+      setDeleteError('Please enter your password.');
+      return;
+    }
+
+    setIsAccountActionLoading(true);
+    setDeleteError(null);
+    try {
+      await authApi.deleteAccount(deletePassword);
+      await logout();
+      navigate('/login');
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setDeleteError('Incorrect password.');
+      } else {
+        setDeleteError(err instanceof Error ? err.message : 'Failed to delete account.');
+      }
+    } finally {
+      setIsAccountActionLoading(false);
     }
   };
 
@@ -129,6 +201,7 @@ export const ProfileCard: React.FC = () => {
   const isImageAvatar = isAvatarImage(avatar);
 
   const avatarStyle = useMemo(() => getAvatarStyle(avatar), [avatar]);
+  const avatarPickerHex = useMemo(() => avatarColorToHex(avatar), [avatar]);
 
   if (!user) return null;
 
@@ -152,8 +225,21 @@ export const ProfileCard: React.FC = () => {
         successMsg={successMsg}
         handleSubmit={handleSubmit}
         handleAvatarChange={handleAvatarChange}
+        handleAvatarColorChange={handleAvatarColorChange}
+        avatarPickerHex={avatarPickerHex}
         randomizeAvatarColor={randomizeAvatarColor}
+        isServerOwner={!!user.IsOwner}
+        handleDisableAccount={handleDisableAccount}
         handleDeleteAccount={handleDeleteAccount}
+        showDeleteModal={showDeleteModal}
+        deletePassword={deletePassword}
+        setDeletePassword={setDeletePassword}
+        showDeletePassword={showDeletePassword}
+        setShowDeletePassword={setShowDeletePassword}
+        deleteError={deleteError}
+        isAccountActionLoading={isAccountActionLoading}
+        onCloseDeleteModal={onCloseDeleteModal}
+        onConfirmDeleteAccount={onConfirmDeleteAccount}
         fileInputRef={fileInputRef}
         handleUploadClick={handleUploadClick}
         initials={initials}

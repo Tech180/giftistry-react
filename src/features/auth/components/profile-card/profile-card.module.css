@@ -140,6 +140,60 @@
   font-family: inherit;
 }
 
+.avatar-color-picker{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.avatar-color-label{
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+}
+
+.avatar-color-control{
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg);
+}
+
+.avatar-color-value{
+  font-family: 'Fira Code', monospace;
+  font-size: var(--font-size-xs);
+  color: var(--text);
+  min-width: 4.5rem;
+}
+
+.avatar-color-picker-wrapper{
+  position: relative;
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.avatar-color-picker-wrapper input[type="color"]{
+  position: absolute;
+  top: -0.625rem;
+  left: -0.625rem;
+  width: 3.125rem;
+  height: 3.125rem;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
 .form-column{
   flex: 1;
   width: 100%;
@@ -326,4 +380,105 @@
   color: var(--text-muted);
   font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-md);
+}
+
+.danger-link{
+  color: var(--error);
+  text-decoration: underline;
+}
+
+.danger-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.delete-modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-lg);
+}
+
+.delete-modal{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--spacing-lg);
+  width: 100%;
+  max-width: 28rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.delete-modal-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.delete-modal-title{
+  color: var(--error);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.delete-modal-close{
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+}
+
+.delete-modal-close:hover{
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.delete-modal-desc{
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.delete-modal-error{
+  margin-bottom: var(--spacing-md);
+}
+
+.password-input-wrap{
+  position: relative;
+}
+
+.password-input-wrap .input-field{
+  padding-right: 2.5rem;
+}
+
+.password-toggle{
+  position: absolute;
+  right: var(--spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+}
+
+.password-toggle:hover{
+  color: var(--text);
+}
+
+.delete-modal-actions{
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
 }

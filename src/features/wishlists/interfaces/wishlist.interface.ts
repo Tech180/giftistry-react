@@ -1,3 +1,5 @@
+import { ListShare } from './list-share.interface';
+
 export interface Wishlist {
   Id: string;
   UserId: string;
@@ -11,7 +13,8 @@ export interface Wishlist {
   RevealSuggestions?: boolean;
   AiEnabled?: boolean;
   OwnerFirstName?: string;
+  OwnerAvatar?: string | null;
   Role?: 'owner' | 'collaborator' | 'viewer';
-  Visibility?: 'private' | 'friends' | 'link';
   ShareToken?: string | null;
+  Shares?: ListShare[];
 }

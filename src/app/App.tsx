@@ -9,6 +9,7 @@ function AppContent() {
   const { user, isSystemInitialized, isLoading } = useAuth();
   const location = useLocation();
   const isSettingsPage = location.pathname.startsWith('/settings');
+  const isFullWidth = location.pathname.includes('/wishlists/');
   const hasBanner = !!(user && !user.EmailVerified);
 
   if (isLoading) {
@@ -23,6 +24,7 @@ function AppContent() {
     <AppContentTemplate
       isSettingsPage={isSettingsPage}
       hasBanner={hasBanner}
+      isFullWidth={isFullWidth}
     />
   );
 }

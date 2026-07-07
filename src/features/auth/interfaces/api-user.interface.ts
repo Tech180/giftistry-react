@@ -6,4 +6,5 @@ export interface ApiUser extends PublicUserSummary {
   EmailVerified?: boolean;
   TwoFactorEnabled?: boolean;
   IsAdmin?: boolean;
+  IsOwner?: boolean;
 }

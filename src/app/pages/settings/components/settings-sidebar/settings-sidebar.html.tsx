@@ -1,5 +1,16 @@
 import React from 'react';
-import { User, Lock, Bell, Palette, Server } from 'lucide-react';
+import {
+  User,
+  Lock,
+  Bell,
+  Palette,
+  LayoutDashboard,
+  Users,
+  Flag,
+  ScrollText,
+  Server,
+  Settings2,
+} from 'lucide-react';
 import { Sidebar, SidebarItem } from 'shared/ui';
 import { SettingsSidebarTemplateProps } from './interfaces/settings-sidebar-template-props.interface';
 import styles from './settings-sidebar.module.css';
@@ -40,12 +51,42 @@ export const SettingsSidebarTemplate: React.FC<SettingsSidebarTemplateProps> = (
 
         {isAdmin && (
           <>
-            <div className={`${styles['nav-group-label']} ${styles['system-group']}`}>System</div>
+            <div className={`${styles['nav-group-label']} ${styles['system-group']}`}>Administration</div>
+            <SidebarItem
+              icon={<LayoutDashboard size={15} />}
+              label="Overview"
+              isActive={activePath === '/settings/admin' || activePath === '/settings/admin/'}
+              onClick={() => onNavigate('/settings/admin')}
+            />
+            <SidebarItem
+              icon={<Users size={15} />}
+              label="Users"
+              isActive={activePath.startsWith('/settings/admin/users')}
+              onClick={() => onNavigate('/settings/admin/users')}
+            />
+            <SidebarItem
+              icon={<Settings2 size={15} />}
+              label="Site Policy"
+              isActive={activePath === '/settings/admin/site'}
+              onClick={() => onNavigate('/settings/admin/site')}
+            />
+            <SidebarItem
+              icon={<Flag size={15} />}
+              label="Moderation"
+              isActive={activePath === '/settings/admin/moderation'}
+              onClick={() => onNavigate('/settings/admin/moderation')}
+            />
+            <SidebarItem
+              icon={<ScrollText size={15} />}
+              label="Audit Log"
+              isActive={activePath === '/settings/admin/audit'}
+              onClick={() => onNavigate('/settings/admin/audit')}
+            />
             <SidebarItem
               icon={<Server size={15} />}
-              label="Server Configuration"
-              isActive={activePath === '/settings/server'}
-              onClick={() => onNavigate('/settings/server')}
+              label="Server"
+              isActive={activePath === '/settings/admin/server'}
+              onClick={() => onNavigate('/settings/admin/server')}
             />
           </>
         )}

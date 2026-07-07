@@ -24,9 +24,9 @@ export const EmojiPickerButton: React.FC<EmojiProps> = ({
   const handleEmojiSelect = (emoji: string) => {
     if (onEmojiSelectProp) {
       onEmojiSelectProp(emoji);
-    } else {
-      editorHandle?.current?.insertText(emoji);
+      return;
     }
+    editorHandle?.current?.insertText(emoji);
     if (isOpen) onToggle();
   };
 

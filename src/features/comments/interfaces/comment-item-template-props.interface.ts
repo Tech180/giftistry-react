@@ -4,6 +4,7 @@ import { Item } from 'features/items';
 import { OnlineUser } from './online-user.interface';
 import { CommentContentSegment } from '../utils/comment-content.util';
 import { CommentReactionGroup } from './comment-reaction-group.interface';
+import { ListParticipant } from './list-participant.interface';
 
 export interface CommentItemTemplateProps {
   comment: Comment;
@@ -30,6 +31,9 @@ export interface CommentItemTemplateProps {
   isAnonymousComment: boolean;
   isOnline: boolean;
   isListOwnerComment: boolean;
+  authorUsername: string | null;
+  authorAvatar: string | null;
+  authorParticipant?: ListParticipant;
   reactionsMap: Record<string, CommentReactionGroup>;
   isReplying: boolean;
   onReplyToggle: () => void;
@@ -40,4 +44,5 @@ export interface CommentItemTemplateProps {
   reactionPicker: React.ReactNode;
   nestedReplies: React.ReactNode;
   isThreadChild?: boolean;
+  isOwner?: boolean;
 }

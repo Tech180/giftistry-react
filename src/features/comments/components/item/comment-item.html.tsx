@@ -1,8 +1,11 @@
 import React from 'react';
-import { Eye, EyeOff, Trash2, Tag, CornerUpLeft } from 'lucide-react';
+import { Eye, EyeOff, Trash2, CornerUpLeft } from 'lucide-react';
 import { CommentItemTemplateProps } from '../../interfaces/comment-item-template-props.interface';
 import { UserPreviewCard } from 'shared/ui/user-preview-card';
-import { formatCommentDateBadge } from 'shared/utils/format-date.util';
+import { Meta } from './components/meta';
+import { Reactions } from './components/reactions';
+import { DeleteConfirm } from './components/delete-confirm';
+import { Tags } from './components/tags';
 import styles from './comment-item.module.css';
 
 export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
@@ -23,6 +26,9 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
   isAnonymousComment,
   isOnline,
   isListOwnerComment,
+  authorUsername,
+  authorAvatar,
+  authorParticipant,
   reactionsMap,
   isReplying,
   onReplyToggle,
@@ -33,6 +39,7 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
   reactionPicker,
   nestedReplies,
   isThreadChild = false,
+  isOwner = false,
 }) => {
   if (comment.IsDeleted) {
     return (
@@ -44,9 +51,7 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
     );
   }
 
-  const hasReactions = Object.keys(reactionsMap).length > 0;
   const canReply = !comment.ParentId && !!handleReplySubmit;
-  const { date: datePart, time: timePart } = formatCommentDateBadge(comment.CreatedAt);
 
   const hasThread = !isThreadChild && (replies.length > 0 || isReplying);
   const showReplyThread = !isThreadChild && (isReplying || (isExpanded && replies.length > 0));
@@ -62,16 +67,18 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
       >
         <div className={styles['comment-bubble-main']}>
           <div className={styles['comment-visibility-indicator']}>
-            <div
-              title={comment.IsOwnerVisible ? 'Visible to Owner' : 'Hidden from Owner'}
-              className={styles['visibility-icon-wrap']}
-            >
-              {comment.IsOwnerVisible ? (
-                <Eye size={14} className={styles['visible-eye']} />
-              ) : (
-                <EyeOff size={14} className={styles['hidden-eye']} />
-              )}
-            </div>
+            {!isOwner && (
+              <div
+                title={comment.IsOwnerVisible ? 'Visible to Owner' : 'Hidden from Owner'}
+                className={styles['visibility-icon-wrap']}
+              >
+                {comment.IsOwnerVisible ? (
+                  <Eye size={14} className={styles['visible-eye']} />
+                ) : (
+                  <EyeOff size={14} className={styles['hidden-eye']} />
+                )}
+              </div>
+            )}
 
             {comment.UserId === currentUserId && (
               <button
@@ -87,38 +94,16 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
 
           <div className={styles['comment-bubble-content']}>
           <div className={styles['comment-main-content']}>
-            <div className={styles['comment-meta']}>
-              <div className={styles['comment-meta-left']}>
-                {isAnonymousComment ? (
-                  <span className={`${styles.author} ${styles['anonymous-author']}`}>Anonymous</span>
-                ) : (
-                  <UserPreviewCard
-                    userId={comment.UserId}
-                    displayName={comment.CommenterName}
-                    isOnline={isOnline}
-                  >
-                    <span className={styles.author}>{comment.CommenterName}</span>
-                  </UserPreviewCard>
-                )}
-
-                {isListOwnerComment && (
-                  <span className={styles['owner-badge']} title="Wishlist owner">
-                    Owner
-                  </span>
-                )}
-
-                {comment.IsRollover && (
-                  <span className={styles['rollover-badge']} title="Carry-over discussion">
-                    Rollover
-                  </span>
-                )}
-
-                <div className={styles['date-badge']} title={formatDate(comment.CreatedAt)}>
-                  <span className={styles['date-part']}>{datePart}</span>
-                  <span className={styles['time-part']}>{timePart}</span>
-                </div>
-              </div>
-            </div>
+            <Meta
+              comment={comment}
+              isAnonymousComment={isAnonymousComment}
+              authorUsername={authorUsername}
+              authorAvatar={authorAvatar}
+              authorParticipant={authorParticipant}
+              isOnline={isOnline}
+              isListOwnerComment={isListOwnerComment}
+              formatDate={formatDate}
+            />
 
             {comment.ImageUrl && (
               <div className={styles['comment-image-container']}>
@@ -165,9 +150,16 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
                       className={styles['replies-toggle-btn']}
                       onClick={() => setIsExpanded(!isExpanded)}
                     >
-                      {isExpanded
-                        ? 'Hide replies'
-                        : `${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}`}
+                      {isExpanded ? (
+                        'Hide'
+                      ) : (
+                        <>
+                          Show
+                          {replies.length > 1 && (
+                            <span className={styles['replies-badge']}>{replies.length}</span>
+                          )}
+                        </>
+                      )}
                     </button>
                   </div>
                 )}
@@ -190,69 +182,29 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
             )}
           </div>
 
-          {isDeleting && (
-            <div className={styles['comment-bubble-bottom-row']}>
-              <span className={styles['delete-confirm-text']}>Are you sure you want to delete this?</span>
-              <div className={styles['delete-confirm-actions']}>
-                <button
-                  type="button"
-                  className={styles['delete-confirm-btn']}
-                  onClick={() => handleDeleteComment(comment.Id)}
-                >
-                  Delete
-                </button>
-                <button
-                  type="button"
-                  className={styles['delete-cancel-btn']}
-                  onClick={() => setDeletingCommentId(null)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
 
-          {hasReactions && (
-            <div className={styles['reactions-footer']}>
-              <div className={styles['reactions-list']}>
-                {Object.entries(reactionsMap).map(([reaction, data]) => (
-                  <button
-                    key={reaction}
-                    type="button"
-                    onClick={() => toggleReaction?.(comment.Id, reaction)}
-                    className={`${styles['reaction-badge']} ${data.hasReacted ? styles['reaction-badge-active'] : ''}`}
-                    title={data.users.join(', ')}
-                  >
-                    <span className={styles['reaction-emoji']}>{reaction}</span>
-                    <span className={styles['reaction-count']}>{data.count}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+
+          <Reactions
+            commentId={comment.Id}
+            reactionsMap={reactionsMap}
+            toggleReaction={toggleReaction}
+          />
           </div>
         </div>
 
-        {taggedIds.length > 0 && (
-          <div className={styles['comment-tags-container']}>
-            {taggedIds.map((itemId) => {
-              const matchedItem = items.find((i) => i.Id === itemId);
-              const itemName = matchedItem ? matchedItem.Name : 'View item';
-              return (
-                <button
-                  key={itemId}
-                  type="button"
-                  onClick={() => onItemTaggedClick?.(itemId)}
-                  className={styles['comment-tag-icon-btn']}
-                  title={itemName}
-                >
-                  <Tag size={12} />
-                </button>
-              );
-            })}
-          </div>
-        )}
+        <Tags
+          taggedIds={taggedIds}
+          items={items}
+          onItemTaggedClick={onItemTaggedClick}
+        />
       </div>
+
+      {isDeleting && (
+        <DeleteConfirm
+          onDelete={() => handleDeleteComment(comment.Id)}
+          onCancel={() => setDeletingCommentId(null)}
+        />
+      )}
 
       {showReplyThread && (
         <div className={styles['comment-thread']}>

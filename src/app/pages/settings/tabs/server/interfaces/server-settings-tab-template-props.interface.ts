@@ -44,4 +44,7 @@ export interface ServerSettingsTabTemplateProps {
   isLoading: boolean;
   isSaving: boolean;
   handleSave: (e: React.SubmitEvent<HTMLFormElement>) => void;
+  isServerOwner: boolean;
+  onDeleteServer: () => void;
+  isDeletingServer: boolean;
 }

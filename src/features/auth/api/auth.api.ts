@@ -39,16 +39,6 @@ export const authApi = {
   passkeyLoginVerify: (authenticationResponse: any) =>
     apiClient.post<AuthResponse>('/api/auth/passkey/login/verify', { authenticationResponse }, 'Auth'),
 
-  ssoGitHub: () => {
-    window.location.href = 'http://localhost:3001/api/auth/sso/github';
-  },
-
-  ssoEmailOtp: (email: string) =>
-    apiClient.post<{ success: boolean }>('/api/auth/sso/email-otp', { email }, 'Auth'),
-
-  ssoEmailVerify: (email: string, token: string) =>
-    apiClient.post<AuthResponse>('/api/auth/sso/email-verify', { email, token }, 'Auth'),
-
   verify2faLogin: (ticket: string, code: string) =>
     apiClient.post<AuthResponse>('/api/auth/2fa/login', { ticket, code }, 'Auth'),
 
@@ -66,4 +56,10 @@ export const authApi = {
 
   deletePasskey: (passkeyId: string) =>
     apiClient.delete<{ success: boolean }>(`/api/auth/passkeys/${passkeyId}`),
+
+  disableAccount: () =>
+    apiClient.post<{ success: boolean }>('/api/auth/account/disable', {}, 'Auth'),
+
+  deleteAccount: (password: string) =>
+    apiClient.delete<{ success: boolean }>('/api/auth/account', { password }, 'Auth'),
 };

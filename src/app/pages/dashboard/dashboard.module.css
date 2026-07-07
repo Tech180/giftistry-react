@@ -54,12 +54,14 @@
 
 .grid-section{
   width: 100%;
+  overflow: visible;
 }
 
 .grid, .loading-grid{
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
   gap: var(--spacing-md);
+  overflow: visible;
 }
 
 .skeleton-card{

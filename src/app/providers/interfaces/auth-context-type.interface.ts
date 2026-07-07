@@ -20,5 +20,8 @@ export interface AuthContextType {
   refreshUser: () => Promise<void>;
   isSystemInitialized: boolean;
   globalAiEnabled: boolean;
+  registrationMode: 'open' | 'invite_only' | 'disabled';
+  maintenanceMode: boolean;
+  maintenanceMessage: string;
   checkSystemStatus: () => Promise<void>;
 }

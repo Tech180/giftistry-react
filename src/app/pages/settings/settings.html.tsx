@@ -10,7 +10,7 @@ export const SettingsTemplate: React.FC<SettingsTemplateProps> = ({ routes, toas
       <SettingsSidebar isAdmin={isAdmin} />
 
       <main className={styles['main-wrapper']}>
-        {routes}
+        <div className={styles['route-content']}>{routes}</div>
       </main>
 
       <div className={styles['toast-container']}>

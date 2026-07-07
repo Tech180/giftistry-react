@@ -15,5 +15,7 @@ export interface RegisterFormTemplateProps {
   setConfirmPassword: (val: string) => void;
   isLoading: boolean;
   localError: string | null;
+  registrationClosed?: boolean;
+  registrationClosedMessage?: string;
   handleSubmit: (e: React.SyntheticEvent) => void;
 }

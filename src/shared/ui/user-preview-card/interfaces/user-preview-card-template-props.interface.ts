@@ -14,4 +14,5 @@ export interface UserPreviewCardTemplateProps {
   fallbackInitials: string;
   joinedDate: string;
   cardClass: string;
+  onTryTheme?: (themeId: string) => void;
 }

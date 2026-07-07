@@ -22,6 +22,7 @@ export interface NavigationTemplateProps {
   standardThemes: { value: Theme; label: string }[];
   holidayThemes: { value: Theme; label: string }[];
   customThemes?: { id: string; name: string }[];
+  temporaryTheme?: { id: string; label: string } | null;
   isHolidayOpen: boolean;
   setIsHolidayOpen: (open: boolean) => void;
   appearances: { value: Appearance; label: string; icon: any }[];

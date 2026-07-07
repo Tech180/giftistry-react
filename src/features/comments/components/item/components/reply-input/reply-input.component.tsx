@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CommentReplyInputProps } from '../../interfaces/comment-reply-input-props.interface';
-import { CommentReplyInputTemplate } from './comment-reply-input.html';
-import { CommentEditorHandle } from '../input/components/input/editor';
-import { convertMentionsToMarkdown } from '../../utils/comment-content.util';
+import { ReplyInputProps } from './interfaces/reply-input-props.interface';
+import { ReplyInputTemplate } from './reply-input.html';
+import { CommentEditorHandle } from '../../../input/components/input/editor';
+import { convertMentionsToMarkdown } from '../../../../utils/comment-content.util';
 
-export const CommentReplyInput: React.FC<CommentReplyInputProps> = ({
+export const ReplyInput: React.FC<ReplyInputProps> = ({
   replyToName,
   participants,
   items,
@@ -71,7 +71,7 @@ export const CommentReplyInput: React.FC<CommentReplyInputProps> = ({
   };
 
   return (
-    <CommentReplyInputTemplate
+    <ReplyInputTemplate
       replyToName={replyToName}
       items={items}
       taggedItemIds={taggedItemIds}
