@@ -1,6 +1,7 @@
 import React from 'react';
 import { Priority } from 'features/wishlists';
 import { FieldDefinition } from './field-definition.interface';
+import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 
 export interface AddItemFormTemplateProps {
   name: string;
@@ -80,7 +81,7 @@ export interface AddItemFormTemplateProps {
   variations: { name: string; quantity: number }[];
   setVariations: React.Dispatch<React.SetStateAction<{ name: string; quantity: number }[]>>;
   linkedItemIds: string[];
-  setLinkedItemIds: React.Dispatch<React.SetStateAction<string[]>>;
+  resolvedLinkedCount: number;
   wishlistItems?: any[];
   itemId?: string;
   isLinkingModeActive: boolean;
@@ -94,4 +95,9 @@ export interface AddItemFormTemplateProps {
   varError: string | null;
   handleAddVariation: () => void;
   handleVarQtyChange: (val: string) => void;
+  listShares: ListShare[];
+  sharedWithUserIds: string[];
+  setSharedWithUserIds: (userIds: string[]) => void;
+  visibilityMode: 'everyone' | 'restricted' | 'private';
+  setVisibilityMode: (mode: 'everyone' | 'restricted' | 'private') => void;
 }

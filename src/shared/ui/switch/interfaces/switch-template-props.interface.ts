@@ -4,5 +4,6 @@ export interface SwitchTemplateProps {
   disabled?: boolean;
   id?: string;
   className?: string;
+  size?: 'default' | 'sm';
   ariaLabel?: string;
 }

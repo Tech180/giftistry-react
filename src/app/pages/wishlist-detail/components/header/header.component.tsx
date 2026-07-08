@@ -4,8 +4,8 @@ import { HeaderTemplate } from './header.html';
 import { useAuth } from 'app/providers/auth-context';
 
 export const Header: React.FC<HeaderProps> = (props) => {
-  const { wishlist } = props;
-  const { globalAiEnabled } = useAuth();
+  const { wishlist, isOwner } = props;
+  const { globalAiEnabled, user } = useAuth();
 
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -53,9 +53,17 @@ export const Header: React.FC<HeaderProps> = (props) => {
     }
   };
 
+  const exporterName = user?.FirstName || user?.Username || 'Export';
+  const exportContext = {
+    exporterName,
+    isOwner,
+    currentUserId: user?.Id,
+  };
+
   return (
     <HeaderTemplate
       {...props}
+      exportContext={exportContext}
       saveTitle={handleSaveTitle}
       saveDate={handleSaveDate}
       isExportDropdownOpen={isExportDropdownOpen}

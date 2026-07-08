@@ -72,7 +72,7 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
         onSuccess={() => {}}
         existingCategories={[]}
         linkedItemIds={[]}
-        setLinkedItemIds={() => {}}
+        resolvedLinkedCount={0}
         isLinkingModeActive={false}
         setIsLinkingModeActive={() => {}}
       />
@@ -81,7 +81,7 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
     const categoryChip = screen.getByText('Apparel & Accessories');
     fireEvent.click(categoryChip);
 
-    const toggleBtn = screen.getByText(/Show Custom Fields/);
+    const toggleBtn = screen.getByText(/Custom Fields \(Sizes, Colors\)/);
     fireEvent.click(toggleBtn);
 
     await waitFor(() => {

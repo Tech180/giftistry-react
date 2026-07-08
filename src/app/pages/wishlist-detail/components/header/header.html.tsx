@@ -38,6 +38,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   isExportDropdownOpen,
   setIsExportDropdownOpen,
   exportRef,
+  exportContext,
 }) => {
   return (
     <>
@@ -229,7 +230,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                         wishlist.Title,
                         items,
                         priorities,
-                        wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Owner'
+                        exportContext
                       );
                       setIsExportDropdownOpen(false);
                     }}
@@ -243,7 +244,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                         wishlist.Title,
                         items,
                         priorities,
-                        wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Owner'
+                        exportContext
                       );
                       setIsExportDropdownOpen(false);
                     }}
@@ -257,7 +258,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                         wishlist.Title,
                         items,
                         priorities,
-                        wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Owner'
+                        exportContext
                       );
                       setIsExportDropdownOpen(false);
                     }}
@@ -271,7 +272,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                         wishlist.Title,
                         items,
                         priorities,
-                        wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Owner'
+                        exportContext
                       );
                       setIsExportDropdownOpen(false);
                     }}

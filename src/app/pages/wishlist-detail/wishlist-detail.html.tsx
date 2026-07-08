@@ -22,13 +22,20 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   isExpired,
   isAddOpen,
   setIsAddOpen,
+  openAddDrawer,
   editingItem,
   setEditingItem,
+  openItemEditor,
   setEditingItemDraft,
   linkedItemIds,
   setLinkedItemIds,
+  linkableItems,
+  resolvedLinkedItems,
   isLinkingModeActive,
   setIsLinkingModeActive,
+  handleLinkingAudienceChange,
+  isItemLinkCompatible,
+  handleLinkItemToggle,
   loadData,
   confirmAction,
   setConfirmAction,
@@ -55,6 +62,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   selectedItemPriorityLabel,
   groupedItems,
   displayItems,
+  listShares,
   handleItemTaggedClick,
   isTaggingModeActive,
   setIsTaggingModeActive,
@@ -69,7 +77,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   isLoading,
 }) => {
   if (isWishlistLoading) {
-    return <LoadingState message="Loading registry details..." fullHeight />;
+    return <LoadingState message="Loading list..." fullHeight />;
   }
 
   if (wishlistError || !wishlist) {
@@ -94,10 +102,13 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         isOpen={isAddOpen || !!editingItem}
         editingItem={editingItem}
         items={items}
+        linkableItems={linkableItems}
+        resolvedLinkedItems={resolvedLinkedItems}
         linkedItemIds={linkedItemIds}
         setLinkedItemIds={setLinkedItemIds}
         isLinkingModeActive={isLinkingModeActive}
         setIsLinkingModeActive={setIsLinkingModeActive}
+        handleLinkingAudienceChange={handleLinkingAudienceChange}
         isOwner={isOwner}
         listId={wishlist.Id}
         onClose={() => {
@@ -113,6 +124,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         }}
         setEditingItemDraft={setEditingItemDraft}
         loadData={loadData}
+        listShares={listShares}
+        onItemTaggedClick={handleItemTaggedClick}
       />
 
       <EnterPanel
@@ -184,7 +197,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={() => setIsAddOpen(true)}
+                    onClick={openAddDrawer}
                     title="Add Item"
                     style={{ padding: '0.375rem', width: '34px', height: '34px' }}
                   >
@@ -212,7 +225,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                       canCollaborate={canCollaborate}
                       allowGroupFunds={wishlist.AllowGroupFunds}
                       onUpdate={loadData}
-                      onEdit={() => setEditingItem(selectedItem)}
+                      onEdit={() => openItemEditor(selectedItem)}
                       onClose={() => setSelectedItemId(null)}
                       wishlistItems={items}
                       aiEnabled={wishlist.AiEnabled}
@@ -251,25 +264,21 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                                   canCollaborate={canCollaborate}
                                   allowGroupFunds={wishlist.AllowGroupFunds}
                                   onUpdate={loadData}
-                                  onEdit={() => setEditingItem(item)}
+                                  onEdit={() => openItemEditor(item)}
                                   isTaggingModeActive={
                                     (isAddOpen || !!editingItem)
-                                      ? (isLinkingModeActive && (!editingItem || item.Id !== editingItem.Id))
+                                      ? (isLinkingModeActive && (!editingItem || item.Id !== editingItem.Id) && isItemLinkCompatible(item))
                                       : (isTaggingModeActive || isReplyTaggingModeActive)
                                   }
                                   isTaggedSelection={
                                     (isAddOpen || !!editingItem)
-                                      ? linkedItemIds.includes(item.Id)
+                                      ? (isLinkingModeActive && linkedItemIds.includes(item.Id))
                                       : (isReplyTaggingModeActive ? replyTaggedItemIds : taggedItemIds).includes(item.Id)
                                   }
                                   onSelectTag={() => {
                                     if (isAddOpen || !!editingItem) {
                                       if (editingItem && item.Id === editingItem.Id) return;
-                                      setLinkedItemIds((prev) =>
-                                        prev.includes(item.Id)
-                                          ? prev.filter((id) => id !== item.Id)
-                                          : [...prev, item.Id]
-                                      );
+                                      handleLinkItemToggle(item.Id);
                                     } else if (isReplyTaggingModeActive) {
                                       handleSelectReplyTag(item.Id);
                                     } else {
@@ -279,6 +288,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                                   viewMode={viewMode}
                                   isSelected={selectedItemId === item.Id}
                                   onSelect={() => setSelectedItemId(item.Id)}
+                                  wishlistItems={displayItems}
+                                  isLinkingContext={isAddOpen || !!editingItem}
                                 />
                               </div>
                             ))}
@@ -302,7 +313,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                         variant="secondary"
                         size="sm"
                         leftIcon={<Plus size={14} />}
-                        onClick={() => setIsAddOpen(true)}
+                        onClick={openAddDrawer}
                       >
                         Add the First Item
                       </Button>

@@ -15,4 +15,6 @@ export interface ItemCardProps {
   viewMode?: 'full' | 'compact' | 'grid';
   isSelected?: boolean;
   onSelect?: () => void;
+  wishlistItems?: Item[];
+  isLinkingContext?: boolean;
 }

@@ -70,9 +70,6 @@ export const LoginForm: React.FC = () => {
       const res = await login(email, password);
       if (res && res.Require2FA) {
         setTicket(res.Ticket || '');
-        if (res.Code) {
-          setTotpCode(res.Code);
-        }
         setStep('2fa');
       } else {
         if (res && res.User) {

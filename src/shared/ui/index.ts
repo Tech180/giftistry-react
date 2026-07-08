@@ -24,3 +24,4 @@ export * from './toast/toast.component';
 export * from './enter-panel/enter-panel.component';
 export * from './user-avatar/user-avatar.component';
 export * from './switch/switch.component';
+export * from './linked-item-squares';

@@ -6,6 +6,16 @@ import {
   getItemFavoriteOrPinnedFlag,
   parseItemDescription,
 } from 'shared/utils/parse-item-description.util';
+import {
+  formatAudienceForExport,
+  formatSuggestionForExport,
+} from 'features/items/utils/item-audience.util';
+
+export interface WishlistExportContext {
+  exporterName?: string;
+  isOwner?: boolean;
+  currentUserId?: string;
+}
 
 const escapeCsvValue = (val: any) => {
   if (val === null || val === undefined) return '""';
@@ -31,12 +41,23 @@ const getFormattedDate = (): string => {
   return `${mm}${dd}${yyyy}`;
 };
 
-const getExportFilename = (title: string, ownerFirstName: string | undefined, ext: string): string => {
+const getExportFilename = (title: string, exporterName: string | undefined, ext: string): string => {
   const pascalTitle = toPascalCase(title) || 'Wishlist';
   const dateStr = getFormattedDate();
-  const ownerClean = toPascalCase(ownerFirstName || 'Owner');
-  return `${pascalTitle}_${dateStr}_${ownerClean}.${ext}`;
+  const exporterClean = toPascalCase(exporterName || 'Export');
+  return `${pascalTitle}_${dateStr}_${exporterClean}.${ext}`;
 };
+
+function getItemExportMeta(item: any, exportContext: WishlistExportContext = {}) {
+  return {
+    audience: formatAudienceForExport(
+      item.SharedWith,
+      exportContext.currentUserId,
+      item.SuggestedByUserId
+    ),
+    suggestion: formatSuggestionForExport(item, !!exportContext.isOwner),
+  };
+}
 
 // Process and sort items by Category (alphabetical), then Favorite/Starred status (top), then Priority (ascending), then Name (alphabetical)
 function getSortedItemsWithPriority(items: any[]) {
@@ -74,10 +95,16 @@ function getSortedItemsWithPriority(items: any[]) {
 }
 
 // 1. Export CSV (Sorted by Category, Raw Links)
-export function exportToCsv(title: string, items: any[], priorities: any[] = [], ownerFirstName?: string) {
-  const headers = ['Category', 'Priority', 'Item', 'Star', 'Price', 'Website Link', 'Description'];
+export function exportToCsv(
+  title: string,
+  items: any[],
+  priorities: any[] = [],
+  exportContext: WishlistExportContext = {}
+) {
+  const headers = ['Category', 'Priority', 'Item', 'Star', 'Price', 'Website Link', 'Description', 'Audience', 'Suggestion'];
   const sorted = getSortedItemsWithPriority(items);
   const rows: any[][] = [];
+  const emptyRow = ['', '', '', '', '', '', '', '', ''];
 
   // Group by category to output category section dividers in CSV too
   const categoryGroups: { [key: string]: any[] } = {};
@@ -95,13 +122,14 @@ export function exportToCsv(title: string, items: any[], priorities: any[] = [],
   });
 
   for (const cat of categories) {
-    rows.push([`${cat}:`, '', '', '', '', '', '']);
+    rows.push([`${cat}:`, '', '', '', '', '', '', '', '']);
 
     const catItems = categoryGroups[cat];
     for (const item of catItems) {
       const priorityVal = item.Priority !== null && item.Priority !== undefined ? item.Priority : '';
       const starVal = item.isFav ? '*' : '';
       const formattedDesc = formatDescriptionForExport(item.Description);
+      const { audience, suggestion } = getItemExportMeta(item, exportContext);
 
       if (item.Links && item.Links.length > 0) {
         for (const link of item.Links) {
@@ -115,7 +143,9 @@ export function exportToCsv(title: string, items: any[], priorities: any[] = [],
             starVal,
             priceVal,
             link.Url || '',
-            formattedDesc
+            formattedDesc,
+            audience,
+            suggestion,
           ]);
         }
       } else {
@@ -126,11 +156,13 @@ export function exportToCsv(title: string, items: any[], priorities: any[] = [],
           starVal,
           '',
           '',
-          formattedDesc
+          formattedDesc,
+          audience,
+          suggestion,
         ]);
       }
     }
-    rows.push(['', '', '', '', '', '', '']); // Spacer row
+    rows.push(emptyRow);
   }
 
   const csvContent = [
@@ -139,27 +171,32 @@ export function exportToCsv(title: string, items: any[], priorities: any[] = [],
   ].join('\r\n');
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  downloadBlob(blob, getExportFilename(title, ownerFirstName, 'csv'));
+  downloadBlob(blob, getExportFilename(title, exportContext.exporterName, 'csv'));
 }
 
 // 2. Export XLSX (Excel with cell hyperlinks, formatted sheet using ExcelJS)
-export async function exportToXlsx(title: string, items: any[], priorities: any[] = [], ownerFirstName?: string) {
+export async function exportToXlsx(
+  title: string,
+  items: any[],
+  priorities: any[] = [],
+  exportContext: WishlistExportContext = {}
+) {
   const sorted = getSortedItemsWithPriority(items);
 
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Wishlist');
 
-  // Set column widths for a clean look
-  worksheet.getColumn(1).width = 18; // Category
-  worksheet.getColumn(2).width = 12; // Priority
-  worksheet.getColumn(3).width = 28; // Item
-  worksheet.getColumn(4).width = 8;  // Star
-  worksheet.getColumn(5).width = 12; // Price
-  worksheet.getColumn(6).width = 18; // Website
-  worksheet.getColumn(7).width = 45; // Description
+  worksheet.getColumn(1).width = 18;
+  worksheet.getColumn(2).width = 12;
+  worksheet.getColumn(3).width = 28;
+  worksheet.getColumn(4).width = 8;
+  worksheet.getColumn(5).width = 12;
+  worksheet.getColumn(6).width = 18;
+  worksheet.getColumn(7).width = 45;
+  worksheet.getColumn(8).width = 18;
+  worksheet.getColumn(9).width = 22;
 
-  // Row 1: Column Headers (No title banner anymore)
-  const headers = ['Category', 'Priority', 'Item', 'Star', 'Price', 'Website', 'Description'];
+  const headers = ['Category', 'Priority', 'Item', 'Star', 'Price', 'Website', 'Description', 'Audience', 'Suggestion'];
   const headerRow = worksheet.addRow(headers);
   headerRow.height = 24;
   headerRow.eachCell((cell) => {
@@ -219,6 +256,7 @@ export async function exportToXlsx(title: string, items: any[], priorities: any[
       const priorityVal = item.Priority !== null && item.Priority !== undefined ? item.Priority : '';
       const starVal = item.isFav ? '*' : '';
       const formattedDesc = formatDescriptionForExport(item.Description);
+      const { audience, suggestion } = getItemExportMeta(item, exportContext);
 
       let priceVal = '';
       let websiteLabel = '';
@@ -241,7 +279,9 @@ export async function exportToXlsx(title: string, items: any[], priorities: any[
         starVal,
         priceVal,
         websiteLabel,
-        formattedDesc
+        formattedDesc,
+        audience,
+        suggestion,
       ]);
 
       // Formatting text styles
@@ -273,11 +313,16 @@ export async function exportToXlsx(title: string, items: any[], priorities: any[
   // Write workbook to buffer and trigger download
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  downloadBlob(blob, getExportFilename(title, ownerFirstName, 'xlsx'));
+  downloadBlob(blob, getExportFilename(title, exportContext.exporterName, 'xlsx'));
 }
 
 // 3. Export TXT (Beautiful category-based document)
-export function exportToTxt(title: string, items: any[], priorities: any[] = [], ownerFirstName?: string) {
+export function exportToTxt(
+  title: string,
+  items: any[],
+  priorities: any[] = [],
+  exportContext: WishlistExportContext = {}
+) {
   const sorted = getSortedItemsWithPriority(items);
   
   const sections: string[] = [];
@@ -310,6 +355,8 @@ export function exportToTxt(title: string, items: any[], priorities: any[] = [],
       const priorityLabel = item.Priority !== null && item.Priority !== undefined ? `(Priority: ${item.Priority})` : '';
       const descText = formatDescriptionForExport(item.Description);
       const descStr = descText ? `\n    Description: ${descText}` : '';
+      const { audience, suggestion } = getItemExportMeta(item, exportContext);
+      const metaStr = `\n    Audience: ${audience}${suggestion ? `\n    Suggestion: ${suggestion}` : ''}`;
 
       if (item.Links && item.Links.length > 0) {
         for (const link of item.Links) {
@@ -324,12 +371,14 @@ export function exportToTxt(title: string, items: any[], priorities: any[] = [],
           if (descStr) {
             sections.push(descStr);
           }
+          sections.push(metaStr);
         }
       } else {
         sections.push(`${starPrefix}${item.Name} ${priorityLabel}`);
         if (descStr) {
           sections.push(descStr);
         }
+        sections.push(metaStr);
       }
       sections.push('');
     }
@@ -338,16 +387,22 @@ export function exportToTxt(title: string, items: any[], priorities: any[] = [],
 
   const txtContent = sections.join('\n');
   const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8;' });
-  downloadBlob(blob, getExportFilename(title, ownerFirstName, 'txt'));
+  downloadBlob(blob, getExportFilename(title, exportContext.exporterName, 'txt'));
 }
 
 // 4. Export JSON (Professional, structured JSON format)
-export function exportToJson(title: string, items: any[], priorities: any[] = [], ownerFirstName?: string) {
+export function exportToJson(
+  title: string,
+  items: any[],
+  priorities: any[] = [],
+  exportContext: WishlistExportContext = {}
+) {
   const sorted = getSortedItemsWithPriority(items);
 
   const formattedItems = sorted.map(item => {
     const parsed = parseItemDescription(item.Description);
     const parsedDesc = parsed.isJson && parsed.metadata ? parsed.metadata : item.Description;
+    const { audience, suggestion } = getItemExportMeta(item, exportContext);
 
     return {
       name: item.Name,
@@ -355,6 +410,8 @@ export function exportToJson(title: string, items: any[], priorities: any[] = []
       priority: item.Priority,
       isFavorite: item.isFav,
       description: parsedDesc,
+      audience,
+      suggestion: suggestion || undefined,
       links: (item.Links || []).map((link: any) => ({
         url: link.Url || '',
         retailer: link.RetailerName || '',
@@ -371,7 +428,7 @@ export function exportToJson(title: string, items: any[], priorities: any[] = []
 
   const jsonContent = JSON.stringify(data, null, 2);
   const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-  downloadBlob(blob, getExportFilename(title, ownerFirstName, 'json'));
+  downloadBlob(blob, getExportFilename(title, exportContext.exporterName, 'json'));
 }
 
 function downloadBlob(blob: Blob, filename: string) {

@@ -59,4 +59,8 @@ export interface ItemCardTemplateProps {
   displayCategoryBadge: boolean;
   categoryLabel: string;
   getSiteName: (url: string, retailerName?: string | null) => string;
+  audienceLabel: string | null;
+  isPrivate: boolean;
+  linkedItems: Item[];
+  isLinkingContext?: boolean;
 }

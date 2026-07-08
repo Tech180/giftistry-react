@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Link as LinkIcon, Edit2, Trash2, Tag, Sparkles } from 'lucide-react';
+import { Star, Link as LinkIcon, Link2, Edit2, Trash2, Tag, Sparkles } from 'lucide-react';
 import { Button, Card } from 'shared/ui';
 import { ItemShowcaseTemplateProps } from '../../interfaces/item-showcase-template-props.interface';
 import styles from './item-showcase.module.css';
@@ -51,9 +51,14 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   reviewsError,
   aiEnabled,
   globalAiEnabled,
+  audienceLabel,
+  isPrivate,
+  linkedItems,
 }) => {
+  const isLinkedToItems = linkedItems.length > 0;
+
   return (
-    <Card className={styles['showcase-card']} padding="none" glass={true}>
+    <Card className={`${styles['showcase-card']} ${isPrivate ? styles['private-item'] : ''}`} padding="none" glass={true}>
       <div className={styles['showcase-header']}>
         <div className={styles['showcase-title-area']}>
           <div className={styles['showcase-meta-line']}>
@@ -62,7 +67,25 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
               {item.Category || 'General'}
             </span>
           </div>
-          <h3 className={styles['showcase-title']}>{item.Name}</h3>
+          <h3 className={styles['showcase-title']}>
+            {isLinkedToItems && (
+              <Link2 size={16} className={styles['linked-item-icon']} aria-hidden="true" />
+            )}
+            {item.Name}
+          </h3>
+          {(item.IsHiddenIdea && !item.IsSuggestion) && (
+            <span className={styles['status-badge']}>Collaborator Suggestion (Hidden from list owner)</span>
+          )}
+          {item.IsSuggestion && (
+            <span className={styles['status-badge']}>
+              Suggestion by {item.SuggestedByUsername || 'Collaborator'}
+            </span>
+          )}
+          {audienceLabel && (
+            <span className={`${styles['audience-badge']} ${isPrivate ? styles['private-audience-badge'] : ''}`}>
+              {audienceLabel}
+            </span>
+          )}
         </div>
         <div className={styles['showcase-header-actions']}>
           {localIsFavorite && (
@@ -468,18 +491,14 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
               This gift is linked to other items in the wishlist. Would you like to claim them all at once?
             </p>
             <div className={styles['linked-items-preview-list']}>
-              {wishlistItems
-                .filter((wi: any) => (metadata?.linkedItemIds || []).includes(wi.Id))
-                .map((wi: any) => {
-                  return (
-                    <div key={wi.Id} className={styles['linked-item-preview-row']}>
-                      <span className={wi.Name}>{wi.Name}</span>
-                      <span className={wi.IsClaimed ? styles['linked-item-status-claimed'] : styles['linked-item-status-available']}>
-                        {wi.IsClaimed ? 'Already Claimed' : 'Available'}
-                      </span>
-                    </div>
-                  );
-                })}
+              {linkedItems.map((linkedItem) => (
+                <div key={linkedItem.Id} className={styles['linked-item-preview-row']}>
+                  <span className={styles['linked-item-name']}>{linkedItem.Name}</span>
+                  <span className={linkedItem.IsClaimed ? styles['linked-item-status-claimed'] : styles['linked-item-status-available']}>
+                    {linkedItem.IsClaimed ? 'Already Claimed' : 'Available'}
+                  </span>
+                </div>
+              ))}
             </div>
             <div className={styles['modal-actions']}>
               <Button

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { itemsApi, FieldDefinition } from '../../api/items.api';
+import { Item } from '../../interfaces/item.interface';
 import { AddItemFormProps } from '../../interfaces/add-item-form-props.interface';
 import { AddItemFormTemplate } from './add-item-form.html';
 import { useAuth } from 'app/providers/auth-context';
@@ -7,6 +8,12 @@ import { getFriendlyCategoryLabel } from '../../utils/category-label.util';
 import { STANDARD_CATEGORIES } from '../../constants/standard-categories';
 import { getItemFavoriteFlag, parseItemDescription } from 'shared/utils/parse-item-description.util';
 import { isValidUrl } from 'shared/utils/is-valid-url.util';
+import { syncBidirectionalItemLinks, resolveEditorLinkedItemIds } from '../../utils/item-links-sync.util';
+import {
+  buildLinkingAudienceContext,
+  canLinkItemsByAudience,
+  LINK_AUDIENCE_MISMATCH_MESSAGE,
+} from '../../utils/item-audience.util';
 
 const DYNAMIC_FIELD_KEYS = [
   'text', 'custom', 'multiCount', 'desiredQuantity', 'variations', 'linkedItemIds',
@@ -23,11 +30,14 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   onDraftChange,
   wishlistItems = [],
   linkedItemIds,
-  setLinkedItemIds,
+  resolvedLinkedCount,
   isLinkingModeActive,
   setIsLinkingModeActive,
+  onLinkingAudienceChange,
   onPriorityChange,
   isOpen,
+  listShares = [],
+  onLoadingChange,
 }) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
@@ -35,6 +45,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const [priorityWeight, setPriorityWeight] = useState('');
   const [isHiddenIdea, setIsHiddenIdea] = useState(false);
   const [otherUsersCanSee, setOtherUsersCanSee] = useState(true);
+  const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
+  const [visibilityMode, setVisibilityMode] = useState<'everyone' | 'restricted' | 'private'>('everyone');
   const [claimOnCreate, setClaimOnCreate] = useState(false);
 
   const [linkUrl, setLinkUrl] = useState('');
@@ -66,6 +78,19 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [loadedItemId, setLoadedItemId] = useState<string | null>(null);
+
+  useEffect(() => {
+    onLoadingChange?.(isLoading);
+  }, [isLoading, onLoadingChange]);
+
+  useEffect(() => {
+    if (!onLinkingAudienceChange) return;
+    if (item && loadedItemId !== item.Id) return;
+    onLinkingAudienceChange?.(
+      buildLinkingAudienceContext(visibilityMode, sharedWithUserIds, user?.Id)
+    );
+  }, [visibilityMode, sharedWithUserIds, user?.Id, onLinkingAudienceChange, item, loadedItemId]);
 
   // Dynamic fields
   const [definitions, setDefinitions] = useState<FieldDefinition[]>([]);
@@ -115,16 +140,43 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     }));
   };
 
+  const resetOptionalFields = () => {
+    setPantsSize('');
+    setShirtSize('');
+    setShoesSize('');
+    setSocksSize('');
+    setColor('');
+    setCustomFields([]);
+    setDynamicValues({});
+    setShowExtraFields(false);
+    setDesiredQuantity(1);
+    setVariations([]);
+  };
 
+  const hasOptionalMetadata = (meta: Record<string, unknown>) => {
+    const hasSizing = !!(
+      meta.pantsSize ||
+      meta.shirtSize ||
+      meta.shoesSize ||
+      meta.socksSize ||
+      meta.color
+    );
+    const hasCustom = Array.isArray(meta.custom) && meta.custom.length > 0;
+    const hasDynamic = Object.keys(meta).some(
+      (key) => !DYNAMIC_FIELD_KEYS.includes(key) && meta[key] != null && meta[key] !== ''
+    );
+    return hasSizing || hasCustom || hasDynamic;
+  };
 
   useEffect(() => {
     if (item) {
+      resetOptionalFields();
       setName(item.Name || '');
 
       const parsed = parseItemDescription(item.Description);
       if (parsed.isJson && parsed.metadata) {
         const meta = parsed.metadata;
-        setDescription(parsed.metadata.text || '');
+        setDescription(meta.text || '');
 
         const dynValues: Record<string, string> = {};
         for (const key of Object.keys(meta)) {
@@ -141,32 +193,38 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         setColor(meta.color || '');
         setDesiredQuantity(meta.desiredQuantity || 1);
         setVariations(meta.variations || []);
-        setLinkedItemIds(meta.linkedItemIds || []);
-
-        if (meta.custom) {
-          setCustomFields(meta.custom.map((f) => ({
-            id: Math.random().toString(),
-            name: f.name,
-            value: f.value,
-          })));
-        }
+        setCustomFields(
+          meta.custom?.length
+            ? meta.custom.map((f) => ({
+                id: Math.random().toString(),
+                name: f.name,
+                value: f.value,
+              }))
+            : []
+        );
         setOtherUsersCanSee(meta.otherUsersCanSee !== undefined ? meta.otherUsersCanSee : true);
-        setShowExtraFields(true);
+        setShowExtraFields(hasOptionalMetadata(meta));
       } else {
         setDescription(parsed.text || item.Description || '');
         setOtherUsersCanSee(true);
-        setDynamicValues({});
         setDesiredQuantity(1);
         setVariations([]);
-        setLinkedItemIds([]);
       }
 
       setIsFavorite(getItemFavoriteFlag(item.Description));
       setPriorityWeight(item.Priority !== undefined && item.Priority !== null ? item.Priority.toString() : '');
       setIsHiddenIdea(item.IsHiddenIdea || false);
+      const initialShared = item.SharedWith?.map(u => u.UserId) ?? [];
+      setSharedWithUserIds(initialShared);
+      if (initialShared.length === 0) {
+        setVisibilityMode('everyone');
+      } else if (initialShared.length === 1 && user && initialShared[0] === user.Id) {
+        setVisibilityMode('private');
+      } else {
+        setVisibilityMode('restricted');
+      }
       setCategory(item.Category || 'uncategorized');
-      
-      // Pre-fill link if one is available
+
       if (item.Links && item.Links.length > 0) {
         setLinkUrl(item.Links[0].Url || '');
         setWebsiteName(item.Links[0].RetailerName || '');
@@ -176,31 +234,24 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         setWebsiteName('');
         setPrice('');
       }
+      setLoadedItemId(item.Id);
     } else {
-      // Reset everything when item is null (Add Mode)
       setName('');
       setDescription('');
       setPriorityWeight('');
       setIsHiddenIdea(false);
+      setSharedWithUserIds([]);
+      setVisibilityMode('everyone');
       setLinkUrl('');
       setWebsiteName('');
       setCategory('uncategorized');
       setPrice('');
       setIsFavorite(false);
-      setPantsSize('');
-      setShirtSize('');
-      setShoesSize('');
-      setSocksSize('');
-      setColor('');
-      setCustomFields([]);
-      setDynamicValues({});
-      setShowExtraFields(false);
-      setDesiredQuantity(1);
-      setVariations([]);
-      setLinkedItemIds([]);
+      resetOptionalFields();
+      setLoadedItemId(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item]);
+  }, [item?.Id]);
 
   useEffect(() => {
     if (isOpen === false) {
@@ -208,29 +259,37 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setDescription('');
       setPriorityWeight('');
       setIsHiddenIdea(false);
+      setSharedWithUserIds([]);
+      setVisibilityMode('everyone');
       setLinkUrl('');
       setWebsiteName('');
       setCategory('uncategorized');
       setPrice('');
       setIsFavorite(false);
-      setPantsSize('');
-      setShirtSize('');
-      setShoesSize('');
-      setSocksSize('');
-      setColor('');
-      setCustomFields([]);
-      setDynamicValues({});
-      setShowExtraFields(false);
-      setDesiredQuantity(1);
-      setVariations([]);
-      setLinkedItemIds([]);
+      resetOptionalFields();
       setHasScraped(false);
+      setLoadedItemId(null);
     }
-  }, [isOpen, setLinkedItemIds]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      onDraftChange?.(null);
+    };
+  }, [onDraftChange]);
 
   // Trigger draft change callback for live item preview
   useEffect(() => {
-    if (item && onDraftChange) {
+    if (!item) {
+      onDraftChange?.(null);
+      return;
+    }
+
+    if (loadedItemId !== item.Id) {
+      return;
+    }
+
+    if (onDraftChange) {
       const visibleDynamicValues: Record<string, string> = {};
       definitions.forEach(def => {
         if (isFieldVisible(def)) {
@@ -316,6 +375,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     isOwner,
     item,
     onDraftChange,
+    loadedItemId,
     isMultiCount,
     desiredQuantity,
     variations,
@@ -431,6 +491,21 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       return;
     }
 
+    if (visibilityMode === 'restricted' && sharedWithUserIds.length === 0) {
+      setErrorMsg('Please select at least one person to share with.');
+      return;
+    }
+
+    const linkingContext = buildLinkingAudienceContext(visibilityMode, sharedWithUserIds, user?.Id);
+    const incompatibleLink = linkedItemIds.find((linkedId) => {
+      const linked = wishlistItems.find((i) => i.Id === linkedId);
+      return !linked || !canLinkItemsByAudience(linkingContext, linked);
+    });
+    if (incompatibleLink) {
+      setErrorMsg(LINK_AUDIENCE_MISMATCH_MESSAGE);
+      return;
+    }
+
     setIsLoading(true);
     setErrorMsg(null);
 
@@ -475,6 +550,16 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
       const priorityVal = priorityWeight.trim() ? parseInt(priorityWeight, 10) : null;
 
+      const finalSharedWith = visibilityMode === 'restricted'
+        ? sharedWithUserIds
+        : (visibilityMode === 'private' && user?.Id ? [user.Id] : []);
+
+      let savedItemId: string;
+      let createdItem: Item | null = null;
+      const previousLinkedIds = item
+        ? resolveEditorLinkedItemIds(item.Id, wishlistItems)
+        : [];
+
       if (item) {
         await itemsApi.updateItem(
           item.Id,
@@ -482,10 +567,12 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           descPayload,
           null,
           category === 'uncategorized' ? null : category,
-          priorityVal
+          priorityVal,
+          finalSharedWith
         );
+        savedItemId = item.Id;
       } else {
-        const newItem = await itemsApi.addItem(
+        createdItem = await itemsApi.addItem(
           listId,
           name.trim(),
           descPayload,
@@ -495,17 +582,37 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           price.trim() ? parseFloat(price) : null,
           websiteName.trim() || null,
           category === 'uncategorized' ? null : category,
-          priorityVal
+          priorityVal,
+          finalSharedWith
         );
+        savedItemId = createdItem.Id;
 
-        if (!isOwner && claimOnCreate && newItem && newItem.Id) {
+        if (!isOwner && claimOnCreate && createdItem?.Id) {
           try {
             const claimerName = user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null;
-            await itemsApi.claimItem(newItem.Id, null, claimerName, false);
+            await itemsApi.claimItem(createdItem.Id, null, claimerName, false);
           } catch (err) {
             // Ignore claim error
           }
         }
+      }
+
+      const hadLinks = previousLinkedIds.length > 0;
+      if (linkedItemIds.length > 0 || hadLinks) {
+        const baseItems = createdItem
+          ? [...wishlistItems, createdItem]
+          : wishlistItems;
+        const itemsForSync = baseItems.map((wishlistItem) =>
+          wishlistItem.Id === savedItemId
+            ? { ...wishlistItem, Description: descPayload }
+            : wishlistItem
+        );
+        await syncBidirectionalItemLinks(
+          savedItemId,
+          linkedItemIds,
+          itemsForSync,
+          previousLinkedIds
+        );
       }
 
       // Reset all states
@@ -513,6 +620,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setDescription('');
       setPriorityWeight('');
       setIsHiddenIdea(false);
+      setSharedWithUserIds([]);
       setLinkUrl('');
       setWebsiteName('');
       setCategory('uncategorized');
@@ -693,7 +801,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       variations={variations}
       setVariations={setVariations}
       linkedItemIds={linkedItemIds}
-      setLinkedItemIds={setLinkedItemIds}
+      resolvedLinkedCount={resolvedLinkedCount}
       wishlistItems={wishlistItems}
       itemId={item?.Id}
       isLinkingModeActive={isLinkingModeActive}
@@ -707,6 +815,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       varError={varError}
       handleAddVariation={handleAddVariation}
       handleVarQtyChange={handleVarQtyChange}
+      listShares={listShares}
+      sharedWithUserIds={sharedWithUserIds}
+      setSharedWithUserIds={setSharedWithUserIds}
+      visibilityMode={visibilityMode}
+      setVisibilityMode={setVisibilityMode}
     />
   );
 };

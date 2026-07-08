@@ -2,10 +2,13 @@ import styles from './wishlist-detail.module.css';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { wishlistsApi, Wishlist, Priority } from 'features/wishlists';
+import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import { useItemController, Item } from 'features/items';
 import { useAuth } from 'app/providers/auth-context';
 import { WishlistDetailTemplate } from './wishlist-detail.html';
 import { getFriendlyCategoryLabel } from 'features/items/utils/category-label.util';
+import { canViewItem, canLinkItemsByAudience, linkingContextFromItem, LinkingAudienceContext } from 'features/items/utils/item-audience.util';
+import { resolveEditorLinkedItemIds } from 'features/items/utils/item-links-sync.util';
 import { isWishlistExpired } from 'features/wishlists/utils/is-wishlist-expired.util';
 import { getItemFavoriteFlag } from 'shared/utils/parse-item-description.util';
 import { formatWishlistExpirationDate } from 'shared/utils/format-date.util';
@@ -20,6 +23,7 @@ export default function WishlistDetail() {
   const [wishlistError, setWishlistError] = useState<string | null>(null);
 
   const [priorities, setPriorities] = useState<Priority[]>([]);
+  const [listShares, setListShares] = useState<ListShare[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   const { items, isLoading: isItemsLoading, fetchItems } = useItemController();
@@ -34,6 +38,10 @@ export default function WishlistDetail() {
   const [replyTaggedItemIds, setReplyTaggedItemIds] = useState<string[]>([]);
   const [isLinkingModeActive, setIsLinkingModeActive] = useState(false);
   const [linkedItemIds, setLinkedItemIds] = useState<string[]>([]);
+  const [linkingAudienceContext, setLinkingAudienceContext] = useState<LinkingAudienceContext>({
+    mode: 'everyone',
+    sharedWithUserIds: [],
+  });
   const [isDeactivating, setIsDeactivating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'deactivate' | 'delete' | null>(null);
@@ -67,12 +75,14 @@ export default function WishlistDetail() {
     setIsWishlistLoading(true);
     setWishlistError(null);
     try {
-      const [wl, prio] = await Promise.all([
+      const [wl, prio, shares] = await Promise.all([
         wishlistsApi.getWishlist(listId),
-        wishlistsApi.listPriorities(listId)
+        wishlistsApi.listPriorities(listId),
+        wishlistsApi.listShares(listId),
       ]);
       setWishlist(wl);
       setPriorities(prio || []);
+      setListShares(shares || []);
       await fetchItems(listId);
     } catch (err) {
       setWishlistError(err instanceof Error ? err.message : 'Failed to load wishlist.');
@@ -86,22 +96,15 @@ export default function WishlistDetail() {
   }, [loadData]);
 
   useEffect(() => {
-    if (editingItem) {
-      try {
-        if (editingItem.Description?.startsWith('{') && editingItem.Description.endsWith('}')) {
-          const parsed = JSON.parse(editingItem.Description);
-          setLinkedItemIds(parsed.linkedItemIds || []);
-        } else {
-          setLinkedItemIds([]);
-        }
-      } catch (_) {
-        setLinkedItemIds([]);
-      }
-    } else {
-      setLinkedItemIds([]);
-      setIsLinkingModeActive(false);
+    setLinkedItemIds((prev) => prev.filter((id) => items.some((item) => item.Id === id)));
+  }, [items]);
+
+  useEffect(() => {
+    if (editingItem && !items.some((item) => item.Id === editingItem.Id)) {
+      setEditingItem(null);
+      setEditingItemDraft(null);
     }
-  }, [editingItem]);
+  }, [items, editingItem]);
 
   useEffect(() => {
     if (!isAddOpen && !editingItem) {
@@ -248,21 +251,92 @@ export default function WishlistDetail() {
 
   const [editingItemDraft, setEditingItemDraft] = useState<Partial<Item> | null>(null);
 
+  const openItemEditor = (item: Item) => {
+    const sourceItem = items.find((i) => i.Id === item.Id) ?? item;
+    const sourceContext = linkingContextFromItem(sourceItem);
+    setIsAddOpen(false);
+    setEditingItemDraft(null);
+    setIsLinkingModeActive(false);
+    setLinkingAudienceContext(sourceContext);
+    setLinkedItemIds(
+      resolveEditorLinkedItemIds(sourceItem.Id, items).filter((id) => {
+        const target = items.find((i) => i.Id === id);
+        return target && canLinkItemsByAudience(sourceContext, target);
+      })
+    );
+    setEditingItem(sourceItem);
+  };
+
+  const openAddDrawer = () => {
+    setEditingItem(null);
+    setEditingItemDraft(null);
+    setLinkedItemIds([]);
+    setIsLinkingModeActive(false);
+    setLinkingAudienceContext({ mode: 'everyone', sharedWithUserIds: [] });
+    setIsAddOpen(true);
+  };
+
+  const handleLinkingAudienceChange = useCallback((context: LinkingAudienceContext) => {
+    setLinkingAudienceContext(context);
+  }, []);
+
+  const isItemLinkCompatible = useCallback(
+    (target: Item) => canLinkItemsByAudience(linkingAudienceContext, target),
+    [linkingAudienceContext]
+  );
+
+  const handleLinkItemToggle = useCallback(
+    (itemId: string) => {
+      const target = items.find((i) => i.Id === itemId);
+      if (!target || !canLinkItemsByAudience(linkingAudienceContext, target)) {
+        return;
+      }
+      setLinkedItemIds((prev) =>
+        prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
+      );
+    },
+    [items, linkingAudienceContext]
+  );
+
+  useEffect(() => {
+    if (!isAddOpen && !editingItem) {
+      return;
+    }
+    setLinkedItemIds((prev) =>
+      prev.filter((id) => {
+        const target = items.find((i) => i.Id === id);
+        return target && canLinkItemsByAudience(linkingAudienceContext, target);
+      })
+    );
+  }, [linkingAudienceContext, isAddOpen, editingItem, items]);
+
+  const resolvedLinkedItems = useMemo(
+    () =>
+      linkedItemIds
+        .map((id) => items.find((i) => i.Id === id))
+        .filter((item): item is Item => !!item),
+    [linkedItemIds, items]
+  );
+
   const displayItems = useMemo(() => {
     return items.map((item) => {
       if (editingItem && editingItemDraft && item.Id === editingItem.Id) {
         return {
           ...item,
           ...editingItemDraft,
-          Links: editingItemDraft.Links ? editingItemDraft.Links : item.Links
+          Links: editingItemDraft.Links !== undefined ? editingItemDraft.Links : item.Links,
         };
       }
       return item;
     });
   }, [items, editingItem, editingItemDraft]);
 
+  const visibleItems = useMemo(() => {
+    return displayItems.filter((item) => canViewItem(item, user?.Id, isOwner));
+  }, [displayItems, user?.Id, isOwner]);
+
   const groupedItems = useMemo(() => {
-    const filtered = displayItems.filter((item) => {
+    const filtered = visibleItems.filter((item) => {
       const query = searchQuery.toLowerCase().trim();
       if (!query) return true;
       return (
@@ -310,11 +384,11 @@ export default function WishlistDetail() {
         if (b.categoryKey === 'uncategorized') return -1;
         return a.label.localeCompare(b.label);
       });
-  }, [displayItems, searchQuery]);
+  }, [visibleItems, searchQuery]);
 
   const selectedItem = useMemo(() => {
-    return displayItems.find((i) => i.Id === selectedItemId);
-  }, [displayItems, selectedItemId]);
+    return visibleItems.find((i) => i.Id === selectedItemId);
+  }, [visibleItems, selectedItemId]);
 
   const selectedItemPriorityLabel = useMemo(() => {
     if (!selectedItemId) return undefined;
@@ -325,30 +399,37 @@ export default function WishlistDetail() {
   }, [groupedItems, selectedItemId]);
 
   useEffect(() => {
-    if (selectedItemId && !displayItems.some((i) => i.Id === selectedItemId)) {
+    if (selectedItemId && !visibleItems.some((i) => i.Id === selectedItemId)) {
       setSelectedItemId(null);
     }
-  }, [displayItems, selectedItemId]);
+  }, [visibleItems, selectedItemId]);
 
   return (
     <WishlistDetailTemplate
       isWishlistLoading={isWishlistLoading}
       wishlistError={wishlistError}
       wishlist={wishlist}
-      items={items}
+      items={visibleItems}
       priorities={priorities}
       isOwner={isOwner}
       canCollaborate={canCollaborate}
       isExpired={isExpired}
       isAddOpen={isAddOpen}
       setIsAddOpen={setIsAddOpen}
+      openAddDrawer={openAddDrawer}
       editingItem={editingItem}
       setEditingItem={setEditingItem}
+      openItemEditor={openItemEditor}
       setEditingItemDraft={setEditingItemDraft}
       linkedItemIds={linkedItemIds}
       setLinkedItemIds={setLinkedItemIds}
+      linkableItems={items}
+      resolvedLinkedItems={resolvedLinkedItems}
       isLinkingModeActive={isLinkingModeActive}
       setIsLinkingModeActive={setIsLinkingModeActive}
+      handleLinkingAudienceChange={handleLinkingAudienceChange}
+      isItemLinkCompatible={isItemLinkCompatible}
+      handleLinkItemToggle={handleLinkItemToggle}
       loadData={loadData}
       confirmAction={confirmAction}
       setConfirmAction={setConfirmAction}
@@ -375,6 +456,7 @@ export default function WishlistDetail() {
       selectedItemPriorityLabel={selectedItemPriorityLabel}
       groupedItems={groupedItems}
       displayItems={displayItems}
+      listShares={listShares}
       handleItemTaggedClick={handleItemTaggedClick}
       isTaggingModeActive={isTaggingModeActive}
       setIsTaggingModeActive={setIsTaggingModeActive}

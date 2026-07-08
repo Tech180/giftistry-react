@@ -6,5 +6,4 @@ export interface AuthResponse {
   Token?: string;
   Require2FA?: boolean;
   Ticket?: string;
-  Code?: string;
 }

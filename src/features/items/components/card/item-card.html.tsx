@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Star, Trash2, Link, Edit2, Pin, Check } from 'lucide-react';
+import { Plus, Star, Trash2, Link, Link2, Edit2, Pin, Check } from 'lucide-react';
 import { Button, Card, Input, EnterPanel } from 'shared/ui';
 import { ItemCardTemplateProps } from '../../interfaces/item-card-template-props.interface';
 import styles from './item-card.module.css';
@@ -55,11 +55,17 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   displayCategoryBadge,
   categoryLabel,
   getSiteName,
+  audienceLabel,
+  isPrivate,
+  linkedItems,
+  isLinkingContext = false,
 }) => {
+  const privateClass = isPrivate ? styles['private-item'] : '';
+  const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
   if (viewMode === 'compact') {
     return (
       <Card
-        className={`${styles['item-card']} ${styles['compact-card']} ${isExpanded ? styles['expanded-card'] : ''} ${isFullyClaimed ? styles['claimed-card'] : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles['non-owner-claimed'] : ''} ${claimedByCurrentUser ? styles['user-claimed-card'] : ''} ${isTaggingModeActive ? styles['tagging-mode-card'] : ''} ${isTaggedSelection ? styles['tagged-card'] : ''}`}
+        className={`${styles['item-card']} ${styles['compact-card']} ${privateClass} ${isExpanded ? styles['expanded-card'] : ''} ${isFullyClaimed ? styles['claimed-card'] : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles['non-owner-claimed'] : ''} ${claimedByCurrentUser ? styles['user-claimed-card'] : ''} ${isTaggingModeActive ? styles['tagging-mode-card'] : ''} ${isTaggedSelection ? styles['tagged-card'] : ''}`}
         padding="none"
         glass={true}
       >
@@ -130,7 +136,12 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
 
           {/* Item details */}
           <div className={styles['compact-info-section']}>
-            <span className={styles['compact-item-name']} title={item.Name}>{item.Name}</span>
+            <span className={styles['compact-item-name']} title={item.Name}>
+              {isLinkedToItems && (
+                <Link2 size={12} className={styles['linked-item-icon']} aria-hidden="true" />
+              )}
+              {item.Name}
+            </span>
             {displayCategoryBadge && (
               <span className={styles['compact-category-badge']} title={`Category: ${categoryLabel}`}>
                 <CategoryIcon size={10} style={{ marginRight: '2px' }} />
@@ -323,7 +334,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   if (viewMode === 'grid') {
     return (
       <Card
-        className={`${styles['item-card']} ${styles['grid-card']} ${isSelected ? styles['selected-grid-card'] : ''} ${isFullyClaimed ? styles['claimed-card'] : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles['non-owner-claimed'] : ''} ${claimedByCurrentUser ? styles['user-claimed-card'] : ''} ${isTaggingModeActive ? styles['tagging-mode-card'] : ''} ${isTaggedSelection ? styles['tagged-card'] : ''}`}
+        className={`${styles['item-card']} ${styles['grid-card']} ${privateClass} ${isSelected ? styles['selected-grid-card'] : ''} ${isFullyClaimed ? styles['claimed-card'] : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles['non-owner-claimed'] : ''} ${claimedByCurrentUser ? styles['user-claimed-card'] : ''} ${isTaggingModeActive ? styles['tagging-mode-card'] : ''} ${isTaggedSelection ? styles['tagged-card'] : ''}`}
         padding="none"
         glass={true}
         onClick={onSelect}
@@ -388,7 +399,12 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
 
         {/* Main content */}
         <div className={styles['grid-content']}>
-          <h4 className={styles['grid-item-name']} title={item.Name}>{item.Name}</h4>
+          <h4 className={styles['grid-item-name']} title={item.Name}>
+            {isLinkedToItems && (
+              <Link2 size={11} className={styles['linked-item-icon']} aria-hidden="true" />
+            )}
+            {item.Name}
+          </h4>
 
           {item.Links.length > 0 && item.Links[0].ExtractedPrice !== null ? (
             <div className={styles['grid-price-tag']}>${item.Links[0].ExtractedPrice}</div>
@@ -466,7 +482,7 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
 
   return (
     <Card
-      className={`${styles['item-card']} ${isFullyClaimed ? styles['claimed-card'] : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles['non-owner-claimed'] : ''} ${claimedByCurrentUser ? styles['user-claimed-card'] : ''} ${isTaggingModeActive ? styles['tagging-mode-card'] : ''} ${isTaggedSelection ? styles['tagged-card'] : ''}`}
+      className={`${styles['item-card']} ${privateClass} ${isFullyClaimed ? styles['claimed-card'] : ''} ${isFullyClaimed && !isOwner && !claimedByCurrentUser ? styles['non-owner-claimed'] : ''} ${claimedByCurrentUser ? styles['user-claimed-card'] : ''} ${isTaggingModeActive ? styles['tagging-mode-card'] : ''} ${isTaggedSelection ? styles['tagged-card'] : ''}`}
       padding="none"
       glass={true}
     >
@@ -554,7 +570,12 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
       <div className={styles['card-main-content']}>
         <div className={styles['item-info']}>
           <div className={styles['item-title-row']}>
-            <span className={styles['item-name']}>{item.Name}</span>
+            <span className={styles['item-name']}>
+              {isLinkedToItems && (
+                <Link2 size={14} className={styles['linked-item-icon']} aria-hidden="true" />
+              )}
+              {item.Name}
+            </span>
             <div className={styles['item-title-right']}>
               {item.Links.length > 0 && item.Links[0].ExtractedPrice !== null && (
                 <span className={styles['main-price-tag']}>${item.Links[0].ExtractedPrice}</span>
@@ -618,6 +639,11 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
           {item.IsSuggestion && (
             <span className={styles['suggestion-badge']}>
               🎁 Suggestion by {item.SuggestedByUsername || 'Collaborator'}
+            </span>
+          )}
+          {audienceLabel && (
+            <span className={`${styles['audience-badge']} ${isPrivate ? styles['private-audience-badge'] : ''}`}>
+              {audienceLabel}
             </span>
           )}
         </div>

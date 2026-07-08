@@ -110,9 +110,11 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
               <Input
                 label="Authentication Code"
                 type="text"
-                id="2fa-code"
-                name="code"
+                id="totp"
+                name="totp"
+                inputMode="numeric"
                 autoComplete="one-time-code"
+                autoFocus
                 maxLength={10}
                 placeholder="123456 or Recovery Code"
                 value={totpCode}

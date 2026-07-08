@@ -43,6 +43,7 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
               setTaggedItemIds(taggedItemIds.filter((tagId) => tagId !== id));
             }
           }}
+          onItemClick={handleItemTaggedClick}
           isActive={drawerTaggingActive}
           position="right"
           label="Tags"

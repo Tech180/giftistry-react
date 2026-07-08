@@ -8,10 +8,17 @@ export const SwitchTemplate: React.FC<SwitchTemplateProps> = ({
   disabled = false,
   id,
   className = '',
+  size = 'default',
   ariaLabel,
 }) => {
+  const switchClass = [
+    styles.switch,
+    size === 'sm' ? styles.sm : '',
+    className,
+  ].filter(Boolean).join(' ');
+
   return (
-    <label className={`${styles.switch} ${className}`.trim()}>
+    <label className={switchClass}>
       <input
         id={id}
         type="checkbox"

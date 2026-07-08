@@ -18,11 +18,12 @@ export const itemsApi = {
     price?: number | null,
     websiteName?: string | null,
     category?: string | null,
-    priority?: number | null
+    priority?: number | null,
+    sharedWithUserIds?: string[]
   ) =>
     apiClient.post<Item>(
       `/api/wishlists/${listId}/items`,
-      { name, description, priorityId, isHiddenIdea, linkUrl, price, websiteName, category, priority },
+      { name, description, priorityId, isHiddenIdea, linkUrl, price, websiteName, category, priority, sharedWithUserIds },
       'Items'
     ),
 
@@ -70,11 +71,12 @@ export const itemsApi = {
     description?: string | null,
     priorityId?: string | null,
     category?: string | null,
-    priority?: number | null
+    priority?: number | null,
+    sharedWithUserIds?: string[]
   ) =>
     apiClient.put<Item>(
       `/api/items/${itemId}`,
-      { name, description, priorityId, category, priority },
+      { name, description, priorityId, category, priority, sharedWithUserIds },
       'Items'
     ),
 

@@ -1,5 +1,6 @@
 import { Wishlist, Priority } from 'features/wishlists';
 import { Item } from 'features/items';
+import { WishlistExportContext } from 'shared/utils/wishlist-export';
 
 export interface HeaderTemplateProps {
   wishlist: Wishlist;
@@ -33,4 +34,5 @@ export interface HeaderTemplateProps {
   isExportDropdownOpen: boolean;
   setIsExportDropdownOpen: (val: boolean) => void;
   exportRef: React.RefObject<HTMLDivElement | null>;
+  exportContext: WishlistExportContext;
 }

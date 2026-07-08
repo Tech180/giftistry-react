@@ -1,6 +1,8 @@
 import React from 'react';
 import { Wishlist, Priority } from 'features/wishlists';
 import { Item } from 'features/items';
+import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
+import { LinkingAudienceContext } from 'features/items/utils/item-audience.util';
 
 export interface WishlistDetailTemplateProps {
   isWishlistLoading: boolean;
@@ -13,13 +15,20 @@ export interface WishlistDetailTemplateProps {
   isExpired: boolean;
   isAddOpen: boolean;
   setIsAddOpen: (open: boolean) => void;
+  openAddDrawer: () => void;
   editingItem: Item | null;
   setEditingItem: (item: Item | null) => void;
+  openItemEditor: (item: Item) => void;
   setEditingItemDraft: (draft: Partial<Item> | null) => void;
   linkedItemIds: string[];
   setLinkedItemIds: (ids: string[] | ((prev: string[]) => string[])) => void;
+  linkableItems: Item[];
+  resolvedLinkedItems: Item[];
   isLinkingModeActive: boolean;
   setIsLinkingModeActive: React.Dispatch<React.SetStateAction<boolean>>;
+  handleLinkingAudienceChange: (context: LinkingAudienceContext) => void;
+  isItemLinkCompatible: (item: Item) => boolean;
+  handleLinkItemToggle: (itemId: string) => void;
   loadData: () => Promise<void>;
   confirmAction: 'deactivate' | 'delete' | null;
   setConfirmAction: (action: 'deactivate' | 'delete' | null) => void;
@@ -46,6 +55,7 @@ export interface WishlistDetailTemplateProps {
   selectedItemPriorityLabel: string | undefined;
   groupedItems: { categoryKey: string; label: string; items: Item[] }[];
   displayItems: Item[];
+  listShares: ListShare[];
   handleItemTaggedClick: (itemId: string) => void;
   isTaggingModeActive: boolean;
   setIsTaggingModeActive: (active: boolean) => void;

@@ -8,6 +8,8 @@ import {
   getItemFavoriteFlag,
   parseItemDescription,
 } from 'shared/utils/parse-item-description.util';
+import { formatAudienceLabel, isPrivateItem } from '../../utils/item-audience.util';
+import { resolveLinkedItems } from '../../utils/item-links-sync.util';
 
 export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   item,
@@ -214,6 +216,18 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       ? Math.min(100, Math.round((totalClaimedAmount / totalExtractedPrice) * 100))
       : 0);
 
+  const audienceLabel = formatAudienceLabel(
+    item.SharedWith,
+    user?.Id,
+    isOwner,
+    item.SuggestedByUserId
+  );
+  const isPrivate = isPrivateItem(item, user?.Id);
+  const linkedItems = useMemo(
+    () => resolveLinkedItems(item, wishlistItems),
+    [item, wishlistItems]
+  );
+
   return (
     <ItemShowcaseTemplate
       item={item}
@@ -262,6 +276,9 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       reviewsError={reviewsError}
       aiEnabled={aiEnabled}
       globalAiEnabled={globalAiEnabled}
+      audienceLabel={audienceLabel}
+      isPrivate={isPrivate}
+      linkedItems={linkedItems}
     />
   );
 };

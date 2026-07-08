@@ -1,8 +1,8 @@
 .chip{
   display: inline-flex;
   align-items: center;
-  padding: var(--spacing-xs) var(--spacing-base);
-  border-radius: var(--radius-full, 624.9375rem);
+  padding: 4px 12px;
+  border-radius: var(--radius-md, var(--radius));
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium, 500);
   border: 1px solid var(--border);

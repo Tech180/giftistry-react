@@ -10,6 +10,7 @@ export const Switch: React.FC<SwitchProps> = ({
   disabled = false,
   id,
   className = '',
+  size = 'default',
   'aria-label': ariaLabel,
 }) => {
   return (
@@ -19,6 +20,7 @@ export const Switch: React.FC<SwitchProps> = ({
       disabled={disabled}
       id={id}
       className={className}
+      size={size}
       ariaLabel={ariaLabel}
     />
   );

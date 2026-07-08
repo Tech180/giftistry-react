@@ -4,5 +4,6 @@ export interface SwitchProps {
   disabled?: boolean;
   id?: string;
   className?: string;
+  size?: 'default' | 'sm';
   'aria-label'?: string;
 }

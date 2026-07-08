@@ -70,6 +70,53 @@
   margin: 0;
   letter-spacing: -0.02em;
   line-height: 1.25;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.linked-item-icon{
+  flex-shrink: 0;
+  color: var(--primary);
+  opacity: 0.85;
+}
+
+.status-badge,
+.audience-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.6875rem;
+  font-weight: var(--font-weight-semibold);
+  margin-top: var(--spacing-xs);
+}
+
+.status-badge {
+  color: var(--warning);
+  background-color: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+}
+
+.audience-badge {
+  color: var(--info, #2563eb);
+  background-color: color-mix(in srgb, var(--info, #2563eb) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--info, #2563eb) 25%, transparent);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+}
+
+.private-item {
+  opacity: 0.68;
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--text-muted) 28%, transparent);
+  box-shadow: inset 0 0 24px color-mix(in srgb, var(--surface-hover) 35%, transparent);
+}
+
+.private-audience-badge {
+  color: var(--text-muted);
+  background-color: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--text-muted) 28%, transparent);
 }
 
 .close-btn{
@@ -534,6 +581,16 @@
   margin: 0;
 }
 
+.linked-items-section{
+  margin-top: var(--spacing-sm);
+}
+
+.linked-items-section .section-title{
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
 .linked-items-preview-list{
   display: flex;
   flex-direction: column;
@@ -551,11 +608,27 @@
   justify-content: space-between;
   align-items: center;
   font-size: var(--font-size-xs);
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.linked-item-preview-row:hover{
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
 .linked-item-name{
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
   font-weight: var(--font-weight-semibold);
   color: var(--text);
+  min-width: 0;
 }
 
 .linked-item-status-claimed{

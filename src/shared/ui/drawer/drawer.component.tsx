@@ -11,6 +11,10 @@ export const Drawer: React.FC<DrawerProps> = ({
   children,
   overflowVisible = false,
   miniDrawer,
+  variant = 'default',
+  footer,
+  titleIcon,
+  onOverlayClick,
 }) => {
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -30,6 +34,7 @@ export const Drawer: React.FC<DrawerProps> = ({
   const drawerClass = [
     styles['drawer-wrapper'],
     position === 'left' ? styles.left : styles.right,
+    variant === 'overlay' ? styles['overlay-variant'] : '',
     overflowVisible ? styles['overflow-visible'] : '',
   ].filter(Boolean).join(' ');
 
@@ -41,6 +46,11 @@ export const Drawer: React.FC<DrawerProps> = ({
       onClose={onClose}
       overflowVisible={overflowVisible}
       miniDrawer={miniDrawer}
+      variant={variant}
+      footer={footer}
+      titleIcon={titleIcon}
+      isOpen={isOpen}
+      onOverlayClick={onOverlayClick ?? onClose}
     >
       {children}
     </DrawerTemplate>

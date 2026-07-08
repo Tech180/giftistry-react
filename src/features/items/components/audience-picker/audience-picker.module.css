@@ -1,0 +1,220 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.warning-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md, var(--radius));
+  padding: 2px 4px;
+  cursor: help;
+  transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  max-width: 24px;
+  white-space: nowrap;
+}
+
+.warning-icon {
+  color: var(--warning, #eab308);
+  flex-shrink: 0;
+}
+
+.warning-text {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--warning, #eab308);
+  opacity: 0;
+  transform: translateX(-5px);
+  transition: opacity 0.3s ease 0.1s, transform 0.35s ease 0.05s;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.warning-badge:hover {
+  background: color-mix(in srgb, var(--warning, #eab308) 10%, transparent);
+  border-color: color-mix(in srgb, var(--warning, #eab308) 30%, transparent);
+  padding: 2px 8px;
+  max-width: 140px;
+}
+
+.warning-badge:hover .warning-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.helper-text {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.segmented-control {
+  display: flex;
+  background: var(--bg);
+  padding: 3px;
+  border-radius: var(--radius-md, var(--radius));
+  border: 1px solid var(--border);
+}
+
+.segment {
+  flex: 1;
+  text-align: center;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm, calc(var(--radius) * 0.75));
+  transition: all 0.15s ease;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+}
+
+.segment:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.segment-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+.segment:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.specific-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 8px;
+  border-radius: var(--radius-md, var(--radius));
+}
+
+.search-input {
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, calc(var(--radius) * 0.75));
+  font-size: var(--font-size-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: var(--accent, var(--primary));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.collaborator-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm, calc(var(--radius) * 0.75));
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.collaborator-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.collaborator-row:hover {
+  background: var(--surface-hover);
+}
+
+.row-toggle {
+  pointer-events: none;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.name-stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.user-handle {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.empty-state {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+
+.disabled-overlay {
+  opacity: 0.6;
+  pointer-events: none;
+}

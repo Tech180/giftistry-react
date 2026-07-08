@@ -47,4 +47,7 @@ export interface ItemShowcaseTemplateProps {
   reviewsError: string | null;
   aiEnabled?: boolean;
   globalAiEnabled: boolean;
+  audienceLabel: string | null;
+  isPrivate: boolean;
+  linkedItems: Item[];
 }

@@ -10,6 +10,8 @@ import {
   parseItemDescription,
   serializeItemDescription,
 } from 'shared/utils/parse-item-description.util';
+import { formatAudienceLabel, isPrivateItem } from '../../utils/item-audience.util';
+import { resolveLinkedItems } from '../../utils/item-links-sync.util';
 
 export const ItemCard: React.FC<ItemCardProps> = ({
   item,
@@ -26,6 +28,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   viewMode = 'full',
   isSelected,
   onSelect,
+  wishlistItems = [],
+  isLinkingContext = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { user } = useAuth();
@@ -185,6 +189,22 @@ export const ItemCard: React.FC<ItemCardProps> = ({
 
   const categoryMeta = getCategoryMeta(item.Category);
   const displayCategoryBadge = !!(item.Category && item.Category !== 'uncategorized');
+  const isPrivate = useMemo(
+    () => isPrivateItem(item, user?.Id),
+    [item, user?.Id]
+  );
+
+  const audienceLabel = formatAudienceLabel(
+    item.SharedWith,
+    user?.Id,
+    isOwner,
+    item.SuggestedByUserId
+  );
+
+  const linkedItems = useMemo(
+    () => resolveLinkedItems(item, wishlistItems),
+    [item, wishlistItems]
+  );
 
   return (
     <ItemCardTemplate
@@ -238,6 +258,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       displayCategoryBadge={displayCategoryBadge}
       categoryLabel={categoryMeta.label}
       getSiteName={getSiteName}
+      audienceLabel={audienceLabel}
+      isPrivate={isPrivate}
+      linkedItems={linkedItems}
+      isLinkingContext={isLinkingContext}
     />
   );
 };

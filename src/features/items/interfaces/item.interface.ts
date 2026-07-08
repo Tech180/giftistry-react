@@ -1,5 +1,6 @@
 import { ItemLink } from './item-link.interface';
 import { Claim } from './item-claim.interface';
+import { ItemAudienceUser } from './item-audience-user.interface';
 
 export interface Item {
   Id: string;
@@ -14,6 +15,7 @@ export interface Item {
   Category: string;
   Priority?: number | null;
   CreatedAt?: string;
+  SharedWith?: ItemAudienceUser[];
   Links: ItemLink[];
   Claims: Claim[];
   IsClaimed: boolean;
