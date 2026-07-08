@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Link, Globe, DollarSign, Star, Plus, Trash2, Pin,
-  Wand2, ChevronDown, Gift,
+  Wand2, ChevronDown, Gift, AlertTriangle,
 } from 'lucide-react';
 import { Button, Chip, Switch } from 'shared/ui';
 import { AddItemFormTemplateProps } from '../../interfaces/add-item-form-template-props.interface';
@@ -49,6 +49,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   handleAddCustomField,
   handleRemoveCustomField,
   handleUpdateCustomField,
+  hasIncompleteCustomFields,
   showExtraFields,
   setShowExtraFields,
   renderedCategories,
@@ -317,7 +318,21 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             aria-expanded={showExtraFields}
           >
             <span>Custom Fields</span>
-            <span className={styles['header-icon']}><ChevronDown size={16} /></span>
+            <span className={styles['expandable-header-end']}>
+              {hasIncompleteCustomFields && (
+                <span
+                  className={styles['warning-badge']}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  role="note"
+                  aria-label="Each custom field needs both a name and a value"
+                >
+                  <AlertTriangle size={14} className={styles['warning-icon']} />
+                  <span className={styles['warning-text']}>Name and value required</span>
+                </span>
+              )}
+              <span className={styles['header-icon']}><ChevronDown size={16} /></span>
+            </span>
           </button>
           <div className={styles['expandable-content']}>
             {showOptionalSizing && (

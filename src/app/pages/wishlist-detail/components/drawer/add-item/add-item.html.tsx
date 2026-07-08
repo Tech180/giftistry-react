@@ -23,7 +23,9 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
   loadData,
   listShares,
   isLoading = false,
+  isFormDirty = true,
   onFormLoadingChange,
+  onFormDirtyChange,
   onItemTaggedClick,
 }) => {
   const isEdit = !!editingItem;
@@ -57,6 +59,7 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
             form={ADD_ITEM_FORM_ID}
             variant="primary"
             isLoading={isLoading}
+            disabled={isEdit && !isFormDirty}
           >
             {isEdit ? 'Save' : 'Add'}
           </Button>
@@ -81,6 +84,7 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
         onSuccess={onSuccess}
         listShares={listShares}
         onLoadingChange={onFormLoadingChange}
+        onDirtyChange={onFormDirtyChange}
       />
     </Drawer>
   );

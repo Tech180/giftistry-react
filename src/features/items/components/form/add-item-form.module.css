@@ -353,6 +353,55 @@ textarea.input {
   background: var(--surface-hover);
 }
 
+.expandable-header-end {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.warning-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md, var(--radius));
+  padding: 2px 4px;
+  cursor: help;
+  transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  max-width: 24px;
+  white-space: nowrap;
+}
+
+.warning-icon {
+  color: var(--warning, #eab308);
+  flex-shrink: 0;
+}
+
+.warning-text {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--warning, #eab308);
+  opacity: 0;
+  transform: translateX(-5px);
+  transition: opacity 0.3s ease 0.1s, transform 0.35s ease 0.05s;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.warning-badge:hover {
+  background: color-mix(in srgb, var(--warning, #eab308) 10%, transparent);
+  border-color: color-mix(in srgb, var(--warning, #eab308) 30%, transparent);
+  padding: 2px 8px;
+  max-width: 160px;
+}
+
+.warning-badge:hover .warning-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 .expandable-content {
   padding: 12px;
   border-top: 1px solid var(--border);

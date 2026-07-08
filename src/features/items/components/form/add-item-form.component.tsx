@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { itemsApi, FieldDefinition } from '../../api/items.api';
 import { Item } from '../../interfaces/item.interface';
 import { AddItemFormProps } from '../../interfaces/add-item-form-props.interface';
@@ -38,6 +38,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   isOpen,
   listShares = [],
   onLoadingChange,
+  onDirtyChange,
 }) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
@@ -79,10 +80,91 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loadedItemId, setLoadedItemId] = useState<string | null>(null);
+  const initialEditSnapshotRef = useRef<string | null>(null);
 
   useEffect(() => {
     onLoadingChange?.(isLoading);
   }, [isLoading, onLoadingChange]);
+
+  // Dynamic fields
+  const [definitions, setDefinitions] = useState<FieldDefinition[]>([]);
+  const [dynamicValues, setDynamicValues] = useState<Record<string, string>>({});
+
+  const buildEditSnapshot = useCallback(() => {
+    const comparableCustomFields = customFields
+      .filter((field) => field.name.trim() && field.value.trim())
+      .map((field) => ({ name: field.name.trim(), value: field.value.trim() }))
+      .sort((a, b) => a.name.localeCompare(b.name) || a.value.localeCompare(b.value));
+
+    const comparableDynamicValues = Object.keys(dynamicValues)
+      .filter((key) => dynamicValues[key]?.trim())
+      .sort()
+      .reduce<Record<string, string>>((acc, key) => {
+        acc[key] = dynamicValues[key].trim();
+        return acc;
+      }, {});
+
+    const comparableSharedWith =
+      visibilityMode === 'restricted'
+        ? [...sharedWithUserIds].sort()
+        : visibilityMode === 'private' && user?.Id
+          ? [user.Id]
+          : [];
+
+    return JSON.stringify({
+      name: name.trim(),
+      description: description.trim(),
+      priorityWeight: priorityWeight.trim(),
+      category,
+      linkUrl: linkUrl.trim(),
+      websiteName: websiteName.trim(),
+      price: price.trim(),
+      isFavorite,
+      pantsSize: pantsSize.trim(),
+      shirtSize: shirtSize.trim(),
+      shoesSize: shoesSize.trim(),
+      socksSize: socksSize.trim(),
+      color: color.trim(),
+      customFields: comparableCustomFields,
+      dynamicValues: comparableDynamicValues,
+      desiredQuantity,
+      variations,
+      visibilityMode,
+      sharedWithUserIds: comparableSharedWith,
+      otherUsersCanSee,
+      linkedItemIds: [...linkedItemIds].sort(),
+    });
+  }, [
+    name,
+    description,
+    priorityWeight,
+    category,
+    linkUrl,
+    websiteName,
+    price,
+    isFavorite,
+    pantsSize,
+    shirtSize,
+    shoesSize,
+    socksSize,
+    color,
+    customFields,
+    dynamicValues,
+    desiredQuantity,
+    variations,
+    visibilityMode,
+    sharedWithUserIds,
+    otherUsersCanSee,
+    linkedItemIds,
+    user?.Id,
+  ]);
+
+  const isEditDirty = useMemo(() => {
+    if (!item || loadedItemId !== item.Id || !initialEditSnapshotRef.current) {
+      return false;
+    }
+    return buildEditSnapshot() !== initialEditSnapshotRef.current;
+  }, [item, loadedItemId, buildEditSnapshot]);
 
   useEffect(() => {
     if (!onLinkingAudienceChange) return;
@@ -92,9 +174,21 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     );
   }, [visibilityMode, sharedWithUserIds, user?.Id, onLinkingAudienceChange, item, loadedItemId]);
 
-  // Dynamic fields
-  const [definitions, setDefinitions] = useState<FieldDefinition[]>([]);
-  const [dynamicValues, setDynamicValues] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!item || loadedItemId !== item.Id) {
+      if (!item) {
+        initialEditSnapshotRef.current = null;
+      }
+      return;
+    }
+    initialEditSnapshotRef.current = buildEditSnapshot();
+    // Snapshot only when the item finishes loading, not on every field change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadedItemId, item?.Id]);
+
+  useEffect(() => {
+    onDirtyChange?.(!item || isEditDirty);
+  }, [item, isEditDirty, onDirtyChange]);
 
   const mapCategoryForDefinitions = (cat: string): string => {
     const c = cat.toLowerCase();
@@ -472,8 +566,17 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setCustomFields(prev => prev.map(f => f.id === id ? { ...f, [key]: value } : f));
   };
 
+  const hasIncompleteCustomFields = useMemo(
+    () =>
+      customFields.some((field) => !field.name.trim() || !field.value.trim()),
+    [customFields]
+  );
+
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    if (item && !isEditDirty) {
+      return;
+    }
     if (!name.trim()) {
       setErrorMsg('Please enter an item name.');
       return;
@@ -493,6 +596,12 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
     if (visibilityMode === 'restricted' && sharedWithUserIds.length === 0) {
       setErrorMsg('Please select at least one person to share with.');
+      return;
+    }
+
+    if (hasIncompleteCustomFields) {
+      setErrorMsg('Each custom field needs both a name and a value.');
+      setShowExtraFields(true);
       return;
     }
 
@@ -775,6 +884,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       handleAddCustomField={handleAddCustomField}
       handleRemoveCustomField={handleRemoveCustomField}
       handleUpdateCustomField={handleUpdateCustomField}
+      hasIncompleteCustomFields={hasIncompleteCustomFields}
       showExtraFields={showExtraFields}
       setShowExtraFields={setShowExtraFields}
       renderedCategories={renderedCategories}

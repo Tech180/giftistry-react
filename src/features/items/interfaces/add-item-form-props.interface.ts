@@ -19,5 +19,6 @@ export interface AddItemFormProps {
   isOpen?: boolean;
   listShares?: ListShare[];
   onLoadingChange?: (loading: boolean) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 

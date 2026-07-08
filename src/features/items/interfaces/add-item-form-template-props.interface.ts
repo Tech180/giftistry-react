@@ -54,6 +54,7 @@ export interface AddItemFormTemplateProps {
   handleAddCustomField: () => void;
   handleRemoveCustomField: (id: string) => void;
   handleUpdateCustomField: (id: string, key: 'name' | 'value', value: string) => void;
+  hasIncompleteCustomFields: boolean;
   showExtraFields: boolean;
   setShowExtraFields: (val: boolean) => void;
   renderedCategories: { id: string; label: string; isCustom?: boolean }[];

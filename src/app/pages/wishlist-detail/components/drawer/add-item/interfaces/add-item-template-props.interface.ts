@@ -21,6 +21,8 @@ export interface AddItemTemplateProps {
   setEditingItemDraft: (draft: any) => void;
   loadData: () => void;
   isLoading?: boolean;
+  isFormDirty?: boolean;
   onFormLoadingChange?: (loading: boolean) => void;
+  onFormDirtyChange?: (dirty: boolean) => void;
   onItemTaggedClick?: (itemId: string) => void;
 }
