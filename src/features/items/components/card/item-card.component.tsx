@@ -10,7 +10,7 @@ import {
   parseItemDescription,
   serializeItemDescription,
 } from 'shared/utils/parse-item-description.util';
-import { formatAudienceLabel, isPrivateItem } from '../../utils/item-audience.util';
+import { formatAudienceLabel, getItemSharedWithUserIds, isPrivateItem } from '../../utils/item-audience.util';
 import { resolveLinkedItems } from '../../utils/item-links-sync.util';
 
 export const ItemCard: React.FC<ItemCardProps> = ({
@@ -81,7 +81,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({
         item.Name,
         updatedDescription,
         item.PriorityId,
-        item.Category
+        item.Category,
+        item.Priority ?? null,
+        getItemSharedWithUserIds(item)
       );
 
       setLocalIsFavorite(newFavoriteState);

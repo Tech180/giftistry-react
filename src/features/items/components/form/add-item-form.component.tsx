@@ -11,8 +11,12 @@ import { isValidUrl } from 'shared/utils/is-valid-url.util';
 import { syncBidirectionalItemLinks, resolveEditorLinkedItemIds } from '../../utils/item-links-sync.util';
 import {
   buildLinkingAudienceContext,
+  buildDraftSharedWithUsers,
   canLinkItemsByAudience,
+  getItemAudienceMode,
   LINK_AUDIENCE_MISMATCH_MESSAGE,
+  resolveItemSharedWithUserIds,
+  sanitizeRestrictedUserIds,
 } from '../../utils/item-audience.util';
 
 const DYNAMIC_FIELD_KEYS = [
@@ -104,12 +108,14 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         return acc;
       }, {});
 
-    const comparableSharedWith =
-      visibilityMode === 'restricted'
-        ? [...sharedWithUserIds].sort()
-        : visibilityMode === 'private' && user?.Id
-          ? [user.Id]
-          : [];
+    const comparableSharedWith = resolveItemSharedWithUserIds(
+      visibilityMode,
+      sharedWithUserIds,
+      {
+        ownerUserId: user?.Id,
+        listShareUserIds: listShares.map((share) => share.UserId),
+      }
+    ).sort();
 
     return JSON.stringify({
       name: name.trim(),
@@ -157,6 +163,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     otherUsersCanSee,
     linkedItemIds,
     user?.Id,
+    listShares,
   ]);
 
   const isEditDirty = useMemo(() => {
@@ -169,10 +176,18 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   useEffect(() => {
     if (!onLinkingAudienceChange) return;
     if (item && loadedItemId !== item.Id) return;
-    onLinkingAudienceChange?.(
-      buildLinkingAudienceContext(visibilityMode, sharedWithUserIds, user?.Id)
+    const audienceSharedWith = resolveItemSharedWithUserIds(
+      visibilityMode,
+      sharedWithUserIds,
+      {
+        ownerUserId: user?.Id,
+        listShareUserIds: listShares.map((share) => share.UserId),
+      }
     );
-  }, [visibilityMode, sharedWithUserIds, user?.Id, onLinkingAudienceChange, item, loadedItemId]);
+    onLinkingAudienceChange?.(
+      buildLinkingAudienceContext(visibilityMode, audienceSharedWith, user?.Id)
+    );
+  }, [visibilityMode, sharedWithUserIds, user?.Id, onLinkingAudienceChange, item, loadedItemId, listShares]);
 
   useEffect(() => {
     if (!item || loadedItemId !== item.Id) {
@@ -290,10 +305,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         setCustomFields(
           meta.custom?.length
             ? meta.custom.map((f) => ({
-                id: Math.random().toString(),
-                name: f.name,
-                value: f.value,
-              }))
+              id: Math.random().toString(),
+              name: f.name,
+              value: f.value,
+            }))
             : []
         );
         setOtherUsersCanSee(meta.otherUsersCanSee !== undefined ? meta.otherUsersCanSee : true);
@@ -308,14 +323,17 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setIsFavorite(getItemFavoriteFlag(item.Description));
       setPriorityWeight(item.Priority !== undefined && item.Priority !== null ? item.Priority.toString() : '');
       setIsHiddenIdea(item.IsHiddenIdea || false);
-      const initialShared = item.SharedWith?.map(u => u.UserId) ?? [];
-      setSharedWithUserIds(initialShared);
-      if (initialShared.length === 0) {
-        setVisibilityMode('everyone');
-      } else if (initialShared.length === 1 && user && initialShared[0] === user.Id) {
-        setVisibilityMode('private');
+      const audienceMode = getItemAudienceMode(item);
+      setVisibilityMode(audienceMode);
+      if (audienceMode === 'restricted') {
+        setSharedWithUserIds(
+          sanitizeRestrictedUserIds(
+            item.SharedWith?.map((u) => u.UserId) ?? [],
+            listShares.map((share) => share.UserId)
+          )
+        );
       } else {
-        setVisibilityMode('restricted');
+        setSharedWithUserIds([]);
       }
       setCategory(item.Category || 'uncategorized');
 
@@ -435,17 +453,23 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         Category: category === 'uncategorized' ? '' : category,
         PriorityId: null,
         Priority: priorityWeight ? parseInt(priorityWeight, 10) : null,
+        SharedWith: buildDraftSharedWithUsers(
+          visibilityMode,
+          sharedWithUserIds,
+          listShares,
+          user?.Id
+        ),
         Links: linkUrl.trim()
           ? [
-              {
-                Id: item.Links?.[0]?.Id || 'temp-link-id',
-                ItemId: item.Id,
-                Url: linkUrl.trim(),
-                RetailerName: websiteName.trim() || null,
-                ExtractedPrice: price.trim() ? parseFloat(price) : null,
-                ExtractedImageUrl: item.Links?.[0]?.ExtractedImageUrl || null
-              }
-            ]
+            {
+              Id: item.Links?.[0]?.Id || 'temp-link-id',
+              ItemId: item.Id,
+              Url: linkUrl.trim(),
+              RetailerName: websiteName.trim() || null,
+              ExtractedPrice: price.trim() ? parseFloat(price) : null,
+              ExtractedImageUrl: item.Links?.[0]?.ExtractedImageUrl || null
+            }
+          ]
           : []
       });
     }
@@ -474,7 +498,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     desiredQuantity,
     variations,
     linkedItemIds,
-    isFieldVisible
+    isFieldVisible,
+    visibilityMode,
+    sharedWithUserIds,
+    listShares,
+    user?.Id,
   ]);
 
   useEffect(() => {
@@ -511,7 +539,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         setPrice(data.price !== null && data.price !== undefined ? data.price.toString() : '');
         setDescription(data.description || '');
         setCategory(data.category || 'uncategorized');
-        
+
         const colorVal = data.color || '';
         setColor(colorVal);
         handleUpdateDynamicValue('preferredColor', colorVal);
@@ -572,6 +600,22 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     [customFields]
   );
 
+  const handleVisibilityModeChange = useCallback(
+    (mode: 'everyone' | 'restricted' | 'private') => {
+      setVisibilityMode(mode);
+      setSharedWithUserIds((prev) => {
+        if (mode === 'everyone' || mode === 'private') {
+          return [];
+        }
+        return sanitizeRestrictedUserIds(
+          prev,
+          listShares.map((share) => share.UserId)
+        );
+      });
+    },
+    [listShares]
+  );
+
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (item && !isEditDirty) {
@@ -605,7 +649,23 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       return;
     }
 
-    const linkingContext = buildLinkingAudienceContext(visibilityMode, sharedWithUserIds, user?.Id);
+    const listShareUserIds = listShares.map((share) => share.UserId);
+    const finalSharedWith = resolveItemSharedWithUserIds(
+      visibilityMode,
+      sharedWithUserIds,
+      { ownerUserId: user?.Id, listShareUserIds }
+    );
+
+    if (visibilityMode === 'restricted' && finalSharedWith.length === 0) {
+      setErrorMsg('Please select at least one person to share with.');
+      return;
+    }
+
+    const linkingContext = buildLinkingAudienceContext(
+      visibilityMode,
+      visibilityMode === 'restricted' ? finalSharedWith : [],
+      user?.Id
+    );
     const incompatibleLink = linkedItemIds.find((linkedId) => {
       const linked = wishlistItems.find((i) => i.Id === linkedId);
       return !linked || !canLinkItemsByAudience(linkingContext, linked);
@@ -658,10 +718,6 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       }
 
       const priorityVal = priorityWeight.trim() ? parseInt(priorityWeight, 10) : null;
-
-      const finalSharedWith = visibilityMode === 'restricted'
-        ? sharedWithUserIds
-        : (visibilityMode === 'private' && user?.Id ? [user.Id] : []);
 
       let savedItemId: string;
       let createdItem: Item | null = null;
@@ -929,7 +985,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       sharedWithUserIds={sharedWithUserIds}
       setSharedWithUserIds={setSharedWithUserIds}
       visibilityMode={visibilityMode}
-      setVisibilityMode={setVisibilityMode}
+      onVisibilityModeChange={handleVisibilityModeChange}
     />
   );
 };

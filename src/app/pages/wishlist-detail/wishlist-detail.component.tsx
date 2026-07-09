@@ -325,6 +325,10 @@ export default function WishlistDetail() {
           ...item,
           ...editingItemDraft,
           Links: editingItemDraft.Links !== undefined ? editingItemDraft.Links : item.Links,
+          SharedWith:
+            editingItemDraft.SharedWith !== undefined
+              ? editingItemDraft.SharedWith
+              : item.SharedWith,
         };
       }
       return item;

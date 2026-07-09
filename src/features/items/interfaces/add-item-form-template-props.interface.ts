@@ -100,5 +100,5 @@ export interface AddItemFormTemplateProps {
   sharedWithUserIds: string[];
   setSharedWithUserIds: (userIds: string[]) => void;
   visibilityMode: 'everyone' | 'restricted' | 'private';
-  setVisibilityMode: (mode: 'everyone' | 'restricted' | 'private') => void;
+  onVisibilityModeChange: (mode: 'everyone' | 'restricted' | 'private') => void;
 }

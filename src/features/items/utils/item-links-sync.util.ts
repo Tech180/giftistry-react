@@ -1,4 +1,5 @@
 import { itemsApi } from '../api/items.api';
+import { getItemSharedWithUserIds } from './item-audience.util';
 import { Item } from '../interfaces/item.interface';
 import {
   parseItemDescription,
@@ -172,7 +173,8 @@ export async function syncBidirectionalItemLinks(
           update.description,
           item.PriorityId,
           item.Category,
-          item.Priority ?? null
+          item.Priority ?? null,
+          getItemSharedWithUserIds(item)
         );
       })
   );

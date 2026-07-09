@@ -91,7 +91,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   sharedWithUserIds,
   setSharedWithUserIds,
   visibilityMode,
-  setVisibilityMode,
+  onVisibilityModeChange,
 }) => {
   const hasLinkedItems = wishlistItems.filter((i) => i.Id !== itemId).length > 0;
 
@@ -481,7 +481,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           selectedUserIds={sharedWithUserIds}
           onChange={setSharedWithUserIds}
           visibilityMode={visibilityMode}
-          onVisibilityModeChange={setVisibilityMode}
+          onVisibilityModeChange={onVisibilityModeChange}
           disabled={isLoading}
         />
 

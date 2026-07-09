@@ -71,6 +71,65 @@ export function buildLinkingAudienceContext(
   return { mode: 'everyone', sharedWithUserIds: [] };
 }
 
+export function sanitizeRestrictedUserIds(
+  selectedUserIds: string[],
+  listShareUserIds: string[]
+): string[] {
+  const validShareIds = new Set(listShareUserIds);
+  return selectedUserIds.filter((id) => validShareIds.has(id));
+}
+
+export function resolveItemSharedWithUserIds(
+  visibilityMode: 'everyone' | 'restricted' | 'private',
+  selectedUserIds: string[],
+  options?: {
+    ownerUserId?: string;
+    listShareUserIds?: string[];
+  }
+): string[] {
+  if (visibilityMode === 'everyone') {
+    return [];
+  }
+  if (visibilityMode === 'private' && options?.ownerUserId) {
+    return [options.ownerUserId];
+  }
+  return sanitizeRestrictedUserIds(selectedUserIds, options?.listShareUserIds ?? []);
+}
+
+export function getItemSharedWithUserIds(
+  item: Pick<Item, 'SharedWith'>
+): string[] {
+  return item.SharedWith?.map((user) => user.UserId) ?? [];
+}
+
+export function buildDraftSharedWithUsers(
+  visibilityMode: 'everyone' | 'restricted' | 'private',
+  selectedUserIds: string[],
+  listShares: ListShare[],
+  ownerUserId?: string
+): ItemAudienceUser[] | undefined {
+  const userIds = resolveItemSharedWithUserIds(visibilityMode, selectedUserIds, {
+    ownerUserId,
+    listShareUserIds: listShares.map((share) => share.UserId),
+  });
+  if (userIds.length === 0) {
+    return undefined;
+  }
+  return userIds.map((userId) => {
+    const share = listShares.find((entry) => entry.UserId === userId);
+    if (share) {
+      return {
+        UserId: share.UserId,
+        Username: share.Username,
+        FirstName: share.FirstName,
+        LastName: share.LastName,
+        Email: share.Email,
+      };
+    }
+    return { UserId: userId };
+  });
+}
+
 export function linkingContextFromItem(item: ItemAudienceContext): LinkingAudienceContext {
   return {
     mode: getItemAudienceMode(item),
