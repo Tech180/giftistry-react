@@ -15,6 +15,7 @@ export interface AddItemProps {
   handleLinkingAudienceChange: (context: LinkingAudienceContext) => void;
   isOwner: boolean;
   listId: string;
+  listAiEnabled: boolean;
   listShares: ListShare[];
   onClose: () => void;
   onSuccess: () => void;

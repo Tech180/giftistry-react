@@ -15,7 +15,7 @@ export const AdminSitePolicyTab: React.FC<AdminTabProps> = ({ showToast }) => {
       .getSitePolicy()
       .then((res) => {
         setPolicy(res.Policy);
-        setDomainsText((res.Policy.allowedEmailDomains ?? []).join(', '));
+        setDomainsText((res.Policy.AllowedEmailDomains ?? []).join(', '));
       })
       .catch((err) => showToast(err.message || 'Failed to load site policy', 'error'))
       .finally(() => setIsLoading(false));
@@ -29,7 +29,7 @@ export const AdminSitePolicyTab: React.FC<AdminTabProps> = ({ showToast }) => {
         .split(',')
         .map((d) => d.trim())
         .filter(Boolean);
-      const res = await adminApi.updateSitePolicy({ ...policy, allowedEmailDomains });
+      const res = await adminApi.updateSitePolicy({ ...policy, AllowedEmailDomains: allowedEmailDomains });
       setPolicy(res.Policy);
       showToast('Site policy saved', 'success');
     } catch (err: unknown) {
@@ -44,7 +44,7 @@ export const AdminSitePolicyTab: React.FC<AdminTabProps> = ({ showToast }) => {
       prev
         ? {
             ...prev,
-            defaultUserPolicy: { ...prev.defaultUserPolicy, [key]: value },
+            DefaultUserPolicy: { ...prev.DefaultUserPolicy, [key]: value },
           }
         : prev
     );

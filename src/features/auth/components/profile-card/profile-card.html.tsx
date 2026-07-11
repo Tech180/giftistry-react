@@ -1,7 +1,6 @@
 import React from 'react';
-import { EnterPanel } from 'shared/ui';
+import { EnterPanel, AiStatusBadge } from 'shared/ui';
 import { Check, AlertCircle, Dices, Upload, Eye, EyeOff, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { ProfileCardTemplateProps } from '../../interfaces/profile-card-template-props.interface';
 import styles from './profile-card.module.css';
 
@@ -42,6 +41,10 @@ export const ProfileCardTemplate: React.FC<ProfileCardTemplateProps> = ({
   initials,
   isImageAvatar,
   avatarStyle,
+  showAiBadge,
+  aiEnabled,
+  isAiSaving,
+  onAiToggle,
 }) => {
   return (
     <EnterPanel animation="fade" className={styles.container}>
@@ -196,6 +199,28 @@ export const ProfileCardTemplate: React.FC<ProfileCardTemplateProps> = ({
           </form>
         </div>
       </div>
+
+      {showAiBadge && (
+        <section className={styles['ai-section']}>
+          <div className={styles['ai-section-card']}>
+            <div className={styles['ai-section-row']}>
+              <div>
+                <h3 className={styles['ai-section-title']}>AI Features</h3>
+                <p className={styles['ai-section-desc']}>
+                  Control whether AI-powered features are available on your account.
+                </p>
+              </div>
+              <AiStatusBadge
+                enabled={aiEnabled}
+                onToggle={onAiToggle}
+                disabled={isAiSaving}
+                ariaLabelEnabled="AI features enabled on your account. Click to disable."
+                ariaLabelDisabled="AI features disabled on your account. Click to enable."
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Danger Zone Section */}
       {!isServerOwner && (

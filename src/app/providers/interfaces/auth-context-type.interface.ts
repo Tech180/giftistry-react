@@ -13,13 +13,17 @@ export interface AuthContextType {
     lastName?: string,
     bio?: string,
     theme?: string,
-    avatar?: string | null
+    avatar?: string | null,
+    aiEnabled?: boolean
   ) => Promise<ApiUser | null>;
+  updateAiEnabled: (aiEnabled: boolean) => Promise<ApiUser | null>;
   error: string | null;
   clearError: () => void;
   refreshUser: () => Promise<void>;
   isSystemInitialized: boolean;
   globalAiEnabled: boolean;
+  canShowAi: boolean;
+  canShowAiSettings: boolean;
   registrationMode: 'open' | 'invite_only' | 'disabled';
   maintenanceMode: boolean;
   maintenanceMessage: string;

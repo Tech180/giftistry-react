@@ -10,6 +10,11 @@ import {
   parseItemDescription,
   serializeItemDescription,
 } from 'shared/utils/parse-item-description.util';
+import {
+  getMetadataDisplayEntries,
+  getUserDefinedEntries,
+  METADATA_BADGE_EMOJI,
+} from 'shared/utils/item-custom-fields.util';
 import { formatAudienceLabel, getItemSharedWithUserIds, isPrivateItem } from '../../utils/item-audience.util';
 import { resolveLinkedItems } from '../../utils/item-links-sync.util';
 
@@ -189,6 +194,18 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     [item.Description]
   );
 
+  const userDefinedEntries = useMemo(
+    () => getUserDefinedEntries(metadata),
+    [metadata]
+  );
+
+  const predefinedDisplayEntries = useMemo(() => {
+    const userNames = new Set(userDefinedEntries.map((entry) => entry.name));
+    return getMetadataDisplayEntries(metadata).filter(
+      (entry) => !userNames.has(entry.label)
+    );
+  }, [metadata, userDefinedEntries]);
+
   const categoryMeta = getCategoryMeta(item.Category);
   const displayCategoryBadge = !!(item.Category && item.Category !== 'uncategorized');
   const isPrivate = useMemo(
@@ -256,6 +273,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       setIsExpanded={setIsExpanded}
       displayDescription={displayDescription}
       metadata={metadata}
+      predefinedDisplayEntries={predefinedDisplayEntries}
+      userDefinedEntries={userDefinedEntries}
+      metadataBadgeEmoji={METADATA_BADGE_EMOJI}
       CategoryIcon={categoryMeta.icon}
       displayCategoryBadge={displayCategoryBadge}
       categoryLabel={categoryMeta.label}

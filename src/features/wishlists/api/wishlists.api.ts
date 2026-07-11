@@ -20,7 +20,14 @@ export const wishlistsApi = {
   ) =>
     apiClient.post<Wishlist>(
       '/api/wishlists',
-      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category, revealSuggestions, aiEnabled },
+      {
+        Title: title,
+        ExpiresAt: expiresAt || null,
+        AllowGroupFunds: !!allowGroupFunds,
+        Category: category,
+        RevealSuggestions: revealSuggestions,
+        AiEnabled: aiEnabled,
+      },
       'Lists'
     ),
 
@@ -41,14 +48,21 @@ export const wishlistsApi = {
   ) =>
     apiClient.put<Wishlist>(
       `/api/wishlists/${listId}`,
-      { title, expiresAt: expiresAt || null, allowGroupFunds: !!allowGroupFunds, category, revealSuggestions, aiEnabled },
+      {
+        Title: title,
+        ExpiresAt: expiresAt || null,
+        AllowGroupFunds: !!allowGroupFunds,
+        Category: category,
+        RevealSuggestions: revealSuggestions,
+        AiEnabled: aiEnabled,
+      },
       'Lists'
     ),
 
   shareWishlist: (listId: string, email: string, role: 'viewer' | 'collaborator') =>
     apiClient.post<ListShare>(
       `/api/wishlists/${listId}/shares`,
-      { email, role },
+      { Email: email, Role: role },
       'Lists'
     ),
 
@@ -58,7 +72,8 @@ export const wishlistsApi = {
   updateShare: (listId: string, shareId: string, role: 'viewer' | 'collaborator') =>
     apiClient.patch<ListShare>(
       `/api/wishlists/${listId}/shares/${shareId}`,
-      { role }
+      { Role: role },
+      'Lists'
     ),
 
   removeShare: (listId: string, shareId: string) =>
@@ -67,7 +82,8 @@ export const wishlistsApi = {
   bulkShareWithFriends: (listId: string, friendIds: string[], role: 'viewer' | 'collaborator') =>
     apiClient.post<ListShare[]>(
       `/api/wishlists/${listId}/shares/bulk`,
-      { friendIds, role }
+      { FriendIds: friendIds, Role: role },
+      'Lists'
     ),
 
   generateShareLink: (
@@ -77,13 +93,14 @@ export const wishlistsApi = {
     maxUses?: number | null,
     password?: string | null
   ) =>
-    apiClient.post<{ invite: any; token: string }>(
+    apiClient.post<{ Invite: unknown; Token: string }>(
       `/api/wishlists/${listId}/link-invites`,
-      { role, expiresAt, maxUses, password }
+      { Role: role, ExpiresAt: expiresAt, MaxUses: maxUses, Password: password },
+      'Invites'
     ),
 
   listLinkInvites: (listId: string) =>
-    apiClient.get<any[]>(`/api/wishlists/${listId}/link-invites`),
+    apiClient.get<unknown[]>(`/api/wishlists/${listId}/link-invites`),
 
   revokeLinkInvite: (listId: string, inviteId: string) =>
     apiClient.delete<{ success: boolean }>(`/api/wishlists/${listId}/link-invites/${inviteId}`),
@@ -94,7 +111,7 @@ export const wishlistsApi = {
   createPriority: (label: string, weight: number) =>
     apiClient.post<Priority>(
       '/api/priorities',
-      { label, weight },
+      { Label: label, Weight: weight },
       'Priorities'
     ),
 

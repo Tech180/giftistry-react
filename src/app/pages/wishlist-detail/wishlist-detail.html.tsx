@@ -111,6 +111,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         handleLinkingAudienceChange={handleLinkingAudienceChange}
         isOwner={isOwner}
         listId={wishlist.Id}
+        listAiEnabled={!!wishlist.AiEnabled}
         onClose={() => {
           setIsAddOpen(false);
           setEditingItem(null);

@@ -38,16 +38,16 @@ export interface AdminUserListResponse {
 
 export interface AdminOverviewStats {
   Users: {
-    total: number;
-    active: number;
-    disabled: number;
-    unverified: number;
-    admins: number;
-    new_30d: number;
-    active_7d: number;
-    locked: number;
+    Total: number;
+    Active: number;
+    Disabled: number;
+    Unverified: number;
+    Admins: number;
+    New30d: number;
+    Active7d: number;
+    Locked: number;
   };
-  Lists: { total: number; active: number };
+  Lists: { Total: number; Active: number };
   Comments: number;
   OpenReports: number;
   MaintenanceMode: boolean;

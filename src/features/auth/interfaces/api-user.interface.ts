@@ -1,4 +1,5 @@
 import { PublicUserSummary } from 'shared/interfaces/public-user-summary.interface';
+import { GiftistryUserPolicy } from 'features/admin/interfaces/giftistry-user-policy.interface';
 
 export interface ApiUser extends PublicUserSummary {
   Id: string;
@@ -7,4 +8,6 @@ export interface ApiUser extends PublicUserSummary {
   TwoFactorEnabled?: boolean;
   IsAdmin?: boolean;
   IsOwner?: boolean;
+  AiEnabled?: boolean;
+  Policy?: GiftistryUserPolicy;
 }

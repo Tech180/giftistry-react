@@ -28,7 +28,7 @@ export const VerificationBanner: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await authApi.resendVerification(user.Email);
+      await authApi.resendVerification();
       showToast("Verification email resent!\nPlease check your inbox.", 'success');
       
       // Start 60-second rate-limit cooldown

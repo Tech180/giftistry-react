@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Archive, Trash2, Edit2, Calendar, Users, Eye, EyeOff, Download, MessageSquare, Share2, Sparkles } from 'lucide-react';
-import { Button, EnterPanel } from 'shared/ui';
+import { ArrowLeft, Archive, Trash2, Edit2, Calendar, Users, Eye, EyeOff, Download, MessageSquare, Share2 } from 'lucide-react';
+import { Button, EnterPanel, AiStatusBadge } from 'shared/ui';
 import { exportToCsv, exportToXlsx, exportToTxt, exportToJson } from 'shared/utils/wishlist-export';
 import { HeaderTemplateProps } from './interfaces/header-template-props.interface';
 import styles from '../../wishlist-detail.module.css';
@@ -23,7 +23,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   formatDate,
   toggleRevealSuggestions,
   toggleAiEnabled,
-  globalAiEnabled,
+  canShowAi,
   isCommentsOpen,
   setIsCommentsOpen,
   setIsShareOpen,
@@ -185,21 +185,20 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                 <span>{wishlist.RevealSuggestions ? 'Reveal suggestions after expiration' : 'Hide suggestions permanently'}</span>
               </button>
             )}
-            {globalAiEnabled && isOwner && (
-              <button
-                className={styles['settings-btn']}
-                onClick={toggleAiEnabled}
-                title="Toggle AI-powered item reviews"
-              >
-                <Sparkles size={14} style={{ color: wishlist.AiEnabled ? 'var(--primary)' : 'inherit' }} />
-                <span>{wishlist.AiEnabled ? 'AI Reviews Enabled' : 'AI Reviews Disabled'}</span>
-              </button>
+            {canShowAi && isOwner && (
+              <AiStatusBadge
+                enabled={!!wishlist.AiEnabled}
+                onToggle={toggleAiEnabled}
+                ariaLabelEnabled="AI reviews enabled for this list. Click to disable."
+                ariaLabelDisabled="AI reviews disabled for this list. Click to enable."
+              />
             )}
-            {globalAiEnabled && !isOwner && wishlist.AiEnabled && (
-              <div className={styles['meta-item']}>
-                <Sparkles size={14} style={{ color: 'var(--primary)' }} />
-                <span>AI Reviews Active</span>
-              </div>
+            {canShowAi && !isOwner && wishlist.AiEnabled && (
+              <AiStatusBadge
+                enabled
+                ariaLabelEnabled="AI reviews active on this list"
+                ariaLabelDisabled="AI reviews inactive on this list"
+              />
             )}
             {!isOwner && (
               <div className={styles['meta-item']}>

@@ -20,8 +20,8 @@ export const useFriendsController = () => {
         friendsApi.listFriendRequests(),
       ]);
       setFriends(friendsList || []);
-      setIncomingRequests(requests?.incoming || []);
-      setOutgoingRequests(requests?.outgoing || []);
+      setIncomingRequests(requests?.Incoming || []);
+      setOutgoingRequests(requests?.Outgoing || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load friends.');
     } finally {

@@ -15,7 +15,7 @@ import { ProfileCardTemplate } from './profile-card.html';
 import { ImageCropper } from '../image-cropper/image-cropper.component';
 
 export const ProfileCard: React.FC = () => {
-  const { user, updateProfile, logout } = useAuth();
+  const { user, updateProfile, updateAiEnabled, logout, canShowAiSettings } = useAuth();
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
@@ -34,6 +34,8 @@ export const ProfileCard: React.FC = () => {
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isAccountActionLoading, setIsAccountActionLoading] = useState(false);
+  const [isAiSaving, setIsAiSaving] = useState(false);
+  const [aiEnabledLocal, setAiEnabledLocal] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -42,7 +44,8 @@ export const ProfileCard: React.FC = () => {
     setLastName(user.LastName || '');
     setBio(user.Bio || '');
     setAvatar(user.Avatar ?? null);
-  }, [user?.Id]);
+    setAiEnabledLocal(user.AiEnabled !== false);
+  }, [user?.Id, user?.Username, user?.FirstName, user?.LastName, user?.Bio, user?.Avatar, user?.AiEnabled]);
 
   const hasChanges = useMemo(() => {
     if (!user) return false;
@@ -203,6 +206,22 @@ export const ProfileCard: React.FC = () => {
   const avatarStyle = useMemo(() => getAvatarStyle(avatar), [avatar]);
   const avatarPickerHex = useMemo(() => avatarColorToHex(avatar), [avatar]);
 
+  const handleAiToggle = async () => {
+    if (!user || isAiSaving) return;
+    const next = !aiEnabledLocal;
+    setIsAiSaving(true);
+    setErrorMsg(null);
+    setAiEnabledLocal(next);
+    try {
+      await updateAiEnabled(next);
+    } catch (err) {
+      setAiEnabledLocal(!next);
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to update AI preference.');
+    } finally {
+      setIsAiSaving(false);
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -245,6 +264,10 @@ export const ProfileCard: React.FC = () => {
         initials={initials}
         isImageAvatar={isImageAvatar}
         avatarStyle={avatarStyle}
+        showAiBadge={canShowAiSettings}
+        aiEnabled={aiEnabledLocal}
+        isAiSaving={isAiSaving}
+        onAiToggle={handleAiToggle}
       />
       {cropperSrc && (
         <ImageCropper

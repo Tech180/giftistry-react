@@ -5,7 +5,7 @@ import { CreateListFormTemplate } from './create-list-form.html';
 import { useAuth } from 'app/providers/auth-context';
 
 export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => {
-  const { user, globalAiEnabled } = useAuth();
+  const { user, canShowAi } = useAuth();
   const isUnverified = user ? !user.EmailVerified : false;
 
   const [title, setTitle] = useState('');
@@ -84,7 +84,7 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
       setCustomCategory={setCustomCategory}
       aiEnabled={aiEnabled}
       setAiEnabled={setAiEnabled}
-      globalAiEnabled={globalAiEnabled}
+      globalAiEnabled={canShowAi}
       isUnverified={isUnverified}
     />
   );

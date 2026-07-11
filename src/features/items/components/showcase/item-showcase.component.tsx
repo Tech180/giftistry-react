@@ -8,6 +8,11 @@ import {
   getItemFavoriteFlag,
   parseItemDescription,
 } from 'shared/utils/parse-item-description.util';
+import {
+  getMetadataDisplayEntries,
+  getUserDefinedEntries,
+  METADATA_BADGE_EMOJI,
+} from 'shared/utils/item-custom-fields.util';
 import { formatAudienceLabel, isPrivateItem } from '../../utils/item-audience.util';
 import { resolveLinkedItems } from '../../utils/item-links-sync.util';
 
@@ -24,7 +29,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   wishlistItems = [],
   aiEnabled,
 }) => {
-  const { user, globalAiEnabled } = useAuth();
+  const { user, canShowAi } = useAuth();
   const claimedByCurrentUser = !!(user && item.Claims.some(c => c.UserId === user.Id));
 
   const [claimAmount, setClaimAmount] = useState('');
@@ -50,6 +55,18 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     [item.Description]
   );
 
+  const userDefinedEntries = useMemo(
+    () => getUserDefinedEntries(metadata),
+    [metadata]
+  );
+
+  const predefinedDisplayEntries = useMemo(() => {
+    const userNames = new Set(userDefinedEntries.map((entry) => entry.name));
+    return getMetadataDisplayEntries(metadata).filter(
+      (entry) => !userNames.has(entry.label)
+    );
+  }, [metadata, userDefinedEntries]);
+
   useEffect(() => {
     if (metadata?.multiCount && metadata.variations && metadata.variations.length > 0) {
       setSelectedVariation(metadata.variations[0].name);
@@ -66,7 +83,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   useEffect(() => {
     let active = true;
     const fetchReviews = async () => {
-      if (!globalAiEnabled || !aiEnabled || !item.Links || item.Links.length === 0) {
+      if (!canShowAi || !aiEnabled || !item.Links || item.Links.length === 0) {
         setReviews(null);
         setReviewsError(null);
         return;
@@ -77,8 +94,13 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       try {
         const response = await itemsApi.getItemReviews(item.Id);
         if (active) {
-          if (response && response.data) {
-            setReviews(response.data);
+          if (response) {
+            setReviews({
+              summary: response.Summary,
+              pros: response.Pros,
+              cons: response.Cons,
+              reviews: response.Reviews,
+            });
           } else {
             setReviews(null);
           }
@@ -97,7 +119,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     return () => {
       active = false;
     };
-  }, [item.Id, globalAiEnabled, aiEnabled, item.Links]);
+  }, [item.Id, canShowAi, aiEnabled, item.Links]);
 
   const handleClaim = async (e?: React.SyntheticEvent, skipLinkedCheck = false) => {
     if (e) e.preventDefault();
@@ -257,6 +279,9 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       setShowDependencyModal={setShowDependencyModal}
       displayDescription={displayDescription || ''}
       metadata={metadata}
+      predefinedDisplayEntries={predefinedDisplayEntries}
+      userDefinedEntries={userDefinedEntries}
+      metadataBadgeEmoji={METADATA_BADGE_EMOJI}
       handleClaim={handleClaim}
       handleBulkClaim={handleBulkClaim}
       handleUnclaim={handleUnclaim}
@@ -275,7 +300,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       reviewsLoading={reviewsLoading}
       reviewsError={reviewsError}
       aiEnabled={aiEnabled}
-      globalAiEnabled={globalAiEnabled}
+      canShowAi={canShowAi}
       audienceLabel={audienceLabel}
       isPrivate={isPrivate}
       linkedItems={linkedItems}

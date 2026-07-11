@@ -22,23 +22,23 @@ export const AdminOverviewTabTemplate: React.FC<AdminOverviewTabTemplateProps> =
         <div className={styles['card-grid']}>
           <div className={styles['stat-card']}>
             <span className={styles['stat-label']}>Total users</span>
-            <span className={styles['stat-value']}>{stats.Users.total}</span>
+            <span className={styles['stat-value']}>{stats.Users.Total}</span>
           </div>
           <div className={styles['stat-card']}>
             <span className={styles['stat-label']}>Active (7d)</span>
-            <span className={styles['stat-value']}>{stats.Users.active_7d}</span>
+            <span className={styles['stat-value']}>{stats.Users.Active7d}</span>
           </div>
           <div className={styles['stat-card']}>
             <span className={styles['stat-label']}>Disabled</span>
-            <span className={styles['stat-value']}>{stats.Users.disabled}</span>
+            <span className={styles['stat-value']}>{stats.Users.Disabled}</span>
           </div>
           <div className={styles['stat-card']}>
             <span className={styles['stat-label']}>Locked</span>
-            <span className={styles['stat-value']}>{stats.Users.locked}</span>
+            <span className={styles['stat-value']}>{stats.Users.Locked}</span>
           </div>
           <div className={styles['stat-card']}>
             <span className={styles['stat-label']}>Wishlists</span>
-            <span className={styles['stat-value']}>{stats.Lists.active}</span>
+            <span className={styles['stat-value']}>{stats.Lists.Active}</span>
           </div>
           <div className={styles['stat-card']}>
             <span className={styles['stat-label']}>Open reports</span>

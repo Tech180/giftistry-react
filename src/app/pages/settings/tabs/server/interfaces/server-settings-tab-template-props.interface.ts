@@ -1,4 +1,7 @@
 import React from 'react';
+import { LocalAiModelMode } from './local-ai-model.interface';
+import type { AiDefaultPromptsView } from './backend-settings.interface';
+import type { PromptType } from '../utils/ai-prompt-settings.util';
 
 export interface ServerSettingsTabTemplateProps {
   dbType: 'local' | 'remote';
@@ -29,6 +32,14 @@ export interface ServerSettingsTabTemplateProps {
   setAiModel: (val: string) => void;
   aiPrompt: string;
   setAiPrompt: (val: string) => void;
+  aiDescriptionPrompt: string;
+  setAiDescriptionPrompt: (val: string) => void;
+  aiPopulatePrompt: string;
+  setAiPopulatePrompt: (val: string) => void;
+  aiCategoryPrompt: string;
+  setAiCategoryPrompt: (val: string) => void;
+  aiDefaultPrompts?: AiDefaultPromptsView;
+  onResetPrompt: (type: PromptType) => void;
   aiEndpoint: string;
   setAiEndpoint: (val: string) => void;
   showPassword: boolean;
@@ -41,6 +52,13 @@ export interface ServerSettingsTabTemplateProps {
   selectedCompany: string;
   setSelectedCompany: (val: string) => void;
   filteredModels: Array<{ id: string; name: string; company: string; displayName: string }>;
+  localAiModels: string[];
+  localModelMode: LocalAiModelMode;
+  onLocalModelSelection: (value: string) => void;
+  aiConnectionStatus: 'idle' | 'checking' | 'success' | 'error';
+  aiConnectionMessage: string;
+  onTestAiConnection: () => void;
+  isTestingAiConnection: boolean;
   isLoading: boolean;
   isSaving: boolean;
   handleSave: (e: React.SubmitEvent<HTMLFormElement>) => void;

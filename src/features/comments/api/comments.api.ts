@@ -16,14 +16,21 @@ export const commentsApi = {
   ) =>
     apiClient.post<Comment>(
       `/api/wishlists/${listId}/comments`,
-      { content, commenterName, isOwnerVisible, isRollover, parentId, imageUrl },
+      {
+        Content: content,
+        CommenterName: commenterName,
+        IsOwnerVisible: isOwnerVisible,
+        IsRollover: isRollover,
+        ParentId: parentId,
+        ImageUrl: imageUrl,
+      },
       'Comments'
     ),
 
   toggleReaction: (commentId: string, reaction: string) =>
-    apiClient.post<{ added: boolean }>(
+    apiClient.post<{ Added: boolean }>(
       `/api/comments/${commentId}/react`,
-      { reaction },
+      { Reaction: reaction },
       'Comments'
     ),
 

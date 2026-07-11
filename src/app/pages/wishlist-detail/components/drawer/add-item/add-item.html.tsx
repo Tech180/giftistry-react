@@ -1,6 +1,6 @@
 import React from 'react';
 import { PlusCircle, Pencil } from 'lucide-react';
-import { Drawer, MiniDrawer, Button } from 'shared/ui';
+import { Drawer, MiniDrawer, Button, AiStatusBadge } from 'shared/ui';
 import { AddItemForm, ADD_ITEM_FORM_ID } from 'features/items';
 import { AddItemTemplateProps } from './interfaces/add-item-template-props.interface';
 
@@ -17,6 +17,8 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
   handleLinkingAudienceChange,
   isOwner,
   listId,
+  listAiEnabled,
+  canShowAi,
   onClose,
   onSuccess,
   setEditingItemDraft,
@@ -36,6 +38,16 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
       position="left"
       title={isEdit ? 'Edit Item' : 'Add New Item'}
       titleIcon={isEdit ? <Pencil size={18} /> : <PlusCircle size={18} />}
+      headerExtra={
+        canShowAi ? (
+          <AiStatusBadge
+            size="compact"
+            enabled={listAiEnabled}
+            ariaLabelEnabled="AI reviews enabled for this list"
+            ariaLabelDisabled="AI reviews disabled for this list"
+          />
+        ) : undefined
+      }
       onClose={onClose}
       overflowVisible={true}
       miniDrawer={
@@ -71,7 +83,13 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
         listId={listId}
         isOwner={isOwner}
         item={editingItem}
-        existingCategories={Array.from(new Set(items.map(item => item.Category).filter(Boolean)))}
+        existingCategories={Array.from(
+          new Set(
+            linkableItems
+              .map((item) => item.Category?.trim())
+              .filter((cat): cat is string => !!cat && cat !== 'uncategorized')
+          )
+        )}
         onDraftChange={setEditingItemDraft}
         wishlistItems={linkableItems}
         linkedItemIds={linkedItemIds}
@@ -85,6 +103,8 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
         listShares={listShares}
         onLoadingChange={onFormLoadingChange}
         onDirtyChange={onFormDirtyChange}
+        canShowAi={canShowAi}
+        listAiEnabled={listAiEnabled}
       />
     </Drawer>
   );

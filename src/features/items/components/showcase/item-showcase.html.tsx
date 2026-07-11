@@ -32,6 +32,9 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   setShowDependencyModal,
   displayDescription,
   metadata,
+  predefinedDisplayEntries,
+  userDefinedEntries,
+  metadataBadgeEmoji,
   handleClaim,
   handleBulkClaim,
   handleUnclaim,
@@ -50,7 +53,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   reviewsLoading,
   reviewsError,
   aiEnabled,
-  globalAiEnabled,
+  canShowAi,
   audienceLabel,
   isPrivate,
   linkedItems,
@@ -115,7 +118,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
             )}
 
             {/* AI Reviews Section */}
-            {globalAiEnabled && aiEnabled && item.Links && item.Links.length > 0 && (
+            {canShowAi && aiEnabled && item.Links && item.Links.length > 0 && (
               <div className={styles['ai-reviews-box']}>
                 <h4 className={styles['section-title']}>
                   <Sparkles size={12} className={styles['sparkles-icon']} />
@@ -182,23 +185,24 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
             )}
 
             {/* Custom metadata fields */}
-            {metadata && (metadata.shirtSize || metadata.pantsSize || metadata.shoesSize || metadata.socksSize || metadata.color) ? (
+            {predefinedDisplayEntries.length > 0 ? (
               <div className={styles['meta-section']}>
                 <h4 className={styles['section-title']}>Details / Sizing</h4>
                 <div className={styles['meta-badges']}>
-                  {metadata.shirtSize && <span className={styles['meta-badge']}>👕 Shirt: {metadata.shirtSize}</span>}
-                  {metadata.pantsSize && <span className={styles['meta-badge']}>👖 Pants: {metadata.pantsSize}</span>}
-                  {metadata.shoesSize && <span className={styles['meta-badge']}>👟 Shoes: {metadata.shoesSize}</span>}
-                  {metadata.socksSize && <span className={styles['meta-badge']}>🧦 Socks: {metadata.socksSize}</span>}
-                  {metadata.color && <span className={styles['meta-badge']}>🎨 Color: {metadata.color}</span>}
+                  {predefinedDisplayEntries.map((entry) => (
+                    <span key={entry.label} className={styles['meta-badge']}>
+                      {metadataBadgeEmoji[entry.label] ? `${metadataBadgeEmoji[entry.label]} ` : ''}
+                      {entry.label}: {entry.value}
+                    </span>
+                  ))}
                 </div>
               </div>
             ) : null}
 
-            {metadata?.custom?.map((f: any, idx: number) => (
+            {userDefinedEntries.map((field, idx) => (
               <div key={idx} className={styles['description-box']}>
-                <h4 className={styles['section-title']}>{f.name}</h4>
-                <p className={styles['description-text']}>{f.value}</p>
+                <h4 className={styles['section-title']}>{field.name}</h4>
+                <p className={styles['description-text']}>{field.value}</p>
               </div>
             ))}
 

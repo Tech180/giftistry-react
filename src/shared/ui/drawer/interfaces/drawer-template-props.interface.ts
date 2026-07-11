@@ -12,6 +12,8 @@ export interface DrawerTemplateProps {
   variant?: DrawerVariant;
   footer?: React.ReactNode;
   titleIcon?: React.ReactNode;
+  titleExtra?: React.ReactNode;
+  headerExtra?: React.ReactNode;
   isOpen?: boolean;
   onOverlayClick?: () => void;
 }

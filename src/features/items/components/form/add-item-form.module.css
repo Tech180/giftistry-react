@@ -73,6 +73,26 @@
   text-align: center;
 }
 
+.notes-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.notes-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.summarize-status {
+  margin: 0 0 var(--spacing-xs);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .required {
   color: var(--primary);
 }
@@ -127,7 +147,20 @@
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  pointer-events: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.input-icon:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.input-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .input-action {
@@ -311,6 +344,20 @@ textarea.input {
   color: var(--error);
 }
 
+.ai-category-display {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.ai-category-hint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
 .custom-category-row {
   display: flex;
   flex-wrap: wrap;
@@ -477,6 +524,55 @@ textarea.input {
   display: flex;
   gap: var(--spacing-sm);
   align-items: center;
+}
+
+.custom-field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  min-height: 18px;
+}
+
+.custom-field-name-input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 4px 8px;
+  font-size: var(--font-size-sm);
+}
+
+.custom-field-label-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.custom-field-edit-btn,
+.custom-field-remove-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+}
+
+.custom-field-edit-btn:hover {
+  background-color: var(--surface-hover);
+  color: var(--text);
+}
+
+.custom-field-remove-btn {
+  color: var(--error);
+}
+
+.custom-field-remove-btn:hover {
+  background-color: var(--error-bg);
 }
 
 .custom-field-grow {

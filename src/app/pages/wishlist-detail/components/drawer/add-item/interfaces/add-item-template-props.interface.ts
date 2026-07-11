@@ -15,6 +15,8 @@ export interface AddItemTemplateProps {
   handleLinkingAudienceChange: (context: LinkingAudienceContext) => void;
   isOwner: boolean;
   listId: string;
+  listAiEnabled: boolean;
+  canShowAi: boolean;
   listShares: ListShare[];
   onClose: () => void;
   onSuccess: () => void;

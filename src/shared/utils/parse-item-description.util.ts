@@ -2,6 +2,12 @@ import type {
   ItemDescriptionMetadata,
   ParsedItemDescription,
 } from 'shared/interfaces/item-description-metadata.interface';
+import {
+  buildItemDescriptionPayload,
+  getMetadataDisplayEntries,
+  getMetadataText,
+  normalizeItemDescriptionMetadata,
+} from './item-custom-fields.util';
 
 export type { ItemDescriptionMetadata, ParsedItemDescription };
 
@@ -23,9 +29,13 @@ export function parseItemDescription(
   try {
     const parsed = JSON.parse(description) as ItemDescriptionMetadata;
     if (parsed && typeof parsed === 'object') {
-      const text =
-        typeof parsed.text === 'string' && parsed.text.length > 0 ? parsed.text : null;
-      return { text: text, metadata: parsed, isJson: true };
+      const normalized = normalizeItemDescriptionMetadata(parsed);
+      const text = getMetadataText(normalized);
+      return {
+        text: text.length > 0 ? text : null,
+        metadata: normalized,
+        isJson: true,
+      };
     }
   } catch {
     /* fall through */
@@ -51,7 +61,23 @@ export function serializeItemDescription(
   if (!metadata) {
     return text || '';
   }
-  return JSON.stringify({ ...metadata, text: text || metadata.text || '' });
+  const normalized = normalizeItemDescriptionMetadata({
+    ...metadata,
+    Text: text || getMetadataText(metadata),
+  });
+  return buildItemDescriptionPayload({
+    text: text || getMetadataText(normalized),
+    predefined: normalized.CustomFields?.Predefined ?? {},
+    userDefined: normalized.CustomFields?.UserDefined ?? {},
+    desiredQuantity: normalized.desiredQuantity,
+    variations: normalized.variations,
+    linkedItemIds: normalized.linkedItemIds,
+    otherUsersCanSee: normalized.otherUsersCanSee,
+    multiCount: normalized.multiCount,
+    isFavorite: normalized.isFavorite,
+    isPinned: normalized.isPinned,
+    alwaysJson: true,
+  });
 }
 
 export function formatDescriptionForExport(description: string | null | undefined): string {
@@ -63,19 +89,10 @@ export function formatDescriptionForExport(description: string | null | undefine
   const parts: string[] = [];
   if (text) parts.push(text);
 
-  const metaParts: string[] = [];
-  if (metadata.pantsSize) metaParts.push(`Pants: ${metadata.pantsSize}`);
-  if (metadata.shirtSize) metaParts.push(`Shirt: ${metadata.shirtSize}`);
-  if (metadata.shoesSize) metaParts.push(`Shoes: ${metadata.shoesSize}`);
-  if (metadata.socksSize) metaParts.push(`Socks: ${metadata.socksSize}`);
-  if (metadata.color) metaParts.push(`Color: ${metadata.color}`);
-  if (Array.isArray(metadata.custom)) {
-    for (const field of metadata.custom) {
-      if (field.name && field.value) {
-        metaParts.push(`${field.name}: ${field.value}`);
-      }
-    }
-  }
+  const metaParts = getMetadataDisplayEntries(metadata).map(
+    (entry) => `${entry.label}: ${entry.value}`
+  );
+
   if (metaParts.length > 0) {
     parts.push(`[${metaParts.join(', ')}]`);
   }

@@ -51,6 +51,9 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
   setIsExpanded,
   displayDescription,
   metadata,
+  predefinedDisplayEntries,
+  userDefinedEntries,
+  metadataBadgeEmoji,
   CategoryIcon,
   displayCategoryBadge,
   categoryLabel,
@@ -150,13 +153,13 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
             )}
 
             {/* Show tiny sizing details directly if present */}
-            {metadata && (
+            {predefinedDisplayEntries.length > 0 && (
               <div className={styles['compact-meta-row']}>
-                {metadata.pantsSize && <span>Pants: {metadata.pantsSize}</span>}
-                {metadata.shirtSize && <span>Shirt: {metadata.shirtSize}</span>}
-                {metadata.shoesSize && <span>Shoes: {metadata.shoesSize}</span>}
-                {metadata.socksSize && <span>Socks: {metadata.socksSize}</span>}
-                {metadata.color && <span>Color: {metadata.color}</span>}
+                {predefinedDisplayEntries.map((entry) => (
+                  <span key={entry.label}>
+                    {entry.label}: {entry.value}
+                  </span>
+                ))}
               </div>
             )}
           </div>
@@ -261,23 +264,24 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
                 </div>
               )}
 
-              {metadata && (metadata.pantsSize || metadata.shirtSize || metadata.shoesSize || metadata.socksSize || metadata.color) && (
+              {predefinedDisplayEntries.length > 0 && (
                 <div className={styles['expanded-detail-row']}>
                   <span className={styles['expanded-detail-label']}>Sizing & Details:</span>
                   <div className={styles['expanded-meta-badges']}>
-                    {metadata.pantsSize && <span className={styles['expanded-meta-badge']}>👖 Pants: {metadata.pantsSize}</span>}
-                    {metadata.shirtSize && <span className={styles['expanded-meta-badge']}>👕 Shirt: {metadata.shirtSize}</span>}
-                    {metadata.shoesSize && <span className={styles['expanded-meta-badge']}>👟 Shoes: {metadata.shoesSize}</span>}
-                    {metadata.socksSize && <span className={styles['expanded-meta-badge']}>🧦 Socks: {metadata.socksSize}</span>}
-                    {metadata.color && <span className={styles['expanded-meta-badge']}>🎨 Color: {metadata.color}</span>}
+                    {predefinedDisplayEntries.map((entry) => (
+                      <span key={entry.label} className={styles['expanded-meta-badge']}>
+                        {metadataBadgeEmoji[entry.label] ? `${metadataBadgeEmoji[entry.label]} ` : ''}
+                        {entry.label}: {entry.value}
+                      </span>
+                    ))}
                   </div>
                 </div>
               )}
 
-              {metadata?.custom?.map((f: any, idx: number) => (
+              {userDefinedEntries.map((field, idx) => (
                 <div key={idx} className={styles['expanded-detail-row']}>
-                  <span className={styles['expanded-detail-label']}>{f.name}:</span>
-                  <div className={styles['expanded-detail-value']}>{f.value}</div>
+                  <span className={styles['expanded-detail-label']}>{field.name}:</span>
+                  <div className={styles['expanded-detail-value']}>{field.value}</div>
                 </div>
               ))}
 
@@ -598,36 +602,17 @@ export const ItemCardTemplate: React.FC<ItemCardTemplateProps> = ({
             )}
           </div>
 
-          {metadata && (
+          {(predefinedDisplayEntries.length > 0 || userDefinedEntries.length > 0) && (
             <div className={styles['metadata-grid']}>
-              {metadata.pantsSize && (
-                <span className={styles['metadata-badge']} title="Pants Size">
-                  👖 Pants: {metadata.pantsSize}
+              {predefinedDisplayEntries.map((entry) => (
+                <span key={entry.label} className={styles['metadata-badge']} title={entry.label}>
+                  {metadataBadgeEmoji[entry.label] ? `${metadataBadgeEmoji[entry.label]} ` : ''}
+                  {entry.label}: {entry.value}
                 </span>
-              )}
-              {metadata.shirtSize && (
-                <span className={styles['metadata-badge']} title="Shirt Size">
-                  👕 Shirt: {metadata.shirtSize}
-                </span>
-              )}
-              {metadata.shoesSize && (
-                <span className={styles['metadata-badge']} title="Shoes Size">
-                  👟 Shoes: {metadata.shoesSize}
-                </span>
-              )}
-              {metadata.socksSize && (
-                <span className={styles['metadata-badge']} title="Socks Size">
-                  🧦 Socks: {metadata.socksSize}
-                </span>
-              )}
-              {metadata.color && (
-                <span className={styles['metadata-badge']} title="Color">
-                  🎨 Color: {metadata.color}
-                </span>
-              )}
-              {metadata.custom?.map((f: any, idx: number) => (
-                <span key={idx} className={styles['metadata-badge']} title={f.name}>
-                  {f.name}: {f.value}
+              ))}
+              {userDefinedEntries.map((field, idx) => (
+                <span key={idx} className={styles['metadata-badge']} title={field.name}>
+                  {field.name}: {field.value}
                 </span>
               ))}
             </div>

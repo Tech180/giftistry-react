@@ -6,20 +6,20 @@ import { SettingGroup, SettingItem } from '../components';
 import { AdminSitePolicyTabTemplateProps } from './interfaces/admin-site-policy-tab-template-props.interface';
 import styles from '../admin.shared.module.css';
 
-const REGISTRATION_LABELS: Record<SitePolicy['registrationMode'], string> = {
+const REGISTRATION_LABELS: Record<SitePolicy['RegistrationMode'], string> = {
   open: 'Open — anyone can register',
   invite_only: 'Invite only — registration requires an invite',
   disabled: 'Disabled — no new registrations',
 };
 
 const DEFAULT_POLICY_TOGGLES: [keyof typeof DEFAULT_USER_POLICY, string, string][] = [
-  ['canCreateWishlists', 'Create wishlists', 'Allow new users to create wishlists.'],
-  ['canUseComments', 'Use comments', 'Allow commenting on wishlists.'],
-  ['canUseAiFeatures', 'Use AI features', 'Allow AI-powered features.'],
-  ['canSharePublicLinks', 'Public sharing', 'Allow public link generation.'],
-  ['canUploadImages', 'Upload images', 'Allow image uploads.'],
-  ['canSendFriendRequests', 'Send friend requests', 'Allow friend requests.'],
-  ['canUseCustomThemes', 'Use custom themes', 'Allow theme customization.'],
+  ['CanCreateWishlists', 'Create wishlists', 'Allow new users to create wishlists.'],
+  ['CanUseComments', 'Use comments', 'Allow commenting on wishlists.'],
+  ['CanUseAiFeatures', 'Use AI features', 'Allow AI-powered features.'],
+  ['CanSharePublicLinks', 'Public sharing', 'Allow public link generation.'],
+  ['CanUploadImages', 'Upload images', 'Allow image uploads.'],
+  ['CanSendFriendRequests', 'Send friend requests', 'Allow friend requests.'],
+  ['CanUseCustomThemes', 'Use custom themes', 'Allow theme customization.'],
 ];
 
 export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProps> = ({
@@ -47,14 +47,14 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
       <SettingGroup>
         <SettingItem
           title="Registration mode"
-          description={REGISTRATION_LABELS[policy.registrationMode]}
+          description={REGISTRATION_LABELS[policy.RegistrationMode]}
           layout="column"
         >
           <select
             className={styles['form-input']}
-            value={policy.registrationMode}
+            value={policy.RegistrationMode}
             onChange={(e) =>
-              onPolicyChange({ ...policy, registrationMode: e.target.value as SitePolicy['registrationMode'] })
+              onPolicyChange({ ...policy, RegistrationMode: e.target.value as SitePolicy['RegistrationMode'] })
             }
           >
             <option value="open">Open</option>
@@ -67,8 +67,8 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
           description="Accounts must verify email before accessing the platform."
         >
           <Switch
-            checked={policy.requireEmailVerification}
-            onChange={(checked) => onPolicyChange({ ...policy, requireEmailVerification: checked })}
+            checked={policy.RequireEmailVerification}
+            onChange={(checked) => onPolicyChange({ ...policy, RequireEmailVerification: checked })}
             aria-label="Require email verification"
           />
         </SettingItem>
@@ -77,8 +77,8 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
           description="Permit signing in with email and password."
         >
           <Switch
-            checked={policy.allowPasswordLogin}
-            onChange={(checked) => onPolicyChange({ ...policy, allowPasswordLogin: checked })}
+            checked={policy.AllowPasswordLogin}
+            onChange={(checked) => onPolicyChange({ ...policy, AllowPasswordLogin: checked })}
             aria-label="Allow password login"
           />
         </SettingItem>
@@ -107,8 +107,8 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
             className={styles['form-input']}
             type="number"
             min={0}
-            value={policy.loginAttemptsBeforeLockout}
-            onChange={(e) => onPolicyChange({ ...policy, loginAttemptsBeforeLockout: Number(e.target.value) })}
+            value={policy.LoginAttemptsBeforeLockout}
+            onChange={(e) => onPolicyChange({ ...policy, LoginAttemptsBeforeLockout: Number(e.target.value) })}
           />
         </SettingItem>
         <SettingItem
@@ -120,8 +120,8 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
             className={styles['form-input']}
             type="number"
             min={0}
-            value={policy.lockoutDurationMinutes}
-            onChange={(e) => onPolicyChange({ ...policy, lockoutDurationMinutes: Number(e.target.value) })}
+            value={policy.LockoutDurationMinutes}
+            onChange={(e) => onPolicyChange({ ...policy, LockoutDurationMinutes: Number(e.target.value) })}
           />
         </SettingItem>
       </SettingGroup>
@@ -133,8 +133,8 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
           description="Lock out all non-admin users. API will return 503 for non-admins."
         >
           <Switch
-            checked={policy.maintenanceMode}
-            onChange={(checked) => onPolicyChange({ ...policy, maintenanceMode: checked })}
+            checked={policy.MaintenanceMode}
+            onChange={(checked) => onPolicyChange({ ...policy, MaintenanceMode: checked })}
             aria-label="Maintenance mode"
           />
         </SettingItem>
@@ -146,8 +146,8 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
           <textarea
             className={styles['form-input']}
             rows={2}
-            value={policy.maintenanceMessage}
-            onChange={(e) => onPolicyChange({ ...policy, maintenanceMessage: e.target.value })}
+            value={policy.MaintenanceMessage}
+            onChange={(e) => onPolicyChange({ ...policy, MaintenanceMessage: e.target.value })}
           />
         </SettingItem>
       </SettingGroup>
@@ -157,7 +157,7 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
         {DEFAULT_POLICY_TOGGLES.map(([key, title, description]) => (
           <SettingItem key={key} title={title} description={description}>
             <Switch
-              checked={!!policy.defaultUserPolicy[key]}
+              checked={!!policy.DefaultUserPolicy[key]}
               onChange={(checked) => onDefaultPolicyToggle(key, checked)}
               aria-label={title}
             />

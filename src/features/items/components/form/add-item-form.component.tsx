@@ -7,6 +7,13 @@ import { useAuth } from 'app/providers/auth-context';
 import { getFriendlyCategoryLabel } from '../../utils/category-label.util';
 import { STANDARD_CATEGORIES } from '../../constants/standard-categories';
 import { getItemFavoriteFlag, parseItemDescription } from 'shared/utils/parse-item-description.util';
+import {
+  buildItemDescriptionPayload,
+  buildSummarizeCustomFields,
+  getMetadataText,
+  normalizeItemDescriptionMetadata,
+} from 'shared/utils/item-custom-fields.util';
+import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
 import { isValidUrl } from 'shared/utils/is-valid-url.util';
 import { syncBidirectionalItemLinks, resolveEditorLinkedItemIds } from '../../utils/item-links-sync.util';
 import {
@@ -18,12 +25,18 @@ import {
   resolveItemSharedWithUserIds,
   sanitizeRestrictedUserIds,
 } from '../../utils/item-audience.util';
+import {
+  createCustomFieldRow,
+  definitionFieldKeysFromDefinitions,
+  partitionExtractedCustomFields,
+  rowsFromExtractedMetadata,
+  rowsFromItemMetadata,
+  rowsFromItemMetadataAi,
+  splitCustomFieldRowsForSave,
+  type CustomFieldRow,
+} from '../../utils/add-item-custom-fields.util';
 
-const DYNAMIC_FIELD_KEYS = [
-  'text', 'custom', 'multiCount', 'desiredQuantity', 'variations', 'linkedItemIds',
-  'pantsSize', 'shirtSize', 'shoesSize', 'socksSize', 'color', 'otherUsersCanSee',
-  'isFavorite', 'isPinned',
-];
+type ExtractedMetadataResponse = Awaited<ReturnType<typeof itemsApi.extractMetadata>>;
 
 export const AddItemForm: React.FC<AddItemFormProps> = ({
   listId,
@@ -43,6 +56,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   listShares = [],
   onLoadingChange,
   onDirtyChange,
+  canShowAi = false,
+  listAiEnabled = false,
 }) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
@@ -72,17 +87,19 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const isMultiCount = typeof desiredQuantity === 'number' && desiredQuantity > 1;
   const [variations, setVariations] = useState<{ name: string; quantity: number }[]>([]);
 
-  // Optional and Custom Description Fields
-  const [pantsSize, setPantsSize] = useState('');
-  const [shirtSize, setShirtSize] = useState('');
-  const [shoesSize, setShoesSize] = useState('');
-  const [socksSize, setSocksSize] = useState('');
-  const [color, setColor] = useState('');
-  const [customFields, setCustomFields] = useState<{ id: string; name: string; value: string }[]>([]);
+  const [customFields, setCustomFields] = useState<CustomFieldRow[]>([]);
   const [showExtraFields, setShowExtraFields] = useState(false);
+  const loadedMetadataRef = useRef<{
+    predefined: Record<string, string | null | undefined>;
+    userDefined: Record<string, string>;
+  } | null>(null);
+  const pendingExtractedRef = useRef<ExtractedMetadataResponse | null>(null);
+  const lastPartitionDefKeysRef = useRef<string>('');
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isSummarizingNotes, setIsSummarizingNotes] = useState(false);
+  const [undoDescription, setUndoDescription] = useState<string | null>(null);
   const [loadedItemId, setLoadedItemId] = useState<string | null>(null);
   const initialEditSnapshotRef = useRef<string | null>(null);
 
@@ -97,7 +114,12 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const buildEditSnapshot = useCallback(() => {
     const comparableCustomFields = customFields
       .filter((field) => field.name.trim() && field.value.trim())
-      .map((field) => ({ name: field.name.trim(), value: field.value.trim() }))
+      .map((field) => ({
+        name: field.name.trim(),
+        value: field.value.trim(),
+        bucket: field.bucket,
+        storageKey: field.storageKey,
+      }))
       .sort((a, b) => a.name.localeCompare(b.name) || a.value.localeCompare(b.value));
 
     const comparableDynamicValues = Object.keys(dynamicValues)
@@ -126,11 +148,6 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       websiteName: websiteName.trim(),
       price: price.trim(),
       isFavorite,
-      pantsSize: pantsSize.trim(),
-      shirtSize: shirtSize.trim(),
-      shoesSize: shoesSize.trim(),
-      socksSize: socksSize.trim(),
-      color: color.trim(),
       customFields: comparableCustomFields,
       dynamicValues: comparableDynamicValues,
       desiredQuantity,
@@ -149,11 +166,6 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     websiteName,
     price,
     isFavorite,
-    pantsSize,
-    shirtSize,
-    shoesSize,
-    socksSize,
-    color,
     customFields,
     dynamicValues,
     desiredQuantity,
@@ -213,6 +225,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   };
 
   useEffect(() => {
+    if (canShowAi) {
+      setDefinitions([]);
+      return;
+    }
+
     const fetchDefinitions = async () => {
       const mappedCat = mapCategoryForDefinitions(category);
       try {
@@ -227,7 +244,55 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     } else {
       setDefinitions([]);
     }
-  }, [category]);
+  }, [category, canShowAi]);
+
+  useEffect(() => {
+    if (canShowAi || !loadedMetadataRef.current || !item || loadedItemId !== item.Id) return;
+    if (definitions.length === 0) return;
+
+    const { fieldKeys, labels } = definitionFieldKeysFromDefinitions(definitions);
+    const mapped = rowsFromItemMetadata(
+      loadedMetadataRef.current.predefined,
+      loadedMetadataRef.current.userDefined,
+      fieldKeys,
+      labels
+    );
+    setDynamicValues(mapped.dynamicValues);
+    setCustomFields(mapped.customFieldRows);
+  }, [definitions, canShowAi, item, loadedItemId]);
+
+  const applyExtractedCustomFields = useCallback(
+    (data: ExtractedMetadataResponse) => {
+      if (canShowAi) {
+        const rows = rowsFromExtractedMetadata(data);
+        if (rows.length > 0) {
+          setCustomFields(rows);
+        }
+        return;
+      }
+
+      const { fieldKeys, labels } = definitionFieldKeysFromDefinitions(definitions);
+      const { dynamicValues: scrapedDynamic, customFieldRows } = partitionExtractedCustomFields(
+        data,
+        fieldKeys,
+        labels
+      );
+      setDynamicValues((prev) => ({ ...prev, ...scrapedDynamic }));
+      setCustomFields(customFieldRows);
+      lastPartitionDefKeysRef.current = fieldKeys.slice().sort().join('|');
+    },
+    [canShowAi, definitions]
+  );
+
+  useEffect(() => {
+    if (canShowAi || !pendingExtractedRef.current) return;
+
+    const { fieldKeys } = definitionFieldKeysFromDefinitions(definitions);
+    const defSig = fieldKeys.slice().sort().join('|');
+    if (!defSig || defSig === lastPartitionDefKeysRef.current) return;
+
+    applyExtractedCustomFields(pendingExtractedRef.current);
+  }, [definitions, canShowAi, applyExtractedCustomFields]);
 
   const isFieldVisible = React.useCallback((def: FieldDefinition) => {
     if (!def.Dependencies || def.Dependencies.length === 0) {
@@ -250,32 +315,91 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   };
 
   const resetOptionalFields = () => {
-    setPantsSize('');
-    setShirtSize('');
-    setShoesSize('');
-    setSocksSize('');
-    setColor('');
     setCustomFields([]);
     setDynamicValues({});
     setShowExtraFields(false);
     setDesiredQuantity(1);
     setVariations([]);
+    loadedMetadataRef.current = null;
+    pendingExtractedRef.current = null;
+    lastPartitionDefKeysRef.current = '';
   };
 
-  const hasOptionalMetadata = (meta: Record<string, unknown>) => {
-    const hasSizing = !!(
-      meta.pantsSize ||
-      meta.shirtSize ||
-      meta.shoesSize ||
-      meta.socksSize ||
-      meta.color
+  const hasOptionalMetadata = (meta: ItemDescriptionMetadata) => {
+    const normalized = normalizeItemDescriptionMetadata(meta);
+    const predefined = normalized.CustomFields?.Predefined ?? {};
+    const userDefined = normalized.CustomFields?.UserDefined ?? {};
+    const hasPredefined = Object.values(predefined).some(
+      (value) => typeof value === 'string' && value.trim()
     );
-    const hasCustom = Array.isArray(meta.custom) && meta.custom.length > 0;
-    const hasDynamic = Object.keys(meta).some(
-      (key) => !DYNAMIC_FIELD_KEYS.includes(key) && meta[key] != null && meta[key] !== ''
-    );
-    return hasSizing || hasCustom || hasDynamic;
+    const hasUserDefined = Object.keys(userDefined).some((key) => userDefined[key]?.trim());
+    return hasPredefined || hasUserDefined;
   };
+
+  const buildDescriptionPayload = useCallback(
+    (options: { isOwner: boolean; isFavorite: boolean }) => {
+      const visibleDynamicValues: Record<string, string> = {};
+      definitions.forEach((def) => {
+        if (isFieldVisible(def)) {
+          const val = dynamicValues[def.FieldKey];
+          if (val?.trim()) {
+            visibleDynamicValues[def.FieldKey] = val.trim();
+          }
+        }
+      });
+
+      const hasVisibleDynamic = Object.keys(visibleDynamicValues).length > 0;
+      const { predefined: rowPredefined, userDefined: rowUserDefined } =
+        splitCustomFieldRowsForSave(customFields);
+      const hasExtraFields =
+        hasVisibleDynamic ||
+        Object.keys(rowPredefined).length > 0 ||
+        Object.keys(rowUserDefined).length > 0 ||
+        isMultiCount ||
+        linkedItemIds.length > 0;
+
+      const shouldSerialize = !!(
+        hasVisibleDynamic ||
+        hasExtraFields ||
+        description.trim() ||
+        !options.isOwner ||
+        options.isFavorite
+      );
+
+      if (!shouldSerialize) {
+        return null;
+      }
+
+      return buildItemDescriptionPayload({
+        text: description.trim(),
+        predefined: {
+          ...visibleDynamicValues,
+          ...rowPredefined,
+        },
+        userDefined: rowUserDefined,
+        multiCount: isMultiCount,
+        desiredQuantity: isMultiCount ? (desiredQuantity as number) : 1,
+        variations: isMultiCount ? variations : [],
+        linkedItemIds,
+        otherUsersCanSee: options.isOwner ? true : otherUsersCanSee,
+        isFavorite: options.isOwner ? options.isFavorite : undefined,
+        isPinned: !options.isOwner ? options.isFavorite : undefined,
+        alwaysJson: shouldSerialize,
+      });
+    },
+    [
+      definitions,
+      dynamicValues,
+      isFieldVisible,
+      isMultiCount,
+      linkedItemIds,
+      customFields,
+      description,
+      desiredQuantity,
+      variations,
+      otherUsersCanSee,
+    ]
+  );
 
   useEffect(() => {
     if (item) {
@@ -284,33 +408,44 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
       const parsed = parseItemDescription(item.Description);
       if (parsed.isJson && parsed.metadata) {
-        const meta = parsed.metadata;
-        setDescription(meta.text || '');
+        const meta = normalizeItemDescriptionMetadata(parsed.metadata);
+        setDescription(getMetadataText(meta));
 
-        const dynValues: Record<string, string> = {};
-        for (const key of Object.keys(meta)) {
-          if (!DYNAMIC_FIELD_KEYS.includes(key)) {
-            dynValues[key] = String(meta[key] || '');
-          }
+        loadedMetadataRef.current = {
+          predefined: meta.CustomFields?.Predefined ?? {},
+          userDefined: meta.CustomFields?.UserDefined ?? {},
+        };
+
+        if (canShowAi) {
+          setCustomFields(
+            rowsFromItemMetadataAi(
+              loadedMetadataRef.current.predefined,
+              loadedMetadataRef.current.userDefined
+            )
+          );
+          setDynamicValues({});
+        } else if (definitions.length > 0) {
+          const { fieldKeys, labels } = definitionFieldKeysFromDefinitions(definitions);
+          const mapped = rowsFromItemMetadata(
+            loadedMetadataRef.current.predefined,
+            loadedMetadataRef.current.userDefined,
+            fieldKeys,
+            labels
+          );
+          setDynamicValues(mapped.dynamicValues);
+          setCustomFields(mapped.customFieldRows);
+        } else {
+          setCustomFields(
+            rowsFromItemMetadataAi(
+              loadedMetadataRef.current.predefined,
+              loadedMetadataRef.current.userDefined
+            )
+          );
+          setDynamicValues({});
         }
-        setDynamicValues(dynValues);
 
-        setPantsSize(meta.pantsSize || '');
-        setShirtSize(meta.shirtSize || '');
-        setShoesSize(meta.shoesSize || '');
-        setSocksSize(meta.socksSize || '');
-        setColor(meta.color || '');
         setDesiredQuantity(meta.desiredQuantity || 1);
         setVariations(meta.variations || []);
-        setCustomFields(
-          meta.custom?.length
-            ? meta.custom.map((f) => ({
-              id: Math.random().toString(),
-              name: f.name,
-              value: f.value,
-            }))
-            : []
-        );
         setOtherUsersCanSee(meta.otherUsersCanSee !== undefined ? meta.otherUsersCanSee : true);
         setShowExtraFields(hasOptionalMetadata(meta));
       } else {
@@ -381,6 +516,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       resetOptionalFields();
       setHasScraped(false);
       setLoadedItemId(null);
+      setUndoDescription(null);
+      setIsSummarizingNotes(false);
     }
   }, [isOpen]);
 
@@ -402,49 +539,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     }
 
     if (onDraftChange) {
-      const visibleDynamicValues: Record<string, string> = {};
-      definitions.forEach(def => {
-        if (isFieldVisible(def)) {
-          const val = dynamicValues[def.FieldKey];
-          if (val && val.trim()) {
-            visibleDynamicValues[def.FieldKey] = val.trim();
-          }
-        }
-      });
-
-      const hasVisibleDynamic = Object.keys(visibleDynamicValues).length > 0;
-      const hasExtraFields =
-        pantsSize.trim() ||
-        shirtSize.trim() ||
-        shoesSize.trim() ||
-        socksSize.trim() ||
-        color.trim() ||
-        isMultiCount ||
-        linkedItemIds.length > 0 ||
-        customFields.some(f => f.name.trim() && f.value.trim());
-
-      let descPayload = '';
-      if (hasVisibleDynamic || hasExtraFields || description.trim() || !isOwner) {
-        descPayload = JSON.stringify({
-          text: description.trim() || null,
-          pantsSize: pantsSize.trim() || null,
-          shirtSize: shirtSize.trim() || null,
-          shoesSize: shoesSize.trim() || null,
-          socksSize: socksSize.trim() || null,
-          color: color.trim() || null,
-          multiCount: isMultiCount,
-          desiredQuantity,
-          variations,
-          linkedItemIds,
-          custom: customFields
-            .filter(f => f.name.trim() && f.value.trim())
-            .map(f => ({ name: f.name.trim(), value: f.value.trim() })),
-          otherUsersCanSee: isOwner ? true : otherUsersCanSee,
-          ...visibleDynamicValues
-        });
-      } else {
-        descPayload = description.trim();
-      }
+      const descPayload = buildDescriptionPayload({ isOwner, isFavorite }) ?? '';
 
       onDraftChange({
         Id: item.Id,
@@ -481,11 +576,6 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     linkUrl,
     websiteName,
     price,
-    pantsSize,
-    shirtSize,
-    shoesSize,
-    socksSize,
-    color,
     customFields,
     otherUsersCanSee,
     dynamicValues,
@@ -498,7 +588,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     desiredQuantity,
     variations,
     linkedItemIds,
-    isFieldVisible,
+    buildDescriptionPayload,
+    isFavorite,
     visibilityMode,
     sharedWithUserIds,
     listShares,
@@ -509,6 +600,67 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setHasScraped(false);
   }, [linkUrl]);
 
+  const canSummarizeNotes = canShowAi && listAiEnabled && !!name.trim();
+
+  const handleSummarizeNotes = async () => {
+    if (!canSummarizeNotes || isSummarizingNotes) return;
+
+    const visibleDynamicValues: Record<string, string> = {};
+    definitions.forEach((def) => {
+      if (isFieldVisible(def)) {
+        const val = dynamicValues[def.FieldKey];
+        if (val?.trim()) {
+          visibleDynamicValues[def.FieldKey] = val.trim();
+        }
+      }
+    });
+
+    setUndoDescription(description);
+    setIsSummarizingNotes(true);
+    setErrorMsg(null);
+
+    try {
+      const summarizeCustomFields = buildSummarizeCustomFields({
+        dynamicValues: visibleDynamicValues,
+        customFieldRows: customFields.filter(
+          (field) => field.name.trim() && field.value.trim()
+        ),
+      });
+
+      const summarized = await itemsApi.summarizeDescription({
+        listId,
+        name: name.trim(),
+        text: description.trim() || undefined,
+        linkUrl: linkUrl.trim() || undefined,
+        websiteName: websiteName.trim() || undefined,
+        price: price.trim() ? parseFloat(price) : null,
+        category: category === 'uncategorized' ? undefined : category,
+        priority: priorityWeight.trim() ? parseInt(priorityWeight, 10) : null,
+        customFields: summarizeCustomFields,
+        variations: isMultiCount
+          ? variations.map((variation) => ({
+            Name: variation.name,
+            Quantity: variation.quantity,
+          }))
+          : undefined,
+        desiredQuantity: typeof desiredQuantity === 'number' ? desiredQuantity : undefined,
+      });
+
+      setDescription(summarized);
+    } catch {
+      setUndoDescription(null);
+      setErrorMsg('Failed to generate notes automatically. You can still enter them manually.');
+    } finally {
+      setIsSummarizingNotes(false);
+    }
+  };
+
+  const handleUndoSummarize = () => {
+    if (undoDescription === null) return;
+    setDescription(undoDescription);
+    setUndoDescription(null);
+  };
+
   const handleScrapeClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!linkUrl.trim()) return;
@@ -518,7 +670,6 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       return;
     }
 
-    // Automatically pre-populate/replace the Website Name from hostname
     try {
       const urlObj = new URL(linkUrl.trim());
       const hostname = urlObj.hostname;
@@ -534,46 +685,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     try {
       const data = await itemsApi.extractMetadata(linkUrl.trim());
       if (data) {
-        setHasScraped(true);
-        setName(data.title || '');
-        setPrice(data.price !== null && data.price !== undefined ? data.price.toString() : '');
-        setDescription(data.description || '');
-        setCategory(data.category || 'uncategorized');
-
-        const colorVal = data.color || '';
-        setColor(colorVal);
-        handleUpdateDynamicValue('preferredColor', colorVal);
-        handleUpdateDynamicValue('color', colorVal);
-
-        // Reset size fields first so they don't overlap/accumulate
-        setPantsSize('');
-        setShirtSize('');
-        setShoesSize('');
-        setSocksSize('');
-
-        if (data.size) {
-          const sizeVal = data.size.trim();
-          const urlLower = linkUrl.toLowerCase();
-          const titleLower = (data.title || '').toLowerCase();
-
-          if (urlLower.includes('shoe') || urlLower.includes('boot') || urlLower.includes('sneaker') || titleLower.includes('shoe') || titleLower.includes('sneaker')) {
-            setShoesSize(sizeVal);
-            handleUpdateDynamicValue('shoesSize', sizeVal);
-            setShowExtraFields(true);
-          } else if (urlLower.includes('pant') || urlLower.includes('jeans') || urlLower.includes('trouser') || urlLower.includes('short') || titleLower.includes('pant') || titleLower.includes('jeans') || /^\d{2}x\d{2}$/i.test(sizeVal)) {
-            setPantsSize(sizeVal);
-            handleUpdateDynamicValue('pantsSize', sizeVal);
-            setShowExtraFields(true);
-          } else if (urlLower.includes('sock') || titleLower.includes('sock')) {
-            setSocksSize(sizeVal);
-            handleUpdateDynamicValue('socksSize', sizeVal);
-            setShowExtraFields(true);
-          } else {
-            setShirtSize(sizeVal);
-            handleUpdateDynamicValue('shirtSize', sizeVal);
-            setShowExtraFields(true);
-          }
-        }
+        applyExtractedMetadata(data);
       }
     } catch (err) {
       setErrorMsg('Failed to fetch product details automatically. You can still enter them manually.');
@@ -582,8 +694,36 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     }
   };
 
+  const applyExtractedMetadata = (data: ExtractedMetadataResponse) => {
+    setHasScraped(true);
+    setName(data.Title || '');
+    setPrice(data.Price !== null && data.Price !== undefined ? data.Price.toString() : '');
+    setDescription(data.Description || '');
+
+    const resolvedCategory = data.Category?.trim() || 'uncategorized';
+    if (canShowAi && resolvedCategory !== 'uncategorized') {
+      const isStandard = STANDARD_CATEGORIES.some((s) => s.id === resolvedCategory);
+      if (!isStandard && !sessionCustomCategories.includes(resolvedCategory)) {
+        setSessionCustomCategories((prev) => [...prev, resolvedCategory]);
+      }
+      if (deletedCategories.includes(resolvedCategory)) {
+        setDeletedCategories((prev) => prev.filter((c) => c !== resolvedCategory));
+      }
+      setCategory(resolvedCategory);
+    } else {
+      setCategory(resolvedCategory);
+    }
+
+    pendingExtractedRef.current = data;
+    applyExtractedCustomFields(data);
+    setShowExtraFields(true);
+  };
+
   const handleAddCustomField = () => {
-    setCustomFields(prev => [...prev, { id: Math.random().toString(), name: '', value: '' }]);
+    setCustomFields((prev) => [
+      ...prev,
+      createCustomFieldRow({ name: '', value: '', bucket: 'userDefined' }),
+    ]);
   };
 
   const handleRemoveCustomField = (id: string) => {
@@ -679,43 +819,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setErrorMsg(null);
 
     try {
-      // Serialize optional and custom fields inside description as JSON if present
-      let descPayload: string | null = null;
-
-      const visibleDynamicValues: Record<string, string> = {};
-      definitions.forEach(def => {
-        if (isFieldVisible(def)) {
-          const val = dynamicValues[def.FieldKey];
-          if (val && val.trim()) {
-            visibleDynamicValues[def.FieldKey] = val.trim();
-          }
-        }
-      });
-
-      const hasVisibleDynamic = Object.keys(visibleDynamicValues).length > 0;
-      const hasExtraFields = pantsSize.trim() || shirtSize.trim() || shoesSize.trim() || socksSize.trim() || color.trim() || isMultiCount || linkedItemIds.length > 0 || customFields.some(f => f.name.trim() && f.value.trim());
-
-      if (hasVisibleDynamic || hasExtraFields || description.trim() || !isOwner || isFavorite) {
-        descPayload = JSON.stringify({
-          text: description.trim() || null,
-          pantsSize: pantsSize.trim() || null,
-          shirtSize: shirtSize.trim() || null,
-          shoesSize: shoesSize.trim() || null,
-          socksSize: socksSize.trim() || null,
-          color: color.trim() || null,
-          multiCount: isMultiCount,
-          desiredQuantity: isMultiCount ? desiredQuantity : 1,
-          variations: isMultiCount ? variations : [],
-          linkedItemIds,
-          custom: customFields
-            .filter(f => f.name.trim() && f.value.trim())
-            .map(f => ({ name: f.name.trim(), value: f.value.trim() })),
-          otherUsersCanSee: isOwner ? true : otherUsersCanSee,
-          isFavorite: isOwner ? isFavorite : undefined,
-          isPinned: !isOwner ? isFavorite : undefined,
-          ...visibleDynamicValues
-        });
-      }
+      const descPayload = buildDescriptionPayload({ isOwner, isFavorite });
 
       const priorityVal = priorityWeight.trim() ? parseInt(priorityWeight, 10) : null;
 
@@ -733,7 +837,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           null,
           category === 'uncategorized' ? null : category,
           priorityVal,
-          finalSharedWith
+          finalSharedWith,
+          linkUrl.trim() || null,
+          price.trim() ? parseFloat(price) : null,
+          websiteName.trim() || null
         );
         savedItemId = item.Id;
       } else {
@@ -791,11 +898,6 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setCategory('uncategorized');
       setPrice('');
       setIsFavorite(false);
-      setPantsSize('');
-      setShirtSize('');
-      setShoesSize('');
-      setSocksSize('');
-      setColor('');
       setCustomFields([]);
       setShowExtraFields(false);
       onSuccess();
@@ -807,26 +909,69 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   };
 
   // Compile list of categories
-  const renderedCategories: { id: string; label: string; isCustom?: boolean }[] = [];
-  STANDARD_CATEGORIES.forEach(c => renderedCategories.push({ ...c, isCustom: false }));
+  const listCategorySet = useMemo(
+    () =>
+      new Set(
+        (existingCategories ?? []).filter(
+          (cat): cat is string => !!cat && cat !== 'uncategorized'
+        )
+      ),
+    [existingCategories]
+  );
 
-  if (existingCategories) {
-    existingCategories.forEach(cat => {
-      if (cat && cat !== 'uncategorized' && !STANDARD_CATEGORIES.some(s => s.id === cat) && !renderedCategories.some(r => r.id === cat) && !deletedCategories.includes(cat)) {
-        renderedCategories.push({ id: cat, label: getFriendlyCategoryLabel(cat), isCustom: true });
+  const renderedCategories = useMemo(() => {
+    const categories: { id: string; label: string; isCustom?: boolean; isFromList?: boolean }[] = [];
+
+    STANDARD_CATEGORIES.forEach((c) => {
+      categories.push({
+        ...c,
+        isCustom: false,
+        isFromList: listCategorySet.has(c.id),
+      });
+    });
+
+    listCategorySet.forEach((cat) => {
+      if (
+        !STANDARD_CATEGORIES.some((s) => s.id === cat) &&
+        !categories.some((r) => r.id === cat) &&
+        !deletedCategories.includes(cat)
+      ) {
+        categories.push({
+          id: cat,
+          label: getFriendlyCategoryLabel(cat),
+          isCustom: true,
+          isFromList: true,
+        });
       }
     });
-  }
 
-  sessionCustomCategories.forEach(cat => {
-    if (cat && !renderedCategories.some(r => r.id === cat) && !deletedCategories.includes(cat)) {
-      renderedCategories.push({ id: cat, label: getFriendlyCategoryLabel(cat), isCustom: true });
+    sessionCustomCategories.forEach((cat) => {
+      if (cat && !categories.some((r) => r.id === cat) && !deletedCategories.includes(cat)) {
+        categories.push({
+          id: cat,
+          label: getFriendlyCategoryLabel(cat),
+          isCustom: true,
+          isFromList: listCategorySet.has(cat),
+        });
+      }
+    });
+
+    if (
+      category &&
+      category !== 'uncategorized' &&
+      !categories.some((r) => r.id === category) &&
+      !deletedCategories.includes(category)
+    ) {
+      categories.push({
+        id: category,
+        label: getFriendlyCategoryLabel(category),
+        isCustom: true,
+        isFromList: listCategorySet.has(category),
+      });
     }
-  });
 
-  if (category && category !== 'uncategorized' && !renderedCategories.some(r => r.id === category) && !deletedCategories.includes(category)) {
-    renderedCategories.push({ id: category, label: getFriendlyCategoryLabel(category), isCustom: true });
-  }
+    return categories;
+  }, [listCategorySet, sessionCustomCategories, deletedCategories, category]);
 
   const handleAddCustomCategory = () => {
     const val = newCustomInput.trim();
@@ -857,6 +1002,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const [varQty, setVarQty] = useState<number | ''>(1);
   const [varError, setVarError] = useState<string | null>(null);
   const showOptionalSizing = (category && category !== 'uncategorized') || hasScraped;
+  const showFieldDefinitions = showOptionalSizing && !canShowAi && definitions.length > 0;
 
   useEffect(() => {
     setVarError(null);
@@ -926,16 +1072,6 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       isAutopopulating={isAutopopulating}
       hasScraped={hasScraped}
       handleScrapeClick={handleScrapeClick}
-      pantsSize={pantsSize}
-      setPantsSize={setPantsSize}
-      shirtSize={shirtSize}
-      setShirtSize={setShirtSize}
-      shoesSize={shoesSize}
-      setShoesSize={setShoesSize}
-      socksSize={socksSize}
-      setSocksSize={setSocksSize}
-      color={color}
-      setColor={setColor}
       customFields={customFields}
       handleAddCustomField={handleAddCustomField}
       handleRemoveCustomField={handleRemoveCustomField}
@@ -973,7 +1109,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       isLinkingModeActive={isLinkingModeActive}
       setIsLinkingModeActive={setIsLinkingModeActive}
       getFriendlyCategoryLabel={getFriendlyCategoryLabel}
-      showOptionalSizing={showOptionalSizing}
+      showFieldDefinitions={showFieldDefinitions}
       varName={varName}
       setVarName={setVarName}
       varQty={varQty}
@@ -986,6 +1122,13 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setSharedWithUserIds={setSharedWithUserIds}
       visibilityMode={visibilityMode}
       onVisibilityModeChange={handleVisibilityModeChange}
+      canShowAi={canShowAi}
+      listAiEnabled={listAiEnabled}
+      canSummarizeNotes={canSummarizeNotes}
+      isSummarizingNotes={isSummarizingNotes}
+      canUndoSummarize={undoDescription !== null}
+      onSummarizeNotes={handleSummarizeNotes}
+      onUndoSummarize={handleUndoSummarize}
     />
   );
 };

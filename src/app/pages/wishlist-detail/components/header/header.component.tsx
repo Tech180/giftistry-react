@@ -5,7 +5,7 @@ import { useAuth } from 'app/providers/auth-context';
 
 export const Header: React.FC<HeaderProps> = (props) => {
   const { wishlist, isOwner } = props;
-  const { globalAiEnabled, user } = useAuth();
+  const { canShowAi, user } = useAuth();
 
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
       tempDate={tempDate}
       setTempDate={setTempDate}
       exportRef={exportRef}
-      globalAiEnabled={globalAiEnabled}
+      canShowAi={canShowAi}
     />
   );
 };

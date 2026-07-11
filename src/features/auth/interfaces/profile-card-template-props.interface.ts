@@ -39,4 +39,8 @@ export interface ProfileCardTemplateProps {
   initials: string;
   isImageAvatar: boolean;
   avatarStyle: React.CSSProperties;
+  showAiBadge: boolean;
+  aiEnabled: boolean;
+  isAiSaving: boolean;
+  onAiToggle: () => void;
 }

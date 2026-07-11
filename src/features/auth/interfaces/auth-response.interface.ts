@@ -1,7 +1,7 @@
+import { apiClient } from 'core/api/client';
 import { ApiUser } from './api-user.interface';
 
 export interface AuthResponse {
-  success: boolean;
   User?: ApiUser;
   Token?: string;
   Require2FA?: boolean;

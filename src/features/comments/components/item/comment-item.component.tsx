@@ -74,13 +74,13 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const reactionsMap = useMemo(() => {
     const map: Record<string, CommentReactionGroup> = {};
     for (const rx of comment.Reactions || []) {
-      if (!map[rx.reaction]) {
-        map[rx.reaction] = { count: 0, users: [], hasReacted: false };
+      if (!map[rx.Reaction]) {
+        map[rx.Reaction] = { count: 0, users: [], hasReacted: false };
       }
-      map[rx.reaction].count++;
-      map[rx.reaction].users.push(rx.username);
-      if (currentUserId && rx.userId === currentUserId) {
-        map[rx.reaction].hasReacted = true;
+      map[rx.Reaction].count++;
+      map[rx.Reaction].users.push(rx.Username);
+      if (currentUserId && rx.UserId === currentUserId) {
+        map[rx.Reaction].hasReacted = true;
       }
     }
     return map;

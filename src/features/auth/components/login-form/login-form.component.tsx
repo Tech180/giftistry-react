@@ -115,12 +115,12 @@ export const LoginForm: React.FC = () => {
     setIsLoading(true);
     try {
       const optionsRes = await authApi.passkeyLoginOptions();
-      if (!optionsRes || !optionsRes.options) {
+      if (!optionsRes || !optionsRes.Options) {
         throw new Error('Failed to fetch passkey options from server.');
       }
 
       const { startAuthentication } = await import('@simplewebauthn/browser');
-      const authResponse = await startAuthentication({ optionsJSON: optionsRes.options });
+      const authResponse = await startAuthentication({ optionsJSON: optionsRes.Options });
 
       const verifyRes = await authApi.passkeyLoginVerify(authResponse);
       if (verifyRes && verifyRes.Require2FA) {
@@ -148,12 +148,12 @@ export const LoginForm: React.FC = () => {
     setIsLoading(true);
     try {
       const optionsRes = await authApi.passkeyLoginOptions();
-      if (!optionsRes || !optionsRes.options) {
+      if (!optionsRes || !optionsRes.Options) {
         throw new Error('Failed to fetch passkey options from server.');
       }
 
       const { startAuthentication } = await import('@simplewebauthn/browser');
-      const authResponse = await startAuthentication({ optionsJSON: optionsRes.options });
+      const authResponse = await startAuthentication({ optionsJSON: optionsRes.Options });
 
       const verifyRes = await authApi.passkeyLoginVerify(authResponse);
       if (verifyRes && verifyRes.Require2FA) {

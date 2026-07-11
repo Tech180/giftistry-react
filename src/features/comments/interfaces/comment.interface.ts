@@ -9,6 +9,6 @@ export interface Comment {
   IsDeleted?: boolean;
   ParentId?: string | null;
   ImageUrl?: string | null;
-  Reactions?: { userId: string; username: string; reaction: string }[];
+  Reactions?: { UserId: string; Username: string; Reaction: string }[];
   CreatedAt?: string;
 }

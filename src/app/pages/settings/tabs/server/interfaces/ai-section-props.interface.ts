@@ -1,3 +1,7 @@
+import { LocalAiModelMode } from './local-ai-model.interface';
+import type { AiDefaultPromptsView } from './backend-settings.interface';
+import type { PromptType } from '../utils/ai-prompt-settings.util';
+
 export interface AiSectionProps {
   aiEnabled: boolean;
   setAiEnabled: (value: boolean) => void;
@@ -9,6 +13,14 @@ export interface AiSectionProps {
   setAiModel: (value: string) => void;
   aiPrompt: string;
   setAiPrompt: (value: string) => void;
+  aiDescriptionPrompt: string;
+  setAiDescriptionPrompt: (value: string) => void;
+  aiPopulatePrompt: string;
+  setAiPopulatePrompt: (value: string) => void;
+  aiCategoryPrompt: string;
+  setAiCategoryPrompt: (value: string) => void;
+  aiDefaultPrompts?: AiDefaultPromptsView;
+  onResetPrompt: (type: PromptType) => void;
   aiEndpoint: string;
   setAiEndpoint: (value: string) => void;
   showAiKey: boolean;
@@ -19,4 +31,11 @@ export interface AiSectionProps {
   selectedCompany: string;
   setSelectedCompany: (value: string) => void;
   filteredModels: Array<{ id: string; name: string; company: string; displayName: string }>;
+  localAiModels: string[];
+  localModelMode: LocalAiModelMode;
+  onLocalModelSelection: (value: string) => void;
+  aiConnectionStatus: 'idle' | 'checking' | 'success' | 'error';
+  aiConnectionMessage: string;
+  onTestAiConnection: () => void;
+  isTestingAiConnection: boolean;
 }

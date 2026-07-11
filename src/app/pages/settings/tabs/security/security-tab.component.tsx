@@ -135,14 +135,14 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
   const handleRegisterPasskey = async () => {
     try {
       const res = await authApi.passkeyRegisterOptions();
-      if (!res || !res.options) {
+      if (!res || !res.Options) {
         throw new Error('Failed to retrieve passkey options from server.');
       }
 
       // SimpleWebAuthn browser registration
       let regResponse;
       try {
-        regResponse = await startRegistration({ optionsJSON: res.options });
+        regResponse = await startRegistration({ optionsJSON: res.Options });
       } catch (browserErr) {
         // Silent return: The browser handles the UI for all local WebAuthn prompt cancellations/failures
         return;

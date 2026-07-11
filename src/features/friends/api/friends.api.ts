@@ -9,7 +9,7 @@ export const friendsApi = {
     apiClient.get<FriendRequestsResult>('/api/friends/requests'),
 
   sendRequest: (receiverId: string) =>
-    apiClient.post<FriendRequest>('/api/friends/requests', { receiverId }),
+    apiClient.post<FriendRequest>('/api/friends/requests', { ReceiverId: receiverId }, 'Friends'),
 
   acceptRequest: (requestId: string) =>
     apiClient.post<FriendRequest>(`/api/friends/requests/${requestId}/accept`, {}),

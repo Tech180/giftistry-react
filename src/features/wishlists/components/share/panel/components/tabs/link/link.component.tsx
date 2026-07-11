@@ -61,8 +61,8 @@ export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner }) => {
         null,
         hasPassword && password ? password : null
       );
-      setGeneratedToken(result.token);
-      setActiveInvite(result.invite);
+      setGeneratedToken(result.Token);
+      setActiveInvite(result.Invite);
       setSuccessMsg('Share link generated successfully!');
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to generate link.');

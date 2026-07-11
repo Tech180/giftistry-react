@@ -24,15 +24,6 @@ type ApiNotificationPreferences = {
   Comments?: boolean;
 };
 
-const PREFERENCE_TO_API: Record<keyof NotificationPreferences, string> = {
-  EmailAlerts: 'emailAlerts',
-  MarketingPromos: 'marketing',
-  FriendRequests: 'friendRequests',
-  ListShares: 'listShares',
-  ItemClaims: 'itemClaims',
-  Comments: 'comments',
-};
-
 function mapPreferencesFromApi(api: ApiNotificationPreferences): NotificationPreferences {
   return {
     EmailAlerts: api.EmailAlerts ?? true,
@@ -44,13 +35,14 @@ function mapPreferencesFromApi(api: ApiNotificationPreferences): NotificationPre
   };
 }
 
-function mapPreferencesToApi(preferences: Partial<NotificationPreferences>) {
-  const body: Record<string, boolean> = {};
-  for (const [key, value] of Object.entries(preferences) as [keyof NotificationPreferences, boolean][]) {
-    if (value !== undefined) {
-      body[PREFERENCE_TO_API[key]] = value;
-    }
-  }
+function mapPreferencesToApi(preferences: Partial<NotificationPreferences>): ApiNotificationPreferences {
+  const body: ApiNotificationPreferences = {};
+  if (preferences.EmailAlerts !== undefined) body.EmailAlerts = preferences.EmailAlerts;
+  if (preferences.MarketingPromos !== undefined) body.Marketing = preferences.MarketingPromos;
+  if (preferences.FriendRequests !== undefined) body.FriendRequests = preferences.FriendRequests;
+  if (preferences.ListShares !== undefined) body.ListShares = preferences.ListShares;
+  if (preferences.ItemClaims !== undefined) body.ItemClaims = preferences.ItemClaims;
+  if (preferences.Comments !== undefined) body.Comments = preferences.Comments;
   return body;
 }
 
@@ -93,11 +85,16 @@ export const notificationsApi = {
   updatePreferences: (preferences: Partial<NotificationPreferences>) =>
     apiClient.patch<ApiNotificationPreferences>(
       '/api/notifications/preferences',
-      mapPreferencesToApi(preferences)
+      mapPreferencesToApi(preferences),
+      'Notifications'
     ).then(mapPreferencesFromApi),
 
   acceptListInvite: (token: string, password?: string) =>
-    apiClient.post<ListShare>(`/api/invites/link/${token}/accept`, password ? { password } : {}),
+    apiClient.post<ListShare>(
+      `/api/invites/link/${token}/accept`,
+      password ? { Password: password } : {},
+      password ? 'Invites' : undefined
+    ),
 
   getInviteLinkDetails: (token: string) =>
     apiClient.get<{ ListId: string; Role: string; PasswordProtected: boolean; ExpiresAt: string | null }>(

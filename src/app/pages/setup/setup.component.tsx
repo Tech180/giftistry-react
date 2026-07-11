@@ -156,21 +156,21 @@ export const Setup: React.FC = () => {
         await apiClient.post('/api/system/setup', {
           Giftistry: {
             Setup: {
-              dbType,
-              dbUrl: dbType === 'remote' ? dbUrl : undefined,
-              smtpType,
-              smtpHost: smtpType === 'remote' ? smtpHost : undefined,
-              smtpPort: smtpType === 'remote' ? smtpPort : undefined,
-              smtpUser: smtpType === 'remote' ? smtpUser : undefined,
-              smtpPass: smtpType === 'remote' ? smtpPass : undefined,
-              smtpSecure: smtpType === 'remote' ? smtpSecure : undefined,
-              smtpFrom: smtpType === 'remote' ? smtpFrom : undefined,
-              admin: {
-                username: adminUsername,
-                email: adminEmail,
-                password: adminPassword,
-                firstName: adminFirstName,
-                lastName: adminLastName,
+              DbType: dbType,
+              DbUrl: dbType === 'remote' ? dbUrl : undefined,
+              SmtpType: smtpType,
+              SmtpHost: smtpType === 'remote' ? smtpHost : undefined,
+              SmtpPort: smtpType === 'remote' ? smtpPort : undefined,
+              SmtpUser: smtpType === 'remote' ? smtpUser : undefined,
+              SmtpPass: smtpType === 'remote' ? smtpPass : undefined,
+              SmtpSecure: smtpType === 'remote' ? smtpSecure : undefined,
+              SmtpFrom: smtpType === 'remote' ? smtpFrom : undefined,
+              Admin: {
+                Username: adminUsername,
+                Email: adminEmail,
+                Password: adminPassword,
+                FirstName: adminFirstName,
+                LastName: adminLastName,
               },
             }
           }

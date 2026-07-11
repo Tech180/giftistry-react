@@ -14,6 +14,8 @@ export const Drawer: React.FC<DrawerProps> = ({
   variant = 'default',
   footer,
   titleIcon,
+  titleExtra,
+  headerExtra,
   onOverlayClick,
 }) => {
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -49,6 +51,8 @@ export const Drawer: React.FC<DrawerProps> = ({
       variant={variant}
       footer={footer}
       titleIcon={titleIcon}
+      titleExtra={titleExtra}
+      headerExtra={headerExtra}
       isOpen={isOpen}
       onOverlayClick={onOverlayClick ?? onClose}
     >

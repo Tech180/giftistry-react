@@ -55,6 +55,9 @@ export interface ItemCardTemplateProps {
   setIsExpanded?: (val: boolean) => void;
   displayDescription: string | null;
   metadata: Record<string, any> | null;
+  predefinedDisplayEntries: { label: string; value: string }[];
+  userDefinedEntries: { name: string; value: string }[];
+  metadataBadgeEmoji: Record<string, string>;
   CategoryIcon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
   displayCategoryBadge: boolean;
   categoryLabel: string;

@@ -5,14 +5,14 @@ export function getNotificationNavigationTarget(notification: Notification): str
 
   switch (notification.Type) {
     case 'friend_request':
-      if (meta.requestId) {
-        return `/friends/requests?highlightRequest=${encodeURIComponent(meta.requestId)}`;
+      if (meta.RequestId) {
+        return `/friends/requests?highlightRequest=${encodeURIComponent(meta.RequestId)}`;
       }
       return '/friends/requests';
 
     case 'friend_accepted':
-      if (meta.userId) {
-        return `/friends/current?highlightUser=${encodeURIComponent(meta.userId)}`;
+      if (meta.UserId) {
+        return `/friends/current?highlightUser=${encodeURIComponent(meta.UserId)}`;
       }
       return '/friends/current';
 
@@ -22,8 +22,8 @@ export function getNotificationNavigationTarget(notification: Notification): str
     case 'invite_accepted':
     case 'item_claimed':
     case 'comment':
-      if (meta.listId) {
-        return `/wishlists/${meta.listId}`;
+      if (meta.ListId) {
+        return `/wishlists/${meta.ListId}`;
       }
       break;
 
@@ -32,8 +32,8 @@ export function getNotificationNavigationTarget(notification: Notification): str
       break;
   }
 
-  if (meta.listId) {
-    return `/wishlists/${meta.listId}`;
+  if (meta.ListId) {
+    return `/wishlists/${meta.ListId}`;
   }
 
   return null;

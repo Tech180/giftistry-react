@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Link, Globe, DollarSign, Star, Plus, Trash2, Pin,
-  Wand2, ChevronDown, Gift, AlertTriangle,
+  Wand2, ChevronDown, Gift, AlertTriangle, Check, Undo2, Pencil,
 } from 'lucide-react';
-import { Button, Chip, Switch } from 'shared/ui';
+import { Button, Chip, Switch, AiStatusBadge } from 'shared/ui';
 import { AddItemFormTemplateProps } from '../../interfaces/add-item-form-template-props.interface';
 import { AudiencePicker } from '../audience-picker';
 import styles from './add-item-form.module.css';
@@ -35,16 +35,6 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   setIsFavorite,
   isAutopopulating,
   handleScrapeClick,
-  pantsSize,
-  setPantsSize,
-  shirtSize,
-  setShirtSize,
-  shoesSize,
-  setShoesSize,
-  socksSize,
-  setSocksSize,
-  color,
-  setColor,
   customFields,
   handleAddCustomField,
   handleRemoveCustomField,
@@ -80,7 +70,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   wishlistItems = [],
   itemId,
   getFriendlyCategoryLabel,
-  showOptionalSizing,
+  showFieldDefinitions,
   varName,
   setVarName,
   varQty,
@@ -92,8 +82,34 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   setSharedWithUserIds,
   visibilityMode,
   onVisibilityModeChange,
+  canSummarizeNotes,
+  isSummarizingNotes,
+  canUndoSummarize,
+  onSummarizeNotes,
+  onUndoSummarize,
+  canShowAi = false,
 }) => {
   const hasLinkedItems = wishlistItems.filter((i) => i.Id !== itemId).length > 0;
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [editingNameFieldId, setEditingNameFieldId] = useState<string | null>(null);
+
+  const isEditingCustomFieldName = (field: { id: string; name: string }) =>
+    !field.name.trim() || editingNameFieldId === field.id;
+
+  const finishEditingCustomFieldName = () => {
+    setEditingNameFieldId(null);
+  };
+
+  const handleCopyLink = async () => {
+    if (!linkUrl.trim()) return;
+    try {
+      await navigator.clipboard.writeText(linkUrl.trim());
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable — no-op
+    }
+  };
 
   return (
     <form id={ADD_ITEM_FORM_ID} onSubmit={handleSubmit} className={styles.form}>
@@ -108,7 +124,16 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
         <div className={styles['form-group']}>
           <label className={styles.label}>Item Link</label>
           <div className={styles['input-wrapper']}>
-            <span className={styles['input-icon']}><Link size={16} /></span>
+            <button
+              type="button"
+              className={styles['input-icon']}
+              onClick={handleCopyLink}
+              disabled={!linkUrl.trim()}
+              title={linkCopied ? 'Copied!' : 'Copy link'}
+              aria-label={linkCopied ? 'Link copied to clipboard' : 'Copy link to clipboard'}
+            >
+              {linkCopied ? <Check size={16} /> : <Link size={16} />}
+            </button>
             <input
               type="url"
               className={`${styles.input} ${styles['input-has-icon']} ${styles['input-has-action']}`}
@@ -227,37 +252,44 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       <div className={styles.section}>
         <div className={styles['form-group']}>
           <label className={styles.label}>Category</label>
+          {canShowAi && category === 'uncategorized' && renderedCategories.every((cat) => !cat.isCustom && !cat.isFromList) && (
+            <p className={styles['ai-category-hint']}>
+              Assigned automatically when you auto-fill from a product link.
+            </p>
+          )}
           <div className={styles['chip-group']}>
-            {renderedCategories.map((cat) => {
-              const isSelected = category === cat.id;
-              if (cat.isCustom) {
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    className={`${styles['chip-custom-btn']} ${isSelected ? styles['chip-custom-btn-active'] : ''}`}
-                    onClick={() => setCategory(isSelected ? 'uncategorized' : cat.id)}
-                  >
-                    <span>{cat.label}</span>
-                    <span
-                      className={styles['delete-category-btn']}
-                      onClick={(e) => { e.stopPropagation(); handleDeleteCustomCategory(cat.id); }}
-                      title="Delete Category"
+            {renderedCategories
+              .filter((cat) => !canShowAi || cat.isCustom || cat.isFromList)
+              .map((cat) => {
+                const isSelected = category === cat.id;
+                if (cat.isCustom) {
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      className={`${styles['chip-custom-btn']} ${isSelected ? styles['chip-custom-btn-active'] : ''}`}
+                      onClick={() => setCategory(isSelected ? 'uncategorized' : cat.id)}
                     >
-                      &times;
-                    </span>
-                  </button>
+                      <span>{cat.label}</span>
+                      <span
+                        className={styles['delete-category-btn']}
+                        onClick={(e) => { e.stopPropagation(); handleDeleteCustomCategory(cat.id); }}
+                        title="Delete Category"
+                      >
+                        &times;
+                      </span>
+                    </button>
+                  );
+                }
+                return (
+                  <Chip
+                    key={cat.id}
+                    label={cat.label}
+                    isActive={isSelected}
+                    onClick={() => setCategory(isSelected ? 'uncategorized' : cat.id)}
+                  />
                 );
-              }
-              return (
-                <Chip
-                  key={cat.id}
-                  label={cat.label}
-                  isActive={isSelected}
-                  onClick={() => setCategory(isSelected ? 'uncategorized' : cat.id)}
-                />
-              );
-            })}
+              })}
             {!isAddingCustom ? (
               <Chip
                 label="+ Add"
@@ -300,7 +332,34 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
         </div>
 
         <div className={styles['form-group']}>
-          <label className={styles.label}>Notes &amp; Details</label>
+          <div className={styles['notes-label-row']}>
+            <label className={styles.label}>Notes &amp; Details</label>
+            {canSummarizeNotes && (
+              <div className={styles['notes-actions']}>
+                {canUndoSummarize && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={onUndoSummarize}
+                    disabled={isSummarizingNotes || isLoading}
+                  >
+                    <Undo2 size={14} />
+                    Undo
+                  </Button>
+                )}
+                <AiStatusBadge
+                  enabled
+                  label="Summarize"
+                  onToggle={onSummarizeNotes}
+                  disabled={isSummarizingNotes || isLoading}
+                />
+              </div>
+            )}
+          </div>
+          {isSummarizingNotes && (
+            <p className={styles['summarize-status']}>Generating notes...</p>
+          )}
           <textarea
             className={styles.input}
             placeholder="Add specific details, reasons you want this, or alternative options..."
@@ -335,78 +394,96 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             </span>
           </button>
           <div className={styles['expandable-content']}>
-            {showOptionalSizing && (
-              definitions.length > 0 ? (
-                <>
-                  <h4 className={styles['panel-title']}>{getFriendlyCategoryLabel(category)} Sizing / Options</h4>
-                  <div className={styles['grid2-col']}>
-                    {definitions.filter(isFieldVisible).map((def) => (
-                      <div key={def.Id} className={styles['form-group']}>
-                        <label className={styles.label} style={{ textTransform: 'none' }}>{def.Label}</label>
-                        <input
-                          type="text"
-                          className={styles.input}
-                          placeholder={def.Placeholder || ''}
-                          value={dynamicValues[def.FieldKey] || ''}
-                          onChange={(e) => handleUpdateDynamicValue(def.FieldKey, e.target.value)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className={styles['grid2-col']}>
-                    <div className={styles['form-group']}>
-                      <label className={styles.label} style={{ textTransform: 'none' }}>Pants Size</label>
-                      <input type="text" className={styles.input} placeholder="32x30" value={pantsSize} onChange={(e) => setPantsSize(e.target.value)} />
+            {showFieldDefinitions && definitions.length > 0 && (
+              <>
+                <h4 className={styles['panel-title']}>{getFriendlyCategoryLabel(category)} Sizing / Options</h4>
+                <div className={styles['grid2-col']}>
+                  {definitions.filter(isFieldVisible).map((def) => (
+                    <div key={def.Id} className={styles['form-group']}>
+                      <label className={styles.label} style={{ textTransform: 'none' }}>{def.Label}</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        placeholder={def.Placeholder || ''}
+                        value={dynamicValues[def.FieldKey] || ''}
+                        onChange={(e) => handleUpdateDynamicValue(def.FieldKey, e.target.value)}
+                      />
                     </div>
-                    <div className={styles['form-group']}>
-                      <label className={styles.label} style={{ textTransform: 'none' }}>Shirt Size</label>
-                      <input type="text" className={styles.input} placeholder="Medium" value={shirtSize} onChange={(e) => setShirtSize(e.target.value)} />
-                    </div>
-                    <div className={styles['form-group']}>
-                      <label className={styles.label} style={{ textTransform: 'none' }}>Shoes Size</label>
-                      <input type="text" className={styles.input} placeholder="10.5" value={shoesSize} onChange={(e) => setShoesSize(e.target.value)} />
-                    </div>
-                    <div className={styles['form-group']}>
-                      <label className={styles.label} style={{ textTransform: 'none' }}>Socks Size</label>
-                      <input type="text" className={styles.input} placeholder="9-11" value={socksSize} onChange={(e) => setSocksSize(e.target.value)} />
-                    </div>
-                  </div>
-                  <div className={styles['form-group']}>
-                    <label className={styles.label} style={{ textTransform: 'none' }}>Preferred Color</label>
-                    <input type="text" className={styles.input} placeholder="Matte Black" value={color} onChange={(e) => setColor(e.target.value)} />
-                  </div>
-                </>
-              )
+                  ))}
+                </div>
+              </>
             )}
             {customFields.length === 0 ? (
               <p className={styles['no-custom-fields']}>No custom fields added yet.</p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-                {customFields.map((field) => (
-                  <div key={field.id} className={styles['custom-field-row']}>
-                    <input
-                      type="text"
-                      className={`${styles.input} ${styles['custom-field-grow']}`}
-                      placeholder="Field Name"
-                      value={field.name}
-                      onChange={(e) => handleUpdateCustomField(field.id, 'name', e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      className={`${styles.input} ${styles['custom-field-grow']}`}
-                      placeholder="Value"
-                      value={field.value}
-                      onChange={(e) => handleUpdateCustomField(field.id, 'value', e.target.value)}
-                    />
-                    <button type="button" onClick={() => handleRemoveCustomField(field.id)} className={styles['remove-field-btn']} title="Remove field">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <>
+                {showFieldDefinitions && definitions.length > 0 && (
+                  <h4 className={styles['panel-title']}>Additional Fields</h4>
+                )}
+                <div className={styles['grid2-col']}>
+                  {customFields.map((field) => (
+                    <div key={field.id} className={styles['form-group']}>
+                      <div className={styles['custom-field-label-row']}>
+                        {isEditingCustomFieldName(field) ? (
+                          <input
+                            type="text"
+                            className={`${styles.input} ${styles['custom-field-name-input']}`}
+                            placeholder="Field name"
+                            value={field.name}
+                            autoFocus={editingNameFieldId === field.id || !field.name.trim()}
+                            onChange={(e) => handleUpdateCustomField(field.id, 'name', e.target.value)}
+                            onBlur={finishEditingCustomFieldName}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                finishEditingCustomFieldName();
+                              }
+                            }}
+                          />
+                        ) : (
+                          <label className={styles.label} style={{ textTransform: 'none' }}>
+                            {field.name}
+                          </label>
+                        )}
+                        <div className={styles['custom-field-label-actions']}>
+                          {!isEditingCustomFieldName(field) && (
+                            <button
+                              type="button"
+                              className={styles['custom-field-edit-btn']}
+                              onClick={() => setEditingNameFieldId(field.id)}
+                              title="Edit field name"
+                              aria-label={`Edit ${field.name} field name`}
+                            >
+                              <Pencil size={14} />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (editingNameFieldId === field.id) {
+                                finishEditingCustomFieldName();
+                              }
+                              handleRemoveCustomField(field.id);
+                            }}
+                            className={styles['custom-field-remove-btn']}
+                            title="Remove field"
+                            aria-label={`Remove ${field.name || 'custom'} field`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        placeholder="Value"
+                        value={field.value}
+                        onChange={(e) => handleUpdateCustomField(field.id, 'value', e.target.value)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
             <button type="button" className={styles['add-field-btn']} onClick={handleAddCustomField}>
               <Plus size={14} /> Add Field

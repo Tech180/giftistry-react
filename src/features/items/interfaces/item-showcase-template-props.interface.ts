@@ -28,6 +28,9 @@ export interface ItemShowcaseTemplateProps {
   setShowDependencyModal: (val: boolean) => void;
   displayDescription: string;
   metadata: any;
+  predefinedDisplayEntries: { label: string; value: string }[];
+  userDefinedEntries: { name: string; value: string }[];
+  metadataBadgeEmoji: Record<string, string>;
   handleClaim: (e?: React.SyntheticEvent, skipLinkedCheck?: boolean) => void;
   handleBulkClaim: () => void;
   handleUnclaim: () => void;
@@ -46,7 +49,7 @@ export interface ItemShowcaseTemplateProps {
   reviewsLoading: boolean;
   reviewsError: string | null;
   aiEnabled?: boolean;
-  globalAiEnabled: boolean;
+  canShowAi: boolean;
   audienceLabel: string | null;
   isPrivate: boolean;
   linkedItems: Item[];

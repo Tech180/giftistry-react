@@ -14,6 +14,8 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
   variant = 'default',
   footer,
   titleIcon,
+  titleExtra,
+  headerExtra,
   isOpen = false,
   onOverlayClick,
 }) => {
@@ -35,20 +37,24 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
             <h4 className={isOverlay ? styles['drawer-title-overlay'] : styles['drawer-title']}>
               {titleIcon && <span className={styles['drawer-title-icon']}>{titleIcon}</span>}
               {title}
+              {titleExtra}
             </h4>
-            {isOverlay ? (
-              <IconButton
-                icon={<X size={20} />}
-                ariaLabel="Close sidebar"
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-              />
-            ) : (
-              <button onClick={onClose} className={styles['drawer-close']}>
-                &times;
-              </button>
-            )}
+            <div className={styles['drawer-header-actions']}>
+              {headerExtra}
+              {isOverlay ? (
+                <IconButton
+                  icon={<X size={20} />}
+                  ariaLabel="Close sidebar"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                />
+              ) : (
+                <button onClick={onClose} className={styles['drawer-close']}>
+                  &times;
+                </button>
+              )}
+            </div>
           </div>
           <div className={isOverlay ? styles['drawer-body-overlay'] : styles['drawer-body']}>
             {children}

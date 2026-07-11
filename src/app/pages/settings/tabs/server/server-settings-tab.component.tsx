@@ -1,12 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from 'app/providers/auth-context';
 import { ServerSettingsTabTemplate } from './server-settings-tab.html';
 import { apiClient } from 'core/api/client';
+import { systemApi } from 'features/system/api/system.api';
 import { ServerSettingsTabProps } from './interfaces/server-settings-tab-props.interface';
 import { BackendSettings } from './interfaces/backend-settings.interface';
+import { LOCAL_AI_CUSTOM_MODEL_VALUE, type LocalAiModelMode } from './interfaces/local-ai-model.interface';
+import {
+  clearLocalAiModelsCache,
+  readLocalAiModelsCache,
+  writeLocalAiModelsCache,
+} from './utils/local-ai-models-cache.util';
+import { applyLocalModelsState } from './utils/local-ai-model-state.util';
+import {
+  applyAiPromptSettings,
+  getDefaultPromptForType,
+  type PromptType,
+} from './utils/ai-prompt-settings.util';
 
 export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast }) => {
-  const { user } = useAuth();
+  const { user, checkSystemStatus } = useAuth();
   const [dbType, setDbType] = useState<'local' | 'remote'>('local');
   const [dbUrl, setDbUrl] = useState('');
   const [smtpType, setSmtpType] = useState<'local' | 'remote'>('local');
@@ -21,7 +34,11 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [aiApiKey, setAiApiKey] = useState('');
   const [aiModel, setAiModel] = useState('');
   const [aiPrompt, setAiPrompt] = useState('');
+  const [aiDescriptionPrompt, setAiDescriptionPrompt] = useState('');
+  const [aiPopulatePrompt, setAiPopulatePrompt] = useState('');
+  const [aiCategoryPrompt, setAiCategoryPrompt] = useState('');
   const [aiEndpoint, setAiEndpoint] = useState('');
+  const [aiDefaultPrompts, setAiDefaultPrompts] = useState<BackendSettings['AiDefaultPrompts']>();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showAiKey, setShowAiKey] = useState(false);
@@ -32,6 +49,12 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [openrouterModels, setOpenrouterModels] = useState<Array<{ id: string; name: string; company: string; displayName: string }>>([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState('');
+  const [localAiModels, setLocalAiModels] = useState<string[]>([]);
+  const [localModelMode, setLocalModelMode] = useState<LocalAiModelMode>('custom');
+  const [aiConnectionStatus, setAiConnectionStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
+  const [aiConnectionMessage, setAiConnectionMessage] = useState('');
+  const aiCheckRequestIdRef = useRef(0);
+  const endpointCheckTimerRef = useRef<number | null>(null);
 
   const companies = Array.from(new Set(openrouterModels.map(m => m.company))).sort();
   const filteredModels = openrouterModels.filter(m => m.company === selectedCompany);
@@ -40,24 +63,57 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     let active = true;
     const fetchSettings = async () => {
       try {
-        const response = await apiClient.get<{ success: boolean; data: BackendSettings }>('/api/system/settings');
-        if (active && response && response.data) {
-          const s = response.data;
-          setDbType(s.dbType);
-          setDbUrl(s.dbUrl || '');
-          setSmtpType(s.smtpType);
-          setSmtpHost(s.smtpHost || '');
-          setSmtpPort(s.smtpPort ? s.smtpPort.toString() : '1025');
-          setSmtpUser(s.smtpUser || '');
-          setSmtpPass(s.smtpPass || '');
-          setSmtpSecure(!!s.smtpSecure);
-          setSmtpFrom(s.smtpFrom || 'noreply@giftistry.local');
-          setAiEnabled(!!s.aiEnabled);
-          setAiProvider(s.aiProvider || 'gemini');
-          setAiApiKey(s.aiApiKey || '');
-          setAiModel(s.aiModel || '');
-          setAiPrompt(s.aiPrompt || '');
-          setAiEndpoint(s.aiEndpoint || '');
+        const response = await apiClient.get<BackendSettings>('/api/system/settings');
+        if (active && response) {
+          const s = response;
+          setDbType(s.DbType);
+          setDbUrl(s.DbUrl || '');
+          setSmtpType(s.SmtpType);
+          setSmtpHost(s.SmtpHost || '');
+          setSmtpPort(s.SmtpPort ? s.SmtpPort.toString() : '1025');
+          setSmtpUser(s.SmtpUser || '');
+          setSmtpPass(s.SmtpPass || '');
+          setSmtpSecure(!!s.SmtpSecure);
+          setSmtpFrom(s.SmtpFrom || 'noreply@giftistry.local');
+          setAiEnabled(!!s.AiEnabled);
+          setAiProvider(s.AiProvider || 'gemini');
+          setAiApiKey(s.AiApiKey || '');
+          const savedModel = s.AiModel || '';
+          const savedEndpoint = s.AiEndpoint || '';
+          setAiModel(savedModel);
+          if (s.AiDefaultPrompts) {
+            setAiDefaultPrompts(s.AiDefaultPrompts);
+            applyAiPromptSettings(s, s.AiDefaultPrompts, {
+              setAiPrompt,
+              setAiDescriptionPrompt,
+              setAiPopulatePrompt,
+              setAiCategoryPrompt,
+            });
+          } else {
+            setAiPrompt(s.AiPrompt || '');
+            setAiDescriptionPrompt(s.AiDescriptionPrompt || '');
+            setAiPopulatePrompt(s.AiPopulatePrompt || '');
+            setAiCategoryPrompt(s.AiCategoryPrompt || '');
+          }
+          setAiEndpoint(savedEndpoint);
+
+          if (s.AiProvider === 'local' && savedEndpoint.trim()) {
+            const cachedModels = readLocalAiModelsCache(savedEndpoint);
+            if (cachedModels) {
+              setLocalAiModels(cachedModels);
+              const { mode, model } = applyLocalModelsState(cachedModels, savedModel);
+              setLocalModelMode(mode);
+              if (model !== savedModel) {
+                setAiModel(model);
+              }
+            } else {
+              setLocalAiModels([]);
+              setLocalModelMode('custom');
+            }
+          } else {
+            setLocalAiModels([]);
+            setLocalModelMode('custom');
+          }
         }
       } catch (err: any) {
         showToast(err.message || 'Failed to load system settings.', 'error');
@@ -144,55 +200,203 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     };
   }, [aiProvider, aiModel]);
 
+  const checkLocalAiConnection = useCallback(async (endpointOverride?: string) => {
+    const endpoint = (endpointOverride ?? aiEndpoint).trim();
+    if (!aiEnabled || aiProvider !== 'local' || !endpoint) {
+      setAiConnectionStatus('idle');
+      setAiConnectionMessage('');
+      return;
+    }
+
+    const requestId = ++aiCheckRequestIdRef.current;
+    setAiConnectionStatus('checking');
+    setAiConnectionMessage('Checking local AI connection...');
+
+    try {
+      const result = await systemApi.checkAiConnection({
+        AiProvider: 'local',
+        AiEndpoint: endpoint,
+        AiApiKey: aiApiKey.trim() || null,
+      });
+
+      if (requestId !== aiCheckRequestIdRef.current) {
+        return;
+      }
+
+      const models = result.Models ?? [];
+      setLocalAiModels(models);
+      writeLocalAiModelsCache(endpoint, models);
+
+      const { mode, model } = applyLocalModelsState(models, aiModel);
+      setLocalModelMode(mode);
+      if (model !== aiModel.trim()) {
+        setAiModel(model);
+      }
+
+      const baseMessage = result.Message || 'Local AI connection is working.';
+      const modelCountSuffix = models.length > 0 ? ` · ${models.length} models found` : '';
+      setAiConnectionStatus('success');
+      setAiConnectionMessage(`${baseMessage}${modelCountSuffix}`);
+    } catch (err: unknown) {
+      if (requestId !== aiCheckRequestIdRef.current) {
+        return;
+      }
+
+      setLocalAiModels([]);
+      clearLocalAiModelsCache();
+      if (aiModel.trim()) {
+        setLocalModelMode('custom');
+      }
+      setAiConnectionStatus('error');
+      setAiConnectionMessage(err instanceof Error ? err.message : 'Failed to verify local AI connection.');
+    }
+  }, [aiEnabled, aiProvider, aiEndpoint, aiApiKey, aiModel]);
+
+  const handleLocalModelSelection = useCallback((value: string) => {
+    if (value === LOCAL_AI_CUSTOM_MODEL_VALUE) {
+      setLocalModelMode('custom');
+      return;
+    }
+    setLocalModelMode('listed');
+    setAiModel(value);
+  }, []);
+
+  const handleAiEndpointChange = useCallback((value: string) => {
+    setAiEndpoint(value);
+    setLocalAiModels([]);
+    setAiConnectionStatus('idle');
+    setAiConnectionMessage('');
+
+    if (endpointCheckTimerRef.current) {
+      window.clearTimeout(endpointCheckTimerRef.current);
+      endpointCheckTimerRef.current = null;
+    }
+
+    if (!aiEnabled || aiProvider !== 'local' || !value.trim()) {
+      return;
+    }
+
+    endpointCheckTimerRef.current = window.setTimeout(() => {
+      void checkLocalAiConnection(value);
+    }, 600);
+  }, [aiEnabled, aiProvider, checkLocalAiConnection]);
+
+  useEffect(() => {
+    if (!aiEnabled || aiProvider !== 'local') {
+      setAiConnectionStatus('idle');
+      setAiConnectionMessage('');
+      setLocalAiModels([]);
+      setLocalModelMode('custom');
+    }
+  }, [aiEnabled, aiProvider]);
+
+  useEffect(() => {
+    return () => {
+      if (endpointCheckTimerRef.current) {
+        window.clearTimeout(endpointCheckTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSaving(true);
 
     const payload = {
-      dbType,
-      dbUrl: dbType === 'remote' ? dbUrl : '',
-      smtpType,
-      smtpHost: smtpType === 'remote' ? smtpHost : '',
-      smtpPort: smtpType === 'remote' ? Number(smtpPort) : 1025,
-      smtpUser: smtpType === 'remote' ? smtpUser : '',
-      smtpPass: smtpType === 'remote' ? smtpPass : '',
-      smtpSecure: smtpType === 'remote' ? smtpSecure : false,
-      smtpFrom: smtpType === 'remote' ? smtpFrom : 'noreply@giftistry.local',
-      aiEnabled,
-      aiProvider: aiEnabled ? aiProvider : 'gemini',
-      aiApiKey: aiEnabled ? aiApiKey : '',
-      aiModel: aiEnabled ? aiModel : '',
-      aiPrompt: aiEnabled ? aiPrompt : '',
-      aiEndpoint: aiEnabled ? aiEndpoint : '',
+      DbType: dbType,
+      DbUrl: dbType === 'remote' ? dbUrl : '',
+      SmtpType: smtpType,
+      SmtpHost: smtpType === 'remote' ? smtpHost : '',
+      SmtpPort: smtpType === 'remote' ? Number(smtpPort) : 1025,
+      SmtpUser: smtpType === 'remote' ? smtpUser : '',
+      SmtpPass: smtpType === 'remote' ? smtpPass : '',
+      SmtpSecure: smtpType === 'remote' ? smtpSecure : false,
+      SmtpFrom: smtpType === 'remote' ? smtpFrom : 'noreply@giftistry.local',
+      AiEnabled: aiEnabled,
+      AiProvider: aiEnabled ? aiProvider : 'gemini',
+      AiApiKey: aiEnabled ? aiApiKey : '',
+      AiModel: aiEnabled ? aiModel : '',
+      AiPrompt: aiEnabled ? aiPrompt : '',
+      AiDescriptionPrompt: aiEnabled ? aiDescriptionPrompt : '',
+      AiPopulatePrompt: aiEnabled ? aiPopulatePrompt : '',
+      AiCategoryPrompt: aiEnabled ? aiCategoryPrompt : '',
+      AiEndpoint: aiEnabled ? aiEndpoint : '',
     };
 
     try {
       await apiClient.post<{ success: boolean }>('/api/system/settings', payload, 'System');
       showToast('Server configuration saved and verified successfully!', 'success');
+      await checkSystemStatus();
       
-      const response = await apiClient.get<{ success: boolean; data: BackendSettings }>('/api/system/settings');
-      if (response && response.data) {
-        const s = response.data;
-        setDbType(s.dbType);
-        setDbUrl(s.dbUrl || '');
-        setSmtpType(s.smtpType);
-        setSmtpHost(s.smtpHost || '');
-        setSmtpPort(s.smtpPort ? s.smtpPort.toString() : '1025');
-        setSmtpUser(s.smtpUser || '');
-        setSmtpPass(s.smtpPass || '');
-        setSmtpSecure(!!s.smtpSecure);
-        setSmtpFrom(s.smtpFrom || 'noreply@giftistry.local');
-        setAiEnabled(!!s.aiEnabled);
-        setAiProvider(s.aiProvider || 'gemini');
-        setAiApiKey(s.aiApiKey || '');
-        setAiModel(s.aiModel || '');
-        setAiPrompt(s.aiPrompt || '');
-        setAiEndpoint(s.aiEndpoint || '');
+      const response = await apiClient.get<BackendSettings>('/api/system/settings');
+      if (response) {
+        const s = response;
+        setDbType(s.DbType);
+        setDbUrl(s.DbUrl || '');
+        setSmtpType(s.SmtpType);
+        setSmtpHost(s.SmtpHost || '');
+        setSmtpPort(s.SmtpPort ? s.SmtpPort.toString() : '1025');
+        setSmtpUser(s.SmtpUser || '');
+        setSmtpPass(s.SmtpPass || '');
+        setSmtpSecure(!!s.SmtpSecure);
+        setSmtpFrom(s.SmtpFrom || 'noreply@giftistry.local');
+        setAiEnabled(!!s.AiEnabled);
+        setAiProvider(s.AiProvider || 'gemini');
+        setAiApiKey(s.AiApiKey || '');
+        const savedModel = s.AiModel || '';
+        const savedEndpoint = s.AiEndpoint || '';
+        setAiModel(savedModel);
+        if (s.AiDefaultPrompts) {
+          setAiDefaultPrompts(s.AiDefaultPrompts);
+          applyAiPromptSettings(s, s.AiDefaultPrompts, {
+            setAiPrompt,
+            setAiDescriptionPrompt,
+            setAiPopulatePrompt,
+            setAiCategoryPrompt,
+          });
+        } else {
+          setAiPrompt(s.AiPrompt || '');
+          setAiDescriptionPrompt(s.AiDescriptionPrompt || '');
+          setAiPopulatePrompt(s.AiPopulatePrompt || '');
+          setAiCategoryPrompt(s.AiCategoryPrompt || '');
+        }
+        setAiEndpoint(savedEndpoint);
+
+        if (s.AiProvider === 'local' && savedEndpoint.trim()) {
+          const cachedModels = readLocalAiModelsCache(savedEndpoint);
+          if (cachedModels) {
+            setLocalAiModels(cachedModels);
+            const { mode, model } = applyLocalModelsState(cachedModels, savedModel);
+            setLocalModelMode(mode);
+            if (model !== savedModel) {
+              setAiModel(model);
+            }
+          }
+        }
       }
     } catch (err: any) {
       showToast(err.message || 'Verification failed. Settings not saved.', 'error');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleResetPrompt = (type: PromptType) => {
+    if (!aiDefaultPrompts) return;
+    const defaultText = getDefaultPromptForType(type, aiDefaultPrompts);
+    switch (type) {
+      case 'review':
+        setAiPrompt(defaultText);
+        break;
+      case 'description':
+        setAiDescriptionPrompt(defaultText);
+        break;
+      case 'populate':
+        setAiPopulatePrompt(defaultText);
+        break;
+      case 'category':
+        setAiCategoryPrompt(defaultText);
+        break;
     }
   };
 
@@ -254,8 +458,16 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       setAiModel={setAiModel}
       aiPrompt={aiPrompt}
       setAiPrompt={setAiPrompt}
+      aiDescriptionPrompt={aiDescriptionPrompt}
+      setAiDescriptionPrompt={setAiDescriptionPrompt}
+      aiPopulatePrompt={aiPopulatePrompt}
+      setAiPopulatePrompt={setAiPopulatePrompt}
+      aiCategoryPrompt={aiCategoryPrompt}
+      setAiCategoryPrompt={setAiCategoryPrompt}
+      aiDefaultPrompts={aiDefaultPrompts}
+      onResetPrompt={handleResetPrompt}
       aiEndpoint={aiEndpoint}
-      setAiEndpoint={setAiEndpoint}
+      setAiEndpoint={handleAiEndpointChange}
       showPassword={showPassword}
       setShowPassword={setShowPassword}
       showAiKey={showAiKey}
@@ -266,6 +478,13 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       selectedCompany={selectedCompany}
       setSelectedCompany={setSelectedCompany}
       filteredModels={filteredModels}
+      localAiModels={localAiModels}
+      localModelMode={localModelMode}
+      onLocalModelSelection={handleLocalModelSelection}
+      aiConnectionStatus={aiConnectionStatus}
+      aiConnectionMessage={aiConnectionMessage}
+      onTestAiConnection={() => { void checkLocalAiConnection(); }}
+      isTestingAiConnection={aiConnectionStatus === 'checking'}
       isLoading={isLoading}
       isSaving={isSaving}
       handleSave={handleSave}

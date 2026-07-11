@@ -16,7 +16,7 @@ describe('parseItemDescription', () => {
     });
   });
 
-  test('parses JSON metadata and text', () => {
+  test('parses legacy JSON metadata and normalizes to CustomFields', () => {
     const description = JSON.stringify({
       text: 'Blue shirt',
       shirtSize: 'M',
@@ -27,9 +27,34 @@ describe('parseItemDescription', () => {
       text: 'Blue shirt',
       isJson: true,
       metadata: {
-        text: 'Blue shirt',
-        shirtSize: 'M',
+        Text: 'Blue shirt',
+        CustomFields: {
+          Predefined: { ShirtSize: 'M' },
+          UserDefined: {},
+        },
         isFavorite: true,
+      },
+    });
+  });
+
+  test('parses new CustomFields JSON shape', () => {
+    const description = JSON.stringify({
+      Text: 'Notes',
+      CustomFields: {
+        Predefined: { Color: 'Black' },
+        UserDefined: { PrintStyle: 'Puff' },
+      },
+    });
+
+    expect(parseItemDescription(description)).toMatchObject({
+      text: 'Notes',
+      isJson: true,
+      metadata: {
+        Text: 'Notes',
+        CustomFields: {
+          Predefined: { Color: 'Black' },
+          UserDefined: { PrintStyle: 'Puff' },
+        },
       },
     });
   });
@@ -52,12 +77,18 @@ describe('getItemFavoriteOrPinnedFlag', () => {
 });
 
 describe('serializeItemDescription', () => {
-  test('stringifies metadata with text', () => {
-    const result = serializeItemDescription('Updated text', { shirtSize: 'L', isFavorite: true });
-    expect(JSON.parse(result)).toEqual({
+  test('stringifies metadata with CustomFields shape', () => {
+    const result = serializeItemDescription('Updated text', {
       shirtSize: 'L',
       isFavorite: true,
-      text: 'Updated text',
+    });
+    expect(JSON.parse(result)).toEqual({
+      Text: 'Updated text',
+      CustomFields: {
+        Predefined: { ShirtSize: 'L' },
+        UserDefined: {},
+      },
+      isFavorite: true,
     });
   });
 });
@@ -71,7 +102,7 @@ describe('formatDescriptionForExport', () => {
     });
 
     expect(formatDescriptionForExport(description)).toBe(
-      'Running shoes [Shoes: 10, Width: Wide]'
+      'Running shoes [Shoes Size: 10, Width: Wide]'
     );
   });
 

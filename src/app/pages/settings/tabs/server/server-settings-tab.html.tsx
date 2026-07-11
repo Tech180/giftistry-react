@@ -41,6 +41,14 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   setAiModel,
   aiPrompt,
   setAiPrompt,
+  aiDescriptionPrompt,
+  setAiDescriptionPrompt,
+  aiPopulatePrompt,
+  setAiPopulatePrompt,
+  aiCategoryPrompt,
+  setAiCategoryPrompt,
+  aiDefaultPrompts,
+  onResetPrompt,
   aiEndpoint,
   setAiEndpoint,
   showAiKey,
@@ -51,6 +59,13 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   selectedCompany,
   setSelectedCompany,
   filteredModels,
+  localAiModels,
+  localModelMode,
+  onLocalModelSelection,
+  aiConnectionStatus,
+  aiConnectionMessage,
+  onTestAiConnection,
+  isTestingAiConnection,
   isServerOwner,
   onDeleteServer,
   isDeletingServer,
@@ -125,6 +140,14 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
           setAiModel={setAiModel}
           aiPrompt={aiPrompt}
           setAiPrompt={setAiPrompt}
+          aiDescriptionPrompt={aiDescriptionPrompt}
+          setAiDescriptionPrompt={setAiDescriptionPrompt}
+          aiPopulatePrompt={aiPopulatePrompt}
+          setAiPopulatePrompt={setAiPopulatePrompt}
+          aiCategoryPrompt={aiCategoryPrompt}
+          setAiCategoryPrompt={setAiCategoryPrompt}
+          aiDefaultPrompts={aiDefaultPrompts}
+          onResetPrompt={onResetPrompt}
           aiEndpoint={aiEndpoint}
           setAiEndpoint={setAiEndpoint}
           showAiKey={showAiKey}
@@ -135,6 +158,13 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
           selectedCompany={selectedCompany}
           setSelectedCompany={setSelectedCompany}
           filteredModels={filteredModels}
+          localAiModels={localAiModels}
+          localModelMode={localModelMode}
+          onLocalModelSelection={onLocalModelSelection}
+          aiConnectionStatus={aiConnectionStatus}
+          aiConnectionMessage={aiConnectionMessage}
+          onTestAiConnection={onTestAiConnection}
+          isTestingAiConnection={isTestingAiConnection}
         />
       </form>
 

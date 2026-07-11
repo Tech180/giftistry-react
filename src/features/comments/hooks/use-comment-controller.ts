@@ -62,18 +62,18 @@ export function useCommentController() {
           if (c.Id !== commentId) return c;
           const existingReactions = c.Reactions || [];
           const hasReacted = existingReactions.some(
-            (r) => r.userId === currentUserId && r.reaction === reaction
+            (r) => r.UserId === currentUserId && r.Reaction === reaction
           );
           let newReactions = [...existingReactions];
           if (hasReacted) {
             newReactions = newReactions.filter(
-              (r) => !(r.userId === currentUserId && r.reaction === reaction)
+              (r) => !(r.UserId === currentUserId && r.Reaction === reaction)
             );
           } else {
             newReactions.push({
-              userId: currentUserId,
-               username: currentUsername,
-              reaction: reaction,
+              UserId: currentUserId,
+              Username: currentUsername,
+              Reaction: reaction,
             });
           }
           return { ...c, Reactions: newReactions };

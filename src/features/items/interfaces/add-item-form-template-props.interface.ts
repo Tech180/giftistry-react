@@ -2,6 +2,7 @@ import React from 'react';
 import { Priority } from 'features/wishlists';
 import { FieldDefinition } from './field-definition.interface';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
+import type { CustomFieldRow } from '../utils/add-item-custom-fields.util';
 
 export interface AddItemFormTemplateProps {
   name: string;
@@ -40,24 +41,14 @@ export interface AddItemFormTemplateProps {
   isAutopopulating: boolean;
   hasScraped: boolean;
   handleScrapeClick: (e: React.MouseEvent) => void;
-  pantsSize: string;
-  setPantsSize: (val: string) => void;
-  shirtSize: string;
-  setShirtSize: (val: string) => void;
-  shoesSize: string;
-  setShoesSize: (val: string) => void;
-  socksSize: string;
-  setSocksSize: (val: string) => void;
-  color: string;
-  setColor: (val: string) => void;
-  customFields: { id: string; name: string; value: string }[];
+  customFields: CustomFieldRow[];
   handleAddCustomField: () => void;
   handleRemoveCustomField: (id: string) => void;
   handleUpdateCustomField: (id: string, key: 'name' | 'value', value: string) => void;
   hasIncompleteCustomFields: boolean;
   showExtraFields: boolean;
   setShowExtraFields: (val: boolean) => void;
-  renderedCategories: { id: string; label: string; isCustom?: boolean }[];
+  renderedCategories: { id: string; label: string; isCustom?: boolean; isFromList?: boolean }[];
   isAddingCustom: boolean;
   setIsAddingCustom: (val: boolean) => void;
   newCustomInput: string;
@@ -88,7 +79,7 @@ export interface AddItemFormTemplateProps {
   isLinkingModeActive: boolean;
   setIsLinkingModeActive: React.Dispatch<React.SetStateAction<boolean>>;
   getFriendlyCategoryLabel: (id: string) => string;
-  showOptionalSizing: boolean;
+  showFieldDefinitions: boolean;
   varName: string;
   setVarName: (val: string) => void;
   varQty: number | '';
@@ -101,4 +92,11 @@ export interface AddItemFormTemplateProps {
   setSharedWithUserIds: (userIds: string[]) => void;
   visibilityMode: 'everyone' | 'restricted' | 'private';
   onVisibilityModeChange: (mode: 'everyone' | 'restricted' | 'private') => void;
+  canShowAi?: boolean;
+  listAiEnabled?: boolean;
+  canSummarizeNotes: boolean;
+  isSummarizingNotes: boolean;
+  canUndoSummarize: boolean;
+  onSummarizeNotes: () => void;
+  onUndoSummarize: () => void;
 }

@@ -64,6 +64,7 @@ export const AdminUsersTabTemplate: React.FC<AdminUsersTabTemplateProps> = ({
                 <th>Account Type</th>
                 <th>Status</th>
                 <th>Lists</th>
+                <th>Last login</th>
                 <th>Last online</th>
                 <th></th>
               </tr>
@@ -91,7 +92,10 @@ export const AdminUsersTabTemplate: React.FC<AdminUsersTabTemplateProps> = ({
                   <td>{statusBadge(user)}</td>
                   <td>{user.ActiveListsCount ?? 0}</td>
                   <td className={styles['text-muted']}>
-                    {user.LastOnline ? new Date(user.LastOnline).toLocaleDateString() : '—'}
+                    {user.LastLoginAt ? new Date(user.LastLoginAt).toLocaleString() : '—'}
+                  </td>
+                  <td className={styles['text-muted']}>
+                    {user.LastOnline ? new Date(user.LastOnline).toLocaleString() : '—'}
                   </td>
                   <td className={styles['text-right']}>
                     <Link to={`/settings/admin/users/${user.Id}`}>

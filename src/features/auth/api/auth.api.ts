@@ -4,55 +4,75 @@ import { AuthResponse } from '../interfaces/auth-response.interface';
 
 export const authApi = {
   login: (email: string, password: string) =>
-    apiClient.post<AuthResponse>('/api/auth/login', { email, password }, 'Auth'),
+    apiClient.post<AuthResponse>('/api/auth/login', { Email: email, Password: password }, 'Auth'),
 
   signup: (username: string, email: string, password: string, firstName?: string, lastName?: string) =>
-    apiClient.post<AuthResponse>('/api/auth/signup', { username, email, password, firstName, lastName }, 'Auth'),
+    apiClient.post<AuthResponse>('/api/auth/signup', { Username: username, Email: email, Password: password, FirstName: firstName, LastName: lastName }, 'Auth'),
 
   logout: () =>
     apiClient.post<{ success: boolean }>('/api/auth/logout', {}),
 
   getMe: () =>
-    apiClient.get<{ success: boolean; User: ApiUser }>('/api/auth/me'),
+    apiClient.get<{ User: ApiUser }>('/api/auth/me'),
 
-  updateProfile: (username?: string, firstName?: string, lastName?: string, bio?: string, theme?: string, avatar?: string | null) =>
-    apiClient.put<{ success: boolean; User: ApiUser }>('/api/auth/profile', { username, firstName, lastName, bio, theme, avatar }, 'Auth'),
+  updateProfile: (
+    username?: string,
+    firstName?: string,
+    lastName?: string,
+    bio?: string,
+    theme?: string,
+    avatar?: string | null,
+    aiEnabled?: boolean
+  ) =>
+    apiClient.put<{ User: ApiUser }>(
+      '/api/auth/profile',
+      {
+        Username: username,
+        FirstName: firstName,
+        LastName: lastName,
+        Bio: bio,
+        Theme: theme,
+        Avatar: avatar,
+        AiEnabled: aiEnabled,
+      },
+      'Auth'
+    ),
 
   getUserPreview: (userId: string) =>
     apiClient.get<{ User: ApiUser }>(`/api/users/${userId}/preview`),
 
   verifyEmail: (token: string) =>
-    apiClient.post<{ success: boolean }>('/api/auth/verify-email', { token }, 'Auth'),
+    apiClient.post<{ success: boolean }>('/api/auth/verify-email', { Token: token }, 'Auth'),
 
-  resendVerification: (email: string) =>
-    apiClient.post<{ success: boolean }>('/api/auth/resend-verification', { email }, 'Auth'),
+  resendVerification: () =>
+    apiClient.post<{ success: boolean }>('/api/auth/resend-verification', {}),
 
   passkeyRegisterOptions: () =>
-    apiClient.post<{ success: boolean; options: any }>('/api/auth/passkey/register/options', {}),
+    apiClient.post<{ Options: unknown }>('/api/auth/passkey/register/options', {}),
 
-  passkeyRegisterVerify: (registrationResponse: any) =>
-    apiClient.post<{ success: boolean }>('/api/auth/passkey/register/verify', { registrationResponse }, 'Auth'),
+  passkeyRegisterVerify: (registrationResponse: unknown) =>
+    apiClient.post<{ success: boolean }>('/api/auth/passkey/register/verify', { RegistrationResponse: registrationResponse }, 'Auth'),
 
   passkeyLoginOptions: () =>
-    apiClient.post<{ success: boolean; options: any }>('/api/auth/passkey/login/options', {}),
+    apiClient.post<{ Options: unknown }>('/api/auth/passkey/login/options', {}),
 
-  passkeyLoginVerify: (authenticationResponse: any) =>
-    apiClient.post<AuthResponse>('/api/auth/passkey/login/verify', { authenticationResponse }, 'Auth'),
+  passkeyLoginVerify: (authenticationResponse: unknown) =>
+    apiClient.post<AuthResponse>('/api/auth/passkey/login/verify', { AuthenticationResponse: authenticationResponse }, 'Auth'),
 
   verify2faLogin: (ticket: string, code: string) =>
-    apiClient.post<AuthResponse>('/api/auth/2fa/login', { ticket, code }, 'Auth'),
+    apiClient.post<AuthResponse>('/api/auth/2fa/login', { Ticket: ticket, Code: code }, 'Auth'),
 
   setup2fa: () =>
-    apiClient.post<{ success: boolean; Secret: string; QrCodeUrl: string }>('/api/auth/2fa/setup', {}),
+    apiClient.post<{ Secret: string; QrCodeUrl: string }>('/api/auth/2fa/setup', {}),
 
   enable2fa: (secret: string, code: string) =>
-    apiClient.post<{ success: boolean; RecoveryCodes?: string[] }>('/api/auth/2fa/enable', { secret, code }, 'Auth'),
+    apiClient.post<{ RecoveryCodes?: string[] }>('/api/auth/2fa/enable', { Secret: secret, Code: code }, 'Auth'),
 
   disable2fa: (code: string) =>
-    apiClient.post<{ success: boolean }>('/api/auth/2fa/disable', { code }, 'Auth'),
+    apiClient.post<{ success: boolean }>('/api/auth/2fa/disable', { Code: code }, 'Auth'),
 
   getPasskeys: () =>
-    apiClient.get<{ success: boolean; Passkeys: any[] }>('/api/auth/passkeys'),
+    apiClient.get<{ Passkeys: unknown[] }>('/api/auth/passkeys'),
 
   deletePasskey: (passkeyId: string) =>
     apiClient.delete<{ success: boolean }>(`/api/auth/passkeys/${passkeyId}`),
@@ -61,5 +81,5 @@ export const authApi = {
     apiClient.post<{ success: boolean }>('/api/auth/account/disable', {}, 'Auth'),
 
   deleteAccount: (password: string) =>
-    apiClient.delete<{ success: boolean }>('/api/auth/account', { password }, 'Auth'),
+    apiClient.delete<{ success: boolean }>('/api/auth/account', { Password: password }, 'Auth'),
 };

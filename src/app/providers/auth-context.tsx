@@ -1,9 +1,11 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useRef, useMemo } from 'react';
 import { authApi } from 'features/auth';
 import { InactivityModal } from 'features/auth/components/inactivity-modal/inactivity-modal.component';
 import { apiClient } from 'core/api/client';
 import { AuthContextType } from './interfaces/auth-context-type.interface';
 import { User } from './interfaces/user.interface';
+import { resolveCanShowAi, resolveCanShowAiSettings } from 'shared/utils/ai-visibility.util';
+import { SystemStatusResult } from 'features/system/api/system.api';
 
 export type { User } from './interfaces/user.interface';
 
@@ -45,28 +47,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkSystemStatus = async () => {
     try {
-      const res = await apiClient.get<{
-        success: boolean;
-        initialized: boolean;
-        aiEnabled?: boolean;
-        registrationMode?: 'open' | 'invite_only' | 'disabled';
-        maintenanceMode?: boolean;
-        maintenanceMessage?: string;
-      }>('/api/system/status');
-      if (res && res.initialized !== undefined) {
-        setIsSystemInitialized(res.initialized);
+      const res = await apiClient.get<SystemStatusResult>('/api/system/status');
+      if (res && res.Initialized !== undefined) {
+        setIsSystemInitialized(res.Initialized);
       }
-      if (res && res.aiEnabled !== undefined) {
-        setGlobalAiEnabled(res.aiEnabled);
+      if (res && res.AiEnabled !== undefined) {
+        setGlobalAiEnabled(res.AiEnabled);
       }
-      if (res?.registrationMode) {
-        setRegistrationMode(res.registrationMode);
+      if (res?.RegistrationMode) {
+        setRegistrationMode(res.RegistrationMode);
       }
-      if (res?.maintenanceMode !== undefined) {
-        setMaintenanceMode(res.maintenanceMode);
+      if (res?.MaintenanceMode !== undefined) {
+        setMaintenanceMode(res.MaintenanceMode);
       }
-      if (res?.maintenanceMessage) {
-        setMaintenanceMessage(res.maintenanceMessage);
+      if (res?.MaintenanceMessage) {
+        setMaintenanceMessage(res.MaintenanceMessage);
       }
     } catch (err) {
       setIsSystemInitialized(false);
@@ -130,10 +125,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateProfile = async (username?: string, firstName?: string, lastName?: string, bio?: string, theme?: string, avatar?: string | null) => {
+  const updateProfile = async (
+    username?: string,
+    firstName?: string,
+    lastName?: string,
+    bio?: string,
+    theme?: string,
+    avatar?: string | null,
+    aiEnabled?: boolean
+  ) => {
     setError(null);
     try {
-      const res = await authApi.updateProfile(username, firstName, lastName, bio, theme, avatar);
+      const res = await authApi.updateProfile(username, firstName, lastName, bio, theme, avatar, aiEnabled);
       if (res && res.User) {
         setUser((prev) => (prev ? { ...prev, ...res.User } : res.User));
         return res.User;
@@ -145,6 +148,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw err;
     }
   };
+
+  const updateAiEnabled = async (aiEnabled: boolean) => {
+    setError(null);
+    try {
+      const res = await authApi.updateProfile(undefined, undefined, undefined, undefined, undefined, undefined, aiEnabled);
+      if (res && res.User) {
+        setUser((prev) => (prev ? { ...prev, ...res.User } : res.User));
+        return res.User;
+      }
+      return null;
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : 'Failed to update AI preference';
+      setError(errMsg);
+      throw err;
+    }
+  };
+
+  const canShowAi = useMemo(() => resolveCanShowAi(globalAiEnabled, user), [globalAiEnabled, user]);
+  const canShowAiSettings = useMemo(
+    () => resolveCanShowAiSettings(globalAiEnabled, user),
+    [globalAiEnabled, user]
+  );
 
   // Inactivity Logic
   const resetInactivityTimer = () => {
@@ -256,11 +281,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signup,
         logout,
         updateProfile,
+        updateAiEnabled,
         error,
         clearError,
         refreshUser: fetchCurrentUser,
         isSystemInitialized,
         globalAiEnabled,
+        canShowAi,
+        canShowAiSettings,
         registrationMode,
         maintenanceMode,
         maintenanceMessage,

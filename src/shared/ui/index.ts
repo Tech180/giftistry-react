@@ -8,6 +8,7 @@ export * from './sidebar/sidebar.component';
 export * from './sidebar/item/sidebar-item.component';
 export * from './user-preview-card';
 export * from './badge/badge.component';
+export * from './ai-status-badge/ai-status-badge.component';
 export * from './chip/chip.component';
 export * from './divider/divider.component';
 export * from './loading-state/loading-state.component';

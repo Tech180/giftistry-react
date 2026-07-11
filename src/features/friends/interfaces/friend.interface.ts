@@ -34,8 +34,8 @@ export interface FriendRequest {
 }
 
 export interface FriendRequestsResult {
-  incoming: FriendRequest[];
-  outgoing: FriendRequest[];
+  Incoming: FriendRequest[];
+  Outgoing: FriendRequest[];
 }
 
 export interface UserSearchResult {

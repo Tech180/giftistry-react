@@ -1,21 +1,21 @@
 export interface GiftistryUserPolicy {
-  canCreateWishlists: boolean;
-  maxActiveWishlists: number;
-  canUseComments: boolean;
-  canUseAiFeatures: boolean;
-  canSharePublicLinks: boolean;
-  canUploadImages: boolean;
-  canSendFriendRequests: boolean;
-  canUseCustomThemes: boolean;
+  CanCreateWishlists: boolean;
+  MaxActiveWishlists: number;
+  CanUseComments: boolean;
+  CanUseAiFeatures: boolean;
+  CanSharePublicLinks: boolean;
+  CanUploadImages: boolean;
+  CanSendFriendRequests: boolean;
+  CanUseCustomThemes: boolean;
 }
 
 export const DEFAULT_USER_POLICY: GiftistryUserPolicy = {
-  canCreateWishlists: true,
-  maxActiveWishlists: 0,
-  canUseComments: true,
-  canUseAiFeatures: true,
-  canSharePublicLinks: true,
-  canUploadImages: true,
-  canSendFriendRequests: true,
-  canUseCustomThemes: true,
+  CanCreateWishlists: true,
+  MaxActiveWishlists: 0,
+  CanUseComments: true,
+  CanUseAiFeatures: true,
+  CanSharePublicLinks: true,
+  CanUploadImages: true,
+  CanSendFriendRequests: true,
+  CanUseCustomThemes: true,
 };

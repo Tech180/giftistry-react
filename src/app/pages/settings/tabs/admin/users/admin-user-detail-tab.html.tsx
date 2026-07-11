@@ -14,12 +14,12 @@ import styles from '../admin.shared.module.css';
 const DETAIL_TABS: AdminUserDetailTabKey[] = ['profile', 'permissions', 'security', 'activity'];
 
 const PERMISSION_TOGGLES: [keyof GiftistryUserPolicy, string, string][] = [
-  ['canUseComments', 'Can use comments', 'Allow commenting on wishlists.'],
-  ['canUseAiFeatures', 'Can use AI features', 'Allow AI-powered suggestions and parsing.'],
-  ['canSharePublicLinks', 'Public sharing', 'Allow generating unauthenticated links.'],
-  ['canUploadImages', 'Can upload images', 'Allow image uploads on lists and comments.'],
-  ['canSendFriendRequests', 'Can send friend requests', 'Allow sending friend requests.'],
-  ['canUseCustomThemes', 'Can use custom themes', 'Allow personal theme customization.'],
+  ['CanUseComments', 'Can use comments', 'Allow commenting on wishlists.'],
+  ['CanUseAiFeatures', 'Can use AI features', 'Allow AI-powered suggestions and parsing.'],
+  ['CanSharePublicLinks', 'Public sharing', 'Allow generating unauthenticated links.'],
+  ['CanUploadImages', 'Can upload images', 'Allow image uploads on lists and comments.'],
+  ['CanSendFriendRequests', 'Can send friend requests', 'Allow sending friend requests.'],
+  ['CanUseCustomThemes', 'Can use custom themes', 'Allow personal theme customization.'],
 ];
 
 export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProps> = ({
@@ -76,6 +76,10 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
           <span className={styles['joined-date']}>{joinedDisplay}</span>
           <span className={styles['joined-meta']}>
             {user.WishlistCount ?? 0} lists · {user.FriendsCount ?? 0} friends
+            {' · '}
+            Last login: {user.LastLoginAt ? new Date(user.LastLoginAt).toLocaleString() : '—'}
+            {' · '}
+            Last online: {user.LastOnline ? new Date(user.LastOnline).toLocaleString() : '—'}
           </span>
         </div>
       </div>
@@ -242,8 +246,8 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
               description="Allow user to create and manage their own lists."
             >
               <Switch
-                checked={policy.canCreateWishlists}
-                onChange={(checked) => onPolicyChange('canCreateWishlists', checked)}
+                checked={policy.CanCreateWishlists}
+                onChange={(checked) => onPolicyChange('CanCreateWishlists', checked)}
                 aria-label="Can create wishlists"
               />
             </SettingItem>
@@ -256,8 +260,8 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
                 className={styles['form-input']}
                 type="number"
                 min={0}
-                value={policy.maxActiveWishlists}
-                onChange={(e) => onPolicyChange('maxActiveWishlists', Number(e.target.value))}
+                value={policy.MaxActiveWishlists}
+                onChange={(e) => onPolicyChange('MaxActiveWishlists', Number(e.target.value))}
               />
             </SettingItem>
             {PERMISSION_TOGGLES.map(([key, title, description]) => (
