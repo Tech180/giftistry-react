@@ -62,4 +62,5 @@ export interface CommentSectionTemplateProps {
   setIsReplyTaggingModeActive: (active: boolean) => void;
   replyTaggedItemIds: string[];
   setReplyTaggedItemIds: (ids: string[]) => void;
+  listContainerRef: React.RefObject<HTMLDivElement | null>;
 }

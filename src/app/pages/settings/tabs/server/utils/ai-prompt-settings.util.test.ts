@@ -10,6 +10,7 @@ const mockDefaults = {
   Description: 'Default description prompt',
   Populate: 'Default populate prompt with Oura Ring 5 rules',
   Category: 'Default category prompt',
+  Import: 'Default import prompt',
 };
 
 describe('ai-prompt-settings.util', () => {
@@ -19,12 +20,13 @@ describe('ai-prompt-settings.util', () => {
     expect(effectiveAiPrompt('Custom', mockDefaults.Populate)).toBe('Custom');
   });
 
-  test('applyAiPromptSettings prefills all four prompt fields', () => {
+  test('applyAiPromptSettings prefills all five prompt fields', () => {
     const setters = {
       setAiPrompt: vi.fn(),
       setAiDescriptionPrompt: vi.fn(),
       setAiPopulatePrompt: vi.fn(),
       setAiCategoryPrompt: vi.fn(),
+      setAiImportPrompt: vi.fn(),
     };
 
     applyAiPromptSettings(
@@ -39,6 +41,7 @@ describe('ai-prompt-settings.util', () => {
         SmtpSecure: false,
         SmtpFrom: '',
         AiPopulatePrompt: 'Saved override',
+        AiImportPrompt: 'Saved import',
       },
       mockDefaults,
       setters
@@ -48,9 +51,11 @@ describe('ai-prompt-settings.util', () => {
     expect(setters.setAiDescriptionPrompt).toHaveBeenCalledWith(mockDefaults.Description);
     expect(setters.setAiPopulatePrompt).toHaveBeenCalledWith('Saved override');
     expect(setters.setAiCategoryPrompt).toHaveBeenCalledWith(mockDefaults.Category);
+    expect(setters.setAiImportPrompt).toHaveBeenCalledWith('Saved import');
   });
 
   test('getDefaultPromptForType returns the matching default', () => {
     expect(getDefaultPromptForType('populate', mockDefaults)).toBe(mockDefaults.Populate);
+    expect(getDefaultPromptForType('import', mockDefaults)).toBe(mockDefaults.Import);
   });
 });

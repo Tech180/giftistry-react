@@ -21,6 +21,7 @@ export interface CommentInputProps {
   setIsAnonymous: (anonymous: boolean) => void;
   participants: ListParticipant[];
   currentUserId?: string;
+  listOwnerId?: string;
   imageUrl?: string | null;
   setImageUrl?: (url: string | null) => void;
 }

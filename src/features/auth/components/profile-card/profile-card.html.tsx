@@ -1,5 +1,5 @@
 import React from 'react';
-import { EnterPanel, AiStatusBadge } from 'shared/ui';
+import { EnterPanel, AiStatusBadge, Badge } from 'shared/ui';
 import { Check, AlertCircle, Dices, Upload, Eye, EyeOff, X } from 'lucide-react';
 import { ProfileCardTemplateProps } from '../../interfaces/profile-card-template-props.interface';
 import styles from './profile-card.module.css';
@@ -45,6 +45,10 @@ export const ProfileCardTemplate: React.FC<ProfileCardTemplateProps> = ({
   aiEnabled,
   isAiSaving,
   onAiToggle,
+  showWebSearchBadge = false,
+  webSearchEnabled = false,
+  isWebSearchSaving = false,
+  onWebSearchToggle,
 }) => {
   return (
     <EnterPanel animation="fade" className={styles.container}>
@@ -200,24 +204,54 @@ export const ProfileCardTemplate: React.FC<ProfileCardTemplateProps> = ({
         </div>
       </div>
 
-      {showAiBadge && (
+      {(showAiBadge || showWebSearchBadge) && (
         <section className={styles['ai-section']}>
           <div className={styles['ai-section-card']}>
-            <div className={styles['ai-section-row']}>
-              <div>
-                <h3 className={styles['ai-section-title']}>AI Features</h3>
-                <p className={styles['ai-section-desc']}>
-                  Control whether AI-powered features are available on your account.
-                </p>
+            {showAiBadge && (
+              <div className={styles['ai-section-row']}>
+                <div>
+                  <h3 className={styles['ai-section-title']}>AI Features</h3>
+                  <p className={styles['ai-section-desc']}>
+                    Control whether AI-powered features are available on your account.
+                  </p>
+                </div>
+                <AiStatusBadge
+                  enabled={aiEnabled}
+                  onToggle={onAiToggle}
+                  disabled={isAiSaving}
+                  ariaLabelEnabled="AI features enabled on your account. Click to disable."
+                  ariaLabelDisabled="AI features disabled on your account. Click to enable."
+                />
               </div>
-              <AiStatusBadge
-                enabled={aiEnabled}
-                onToggle={onAiToggle}
-                disabled={isAiSaving}
-                ariaLabelEnabled="AI features enabled on your account. Click to disable."
-                ariaLabelDisabled="AI features disabled on your account. Click to enable."
-              />
-            </div>
+            )}
+
+            {showWebSearchBadge && onWebSearchToggle && (
+              <>
+                {showAiBadge && <div className={styles['ai-section-divider']} aria-hidden="true" />}
+                <div className={styles['ai-section-row']}>
+                  <div>
+                    <h4 className={styles['ai-feature-label']}>Web Search</h4>
+                    <p className={styles['ai-section-desc']}>
+                      Allow product scrape to search the web for specs when enabled on a wishlist.
+                    </p>
+                  </div>
+                  <Badge
+                    size="md"
+                    active={webSearchEnabled}
+                    onClick={onWebSearchToggle}
+                    disabled={isWebSearchSaving}
+                    ariaPressed={webSearchEnabled}
+                    ariaLabel={
+                      webSearchEnabled
+                        ? 'Web search enabled. Click to disable.'
+                        : 'Web search disabled. Click to enable.'
+                    }
+                  >
+                    {webSearchEnabled ? 'Enabled' : 'Disabled'}
+                  </Badge>
+                </div>
+              </>
+            )}
           </div>
         </section>
       )}

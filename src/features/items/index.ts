@@ -11,3 +11,17 @@ export * from './components/showcase/item-showcase.component';
 export * from './interfaces/item-audience-user.interface';
 export { AudiencePicker } from './components/audience-picker';
 export { getCategoryMeta } from './components/card/category-icons';
+export type { ItemViewMode } from './types/item-view-mode.type';
+export {
+  ITEM_VIEW_MODE_STORAGE_KEY,
+  DEFAULT_ITEM_VIEW_MODE,
+  ITEM_VIEW_MODES,
+  ITEM_VIEW_MODE_LABELS,
+} from './constants/item-view-mode.constants';
+export {
+  normalizeStoredViewMode,
+  getLayoutClass,
+  getItemsContainerClass,
+} from './utils/item-view-mode.util';
+export { ItemCardRouter } from './components/views/item-card-router.component';
+export { ImportStrip } from './components/import/import-strip/import-strip.component';

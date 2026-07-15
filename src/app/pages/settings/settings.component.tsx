@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AdminRoute } from 'app/routes/admin-route.component';
 import { AdminOverviewTab } from './tabs/admin/overview/admin-overview-tab.component';
 import { AdminUsersTab } from './tabs/admin/users/admin-users-tab.component';
@@ -12,6 +12,7 @@ import { ProfileCard } from 'features/auth';
 import { SecurityTab } from './tabs/security/security-tab.component';
 import { NotificationsTab } from './tabs/notifications/notifications-tab.component';
 import { ThemingTab } from './tabs/theming/theming-tab.component';
+import type { BackgroundJobsScope } from 'features/jobs';
 import { SettingsTemplate } from './settings.html';
 import { useToast } from 'app/providers/toast-context';
 import { useAuth } from 'app/providers/auth-context';
@@ -20,10 +21,22 @@ function withAdmin(children: React.ReactNode) {
   return <AdminRoute>{children}</AdminRoute>;
 }
 
+function processesRailScopeForPath(pathname: string): BackgroundJobsScope | null {
+  if (pathname === '/settings/account' || pathname === '/settings/account/') {
+    return 'mine';
+  }
+  if (pathname === '/settings/admin' || pathname === '/settings/admin/') {
+    return 'admin';
+  }
+  return null;
+}
+
 export default function Settings() {
   const { showToast } = useToast();
   const { user } = useAuth();
+  const location = useLocation();
   const isAdmin = !!user?.IsAdmin;
+  const processesRailScope = processesRailScopeForPath(location.pathname);
 
   const routes = (
     <Routes>
@@ -49,6 +62,8 @@ export default function Settings() {
       routes={routes}
       toasts={[]}
       isAdmin={isAdmin}
+      processesRailScope={processesRailScope}
+      onProcessesError={(message) => showToast(message, 'error')}
     />
   );
 }

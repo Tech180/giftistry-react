@@ -15,6 +15,7 @@ import {
 } from 'shared/utils/item-custom-fields.util';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
 import { isValidUrl } from 'shared/utils/is-valid-url.util';
+import { getSiteName } from 'shared/utils/get-site-name.util';
 import { syncBidirectionalItemLinks, resolveEditorLinkedItemIds } from '../../utils/item-links-sync.util';
 import {
   buildLinkingAudienceContext,
@@ -58,6 +59,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   onDirtyChange,
   canShowAi = false,
   listAiEnabled = false,
+  canUseWebSearchOnList = false,
 }) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
@@ -81,6 +83,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const [newCustomInput, setNewCustomInput] = useState('');
   const [sessionCustomCategories, setSessionCustomCategories] = useState<string[]>([]);
   const [deletedCategories, setDeletedCategories] = useState<string[]>([]);
+  const [aiCategoryPrimary, setAiCategoryPrimary] = useState<string | null>(null);
+  const [aiCategoryAlternatives, setAiCategoryAlternatives] = useState<string[]>([]);
 
   // Advanced fields (multi-count and linked items)
   const [desiredQuantity, setDesiredQuantity] = useState<number | ''>(1);
@@ -323,6 +327,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     loadedMetadataRef.current = null;
     pendingExtractedRef.current = null;
     lastPartitionDefKeysRef.current = '';
+    setAiCategoryPrimary(null);
+    setAiCategoryAlternatives([]);
   };
 
   const hasOptionalMetadata = (meta: ItemDescriptionMetadata) => {
@@ -444,9 +450,14 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           setDynamicValues({});
         }
 
-        setDesiredQuantity(meta.desiredQuantity || 1);
-        setVariations(meta.variations || []);
-        setOtherUsersCanSee(meta.otherUsersCanSee !== undefined ? meta.otherUsersCanSee : true);
+        setDesiredQuantity(meta.DesiredQuantity || 1);
+        setVariations(
+          (meta.Variations ?? []).map((variation) => ({
+            name: variation.Name,
+            quantity: variation.Quantity,
+          }))
+        );
+        setOtherUsersCanSee(meta.OtherUsersCanSee !== undefined ? meta.OtherUsersCanSee : true);
         setShowExtraFields(hasOptionalMetadata(meta));
       } else {
         setDescription(parsed.text || item.Description || '');
@@ -661,8 +672,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setUndoDescription(null);
   };
 
-  const handleScrapeClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const runExtractMetadata = async () => {
     if (!linkUrl.trim()) return;
 
     if (!isValidUrl(linkUrl)) {
@@ -671,10 +681,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     }
 
     try {
-      const urlObj = new URL(linkUrl.trim());
-      const hostname = urlObj.hostname;
-      const retailerNameRaw = hostname.replace('www.', '').split('.')[0] || '';
-      const extractedWebName = retailerNameRaw ? retailerNameRaw.charAt(0).toUpperCase() + retailerNameRaw.slice(1) : '';
+      const extractedWebName = getSiteName(linkUrl.trim());
       setWebsiteName(extractedWebName || '');
     } catch (_) {
       setWebsiteName('');
@@ -683,7 +690,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setIsAutopopulating(true);
     setErrorMsg(null);
     try {
-      const data = await itemsApi.extractMetadata(linkUrl.trim());
+      const data = await itemsApi.extractMetadata(linkUrl.trim(), { listId });
       if (data) {
         applyExtractedMetadata(data);
       }
@@ -694,11 +701,19 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     }
   };
 
+  const handleScrapeClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await runExtractMetadata();
+  };
+
   const applyExtractedMetadata = (data: ExtractedMetadataResponse) => {
     setHasScraped(true);
     setName(data.Title || '');
     setPrice(data.Price !== null && data.Price !== undefined ? data.Price.toString() : '');
     setDescription(data.Description || '');
+    if (data.WebsiteName?.trim()) {
+      setWebsiteName(data.WebsiteName.trim());
+    }
 
     const resolvedCategory = data.Category?.trim() || 'uncategorized';
     if (canShowAi && resolvedCategory !== 'uncategorized') {
@@ -709,8 +724,16 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       if (deletedCategories.includes(resolvedCategory)) {
         setDeletedCategories((prev) => prev.filter((c) => c !== resolvedCategory));
       }
+      setAiCategoryPrimary(resolvedCategory);
+      setAiCategoryAlternatives(
+        (data.CategoryAlternatives ?? []).filter(
+          (alt) => alt && alt !== 'uncategorized' && alt !== resolvedCategory
+        )
+      );
       setCategory(resolvedCategory);
     } else {
+      setAiCategoryPrimary(null);
+      setAiCategoryAlternatives([]);
       setCategory(resolvedCategory);
     }
 
@@ -896,6 +919,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setLinkUrl('');
       setWebsiteName('');
       setCategory('uncategorized');
+      setAiCategoryPrimary(null);
+      setAiCategoryAlternatives([]);
       setPrice('');
       setIsFavorite(false);
       setCustomFields([]);
@@ -972,6 +997,43 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
     return categories;
   }, [listCategorySet, sessionCustomCategories, deletedCategories, category]);
+
+  const aiCategoryIds = useMemo(() => {
+    const ids = new Set<string>();
+    if (aiCategoryPrimary && aiCategoryPrimary !== 'uncategorized') {
+      ids.add(aiCategoryPrimary);
+    }
+    aiCategoryAlternatives.forEach((alt) => {
+      if (alt && alt !== 'uncategorized') ids.add(alt);
+    });
+    return ids;
+  }, [aiCategoryPrimary, aiCategoryAlternatives]);
+
+  const aiCategoryChips = useMemo(() => {
+    if (!canShowAi || aiCategoryIds.size === 0) return [];
+
+    const chips: Array<{ id: string; label: string; variant: 'primary' | 'suggestion' }> = [];
+
+    if (aiCategoryPrimary && aiCategoryPrimary !== 'uncategorized') {
+      chips.push({
+        id: aiCategoryPrimary,
+        label: getFriendlyCategoryLabel(aiCategoryPrimary),
+        variant: 'primary',
+      });
+    }
+
+    aiCategoryAlternatives.forEach((alt) => {
+      if (!alt || alt === 'uncategorized' || alt === aiCategoryPrimary) return;
+      if (chips.some((chip) => chip.id === alt)) return;
+      chips.push({
+        id: alt,
+        label: getFriendlyCategoryLabel(alt),
+        variant: 'suggestion',
+      });
+    });
+
+    return chips;
+  }, [aiCategoryAlternatives, aiCategoryIds, aiCategoryPrimary, canShowAi]);
 
   const handleAddCustomCategory = () => {
     const val = newCustomInput.trim();
@@ -1072,6 +1134,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       isAutopopulating={isAutopopulating}
       hasScraped={hasScraped}
       handleScrapeClick={handleScrapeClick}
+      canUseWebSearchOnList={canUseWebSearchOnList}
       customFields={customFields}
       handleAddCustomField={handleAddCustomField}
       handleRemoveCustomField={handleRemoveCustomField}
@@ -1080,6 +1143,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       showExtraFields={showExtraFields}
       setShowExtraFields={setShowExtraFields}
       renderedCategories={renderedCategories}
+      aiCategoryChips={aiCategoryChips}
+      aiCategoryIds={aiCategoryIds}
       isAddingCustom={isAddingCustom}
       setIsAddingCustom={setIsAddingCustom}
       newCustomInput={newCustomInput}

@@ -10,12 +10,27 @@ import {
   insertMentionNodeAtCaret,
   insertTextAtCaret,
   getEditorContentAsMarkdown,
+  demoteUserMentionsInMarkdown,
+  demoteUserMentionsInElement,
 } from '../../../../../utils/comment-content.util';
 import styles from './editor.module.css';
 
 export const CommentEditor = forwardRef<CommentEditorHandle, EditorProps>(
-  ({ content, setContent, participants, currentUserId, onSubmit }, ref) => {
+  (
+    {
+      content,
+      setContent,
+      participants,
+      currentUserId,
+      isOwner = false,
+      isOwnerVisible = true,
+      listOwnerId,
+      onSubmit,
+    },
+    ref
+  ) => {
     const editorRef = useRef<HTMLDivElement>(null);
+    const prevOwnerVisibleRef = useRef(isOwnerVisible);
     const [mentionQuery, setMentionQuery] = useState<string | null>(null);
     const [mentionRange, setMentionRange] = useState<{ start: number; end: number } | null>(null);
     const [activeMentionIndex, setActiveMentionIndex] = useState(0);
@@ -142,6 +157,25 @@ export const CommentEditor = forwardRef<CommentEditorHandle, EditorProps>(
         editorRef.current.innerHTML = '';
       }
     }, [content]);
+
+    useEffect(() => {
+      const wasOwnerVisible = prevOwnerVisibleRef.current;
+      prevOwnerVisibleRef.current = isOwnerVisible;
+
+      if (isOwner || isOwnerVisible || !listOwnerId) return;
+      if (!wasOwnerVisible) return;
+
+      const editor = editorRef.current;
+      if (editor) {
+        demoteUserMentionsInElement(editor, [listOwnerId]);
+      }
+
+      const nextContent = demoteUserMentionsInMarkdown(
+        editor ? getEditorContentAsMarkdown(editor) : content,
+        [listOwnerId]
+      );
+      setContent(nextContent);
+    }, [isOwner, isOwnerVisible, listOwnerId, setContent, content]);
 
     return (
       <>

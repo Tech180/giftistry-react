@@ -23,6 +23,7 @@ export * from './dropdown-menu/dropdown-menu.component';
 export * from './menu-item/menu-item.component';
 export * from './toast/toast.component';
 export * from './enter-panel/enter-panel.component';
+export * from './collapsible-strip/collapsible-strip.component';
 export * from './user-avatar/user-avatar.component';
 export * from './switch/switch.component';
 export * from './linked-item-squares';

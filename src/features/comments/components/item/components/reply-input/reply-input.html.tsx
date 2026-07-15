@@ -18,6 +18,9 @@ export const ReplyInputTemplate: React.FC<ReplyInputTemplateProps> = ({
   setContent,
   participants,
   currentUserId,
+  isOwner,
+  isOwnerVisible,
+  listOwnerId,
   onSubmit,
   setImageUrl,
   onUploadError,
@@ -52,6 +55,9 @@ export const ReplyInputTemplate: React.FC<ReplyInputTemplateProps> = ({
           setContent={setContent}
           participants={participants}
           currentUserId={currentUserId}
+          isOwner={isOwner}
+          isOwnerVisible={isOwnerVisible}
+          listOwnerId={listOwnerId}
           onSubmit={onSubmit}
         />
       </div>

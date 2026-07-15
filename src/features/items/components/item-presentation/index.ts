@@ -1,0 +1,13 @@
+export { Badges } from './badges/badges.html';
+export { ClaimAnonymousToggle } from './claim-anonymous-toggle/claim-anonymous-toggle.html';
+export { ClaimPrompt } from './claim-prompt/claim-prompt.html';
+export { ClaimBadge } from './claim-badge/claim-badge.html';
+export { OwnerBadge } from './owner-badge/owner-badge.html';
+export { UserAvatarBox } from './user-avatar-box/user-avatar-box.html';
+export { SharingAvatars } from './sharing-avatars/sharing-avatars.html';
+export { MetadataGrid } from './metadata-grid/metadata-grid.html';
+export { LinksWidget } from './links-widget/links-widget.html';
+export { FundingWidget } from './funding-widget/funding-widget.html';
+export { AiReviewsPanel } from './ai-reviews-panel/ai-reviews-panel.html';
+export { TaggingOverlay, TaggingSelect } from './tagging-controls/tagging-controls.html';
+export { ActionButtons } from './action-buttons/action-buttons.html';

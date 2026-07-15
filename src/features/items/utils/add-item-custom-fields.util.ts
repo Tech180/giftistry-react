@@ -9,23 +9,16 @@ export type CustomFieldRow = {
   storageKey?: string;
 };
 
-/** Maps canonical backend keys to legacy field-definition keys in the DB. */
+/** Maps scrape/storage keys onto item_field_definitions.FieldKey (PascalCase). */
 const CANONICAL_TO_DEFINITION_KEY: Record<string, string> = {
-  Color: 'preferredColor',
-  color: 'preferredColor',
-  PreferredColor: 'preferredColor',
-  PantsSize: 'pantsSize',
-  pantsSize: 'pantsSize',
-  ShirtSize: 'shirtSize',
-  shirtSize: 'shirtSize',
-  ShoesSize: 'shoesSize',
-  shoesSize: 'shoesSize',
-  SocksSize: 'socksSize',
-  socksSize: 'socksSize',
-  ModelNumber: 'modelNumber',
-  modelNumber: 'modelNumber',
-  StorageCapacity: 'storageCapacity',
-  storageCapacity: 'storageCapacity',
+  Color: 'PreferredColor',
+  PreferredColor: 'PreferredColor',
+  PantsSize: 'PantsSize',
+  ShirtSize: 'ShirtSize',
+  ShoesSize: 'ShoesSize',
+  SocksSize: 'SocksSize',
+  ModelNumber: 'ModelNumber',
+  StorageCapacity: 'StorageCapacity',
 };
 
 function normalizeFieldKey(key: string): string {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, UserPlus } from 'lucide-react';
-import { UserPreviewCard } from 'shared/ui';
+import { UserPreviewCard, Badge } from 'shared/ui';
 import { UserAvatar } from 'shared/ui/user-avatar/user-avatar.component';
 import { UserSearchTemplateProps } from './interfaces/user-search-template-props.interface';
 import styles from './user-search.module.css';
@@ -12,7 +12,6 @@ export const UserSearchTemplate: React.FC<UserSearchTemplateProps> = ({
   isSearching,
   onSendRequest,
   sendingId,
-  existingFriendIds,
   pendingUserIds,
   getDisplayName,
 }) => {
@@ -38,7 +37,6 @@ export const UserSearchTemplate: React.FC<UserSearchTemplateProps> = ({
       {!isSearching && searchResults.length > 0 && (
         <ul className={styles.list}>
           {searchResults.map((user) => {
-            const isFriend = existingFriendIds.includes(user.Id);
             const isPending = pendingUserIds.includes(user.Id);
             const displayName = getDisplayName(user);
             const username = user.Username || 'user';
@@ -71,10 +69,8 @@ export const UserSearchTemplate: React.FC<UserSearchTemplateProps> = ({
                     <span className={styles.username}>@{username}</span>
                   </div>
                 </div>
-                {isFriend ? (
-                  <span className={styles['status-badge']}>Friends</span>
-                ) : isPending ? (
-                  <span className={styles['status-badge']}>Pending</span>
+                {isPending ? (
+                  <Badge size="sm">Pending</Badge>
                 ) : (
                   <button
                     type="button"

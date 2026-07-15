@@ -81,6 +81,21 @@
   margin-bottom: var(--spacing-xs);
 }
 
+.link-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.web-search-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
 .notes-actions {
   display: flex;
   align-items: center;
@@ -139,6 +154,18 @@
 
 .input-has-action {
   padding-right: 36px;
+}
+
+.input-has-dual-action {
+  padding-right: 56px;
+}
+
+.input-actions {
+  position: absolute;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .input-icon {
@@ -356,6 +383,60 @@ textarea.input {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
   line-height: 1.5;
+}
+
+.ai-category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-md, var(--radius));
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.ai-category-chip:hover {
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+}
+
+.ai-category-chip-active {
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.ai-category-chip-suggestion {
+  opacity: 0.78;
+  color: var(--text-muted);
+  border-style: dashed;
+  background: color-mix(in srgb, var(--surface) 96%, var(--bg));
+}
+
+.ai-category-chip-suggestion:hover {
+  opacity: 0.92;
+  color: var(--text);
+}
+
+.ai-category-chip-suggestion.ai-category-chip-active {
+  opacity: 1;
+  color: var(--primary);
+  border-style: solid;
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+}
+
+.ai-category-icon {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.ai-category-chip-suggestion:not(.ai-category-chip-active) .ai-category-icon {
+  opacity: 0.72;
 }
 
 .custom-category-row {

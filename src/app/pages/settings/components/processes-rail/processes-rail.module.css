@@ -1,0 +1,26 @@
+.wrapper {
+  width: 18rem;
+  flex-shrink: 0;
+  z-index: 10;
+  align-self: stretch;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.sidebar {
+  width: 100%;
+  min-width: unset;
+  height: auto;
+  min-height: 100%;
+  border-radius: 0;
+  border: none;
+  border-left: 1px solid var(--border);
+  background-color: var(--surface);
+  padding: var(--spacing-md) var(--spacing-base);
+}
+
+@media (max-width: 64rem) {
+  .wrapper {
+    display: none;
+  }
+}

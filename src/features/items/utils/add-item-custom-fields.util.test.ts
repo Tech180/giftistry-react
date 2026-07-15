@@ -41,15 +41,15 @@ describe('add-item-custom-fields.util', () => {
 
   test('applyExtractedToDynamicValues maps PascalCase keys to definition field keys', () => {
     const values = applyExtractedToDynamicValues(lttExtract, [
-      'shirtSize',
-      'preferredColor',
-      'pantsSize',
+      'ShirtSize',
+      'PreferredColor',
+      'PantsSize',
     ]);
 
-    expect(values).toEqual({ shirtSize: 'Small' });
+    expect(values).toEqual({ ShirtSize: 'Small' });
   });
 
-  test('applyExtractedToDynamicValues maps Color to preferredColor definition', () => {
+  test('applyExtractedToDynamicValues maps Color to PreferredColor definition', () => {
     const values = applyExtractedToDynamicValues(
       {
         Title: 'Tee',
@@ -62,15 +62,15 @@ describe('add-item-custom-fields.util', () => {
           UserDefined: {},
         },
       },
-      ['preferredColor']
+      ['PreferredColor']
     );
 
-    expect(values).toEqual({ preferredColor: 'Black' });
+    expect(values).toEqual({ PreferredColor: 'Black' });
   });
 
   test('leftoverExtractedRows skips fields absorbed by definitions', () => {
-    const rows = leftoverExtractedRows(lttExtract, ['shirtSize'], {
-      shirtSize: 'Shirt Size',
+    const rows = leftoverExtractedRows(lttExtract, ['ShirtSize'], {
+      ShirtSize: 'Shirt Size',
     });
 
     expect(rows).toHaveLength(2);
@@ -81,14 +81,14 @@ describe('add-item-custom-fields.util', () => {
 
   test('partitionExtractedCustomFields routes shirt size to dynamic values when definitions exist', () => {
     const { dynamicValues, customFieldRows } = partitionExtractedCustomFields(lttExtract, [
-      'shirtSize',
-      'preferredColor',
+      'ShirtSize',
+      'PreferredColor',
     ], {
-      shirtSize: 'Shirt Size',
-      preferredColor: 'Preferred Color',
+      ShirtSize: 'Shirt Size',
+      PreferredColor: 'Preferred Color',
     });
 
-    expect(dynamicValues).toEqual({ shirtSize: 'Small' });
+    expect(dynamicValues).toEqual({ ShirtSize: 'Small' });
     expect(customFieldRows).toHaveLength(2);
     expect(customFieldRows.every((row) => row.bucket === 'userDefined')).toBe(true);
   });

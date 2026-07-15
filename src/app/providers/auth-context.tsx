@@ -4,7 +4,6 @@ import { InactivityModal } from 'features/auth/components/inactivity-modal/inact
 import { apiClient } from 'core/api/client';
 import { AuthContextType } from './interfaces/auth-context-type.interface';
 import { User } from './interfaces/user.interface';
-import { resolveCanShowAi, resolveCanShowAiSettings } from 'shared/utils/ai-visibility.util';
 import { SystemStatusResult } from 'features/system/api/system.api';
 
 export type { User } from './interfaces/user.interface';
@@ -17,9 +16,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [isSystemInitialized, setIsSystemInitialized] = useState(true);
   const [globalAiEnabled, setGlobalAiEnabled] = useState(false);
+  const [globalWebSearchEnabled, setGlobalWebSearchEnabled] = useState(false);
   const [registrationMode, setRegistrationMode] = useState<'open' | 'invite_only' | 'disabled'>('open');
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
+
+  const [capabilities, setCapabilities] = useState<{ CanUseAi: boolean; CanUseWebSearch: boolean } | undefined>(undefined);
 
   // Inactivity state
   const [showWarning, setShowWarning] = useState(false);
@@ -34,12 +36,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await authApi.getMe();
       if (res && res.User) {
         setUser(res.User);
+        if (res.Capabilities) {
+          setCapabilities(res.Capabilities);
+        }
       } else {
         setUser(null);
+        setCapabilities(undefined);
       }
     } catch (err) {
       localStorage.removeItem('giftistry-token');
       setUser(null);
+      setCapabilities(undefined);
     } finally {
       setIsLoading(false);
     }
@@ -49,16 +56,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await apiClient.get<SystemStatusResult>('/api/system/status');
       if (res && res.Initialized !== undefined) {
-        setIsSystemInitialized(res.Initialized);
+        setIsSystemInitialized(Boolean(res.Initialized));
       }
       if (res && res.AiEnabled !== undefined) {
-        setGlobalAiEnabled(res.AiEnabled);
+        setGlobalAiEnabled(Boolean(res.AiEnabled));
+      }
+      if (res && res.AiWebSearchEnabled !== undefined) {
+        setGlobalWebSearchEnabled(Boolean(res.AiWebSearchEnabled));
       }
       if (res?.RegistrationMode) {
         setRegistrationMode(res.RegistrationMode);
       }
       if (res?.MaintenanceMode !== undefined) {
-        setMaintenanceMode(res.MaintenanceMode);
+        setMaintenanceMode(Boolean(res.MaintenanceMode));
       }
       if (res?.MaintenanceMessage) {
         setMaintenanceMessage(res.MaintenanceMessage);
@@ -66,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       setIsSystemInitialized(false);
       setGlobalAiEnabled(false);
+      setGlobalWebSearchEnabled(false);
     }
   };
 
@@ -76,9 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res && res.Token) {
         localStorage.setItem('giftistry-token', res.Token);
       }
-      if (res && res.User) {
-        setUser(res.User);
-      }
+      await fetchCurrentUser();
       return res;
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Login failed';
@@ -100,9 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res && res.Token) {
         localStorage.setItem('giftistry-token', res.Token);
       }
-      if (res && res.User) {
-        setUser(res.User);
-      }
+      await fetchCurrentUser();
       return res;
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Signup failed';
@@ -139,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await authApi.updateProfile(username, firstName, lastName, bio, theme, avatar, aiEnabled);
       if (res && res.User) {
         setUser((prev) => (prev ? { ...prev, ...res.User } : res.User));
+        await fetchCurrentUser();
         return res.User;
       }
       return null;
@@ -155,6 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await authApi.updateProfile(undefined, undefined, undefined, undefined, undefined, undefined, aiEnabled);
       if (res && res.User) {
         setUser((prev) => (prev ? { ...prev, ...res.User } : res.User));
+        await fetchCurrentUser();
         return res.User;
       }
       return null;
@@ -165,11 +174,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const canShowAi = useMemo(() => resolveCanShowAi(globalAiEnabled, user), [globalAiEnabled, user]);
-  const canShowAiSettings = useMemo(
-    () => resolveCanShowAiSettings(globalAiEnabled, user),
-    [globalAiEnabled, user]
-  );
+  const updateWebSearchEnabled = async (webSearchEnabled: boolean) => {
+    setError(null);
+    try {
+      const res = await authApi.updateProfile(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        webSearchEnabled
+      );
+      if (res && res.User) {
+        setUser((prev) => (prev ? { ...prev, ...res.User } : res.User));
+        await fetchCurrentUser();
+        return res.User;
+      }
+      return null;
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : 'Failed to update web search preference';
+      setError(errMsg);
+      throw err;
+    }
+  };
+
+  const canShowAi = useMemo(() => capabilities?.CanUseAi ?? false, [capabilities]);
+  const canShowAiSettings = useMemo(() => capabilities?.CanUseAi ?? false, [capabilities]);
+  const canShowWebSearch = useMemo(() => capabilities?.CanUseWebSearch ?? false, [capabilities]);
+  const canShowWebSearchSettings = useMemo(() => capabilities?.CanUseWebSearch ?? false, [capabilities]);
 
   // Inactivity Logic
   const resetInactivityTimer = () => {
@@ -282,13 +316,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         updateProfile,
         updateAiEnabled,
+        updateWebSearchEnabled,
         error,
         clearError,
         refreshUser: fetchCurrentUser,
         isSystemInitialized,
         globalAiEnabled,
+        globalWebSearchEnabled,
         canShowAi,
         canShowAiSettings,
+        canShowWebSearch,
+        canShowWebSearchSettings,
         registrationMode,
         maintenanceMode,
         maintenanceMessage,

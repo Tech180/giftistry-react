@@ -16,6 +16,7 @@ export interface AddItemProps {
   isOwner: boolean;
   listId: string;
   listAiEnabled: boolean;
+  canUseWebSearchOnList?: boolean;
   listShares: ListShare[];
   onClose: () => void;
   onSuccess: () => void;

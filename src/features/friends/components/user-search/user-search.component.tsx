@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { UserSearchProps } from './interfaces/user-search-props.interface';
 import { UserSearchTemplate } from './user-search.html';
 import { UserSearchResult } from '../../interfaces/friend.interface';
@@ -21,6 +21,11 @@ export const UserSearch: React.FC<UserSearchProps> = ({
     return () => clearTimeout(timer);
   }, [query, onSearch]);
 
+  const discoverableResults = useMemo(() => {
+    const friendIds = new Set(existingFriendIds);
+    return searchResults.filter((user) => !friendIds.has(user.Id));
+  }, [searchResults, existingFriendIds]);
+
   const getDisplayName = (user: UserSearchResult) => {
     if (user.FirstName) return `${user.FirstName} ${user.LastName || ''}`.trim();
     return user.Username;
@@ -30,11 +35,10 @@ export const UserSearch: React.FC<UserSearchProps> = ({
     <UserSearchTemplate
       query={query}
       setQuery={setQuery}
-      searchResults={searchResults}
+      searchResults={discoverableResults}
       isSearching={isSearching}
       onSendRequest={onSendRequest}
       sendingId={sendingId}
-      existingFriendIds={existingFriendIds}
       pendingUserIds={pendingUserIds}
       getDisplayName={getDisplayName}
     />

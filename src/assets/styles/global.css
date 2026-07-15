@@ -272,12 +272,10 @@ h1, h2, h3, h4, h5, h6 {
   from {
     max-height: 0;
     opacity: 0;
-    transform: translateY(-6px);
   }
   to {
     max-height: 40rem;
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -365,7 +363,7 @@ h1, h2, h3, h4, h5, h6 {
   animation-duration: var(--enter-duration);
   animation-timing-function: var(--enter-ease);
   animation-fill-mode: both;
-  will-change: max-height, opacity, transform;
+  will-change: max-height, opacity;
 }
 
 .animate-slide-down {
@@ -405,7 +403,6 @@ h1, h2, h3, h4, h5, h6 {
   .animate-accordion-down {
     max-height: 0;
     opacity: 0;
-    transform: translateY(-6px);
   }
 
   .animate-fade-in {

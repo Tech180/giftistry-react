@@ -6,6 +6,9 @@ export interface ReplyInputProps {
   participants: ListParticipant[];
   items: Item[];
   currentUserId?: string | null;
+  isOwner: boolean;
+  isOwnerVisible: boolean;
+  listOwnerId?: string;
   isTaggingModeActive: boolean;
   setIsTaggingModeActive: (active: boolean) => void;
   taggedItemIds: string[];

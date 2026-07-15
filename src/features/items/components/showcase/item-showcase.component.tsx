@@ -51,8 +51,8 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const [showDependencyModal, setShowDependencyModal] = useState(false);
 
   const { text: displayDescription, metadata } = useMemo(
-    () => parseItemDescription(item.Description),
-    [item.Description]
+    () => parseItemDescription(item.Description, item.Metadata),
+    [item.Description, item.Metadata]
   );
 
   const userDefinedEntries = useMemo(
@@ -68,8 +68,8 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   }, [metadata, userDefinedEntries]);
 
   useEffect(() => {
-    if (metadata?.multiCount && metadata.variations && metadata.variations.length > 0) {
-      setSelectedVariation(metadata.variations[0].name);
+    if (metadata?.MultiCount && metadata.Variations && metadata.Variations.length > 0) {
+      setSelectedVariation(metadata.Variations[0].Name);
     } else {
       setSelectedVariation('');
     }
@@ -77,8 +77,8 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   }, [item, metadata]);
 
   useEffect(() => {
-    setLocalIsFavorite(getItemFavoriteFlag(item.Description));
-  }, [item.Description]);
+    setLocalIsFavorite(getItemFavoriteFlag(item.Description, item.Metadata));
+  }, [item.Description, item.Metadata]);
 
   useEffect(() => {
     let active = true;
@@ -124,7 +124,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const handleClaim = async (e?: React.SyntheticEvent, skipLinkedCheck = false) => {
     if (e) e.preventDefault();
 
-    const linkedIds = metadata?.linkedItemIds || [];
+    const linkedIds = metadata?.LinkedItemIds || [];
     const hasUnclaimedLinkedItems = linkedIds.length > 0 && wishlistItems.some(
       (wi: any) => linkedIds.includes(wi.Id) && !wi.IsClaimed
     );
@@ -137,8 +137,8 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     setClaimLoading(true);
     try {
       const amount = claimAmount ? parseFloat(claimAmount) : null;
-      const finalSelection = metadata?.multiCount ? selectedVariation : undefined;
-      const finalQuantity = metadata?.multiCount ? claimQty : undefined;
+      const finalSelection = metadata?.MultiCount ? selectedVariation : undefined;
+      const finalQuantity = metadata?.MultiCount ? claimQty : undefined;
       const claimerName = anonymous ? null : (user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null);
 
       await itemsApi.claimItem(item.Id, amount, claimerName, anonymous, finalQuantity, finalSelection);
@@ -158,15 +158,15 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     setShowDependencyModal(false);
     try {
       const amount = claimAmount ? parseFloat(claimAmount) : null;
-      const finalSelection = metadata?.multiCount ? selectedVariation : undefined;
-      const finalQuantity = metadata?.multiCount ? claimQty : undefined;
+      const finalSelection = metadata?.MultiCount ? selectedVariation : undefined;
+      const finalQuantity = metadata?.MultiCount ? claimQty : undefined;
       const claimerName = anonymous ? null : (user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null);
 
       // 1. Claim primary item
       await itemsApi.claimItem(item.Id, amount, claimerName, anonymous, finalQuantity, finalSelection);
 
       // 2. Claim all unclaimed linked items
-      const linkedIds = metadata?.linkedItemIds || [];
+      const linkedIds = metadata?.LinkedItemIds || [];
       const unclaimedLinkedItems = wishlistItems.filter(
         (wi: any) => linkedIds.includes(wi.Id) && !wi.IsClaimed
       );
@@ -222,9 +222,9 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     return acc + (claim.Amount || 0);
   }, 0);
 
-  const isMultiCount = !!(metadata && metadata.multiCount);
+  const isMultiCount = !!(metadata && metadata.MultiCount);
   const totalClaimedQty = item.Claims.reduce((acc, c) => acc + (c.Quantity || 1), 0);
-  const desiredQtyVal = (metadata && metadata.desiredQuantity) || 1;
+  const desiredQtyVal = (metadata && metadata.DesiredQuantity) || 1;
 
   const isFullyClaimed = isMultiCount
     ? totalClaimedQty >= desiredQtyVal

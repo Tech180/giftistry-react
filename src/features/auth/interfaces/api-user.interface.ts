@@ -9,5 +9,6 @@ export interface ApiUser extends PublicUserSummary {
   IsAdmin?: boolean;
   IsOwner?: boolean;
   AiEnabled?: boolean;
+  WebSearchEnabled?: boolean;
   Policy?: GiftistryUserPolicy;
 }

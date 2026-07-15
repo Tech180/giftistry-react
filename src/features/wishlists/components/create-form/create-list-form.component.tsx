@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { wishlistsApi } from '../../api/wishlists.api';
 import { CreateListFormProps } from '../../interfaces/create-list-form-props.interface';
 import { CreateListFormTemplate } from './create-list-form.html';
 import { useAuth } from 'app/providers/auth-context';
 
 export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => {
-  const { user, canShowAi } = useAuth();
+  const { user, canShowAi, canShowWebSearch } = useAuth();
   const isUnverified = user ? !user.EmailVerified : false;
 
   const [title, setTitle] = useState('');
@@ -14,10 +14,25 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
   const [revealSuggestions, setRevealSuggestions] = useState(true);
   const [category, setCategory] = useState('generic');
   const [customCategory, setCustomCategory] = useState('');
-  const [aiEnabled, setAiEnabled] = useState(false);
-  
+  const [aiEnabled, setAiEnabled] = useState(canShowAi);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(canShowWebSearch);
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAiEnabled(canShowAi);
+    setWebSearchEnabled(canShowWebSearch);
+  }, [canShowAi, canShowWebSearch]);
+
+  const handleAiEnabledChange = (enabled: boolean) => {
+    setAiEnabled(enabled);
+    if (!enabled) {
+      setWebSearchEnabled(false);
+    } else if (canShowWebSearch) {
+      setWebSearchEnabled(true);
+    }
+  };
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -48,7 +63,8 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
         allowGroupFunds,
         finalCategory,
         revealSuggestions,
-        aiEnabled
+        aiEnabled,
+        webSearchEnabled
       );
       setTitle('');
       setExpiresAt('');
@@ -56,7 +72,8 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
       setRevealSuggestions(true);
       setCategory('generic');
       setCustomCategory('');
-      setAiEnabled(false);
+      setAiEnabled(canShowAi);
+      setWebSearchEnabled(canShowWebSearch);
       onSuccess(res);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to create wishlist.');
@@ -83,8 +100,11 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
       customCategory={customCategory}
       setCustomCategory={setCustomCategory}
       aiEnabled={aiEnabled}
-      setAiEnabled={setAiEnabled}
+      setAiEnabled={handleAiEnabledChange}
+      webSearchEnabled={webSearchEnabled}
+      setWebSearchEnabled={setWebSearchEnabled}
       globalAiEnabled={canShowAi}
+      globalWebSearchEnabled={canShowWebSearch}
       isUnverified={isUnverified}
     />
   );

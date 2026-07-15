@@ -1,14 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { ReplyInputProps } from './interfaces/reply-input-props.interface';
 import { ReplyInputTemplate } from './reply-input.html';
 import { CommentEditorHandle } from '../../../input/components/input/editor';
-import { convertMentionsToMarkdown } from '../../../../utils/comment-content.util';
+import { convertMentionsToMarkdown, getMentionableParticipants } from '../../../../utils/comment-content.util';
 
 export const ReplyInput: React.FC<ReplyInputProps> = ({
   replyToName,
   participants,
   items,
   currentUserId,
+  isOwner,
+  isOwnerVisible,
+  listOwnerId,
   isTaggingModeActive,
   setIsTaggingModeActive,
   taggedItemIds,
@@ -20,6 +23,16 @@ export const ReplyInput: React.FC<ReplyInputProps> = ({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const mentionParticipants = useMemo(
+    () =>
+      getMentionableParticipants(participants, {
+        isOwner,
+        isOwnerVisible,
+        listOwnerId,
+      }),
+    [participants, isOwner, isOwnerVisible, listOwnerId]
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => editorHandle.current?.focus(), 50);
@@ -81,8 +94,11 @@ export const ReplyInput: React.FC<ReplyInputProps> = ({
       editorHandle={editorHandle}
       content={content}
       setContent={setContent}
-      participants={participants}
+      participants={mentionParticipants}
       currentUserId={currentUserId ?? undefined}
+      isOwner={isOwner}
+      isOwnerVisible={isOwnerVisible}
+      listOwnerId={listOwnerId}
       onSubmit={handleSubmit}
       setImageUrl={setImageUrl}
       onUploadError={setUploadError}

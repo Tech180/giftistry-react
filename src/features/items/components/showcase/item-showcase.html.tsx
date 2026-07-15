@@ -1,6 +1,7 @@
 import React from 'react';
-import { Star, Link as LinkIcon, Link2, Edit2, Trash2, Tag, Sparkles } from 'lucide-react';
+import { Star, Link2, Edit2, Trash2, Tag } from 'lucide-react';
 import { Button, Card } from 'shared/ui';
+import { LinksWidget, FundingWidget, AiReviewsPanel, ClaimPrompt } from '../item-presentation';
 import { ItemShowcaseTemplateProps } from '../../interfaces/item-showcase-template-props.interface';
 import styles from './item-showcase.module.css';
 
@@ -119,69 +120,11 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
 
             {/* AI Reviews Section */}
             {canShowAi && aiEnabled && item.Links && item.Links.length > 0 && (
-              <div className={styles['ai-reviews-box']}>
-                <h4 className={styles['section-title']}>
-                  <Sparkles size={12} className={styles['sparkles-icon']} />
-                  AI Review Synthesis
-                </h4>
-
-                {reviewsLoading ? (
-                  <div className={styles['ai-reviews-loading']}>
-                    <div className={styles['skeleton-pulse']} style={{ height: '16px', marginBottom: '8px', width: '90%' }}></div>
-                    <div className={styles['skeleton-pulse']} style={{ height: '16px', marginBottom: '8px', width: '75%' }}></div>
-                    <div className={styles['skeleton-pulse']} style={{ height: '16px', width: '50%' }}></div>
-                  </div>
-                ) : reviewsError ? (
-                  <p className={styles['reviews-error-text']}>{reviewsError}</p>
-                ) : reviews ? (
-                  <>
-                    <div className={styles['reviews-summary']}>
-                      <p>{reviews.summary}</p>
-                    </div>
-
-                    <div className={styles['pros-cons-grid']}>
-                      <div className={styles['pros-col']}>
-                        <h5 className={styles['pros-title']}>Pros</h5>
-                        <ul className={styles['pros-list']}>
-                          {reviews.pros.map((pro, index) => (
-                            <li key={index} className={styles['pro-item']}>
-                              <span className={styles['pro-bullet']}>✓</span> {pro}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      
-                      <div className={styles['cons-col']}>
-                        <h5 className={styles['cons-title']}>Cons</h5>
-                        <ul className={styles['cons-list']}>
-                          {reviews.cons.map((con, index) => (
-                            <li key={index} className={styles['con-item']}>
-                              <span className={styles['con-bullet']}>✗</span> {con}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    {reviews.reviews && reviews.reviews.length > 0 && (
-                      <div className={styles['quotes-section']}>
-                        <h5 className={styles['quotes-title']}>What Buyers Say</h5>
-                        <div className={styles['quotes-list']}>
-                          {reviews.reviews.map((rev, index) => (
-                            <blockquote key={index} className={styles['review-quote']}>
-                              "{rev}"
-                            </blockquote>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className={styles['ai-reviews-box-empty']}>
-                    <p>AI Review Synthesis is pending for this product link. It will automatically populate shortly.</p>
-                  </div>
-                )}
-              </div>
+              <AiReviewsPanel
+                reviews={reviews}
+                reviewsLoading={reviewsLoading}
+                reviewsError={reviewsError}
+              />
             )}
 
             {/* Custom metadata fields */}
@@ -207,18 +150,18 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
             ))}
 
             {/* Variations progress */}
-            {isMultiCount && metadata?.variations && metadata.variations.length > 0 && (
+            {isMultiCount && metadata?.Variations && metadata.Variations.length > 0 && (
               <div className={styles['variations-section']}>
                 <h4 className={styles['section-title']}>Variations Progress</h4>
                 <div className={styles['variations-progress-list']}>
-                  {metadata.variations.map((v: any, idx: number) => {
-                    const claimed = item.Claims.filter(c => c.Selection === v.name).reduce((sum: number, c: any) => sum + (c.Quantity || 1), 0);
-                    const percent = Math.min(100, Math.round((claimed / v.quantity) * 100));
+                  {metadata.Variations.map((v, idx) => {
+                    const claimed = item.Claims.filter(c => c.Selection === v.Name).reduce((sum: number, c: any) => sum + (c.Quantity || 1), 0);
+                    const percent = Math.min(100, Math.round((claimed / v.Quantity) * 100));
                     return (
                       <div key={idx} className={styles['variation-progress-card']}>
                         <div className={styles['variation-progress-header']}>
-                          <span className={styles['variation-name']}>{v.name}</span>
-                          <span className={styles['variation-qty']}>{claimed} / {v.quantity} Claimed</span>
+                          <span className={styles['variation-name']}>{v.Name}</span>
+                          <span className={styles['variation-qty']}>{claimed} / {v.Quantity} Claimed</span>
                         </div>
                         <div className={styles['progress-bar-bg-mini']}>
                           <div className={styles['progress-bar-fill-mini']} style={{ width: `${percent}%` }} />
@@ -253,41 +196,18 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
               </div>
             ) : (
               allowGroupFunds && totalExtractedPrice > 0 && (
-                <div className={styles['funding-section']}>
-                  <div className={styles['funding-header']}>
-                    <span>Group Funding Progress</span>
-                    <span>{progressPercent}% (${totalClaimedAmount} / ${totalExtractedPrice})</span>
-                  </div>
-                  <div className={styles['progress-bar-bg']}>
-                    <div className={styles['progress-bar-fill']} style={{ width: `${progressPercent}%` }} />
-                  </div>
-                </div>
+                <FundingWidget
+                  totalExtractedPrice={totalExtractedPrice}
+                  totalClaimedAmount={totalClaimedAmount}
+                  label="Group Funding Progress"
+                />
               )
             )}
 
             {/* Purchase Links */}
             <div className={styles['links-section']}>
               <h4 className={styles['section-title']}>Purchase Links</h4>
-              {item.Links.length > 0 ? (
-                <div className={styles['links-list']}>
-                  {item.Links.map((link) => (
-                    <a
-                      key={link.Id}
-                      href={link.Url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles['retailer-link']}
-                    >
-                      <LinkIcon size={12} style={{ marginRight: '6px' }} />
-                      <span className={styles['retailer-name']}>
-                        {getSiteName(link.Url, link.RetailerName)}
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              ) : (
-                <span className={styles['no-links']}>No purchase links available.</span>
-              )}
+              <LinksWidget links={item.Links} getSiteName={getSiteName} />
             </div>
 
             {/* Action Buttons */}
@@ -321,7 +241,8 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                         }}
                         className={styles['claim-form']}
                       >
-                        {isMultiCount && metadata?.variations && metadata.variations.length > 0 && (
+                        <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
+                        {isMultiCount && metadata?.Variations && metadata.Variations.length > 0 && (
                           <div className={styles['form-group']}>
                             <label className={styles['form-label']}>Choose Variation</label>
                             <select
@@ -329,12 +250,12 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                               onChange={(e) => setSelectedVariation(e.target.value)}
                               className={styles['variation-select']}
                             >
-                              {metadata.variations.map((v: any, idx: number) => {
-                                const claimed = item.Claims.filter(c => c.Selection === v.name).reduce((sum: number, c: any) => sum + (c.Quantity || 1), 0);
-                                const remaining = Math.max(0, v.quantity - claimed);
+                              {metadata.Variations.map((v, idx) => {
+                                const claimed = item.Claims.filter(c => c.Selection === v.Name).reduce((sum: number, c: any) => sum + (c.Quantity || 1), 0);
+                                const remaining = Math.max(0, v.Quantity - claimed);
                                 return (
-                                  <option key={idx} value={v.name} disabled={remaining <= 0}>
-                                    {v.name} ({remaining} remaining)
+                                  <option key={idx} value={v.Name} disabled={remaining <= 0}>
+                                    {v.Name} ({remaining} remaining)
                                   </option>
                                 );
                               })}
@@ -371,14 +292,6 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                             />
                           </div>
                         )}
-                        <label className={styles['anon-label']}>
-                          <input
-                            type="checkbox"
-                            checked={anonymous}
-                            onChange={(e) => setAnonymous(e.target.checked)}
-                          />
-                          <span>Claim Anonymously</span>
-                        </label>
                         <div className={styles['form-actions']}>
                           <Button
                             variant="primary"

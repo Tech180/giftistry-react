@@ -1,0 +1,48 @@
+.user-avatar-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+  min-width: 4.75rem;
+  background: var(--surface);
+}
+
+.user-avatar-box-claim {
+  border-color: var(--success-border);
+}
+
+.user-avatar-box-owner {
+  border-color: var(--border);
+}
+
+.user-avatar-box-title {
+  display: block;
+  width: 100%;
+  padding: 1px 8px;
+  font-size: 0.5625rem;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-hover);
+  color: var(--text-muted);
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+
+.user-avatar-box-claim .user-avatar-box-title {
+  border-bottom-color: var(--success-border);
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.user-avatar-box-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 6px 4px;
+  min-height: 1.75rem;
+}

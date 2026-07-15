@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, X } from 'lucide-react';
-import { UserPreviewCard } from 'shared/ui';
+import { UserPreviewCard, Badge } from 'shared/ui';
 import { UserAvatar } from 'shared/ui/user-avatar/user-avatar.component';
 import { FriendRequestListTemplateProps } from './interfaces/friend-request-list-template-props.interface';
 import styles from './friend-request-list.module.css';
@@ -131,7 +131,7 @@ export const FriendRequestListTemplate: React.FC<FriendRequestListTemplateProps>
                       <span className={styles.username}>@{username}</span>
                     </div>
                   </div>
-                  <span className={styles['pending-badge']}>Pending</span>
+                  <Badge size="sm">Pending</Badge>
                 </li>
               );
             })}

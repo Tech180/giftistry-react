@@ -1,0 +1,136 @@
+.v-kanban-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow);
+  transition: transform 0.1s, box-shadow 0.1s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.v-kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.is-private {
+  border-style: dashed;
+}
+
+.is-claimed {
+  border-left: 4px solid var(--success);
+}
+
+.is-tagged {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.v-kanban-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.v-kanban-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+  line-height: 1.3;
+  color: var(--text);
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.v-kanban-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.v-kanban-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--surface-hover);
+  padding-top: 8px;
+}
+
+.v-kanban-price-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.v-kanban-price {
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.v-kanban-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.linked-icon {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.claim-form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.claim-form-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v-kanban-card {
+    transition: none;
+  }
+
+  .v-kanban-card:hover {
+    transform: none;
+  }
+}
+
+.is-user-claimed {
+  background: color-mix(in srgb, var(--success) 8%, var(--surface)) !important;
+  border-color: color-mix(in srgb, var(--success) 30%, var(--border));
+}
+
+.claimed-gray-out {
+  position: relative;
+  isolation: isolate;
+}
+
+.claimed-gray-out::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--surface) 20%, var(--text-muted));
+  opacity: 0.48;
+  pointer-events: none;
+  z-index: 2;
+  border-radius: inherit;
+}
+
+.user-claimed-highlight {
+  background: color-mix(in srgb, var(--success) 20%, var(--surface));
+}
+

@@ -7,7 +7,6 @@ export interface UserSearchTemplateProps {
   isSearching: boolean;
   onSendRequest: (userId: string) => void;
   sendingId?: string | null;
-  existingFriendIds: string[];
   pendingUserIds: string[];
   getDisplayName: (user: UserSearchResult) => string;
 }

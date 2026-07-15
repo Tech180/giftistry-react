@@ -53,6 +53,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   setIsReplyTaggingModeActive,
   replyTaggedItemIds,
   setReplyTaggedItemIds,
+  listContainerRef,
 }) => {
   return (
     <div className={styles.section}>
@@ -68,7 +69,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
       )}
 
       {/* Comment history list */}
-      <div className={styles['list-container']}>
+      <div ref={listContainerRef} className={styles['list-container']}>
         {isLoading ? (
           <div className={styles['loading-spinner']}>
             <div className={styles.spinner} />
@@ -99,6 +100,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
                 replyTaggedItemIds={replyTaggedItemIds}
                 setReplyTaggedItemIds={setReplyTaggedItemIds}
                 isOwner={isOwner}
+                isOwnerVisible={isOwnerVisible}
               />
             ))}
           </div>
@@ -137,6 +139,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
             setIsAnonymous={setIsAnonymous}
             participants={participants}
             currentUserId={currentUserId}
+            listOwnerId={listOwnerId}
             imageUrl={imageUrl}
             setImageUrl={setImageUrl}
           />

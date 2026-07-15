@@ -102,6 +102,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   const participantsRef = useRef<ListParticipant[]>([]);
   const typingTimeoutRef = useRef<any>(null);
   const isTypingRef = useRef(false);
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const shouldScrollToBottomRef = useRef(false);
 
   participantsRef.current = participants;
 
@@ -126,6 +128,18 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       );
     }
     return map;
+  }, [comments]);
+
+  useEffect(() => {
+    if (!shouldScrollToBottomRef.current) return;
+    shouldScrollToBottomRef.current = false;
+
+    const container = listContainerRef.current;
+    if (!container) return;
+
+    requestAnimationFrame(() => {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    });
   }, [comments]);
 
   const handleReplySubmit = async (
@@ -309,42 +323,48 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === 'presence') {
-          const users: OnlineUser[] = Array.isArray(data.users)
-            ? data.users.map((entry: OnlineUser | string) =>
-                typeof entry === 'string'
-                  ? { userId: entry, username: entry }
-                  : { userId: entry.userId, username: entry.username || entry.userId }
-              )
+        if (data.Type === 'presence') {
+          const users: OnlineUser[] = Array.isArray(data.Users)
+            ? data.Users.map((entry: { UserId?: string; Username?: string } | string) => {
+                if (typeof entry === 'string') {
+                  return { userId: entry, username: entry };
+                }
+                const userId = entry.UserId ?? '';
+                const username = entry.Username ?? userId;
+                return { userId, username };
+              })
             : [];
           setOnlineUsers(users);
-        } else if (data.type === 'typing') {
-          if (data.userId !== user?.Id) {
-            if (data.isTyping) {
+        } else if (data.Type === 'typing') {
+          const typingUserId = data.UserId;
+          const typingUsername = data.Username;
+          const isTyping = !!data.IsTyping;
+          if (typingUserId !== user?.Id) {
+            if (isTyping) {
               setTypingUsersMap(prev => ({
                 ...prev,
-                [data.userId]: data.username
+                [typingUserId]: typingUsername
               }));
 
-              if (typingTimeoutRefs.current[data.userId]) {
-                clearTimeout(typingTimeoutRefs.current[data.userId]);
+              if (typingTimeoutRefs.current[typingUserId]) {
+                clearTimeout(typingTimeoutRefs.current[typingUserId]);
               }
 
-              typingTimeoutRefs.current[data.userId] = setTimeout(() => {
+              typingTimeoutRefs.current[typingUserId] = setTimeout(() => {
                 setTypingUsersMap(prev => {
                   const updated = { ...prev };
-                  delete updated[data.userId];
+                  delete updated[typingUserId];
                   return updated;
                 });
               }, COMMENT_TYPING_USER_TTL_MS);
             } else {
               setTypingUsersMap(prev => {
                 const updated = { ...prev };
-                delete updated[data.userId];
+                delete updated[typingUserId];
                 return updated;
               });
-              if (typingTimeoutRefs.current[data.userId]) {
-                clearTimeout(typingTimeoutRefs.current[data.userId]);
+              if (typingTimeoutRefs.current[typingUserId]) {
+                clearTimeout(typingTimeoutRefs.current[typingUserId]);
               }
             }
           }
@@ -374,7 +394,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
     if (!isTypingRef.current) {
       isTypingRef.current = true;
-      socketRef.current.send(JSON.stringify({ type: 'typing', isTyping: true }));
+      socketRef.current.send(JSON.stringify({ Type: 'typing', IsTyping: true }));
     }
 
     if (typingTimeoutRef.current) {
@@ -383,7 +403,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
     typingTimeoutRef.current = setTimeout(() => {
       if (isTypingRef.current && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-        socketRef.current.send(JSON.stringify({ type: 'typing', isTyping: false }));
+        socketRef.current.send(JSON.stringify({ Type: 'typing', IsTyping: false }));
         isTypingRef.current = false;
       }
     }, COMMENT_TYPING_STOP_DELAY_MS);
@@ -403,7 +423,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
     // Stop typing indicator on submit
     if (isTypingRef.current && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({ type: 'typing', isTyping: false }));
+      socketRef.current.send(JSON.stringify({ Type: 'typing', IsTyping: false }));
       isTypingRef.current = false;
     }
     if (typingTimeoutRef.current) {
@@ -435,6 +455,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         null,
         imageUrl
       );
+      shouldScrollToBottomRef.current = true;
       setContent('');
       setImageUrl(null);
       setIsRollover(false);
@@ -506,6 +527,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       setIsReplyTaggingModeActive={handleSetReplyTaggingActive}
       replyTaggedItemIds={replyTaggedItemIds}
       setReplyTaggedItemIds={setReplyTaggedItemIds}
+      listContainerRef={listContainerRef}
     />
   );
 };

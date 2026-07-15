@@ -22,5 +22,6 @@ export interface AddItemFormProps {
   onDirtyChange?: (isDirty: boolean) => void;
   canShowAi?: boolean;
   listAiEnabled?: boolean;
+  canUseWebSearchOnList?: boolean;
 }
 

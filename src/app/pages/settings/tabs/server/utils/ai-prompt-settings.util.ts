@@ -1,6 +1,6 @@
 import type { AiDefaultPromptsView, BackendSettings } from '../interfaces/backend-settings.interface';
 
-export type PromptType = 'review' | 'description' | 'populate' | 'category';
+export type PromptType = 'review' | 'description' | 'populate' | 'category' | 'import';
 
 export function effectiveAiPrompt(saved: string | undefined, fallback: string): string {
   return saved?.trim() ? saved : fallback;
@@ -14,6 +14,7 @@ export function applyAiPromptSettings(
     setAiDescriptionPrompt: (value: string) => void;
     setAiPopulatePrompt: (value: string) => void;
     setAiCategoryPrompt: (value: string) => void;
+    setAiImportPrompt: (value: string) => void;
   }
 ): void {
   setters.setAiPrompt(effectiveAiPrompt(settings.AiPrompt, defaults.Review));
@@ -22,6 +23,7 @@ export function applyAiPromptSettings(
   );
   setters.setAiPopulatePrompt(effectiveAiPrompt(settings.AiPopulatePrompt, defaults.Populate));
   setters.setAiCategoryPrompt(effectiveAiPrompt(settings.AiCategoryPrompt, defaults.Category));
+  setters.setAiImportPrompt(effectiveAiPrompt(settings.AiImportPrompt, defaults.Import));
 }
 
 export function getDefaultPromptForType(
@@ -37,5 +39,7 @@ export function getDefaultPromptForType(
       return defaults.Populate;
     case 'category':
       return defaults.Category;
+    case 'import':
+      return defaults.Import;
   }
 }

@@ -81,7 +81,7 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
       {
         Id: '1',
         Category: 'clothing',
-        FieldKey: 'pantsSize',
+        FieldKey: 'PantsSize',
         Label: 'Pants Size',
         Placeholder: '32x30',
         DisplayOrder: 1,
@@ -90,7 +90,7 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
       {
         Id: '2',
         Category: 'clothing',
-        FieldKey: 'waistFit',
+        FieldKey: 'WaistFit',
         Label: 'Waist Fit',
         Placeholder: 'e.g. Slim',
         DisplayOrder: 2,
@@ -98,7 +98,7 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
           {
             Id: 'dep-1',
             DependentFieldId: '2',
-            TriggerFieldKey: 'pantsSize',
+            TriggerFieldKey: 'PantsSize',
             TriggerValue: 'any',
           },
         ],
@@ -269,12 +269,12 @@ describe('AddItemForm - AI Summarize', () => {
       ).toHaveValue('AI generated notes.');
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Undo/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Undo summarize/i }));
 
     expect(
       screen.getByPlaceholderText('Add specific details, reasons you want this, or alternative options...')
     ).toHaveValue('Original notes');
-    expect(screen.queryByRole('button', { name: /Undo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Undo summarize/i })).not.toBeInTheDocument();
   });
 });
 
@@ -287,6 +287,7 @@ describe('AddItemForm - Auto populate', () => {
       Price: 59.99,
       Description: 'Soft fleece',
       Category: 'clothing',
+      CategoryAlternatives: [],
       ImageUrl: null,
       CustomFields: {
         Predefined: { ShirtSize: 'L', Color: 'Black' },
@@ -342,6 +343,40 @@ describe('AddItemForm - Auto populate', () => {
     });
   });
 
+  test('sends listId when scraping metadata', async () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+        canUseWebSearchOnList={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/hoodie' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(itemsApi.extractMetadata).toHaveBeenCalledWith('https://shop.example/hoodie', {
+        listId: 'test-list-id',
+      });
+    });
+  });
+
+  test('shows passive web search indicator when enabled for list', () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canUseWebSearchOnList={true}
+      />
+    );
+
+    expect(screen.getByLabelText('Web search enabled for this list')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /search the web/i })).not.toBeInTheDocument();
+  });
+
   test('hides category chip picker when global AI is enabled', async () => {
     render(
       <AddItemForm
@@ -380,6 +415,7 @@ describe('AddItemForm - Auto populate', () => {
       Price: 59.99,
       Description: 'Soft fleece',
       Category: 'clothing',
+      CategoryAlternatives: ['apparel_accessories', 'health_wellness'],
       ImageUrl: null,
       CustomFields: { Predefined: {}, UserDefined: {} },
     });
@@ -398,8 +434,10 @@ describe('AddItemForm - Auto populate', () => {
     fireEvent.click(screen.getByTitle('Auto-fill details from link'));
 
     await waitFor(() => {
-      expect(screen.getByText('Clothing')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Clothing', pressed: true })).toBeInTheDocument();
     });
+    expect(screen.getByRole('button', { name: 'Apparel & Accessories', pressed: false })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Health & Wellness', pressed: false })).toBeInTheDocument();
     expect(screen.getByText('+ Add')).toBeInTheDocument();
     expect(screen.queryByText('Digital & Tech')).not.toBeInTheDocument();
   });
@@ -410,6 +448,7 @@ describe('AddItemForm - Auto populate', () => {
       Price: 59.99,
       Description: 'Soft fleece',
       Category: 'clothing',
+      CategoryAlternatives: [],
       ImageUrl: null,
       CustomFields: {
         Predefined: { Color: 'Black', ShirtSize: 'L' },

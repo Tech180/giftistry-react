@@ -1,0 +1,31 @@
+.tagging-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  outline: none;
+  border-radius: inherit;
+}
+
+.select-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--text-muted);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: transparent;
+  padding: 0;
+  z-index: 51;
+}
+
+.select-indicator-checked {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}

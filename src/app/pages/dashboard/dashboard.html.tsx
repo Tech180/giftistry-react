@@ -1,7 +1,8 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
 import { WishlistCard, CreateListForm } from 'features/wishlists';
-import { Button, Modal, TabBar, SearchInput, EmptyState, LoadingState, EnterPanel } from 'shared/ui';
+import { ImportStrip } from 'features/items';
+import { Button, Badge, Modal, TabBar, SearchInput, EmptyState, LoadingState, EnterPanel } from 'shared/ui';
 import styles from './dashboard.module.css';
 import { DashboardTemplateProps } from './interfaces/dashboard-template-props.interface';
 
@@ -9,6 +10,8 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
   getGreeting,
   isCreateOpen,
   setIsCreateOpen,
+  isImportOpen,
+  setIsImportOpen,
   activeTab,
   setActiveTab,
   searchQuery,
@@ -18,6 +21,7 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
   isLoading,
   error,
   handleCreateSuccess,
+  handleImportStarted,
   emptyIcon,
   emptyTitle,
   emptyDesc,
@@ -33,14 +37,31 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
             Manage your personal registries and collaborated wishlists
           </p>
         </div>
-        <Button
-          variant="primary"
-          leftIcon={<Plus size={16} />}
-          onClick={() => setIsCreateOpen(true)}
-        >
-          New Wishlist
-        </Button>
+        <div className={styles.headerActions}>
+          <Badge
+            effect="rainbow"
+            active={isImportOpen}
+            size="compact"
+            icon={<Upload size={16} />}
+            ariaLabel="Import wishlist"
+            ariaPressed={isImportOpen}
+            onClick={() => setIsImportOpen(!isImportOpen)}
+          />
+          <Button
+            variant="primary"
+            leftIcon={<Plus size={16} />}
+            onClick={() => setIsCreateOpen(true)}
+          >
+            New Wishlist
+          </Button>
+        </div>
       </div>
+
+      <ImportStrip
+        mode="create-list"
+        isExpanded={isImportOpen}
+        onImported={handleImportStarted}
+      />
 
       {error && <div className={styles['error-banner']}>{error}</div>}
 

@@ -55,7 +55,7 @@ export const adminApi = {
     avatar?: string | null;
     emailVerified?: boolean;
   }) =>
-    apiClient.patch<{ success: boolean }>(`/api/admin/users/${id}`, {
+    apiClient.patch<Record<string, never>>(`/api/admin/users/${id}`, {
       Username: updates.username,
       Email: updates.email,
       FirstName: updates.firstName,
@@ -72,7 +72,7 @@ export const adminApi = {
     forcePasswordChange?: boolean;
     loginAttemptsBeforeLockout?: number;
     policy?: Partial<GiftistryUserPolicy>;
-  }) => apiClient.patch<{ success: boolean }>(`/api/admin/users/${id}/policy`, {
+  }) => apiClient.patch<Record<string, never>>(`/api/admin/users/${id}/policy`, {
     IsAdmin: policy.isAdmin,
     IsDisabled: policy.isDisabled,
     IsHidden: policy.isHidden,
@@ -82,16 +82,16 @@ export const adminApi = {
   }, 'Policy'),
 
   resetPassword: (id: string, password: string, forcePasswordChange?: boolean) =>
-    apiClient.post<{ success: boolean }>(`/api/admin/users/${id}/reset-password`, { Password: password, ForcePasswordChange: forcePasswordChange }, 'Password'),
+    apiClient.post<Record<string, never>>(`/api/admin/users/${id}/reset-password`, { Password: password, ForcePasswordChange: forcePasswordChange }, 'Password'),
 
   unlockUser: (id: string) =>
-    apiClient.post<{ success: boolean }>(`/api/admin/users/${id}/unlock`, {}),
+    apiClient.post<Record<string, never>>(`/api/admin/users/${id}/unlock`, {}),
 
   revokeSessions: (id: string) =>
-    apiClient.post<{ success: boolean }>(`/api/admin/users/${id}/revoke-sessions`, {}),
+    apiClient.post<Record<string, never>>(`/api/admin/users/${id}/revoke-sessions`, {}),
 
   deleteUser: (id: string) =>
-    apiClient.delete<{ success: boolean }>(`/api/admin/users/${id}`),
+    apiClient.delete<Record<string, never>>(`/api/admin/users/${id}`),
 
   transferOwnership: (userId: string) =>
     apiClient.post<{ NewOwnerUsername?: string }>(
@@ -122,7 +122,7 @@ export const adminApi = {
     ),
 
   deleteModerationComment: (id: string) =>
-    apiClient.delete<{ success: boolean }>(`/api/admin/moderation/comments/${id}`),
+    apiClient.delete<Record<string, never>>(`/api/admin/moderation/comments/${id}`),
 
   getReports: (status = 'open', page = 1) =>
     apiClient.get<{ Reports: ContentReport[]; Page: number; Total: number }>(
@@ -130,5 +130,5 @@ export const adminApi = {
     ),
 
   resolveReport: (id: string, status: 'open' | 'resolved' | 'dismissed') =>
-    apiClient.patch<{ success: boolean }>(`/api/admin/reports/${id}`, { Status: status }, 'Report'),
+    apiClient.patch<Record<string, never>>(`/api/admin/reports/${id}`, { Status: status }, 'Report'),
 };

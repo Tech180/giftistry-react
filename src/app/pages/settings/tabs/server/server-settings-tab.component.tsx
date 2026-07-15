@@ -4,7 +4,12 @@ import { ServerSettingsTabTemplate } from './server-settings-tab.html';
 import { apiClient } from 'core/api/client';
 import { systemApi } from 'features/system/api/system.api';
 import { ServerSettingsTabProps } from './interfaces/server-settings-tab-props.interface';
-import { BackendSettings } from './interfaces/backend-settings.interface';
+import {
+  BackendSettings,
+  normalizeAiSlotProvider,
+  type AiSlotProvider,
+} from './interfaces/backend-settings.interface';
+import type { AiModelSlot } from './interfaces/ai-section-props.interface';
 import { LOCAL_AI_CUSTOM_MODEL_VALUE, type LocalAiModelMode } from './interfaces/local-ai-model.interface';
 import {
   clearLocalAiModelsCache,
@@ -30,34 +35,156 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [smtpSecure, setSmtpSecure] = useState(false);
   const [smtpFrom, setSmtpFrom] = useState('');
   const [aiEnabled, setAiEnabled] = useState(false);
-  const [aiProvider, setAiProvider] = useState<'gemini' | 'openai' | 'anthropic' | 'local' | 'openrouter'>('gemini');
-  const [aiApiKey, setAiApiKey] = useState('');
-  const [aiModel, setAiModel] = useState('');
+  const [aiWebSearchEnabled, setAiWebSearchEnabled] = useState(false);
+  const [aiRateLimitEnabled, setAiRateLimitEnabled] = useState(false);
+  const [aiCompletionTimeoutMs, setAiCompletionTimeoutMs] = useState(600000);
+  const [scrapeFetchTimeoutMs, setScrapeFetchTimeoutMs] = useState(8000);
+  const [scrapePlaywrightTimeoutMs, setScrapePlaywrightTimeoutMs] = useState(25000);
+  const [aiFastProvider, setAiFastProvider] = useState<AiSlotProvider>('openrouter');
+  const [aiFastEndpoint, setAiFastEndpoint] = useState('');
+  const [aiFastApiKey, setAiFastApiKey] = useState('');
+  const [aiFastModel, setAiFastModel] = useState('');
+  const [aiIntelligentProvider, setAiIntelligentProvider] = useState<AiSlotProvider>('openrouter');
+  const [aiIntelligentEndpoint, setAiIntelligentEndpoint] = useState('');
+  const [aiIntelligentApiKey, setAiIntelligentApiKey] = useState('');
+  const [aiIntelligentModel, setAiIntelligentModel] = useState('');
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiDescriptionPrompt, setAiDescriptionPrompt] = useState('');
   const [aiPopulatePrompt, setAiPopulatePrompt] = useState('');
   const [aiCategoryPrompt, setAiCategoryPrompt] = useState('');
-  const [aiEndpoint, setAiEndpoint] = useState('');
+  const [aiImportPrompt, setAiImportPrompt] = useState('');
   const [aiDefaultPrompts, setAiDefaultPrompts] = useState<BackendSettings['AiDefaultPrompts']>();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showAiKey, setShowAiKey] = useState(false);
+  const [showFastAiKey, setShowFastAiKey] = useState(false);
+  const [showIntelligentAiKey, setShowIntelligentAiKey] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletingServer, setIsDeletingServer] = useState(false);
 
   const [openrouterModels, setOpenrouterModels] = useState<Array<{ id: string; name: string; company: string; displayName: string }>>([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState('');
-  const [localAiModels, setLocalAiModels] = useState<string[]>([]);
-  const [localModelMode, setLocalModelMode] = useState<LocalAiModelMode>('custom');
-  const [aiConnectionStatus, setAiConnectionStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
-  const [aiConnectionMessage, setAiConnectionMessage] = useState('');
-  const aiCheckRequestIdRef = useRef(0);
-  const endpointCheckTimerRef = useRef<number | null>(null);
+  const [selectedFastCompany, setSelectedFastCompany] = useState('');
+  const [selectedIntelligentCompany, setSelectedIntelligentCompany] = useState('');
+  const [localFastModels, setLocalFastModels] = useState<string[]>([]);
+  const [localIntelligentModels, setLocalIntelligentModels] = useState<string[]>([]);
+  const [localFastModelMode, setLocalFastModelMode] = useState<LocalAiModelMode>('custom');
+  const [localIntelligentModelMode, setLocalIntelligentModelMode] = useState<LocalAiModelMode>('custom');
+  const [fastConnectionStatus, setFastConnectionStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
+  const [fastConnectionMessage, setFastConnectionMessage] = useState('');
+  const [intelligentConnectionStatus, setIntelligentConnectionStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
+  const [intelligentConnectionMessage, setIntelligentConnectionMessage] = useState('');
+  const fastCheckRequestIdRef = useRef(0);
+  const intelligentCheckRequestIdRef = useRef(0);
+  const fastEndpointCheckTimerRef = useRef<number | null>(null);
+  const intelligentEndpointCheckTimerRef = useRef<number | null>(null);
 
   const companies = Array.from(new Set(openrouterModels.map(m => m.company))).sort();
-  const filteredModels = openrouterModels.filter(m => m.company === selectedCompany);
+  const filteredFastModels = openrouterModels.filter(m => m.company === selectedFastCompany);
+  const filteredIntelligentModels = openrouterModels.filter(m => m.company === selectedIntelligentCompany);
+
+  const applyLocalModeForSlot = useCallback((slot: AiModelSlot, models: string[], savedModel: string) => {
+    const state = applyLocalModelsState(models, savedModel);
+    if (slot === 'fast') {
+      setLocalFastModelMode(state.mode);
+      if (state.model !== savedModel.trim()) {
+        setAiFastModel(state.model);
+      }
+    } else {
+      setLocalIntelligentModelMode(state.mode);
+      if (state.model !== savedModel.trim()) {
+        setAiIntelligentModel(state.model);
+      }
+    }
+  }, []);
+
+  const hydrateLocalSlotFromCache = useCallback((
+    provider: AiSlotProvider,
+    endpoint: string,
+    model: string,
+    slot: AiModelSlot,
+  ) => {
+    if (provider === 'local' && endpoint.trim()) {
+      const cachedModels = readLocalAiModelsCache(endpoint);
+      if (cachedModels) {
+        if (slot === 'fast') {
+          setLocalFastModels(cachedModels);
+        } else {
+          setLocalIntelligentModels(cachedModels);
+        }
+        applyLocalModeForSlot(slot, cachedModels, model);
+        return;
+      }
+    }
+
+    if (slot === 'fast') {
+      setLocalFastModels([]);
+      setLocalFastModelMode('custom');
+    } else {
+      setLocalIntelligentModels([]);
+      setLocalIntelligentModelMode('custom');
+    }
+  }, [applyLocalModeForSlot]);
+
+  const applySettingsToState = useCallback((s: BackendSettings) => {
+    setDbType(s.DbType);
+    setDbUrl(s.DbUrl || '');
+    setSmtpType(s.SmtpType);
+    setSmtpHost(s.SmtpHost || '');
+    setSmtpPort(s.SmtpPort ? s.SmtpPort.toString() : '1025');
+    setSmtpUser(s.SmtpUser || '');
+    setSmtpPass(s.SmtpPass || '');
+    setSmtpSecure(!!s.SmtpSecure);
+    setSmtpFrom(s.SmtpFrom || 'noreply@giftistry.local');
+    setAiEnabled(!!s.AiEnabled);
+    setAiWebSearchEnabled(!!s.AiWebSearchEnabled);
+    setAiRateLimitEnabled(!!s.AiRateLimitEnabled);
+    setAiCompletionTimeoutMs(
+      Number.isFinite(s.AiCompletionTimeoutMs) ? Number(s.AiCompletionTimeoutMs) : 600000
+    );
+    setScrapeFetchTimeoutMs(
+      Number.isFinite(s.ScrapeFetchTimeoutMs) ? Number(s.ScrapeFetchTimeoutMs) : 8000
+    );
+    setScrapePlaywrightTimeoutMs(
+      Number.isFinite(s.ScrapePlaywrightTimeoutMs) ? Number(s.ScrapePlaywrightTimeoutMs) : 25000
+    );
+
+    const fastProvider = normalizeAiSlotProvider(s.AiFastProvider);
+    const intelligentProvider = normalizeAiSlotProvider(s.AiIntelligentProvider);
+    const savedFastEndpoint = s.AiFastEndpoint || '';
+    const savedIntelligentEndpoint = s.AiIntelligentEndpoint || '';
+    const savedFastModel = s.AiFastModel || '';
+    const savedIntelligentModel = s.AiIntelligentModel || '';
+
+    setAiFastProvider(fastProvider);
+    setAiFastEndpoint(savedFastEndpoint);
+    setAiFastApiKey(s.AiFastApiKey || '');
+    setAiFastModel(savedFastModel);
+    setAiIntelligentProvider(intelligentProvider);
+    setAiIntelligentEndpoint(savedIntelligentEndpoint);
+    setAiIntelligentApiKey(s.AiIntelligentApiKey || '');
+    setAiIntelligentModel(savedIntelligentModel);
+
+    if (s.AiDefaultPrompts) {
+      setAiDefaultPrompts(s.AiDefaultPrompts);
+      applyAiPromptSettings(s, s.AiDefaultPrompts, {
+        setAiPrompt,
+        setAiDescriptionPrompt,
+        setAiPopulatePrompt,
+        setAiCategoryPrompt,
+        setAiImportPrompt,
+      });
+    } else {
+      setAiPrompt(s.AiPrompt || '');
+      setAiDescriptionPrompt(s.AiDescriptionPrompt || '');
+      setAiPopulatePrompt(s.AiPopulatePrompt || '');
+      setAiCategoryPrompt(s.AiCategoryPrompt || '');
+      setAiImportPrompt(s.AiImportPrompt || '');
+    }
+
+    hydrateLocalSlotFromCache(fastProvider, savedFastEndpoint, savedFastModel, 'fast');
+    hydrateLocalSlotFromCache(intelligentProvider, savedIntelligentEndpoint, savedIntelligentModel, 'intelligent');
+  }, [hydrateLocalSlotFromCache]);
 
   useEffect(() => {
     let active = true;
@@ -65,55 +192,7 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       try {
         const response = await apiClient.get<BackendSettings>('/api/system/settings');
         if (active && response) {
-          const s = response;
-          setDbType(s.DbType);
-          setDbUrl(s.DbUrl || '');
-          setSmtpType(s.SmtpType);
-          setSmtpHost(s.SmtpHost || '');
-          setSmtpPort(s.SmtpPort ? s.SmtpPort.toString() : '1025');
-          setSmtpUser(s.SmtpUser || '');
-          setSmtpPass(s.SmtpPass || '');
-          setSmtpSecure(!!s.SmtpSecure);
-          setSmtpFrom(s.SmtpFrom || 'noreply@giftistry.local');
-          setAiEnabled(!!s.AiEnabled);
-          setAiProvider(s.AiProvider || 'gemini');
-          setAiApiKey(s.AiApiKey || '');
-          const savedModel = s.AiModel || '';
-          const savedEndpoint = s.AiEndpoint || '';
-          setAiModel(savedModel);
-          if (s.AiDefaultPrompts) {
-            setAiDefaultPrompts(s.AiDefaultPrompts);
-            applyAiPromptSettings(s, s.AiDefaultPrompts, {
-              setAiPrompt,
-              setAiDescriptionPrompt,
-              setAiPopulatePrompt,
-              setAiCategoryPrompt,
-            });
-          } else {
-            setAiPrompt(s.AiPrompt || '');
-            setAiDescriptionPrompt(s.AiDescriptionPrompt || '');
-            setAiPopulatePrompt(s.AiPopulatePrompt || '');
-            setAiCategoryPrompt(s.AiCategoryPrompt || '');
-          }
-          setAiEndpoint(savedEndpoint);
-
-          if (s.AiProvider === 'local' && savedEndpoint.trim()) {
-            const cachedModels = readLocalAiModelsCache(savedEndpoint);
-            if (cachedModels) {
-              setLocalAiModels(cachedModels);
-              const { mode, model } = applyLocalModelsState(cachedModels, savedModel);
-              setLocalModelMode(mode);
-              if (model !== savedModel) {
-                setAiModel(model);
-              }
-            } else {
-              setLocalAiModels([]);
-              setLocalModelMode('custom');
-            }
-          } else {
-            setLocalAiModels([]);
-            setLocalModelMode('custom');
-          }
+          applySettingsToState(response);
         }
       } catch (err: any) {
         showToast(err.message || 'Failed to load system settings.', 'error');
@@ -123,68 +202,47 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     };
     fetchSettings();
     return () => { active = false; };
-  }, [showToast]);
+  }, [showToast, applySettingsToState]);
 
   useEffect(() => {
-    if (aiProvider === 'local') return;
+    const needsOpenRouter =
+      aiFastProvider === 'openrouter' || aiIntelligentProvider === 'openrouter';
+    if (!needsOpenRouter) return;
 
     let active = true;
     const fetchOpenRouterModels = async () => {
       setIsLoadingModels(true);
       try {
-        const response = await fetch('https://openrouter.ai/api/v1/models');
-        if (response.ok) {
-          const json = await response.json();
-          if (active && json && Array.isArray(json.data)) {
-            const mapped = json.data
-              .filter((m: any) => {
-                const outMods = m.architecture?.output_modalities;
-                const modality = m.architecture?.modality;
-                if (outMods && outMods.includes('image')) {
-                  return false;
-                }
-                if (modality && modality.endsWith('->image')) {
-                  return false;
-                }
-                return true;
-              })
-              .map((m: any) => {
-                const fullName = m.name || m.id;
-                let company = 'Other';
-                let displayName = fullName;
-                if (fullName.includes(':')) {
-                  const parts = fullName.split(':');
-                  company = parts[0].trim();
-                  displayName = parts.slice(1).join(':').trim();
-                }
-                return {
-                  id: m.id,
-                  name: fullName,
-                  company,
-                  displayName
-                };
-              });
-            mapped.sort((a: any, b: any) => a.displayName.localeCompare(b.displayName));
-            setOpenrouterModels(mapped);
+        const mapped = await systemApi.listModels({ provider: 'openrouter' });
+        if (!active) return;
 
-            let initialCompany = '';
-            if (aiModel) {
-              const matchedModel = mapped.find((m: any) => m.id === aiModel);
-              if (matchedModel) {
-                initialCompany = matchedModel.company;
-              }
+        const sorted = [...mapped].sort((a, b) => a.displayName.localeCompare(b.displayName));
+        setOpenrouterModels(sorted);
+
+        const resolveCompany = (modelId: string) => {
+          if (modelId) {
+            const matchedModel = sorted.find((m) => m.id === modelId);
+            if (matchedModel) {
+              return matchedModel.company;
             }
-            if (!initialCompany && mapped.length > 0) {
-              const hasGoogle = mapped.some((m: any) => m.company === 'Google');
-              if (hasGoogle) {
-                initialCompany = 'Google';
-              } else {
-                initialCompany = mapped[0].company;
-              }
-            }
-            if (initialCompany) {
-              setSelectedCompany(initialCompany);
-            }
+          }
+          if (sorted.length > 0) {
+            const hasGoogle = sorted.some((m) => m.company === 'Google');
+            return hasGoogle ? 'Google' : sorted[0].company;
+          }
+          return '';
+        };
+
+        if (aiFastProvider === 'openrouter') {
+          const fastCompany = resolveCompany(aiFastModel);
+          if (fastCompany) {
+            setSelectedFastCompany(fastCompany);
+          }
+        }
+        if (aiIntelligentProvider === 'openrouter') {
+          const intelligentCompany = resolveCompany(aiIntelligentModel);
+          if (intelligentCompany) {
+            setSelectedIntelligentCompany(intelligentCompany);
           }
         }
       } catch (err) {
@@ -198,102 +256,177 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     return () => {
       active = false;
     };
-  }, [aiProvider, aiModel]);
+  }, [aiFastProvider, aiIntelligentProvider, aiFastModel, aiIntelligentModel]);
 
-  const checkLocalAiConnection = useCallback(async (endpointOverride?: string) => {
-    const endpoint = (endpointOverride ?? aiEndpoint).trim();
-    if (!aiEnabled || aiProvider !== 'local' || !endpoint) {
-      setAiConnectionStatus('idle');
-      setAiConnectionMessage('');
+  const checkLocalAiConnection = useCallback(async (slot: AiModelSlot, endpointOverride?: string) => {
+    const isFast = slot === 'fast';
+    const provider = isFast ? aiFastProvider : aiIntelligentProvider;
+    const endpoint = (endpointOverride ?? (isFast ? aiFastEndpoint : aiIntelligentEndpoint)).trim();
+    const apiKey = (isFast ? aiFastApiKey : aiIntelligentApiKey).trim();
+    const model = (isFast ? aiFastModel : aiIntelligentModel).trim();
+    const requestIdRef = isFast ? fastCheckRequestIdRef : intelligentCheckRequestIdRef;
+    const setStatus = isFast ? setFastConnectionStatus : setIntelligentConnectionStatus;
+    const setMessage = isFast ? setFastConnectionMessage : setIntelligentConnectionMessage;
+    const setModels = isFast ? setLocalFastModels : setLocalIntelligentModels;
+    const setMode = isFast ? setLocalFastModelMode : setLocalIntelligentModelMode;
+
+    if (!aiEnabled || provider !== 'local' || !endpoint) {
+      setStatus('idle');
+      setMessage('');
       return;
     }
 
-    const requestId = ++aiCheckRequestIdRef.current;
-    setAiConnectionStatus('checking');
-    setAiConnectionMessage('Checking local AI connection...');
+    const requestId = ++requestIdRef.current;
+    setStatus('checking');
+    setMessage('Checking local AI connection...');
+
+    const payload = {
+      AiProvider: 'local' as const,
+      AiEndpoint: endpoint,
+      AiApiKey: apiKey || null,
+      AiModelSlot: slot,
+      AiFastModel: isFast ? (model || null) : (aiFastModel.trim() || null),
+      AiIntelligentModel: !isFast ? (model || null) : (aiIntelligentModel.trim() || null),
+    };
 
     try {
-      const result = await systemApi.checkAiConnection({
-        AiProvider: 'local',
-        AiEndpoint: endpoint,
-        AiApiKey: aiApiKey.trim() || null,
-      });
+      const [result, listedModels] = await Promise.all([
+        systemApi.checkAiConnection(payload),
+        systemApi.listModels({
+          provider: 'local',
+          endpoint,
+          apiKey: apiKey || null,
+        }).catch(() => [] as Awaited<ReturnType<typeof systemApi.listModels>>),
+      ]);
 
-      if (requestId !== aiCheckRequestIdRef.current) {
+      if (requestId !== requestIdRef.current) {
         return;
       }
 
-      const models = result.Models ?? [];
-      setLocalAiModels(models);
+      const models = listedModels.map((m) => m.id);
+      setModels(models);
       writeLocalAiModelsCache(endpoint, models);
+      applyLocalModeForSlot(slot, models, model);
 
-      const { mode, model } = applyLocalModelsState(models, aiModel);
-      setLocalModelMode(mode);
-      if (model !== aiModel.trim()) {
-        setAiModel(model);
+      if (!result.Working) {
+        setStatus('error');
+        setMessage(result.Message || 'Local AI connection check failed.');
+        return;
       }
 
       const baseMessage = result.Message || 'Local AI connection is working.';
       const modelCountSuffix = models.length > 0 ? ` · ${models.length} models found` : '';
-      setAiConnectionStatus('success');
-      setAiConnectionMessage(`${baseMessage}${modelCountSuffix}`);
+      setStatus('success');
+      setMessage(`${baseMessage}${modelCountSuffix}`);
     } catch (err: unknown) {
-      if (requestId !== aiCheckRequestIdRef.current) {
+      if (requestId !== requestIdRef.current) {
         return;
       }
 
-      setLocalAiModels([]);
+      setModels([]);
       clearLocalAiModelsCache();
-      if (aiModel.trim()) {
-        setLocalModelMode('custom');
+      if (model) {
+        setMode('custom');
       }
-      setAiConnectionStatus('error');
-      setAiConnectionMessage(err instanceof Error ? err.message : 'Failed to verify local AI connection.');
+      setStatus('error');
+      setMessage(err instanceof Error ? err.message : 'Failed to verify local AI connection.');
     }
-  }, [aiEnabled, aiProvider, aiEndpoint, aiApiKey, aiModel]);
+  }, [
+    aiEnabled,
+    aiFastProvider,
+    aiIntelligentProvider,
+    aiFastEndpoint,
+    aiIntelligentEndpoint,
+    aiFastApiKey,
+    aiIntelligentApiKey,
+    aiFastModel,
+    aiIntelligentModel,
+    applyLocalModeForSlot,
+  ]);
 
-  const handleLocalModelSelection = useCallback((value: string) => {
+  const handleLocalModelSelection = useCallback((slot: AiModelSlot, value: string) => {
     if (value === LOCAL_AI_CUSTOM_MODEL_VALUE) {
-      setLocalModelMode('custom');
+      if (slot === 'fast') {
+        setLocalFastModelMode('custom');
+      } else {
+        setLocalIntelligentModelMode('custom');
+      }
       return;
     }
-    setLocalModelMode('listed');
-    setAiModel(value);
+    if (slot === 'fast') {
+      setLocalFastModelMode('listed');
+      setAiFastModel(value);
+    } else {
+      setLocalIntelligentModelMode('listed');
+      setAiIntelligentModel(value);
+    }
   }, []);
 
-  const handleAiEndpointChange = useCallback((value: string) => {
-    setAiEndpoint(value);
-    setLocalAiModels([]);
-    setAiConnectionStatus('idle');
-    setAiConnectionMessage('');
+  const handleAiFastEndpointChange = useCallback((value: string) => {
+    setAiFastEndpoint(value);
+    setLocalFastModels([]);
+    setFastConnectionStatus('idle');
+    setFastConnectionMessage('');
 
-    if (endpointCheckTimerRef.current) {
-      window.clearTimeout(endpointCheckTimerRef.current);
-      endpointCheckTimerRef.current = null;
+    if (fastEndpointCheckTimerRef.current) {
+      window.clearTimeout(fastEndpointCheckTimerRef.current);
+      fastEndpointCheckTimerRef.current = null;
     }
 
-    if (!aiEnabled || aiProvider !== 'local' || !value.trim()) {
+    if (!aiEnabled || aiFastProvider !== 'local' || !value.trim()) {
       return;
     }
 
-    endpointCheckTimerRef.current = window.setTimeout(() => {
-      void checkLocalAiConnection(value);
+    fastEndpointCheckTimerRef.current = window.setTimeout(() => {
+      void checkLocalAiConnection('fast', value);
     }, 600);
-  }, [aiEnabled, aiProvider, checkLocalAiConnection]);
+  }, [aiEnabled, aiFastProvider, checkLocalAiConnection]);
+
+  const handleAiIntelligentEndpointChange = useCallback((value: string) => {
+    setAiIntelligentEndpoint(value);
+    setLocalIntelligentModels([]);
+    setIntelligentConnectionStatus('idle');
+    setIntelligentConnectionMessage('');
+
+    if (intelligentEndpointCheckTimerRef.current) {
+      window.clearTimeout(intelligentEndpointCheckTimerRef.current);
+      intelligentEndpointCheckTimerRef.current = null;
+    }
+
+    if (!aiEnabled || aiIntelligentProvider !== 'local' || !value.trim()) {
+      return;
+    }
+
+    intelligentEndpointCheckTimerRef.current = window.setTimeout(() => {
+      void checkLocalAiConnection('intelligent', value);
+    }, 600);
+  }, [aiEnabled, aiIntelligentProvider, checkLocalAiConnection]);
 
   useEffect(() => {
-    if (!aiEnabled || aiProvider !== 'local') {
-      setAiConnectionStatus('idle');
-      setAiConnectionMessage('');
-      setLocalAiModels([]);
-      setLocalModelMode('custom');
+    if (!aiEnabled || aiFastProvider !== 'local') {
+      setFastConnectionStatus('idle');
+      setFastConnectionMessage('');
+      setLocalFastModels([]);
+      setLocalFastModelMode('custom');
     }
-  }, [aiEnabled, aiProvider]);
+  }, [aiEnabled, aiFastProvider]);
+
+  useEffect(() => {
+    if (!aiEnabled || aiIntelligentProvider !== 'local') {
+      setIntelligentConnectionStatus('idle');
+      setIntelligentConnectionMessage('');
+      setLocalIntelligentModels([]);
+      setLocalIntelligentModelMode('custom');
+    }
+  }, [aiEnabled, aiIntelligentProvider]);
 
   useEffect(() => {
     return () => {
-      if (endpointCheckTimerRef.current) {
-        window.clearTimeout(endpointCheckTimerRef.current);
+      if (fastEndpointCheckTimerRef.current) {
+        window.clearTimeout(fastEndpointCheckTimerRef.current);
+      }
+      if (intelligentEndpointCheckTimerRef.current) {
+        window.clearTimeout(intelligentEndpointCheckTimerRef.current);
       }
     };
   }, []);
@@ -313,66 +446,34 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       SmtpSecure: smtpType === 'remote' ? smtpSecure : false,
       SmtpFrom: smtpType === 'remote' ? smtpFrom : 'noreply@giftistry.local',
       AiEnabled: aiEnabled,
-      AiProvider: aiEnabled ? aiProvider : 'gemini',
-      AiApiKey: aiEnabled ? aiApiKey : '',
-      AiModel: aiEnabled ? aiModel : '',
+      AiWebSearchEnabled: aiEnabled ? aiWebSearchEnabled : false,
+      AiRateLimitEnabled: aiEnabled ? aiRateLimitEnabled : false,
+      AiCompletionTimeoutMs: aiCompletionTimeoutMs,
+      ScrapeFetchTimeoutMs: scrapeFetchTimeoutMs,
+      ScrapePlaywrightTimeoutMs: scrapePlaywrightTimeoutMs,
+      AiFastProvider: aiEnabled ? aiFastProvider : 'openrouter',
+      AiFastEndpoint: aiEnabled ? aiFastEndpoint : '',
+      AiFastApiKey: aiEnabled ? aiFastApiKey : '',
+      AiFastModel: aiEnabled ? aiFastModel : '',
+      AiIntelligentProvider: aiEnabled ? aiIntelligentProvider : 'openrouter',
+      AiIntelligentEndpoint: aiEnabled ? aiIntelligentEndpoint : '',
+      AiIntelligentApiKey: aiEnabled ? aiIntelligentApiKey : '',
+      AiIntelligentModel: aiEnabled ? aiIntelligentModel : '',
       AiPrompt: aiEnabled ? aiPrompt : '',
       AiDescriptionPrompt: aiEnabled ? aiDescriptionPrompt : '',
       AiPopulatePrompt: aiEnabled ? aiPopulatePrompt : '',
       AiCategoryPrompt: aiEnabled ? aiCategoryPrompt : '',
-      AiEndpoint: aiEnabled ? aiEndpoint : '',
+      AiImportPrompt: aiEnabled ? aiImportPrompt : '',
     };
 
     try {
-      await apiClient.post<{ success: boolean }>('/api/system/settings', payload, 'System');
+      await apiClient.post('/api/system/settings', payload, 'System');
       showToast('Server configuration saved and verified successfully!', 'success');
       await checkSystemStatus();
-      
+
       const response = await apiClient.get<BackendSettings>('/api/system/settings');
       if (response) {
-        const s = response;
-        setDbType(s.DbType);
-        setDbUrl(s.DbUrl || '');
-        setSmtpType(s.SmtpType);
-        setSmtpHost(s.SmtpHost || '');
-        setSmtpPort(s.SmtpPort ? s.SmtpPort.toString() : '1025');
-        setSmtpUser(s.SmtpUser || '');
-        setSmtpPass(s.SmtpPass || '');
-        setSmtpSecure(!!s.SmtpSecure);
-        setSmtpFrom(s.SmtpFrom || 'noreply@giftistry.local');
-        setAiEnabled(!!s.AiEnabled);
-        setAiProvider(s.AiProvider || 'gemini');
-        setAiApiKey(s.AiApiKey || '');
-        const savedModel = s.AiModel || '';
-        const savedEndpoint = s.AiEndpoint || '';
-        setAiModel(savedModel);
-        if (s.AiDefaultPrompts) {
-          setAiDefaultPrompts(s.AiDefaultPrompts);
-          applyAiPromptSettings(s, s.AiDefaultPrompts, {
-            setAiPrompt,
-            setAiDescriptionPrompt,
-            setAiPopulatePrompt,
-            setAiCategoryPrompt,
-          });
-        } else {
-          setAiPrompt(s.AiPrompt || '');
-          setAiDescriptionPrompt(s.AiDescriptionPrompt || '');
-          setAiPopulatePrompt(s.AiPopulatePrompt || '');
-          setAiCategoryPrompt(s.AiCategoryPrompt || '');
-        }
-        setAiEndpoint(savedEndpoint);
-
-        if (s.AiProvider === 'local' && savedEndpoint.trim()) {
-          const cachedModels = readLocalAiModelsCache(savedEndpoint);
-          if (cachedModels) {
-            setLocalAiModels(cachedModels);
-            const { mode, model } = applyLocalModelsState(cachedModels, savedModel);
-            setLocalModelMode(mode);
-            if (model !== savedModel) {
-              setAiModel(model);
-            }
-          }
-        }
+        applySettingsToState(response);
       }
     } catch (err: any) {
       showToast(err.message || 'Verification failed. Settings not saved.', 'error');
@@ -396,6 +497,9 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
         break;
       case 'category':
         setAiCategoryPrompt(defaultText);
+        break;
+      case 'import':
+        setAiImportPrompt(defaultText);
         break;
     }
   };
@@ -450,12 +554,32 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       setSmtpFrom={setSmtpFrom}
       aiEnabled={aiEnabled}
       setAiEnabled={setAiEnabled}
-      aiProvider={aiProvider}
-      setAiProvider={setAiProvider}
-      aiApiKey={aiApiKey}
-      setAiApiKey={setAiApiKey}
-      aiModel={aiModel}
-      setAiModel={setAiModel}
+      aiWebSearchEnabled={aiWebSearchEnabled}
+      setAiWebSearchEnabled={setAiWebSearchEnabled}
+      aiRateLimitEnabled={aiRateLimitEnabled}
+      setAiRateLimitEnabled={setAiRateLimitEnabled}
+      aiCompletionTimeoutMs={aiCompletionTimeoutMs}
+      setAiCompletionTimeoutMs={setAiCompletionTimeoutMs}
+      scrapeFetchTimeoutMs={scrapeFetchTimeoutMs}
+      setScrapeFetchTimeoutMs={setScrapeFetchTimeoutMs}
+      scrapePlaywrightTimeoutMs={scrapePlaywrightTimeoutMs}
+      setScrapePlaywrightTimeoutMs={setScrapePlaywrightTimeoutMs}
+      aiFastProvider={aiFastProvider}
+      setAiFastProvider={setAiFastProvider}
+      aiFastEndpoint={aiFastEndpoint}
+      setAiFastEndpoint={handleAiFastEndpointChange}
+      aiFastApiKey={aiFastApiKey}
+      setAiFastApiKey={setAiFastApiKey}
+      aiFastModel={aiFastModel}
+      setAiFastModel={setAiFastModel}
+      aiIntelligentProvider={aiIntelligentProvider}
+      setAiIntelligentProvider={setAiIntelligentProvider}
+      aiIntelligentEndpoint={aiIntelligentEndpoint}
+      setAiIntelligentEndpoint={handleAiIntelligentEndpointChange}
+      aiIntelligentApiKey={aiIntelligentApiKey}
+      setAiIntelligentApiKey={setAiIntelligentApiKey}
+      aiIntelligentModel={aiIntelligentModel}
+      setAiIntelligentModel={setAiIntelligentModel}
       aiPrompt={aiPrompt}
       setAiPrompt={setAiPrompt}
       aiDescriptionPrompt={aiDescriptionPrompt}
@@ -464,27 +588,35 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       setAiPopulatePrompt={setAiPopulatePrompt}
       aiCategoryPrompt={aiCategoryPrompt}
       setAiCategoryPrompt={setAiCategoryPrompt}
+      aiImportPrompt={aiImportPrompt}
+      setAiImportPrompt={setAiImportPrompt}
       aiDefaultPrompts={aiDefaultPrompts}
       onResetPrompt={handleResetPrompt}
-      aiEndpoint={aiEndpoint}
-      setAiEndpoint={handleAiEndpointChange}
       showPassword={showPassword}
       setShowPassword={setShowPassword}
-      showAiKey={showAiKey}
-      setShowAiKey={setShowAiKey}
+      showFastAiKey={showFastAiKey}
+      setShowFastAiKey={setShowFastAiKey}
+      showIntelligentAiKey={showIntelligentAiKey}
+      setShowIntelligentAiKey={setShowIntelligentAiKey}
       openrouterModels={openrouterModels}
       isLoadingModels={isLoadingModels}
       companies={companies}
-      selectedCompany={selectedCompany}
-      setSelectedCompany={setSelectedCompany}
-      filteredModels={filteredModels}
-      localAiModels={localAiModels}
-      localModelMode={localModelMode}
+      selectedFastCompany={selectedFastCompany}
+      setSelectedFastCompany={setSelectedFastCompany}
+      selectedIntelligentCompany={selectedIntelligentCompany}
+      setSelectedIntelligentCompany={setSelectedIntelligentCompany}
+      filteredFastModels={filteredFastModels}
+      filteredIntelligentModels={filteredIntelligentModels}
+      localFastModels={localFastModels}
+      localIntelligentModels={localIntelligentModels}
+      localFastModelMode={localFastModelMode}
+      localIntelligentModelMode={localIntelligentModelMode}
       onLocalModelSelection={handleLocalModelSelection}
-      aiConnectionStatus={aiConnectionStatus}
-      aiConnectionMessage={aiConnectionMessage}
-      onTestAiConnection={() => { void checkLocalAiConnection(); }}
-      isTestingAiConnection={aiConnectionStatus === 'checking'}
+      fastConnectionStatus={fastConnectionStatus}
+      fastConnectionMessage={fastConnectionMessage}
+      intelligentConnectionStatus={intelligentConnectionStatus}
+      intelligentConnectionMessage={intelligentConnectionMessage}
+      onTestAiConnection={(slot) => { void checkLocalAiConnection(slot); }}
       isLoading={isLoading}
       isSaving={isSaving}
       handleSave={handleSave}

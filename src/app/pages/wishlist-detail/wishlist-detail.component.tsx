@@ -1,12 +1,21 @@
 import styles from './wishlist-detail.module.css';
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { wishlistsApi, Wishlist, Priority } from 'features/wishlists';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import { useItemController, Item } from 'features/items';
+import {
+  ITEM_VIEW_MODE_STORAGE_KEY,
+} from 'features/items/constants/item-view-mode.constants';
+import {
+  normalizeStoredViewMode,
+} from 'features/items/utils/item-view-mode.util';
+import type { ItemViewMode } from 'features/items/types/item-view-mode.type';
 import { useAuth } from 'app/providers/auth-context';
+import { useToast } from 'app/providers/toast-context';
+import { useWishlistJob, formatImportJobSummary, claimImportJobTerminalToast } from 'features/jobs';
 import { WishlistDetailTemplate } from './wishlist-detail.html';
-import { getFriendlyCategoryLabel } from 'features/items/utils/category-label.util';
+import { getFriendlyCategoryLabel, normalizeCategoryLabel } from 'features/items/utils/category-label.util';
 import { canViewItem, canLinkItemsByAudience, linkingContextFromItem, LinkingAudienceContext } from 'features/items/utils/item-audience.util';
 import { resolveEditorLinkedItemIds } from 'features/items/utils/item-links-sync.util';
 import { isWishlistExpired } from 'features/wishlists/utils/is-wishlist-expired.util';
@@ -16,7 +25,13 @@ import { formatWishlistExpirationDate } from 'shared/utils/format-date.util';
 export default function WishlistDetail() {
   const { listId } = useParams<{ listId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, canShowWebSearch } = useAuth();
+  const { showToast } = useToast();
+  const {
+    job: activeJob,
+    isActive: isJobActive,
+    cancel: cancelJob,
+  } = useWishlistJob(listId);
 
   const [wishlist, setWishlist] = useState<Wishlist | null>(null);
   const [isWishlistLoading, setIsWishlistLoading] = useState(true);
@@ -29,6 +44,7 @@ export default function WishlistDetail() {
   const { items, isLoading: isItemsLoading, fetchItems } = useItemController();
 
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
@@ -46,17 +62,29 @@ export default function WishlistDetail() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'deactivate' | 'delete' | null>(null);
 
-  type ViewMode = 'full' | 'compact' | 'grid';
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    return (localStorage.getItem('giftistry_view_mode') as ViewMode) || 'full';
-  });
+  const [viewMode, setViewMode] = useState<ItemViewMode>(() =>
+    normalizeStoredViewMode(localStorage.getItem(ITEM_VIEW_MODE_STORAGE_KEY))
+  );
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(new Set());
 
-  const handleSetViewMode = (mode: ViewMode) => {
-    setSelectedItemId(null); // Clear selected item on view mode change
+  const handleSetViewMode = (mode: ItemViewMode) => {
+    setSelectedItemId(null);
     setViewMode(mode);
-    localStorage.setItem('giftistry_view_mode', mode);
+    localStorage.setItem(ITEM_VIEW_MODE_STORAGE_KEY, mode);
   };
+
+  const toggleGroupCollapsed = useCallback((categoryKey: string) => {
+    setCollapsedGroupKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryKey)) {
+        next.delete(categoryKey);
+      } else {
+        next.add(categoryKey);
+      }
+      return next;
+    });
+  }, []);
 
   const handleSelectTag = useCallback((itemId: string) => {
     setTaggedItemIds((prev) =>
@@ -91,9 +119,62 @@ export default function WishlistDetail() {
     }
   }, [listId, fetchItems]);
 
+  const softReloadItems = useCallback(async () => {
+    if (!listId) return;
+    try {
+      await fetchItems(listId);
+    } catch {
+      /* keep current items on transient job refresh failures */
+    }
+  }, [listId, fetchItems]);
+
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const lastJobReloadAtRef = useRef(0);
+  const lastJobTerminalRef = useRef<string | null>(null);
+  const [isCancellingJob, setIsCancellingJob] = useState(false);
+
+  useEffect(() => {
+    if (!activeJob) return;
+
+    if (isJobActive) {
+      const now = Date.now();
+      if (now - lastJobReloadAtRef.current >= 4000) {
+        lastJobReloadAtRef.current = now;
+        void softReloadItems();
+      }
+      return;
+    }
+
+    const terminalKey = `${activeJob.Id}:${activeJob.Status}`;
+    if (lastJobTerminalRef.current === terminalKey) return;
+    lastJobTerminalRef.current = terminalKey;
+
+    void loadData();
+
+    if (
+      activeJob.Status === 'completed' ||
+      activeJob.Status === 'failed' ||
+      activeJob.Status === 'cancelled'
+    ) {
+      if (!claimImportJobTerminalToast(activeJob.Id, activeJob.Status)) return;
+      const summary = formatImportJobSummary(activeJob);
+      showToast(summary.message, summary.tone);
+    }
+  }, [activeJob, isJobActive, loadData, softReloadItems, showToast]);
+
+  const handleCancelJob = useCallback(async () => {
+    setIsCancellingJob(true);
+    try {
+      await cancelJob();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to cancel import', 'error');
+    } finally {
+      setIsCancellingJob(false);
+    }
+  }, [cancelJob, showToast]);
 
   useEffect(() => {
     setLinkedItemIds((prev) => prev.filter((id) => items.some((item) => item.Id === id)));
@@ -123,6 +204,11 @@ export default function WishlistDetail() {
 
   const isExpired = useMemo(() => isWishlistExpired(wishlist?.ExpiresAt), [wishlist]);
 
+  const canUseWebSearchOnList = useMemo(
+    () => Boolean(canShowWebSearch && wishlist?.AiEnabled && wishlist?.WebSearchEnabled),
+    [canShowWebSearch, wishlist]
+  );
+
   const saveTitle = async (newTitle: string) => {
     if (!wishlist) return;
     const trimmed = newTitle.trim();
@@ -137,7 +223,8 @@ export default function WishlistDetail() {
         wishlist.AllowGroupFunds,
         wishlist.Category,
         wishlist.RevealSuggestions,
-        wishlist.AiEnabled
+        wishlist.AiEnabled,
+        wishlist.WebSearchEnabled
       );
       setWishlist(updated);
     } catch (err) {
@@ -172,7 +259,8 @@ export default function WishlistDetail() {
         wishlist.AllowGroupFunds,
         wishlist.Category,
         wishlist.RevealSuggestions,
-        wishlist.AiEnabled
+        wishlist.AiEnabled,
+        wishlist.WebSearchEnabled
       );
       setWishlist(updated);
     } catch (err) {
@@ -191,7 +279,8 @@ export default function WishlistDetail() {
         wishlist.AllowGroupFunds,
         wishlist.Category,
         !wishlist.RevealSuggestions,
-        wishlist.AiEnabled
+        wishlist.AiEnabled,
+        wishlist.WebSearchEnabled
       );
       setWishlist(updated);
     } catch (err) {
@@ -209,7 +298,8 @@ export default function WishlistDetail() {
         wishlist.AllowGroupFunds,
         wishlist.Category,
         wishlist.RevealSuggestions,
-        !wishlist.AiEnabled
+        !wishlist.AiEnabled,
+        wishlist.WebSearchEnabled
       );
       setWishlist(updated);
     } catch (err) {
@@ -217,7 +307,24 @@ export default function WishlistDetail() {
     }
   };
 
-
+  const toggleWebSearchEnabled = async () => {
+    if (!wishlist) return;
+    try {
+      const updated = await wishlistsApi.updateWishlist(
+        wishlist.Id,
+        wishlist.Title,
+        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
+        wishlist.AllowGroupFunds,
+        wishlist.Category,
+        wishlist.RevealSuggestions,
+        wishlist.AiEnabled,
+        !wishlist.WebSearchEnabled
+      );
+      setWishlist(updated);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to toggle web search');
+    }
+  };
 
   const handleDeactivateConfirm = async () => {
     if (!wishlist) return;
@@ -352,10 +459,11 @@ export default function WishlistDetail() {
     const groups: { [categoryKey: string]: { label: string; items: Item[] } } = {};
 
     for (const item of filtered) {
-      const cat = item.Category && item.Category.trim() ? item.Category.trim() : 'uncategorized';
+      const raw = item.Category && item.Category.trim() ? item.Category.trim() : 'uncategorized';
+      const cat = normalizeCategoryLabel(raw);
       if (!groups[cat]) {
         groups[cat] = {
-          label: cat === 'uncategorized' ? 'General Items' : getFriendlyCategoryLabel(cat),
+          label: cat === 'uncategorized' ? 'General Items' : getFriendlyCategoryLabel(raw),
           items: [],
         };
       }
@@ -445,11 +553,15 @@ export default function WishlistDetail() {
       saveDate={saveDate}
       toggleRevealSuggestions={toggleRevealSuggestions}
       toggleAiEnabled={toggleAiEnabled}
+      toggleWebSearchEnabled={toggleWebSearchEnabled}
+      canUseWebSearchOnList={canUseWebSearchOnList}
       formatDate={formatWishlistExpirationDate}
       isCommentsOpen={isCommentsOpen}
       setIsCommentsOpen={setIsCommentsOpen}
       isShareOpen={isShareOpen}
       setIsShareOpen={setIsShareOpen}
+      isImportOpen={isImportOpen}
+      setIsImportOpen={setIsImportOpen}
       viewMode={viewMode}
       handleSetViewMode={handleSetViewMode}
       searchQuery={searchQuery}
@@ -459,6 +571,8 @@ export default function WishlistDetail() {
       selectedItemId={selectedItemId}
       selectedItemPriorityLabel={selectedItemPriorityLabel}
       groupedItems={groupedItems}
+      collapsedGroupKeys={collapsedGroupKeys}
+      toggleGroupCollapsed={toggleGroupCollapsed}
       displayItems={displayItems}
       listShares={listShares}
       handleItemTaggedClick={handleItemTaggedClick}
@@ -473,6 +587,11 @@ export default function WishlistDetail() {
       handleSelectTag={handleSelectTag}
       handleSelectReplyTag={handleSelectReplyTag}
       isLoading={isItemsLoading}
+      activeJob={activeJob}
+      isCancellingJob={isCancellingJob}
+      onCancelJob={() => {
+        void handleCancelJob();
+      }}
     />
   );
 }

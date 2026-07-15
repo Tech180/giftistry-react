@@ -19,10 +19,15 @@ export interface HeaderTemplateProps {
   formatDate: (dateStr: string | null) => string;
   toggleRevealSuggestions: () => void;
   toggleAiEnabled: () => void;
+  toggleWebSearchEnabled: () => void;
   canShowAi: boolean;
+  canShowWebSearch: boolean;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsShareOpen: (open: boolean) => void;
+  canImport: boolean;
+  isImportOpen: boolean;
+  onImportToggle: () => void;
   isEditingTitle: boolean;
   setIsEditingTitle: (val: boolean) => void;
   tempTitle: string;

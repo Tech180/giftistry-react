@@ -1,0 +1,318 @@
+.v-compact-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition-normal);
+  background: var(--surface);
+}
+
+.v-compact-card:last-child {
+  border-bottom: none;
+}
+
+.is-private {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    color-mix(in srgb, var(--text-muted) 4%, transparent) 10px,
+    color-mix(in srgb, var(--text-muted) 4%, transparent) 20px
+  );
+}
+
+.is-claimed {
+  border-left: 3px solid var(--success);
+}
+
+.is-tagged {
+  background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+.v-compact-row {
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  cursor: pointer;
+}
+
+.v-compact-priority-rail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  border-right: 1px solid var(--border);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary);
+  line-height: 1;
+}
+
+.v-compact-row-main {
+  display: grid;
+  grid-template-columns: 32px 44px minmax(200px, 2fr) 120px max-content max-content max-content max-content;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  padding: var(--spacing-sm);
+  gap: 8px;
+}
+
+.v-compact-row:hover .v-compact-row-main {
+  background: var(--surface-hover);
+}
+
+.v-compact-row:hover .v-compact-priority-rail {
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface-hover));
+}
+
+.expanded .v-compact-row-main {
+  background: var(--surface-hover);
+}
+
+.expanded .v-compact-priority-rail {
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface-hover));
+}
+
+.v-compact-select,
+.v-compact-star {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+}
+
+.v-compact-star-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.v-compact-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.v-compact-title {
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.v-compact-meta-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.v-compact-price {
+  font-weight: var(--font-weight-bold);
+  color: var(--text);
+  font-size: var(--font-size-sm);
+  text-align: right;
+}
+
+.v-compact-claim-badge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.v-compact-price-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.v-compact-funding {
+  padding: 0 12px;
+  min-width: 0;
+}
+
+.v-compact-link a {
+  font-size: var(--font-size-xs);
+  color: var(--primary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.v-compact-link a:hover {
+  text-decoration: underline;
+}
+
+.v-compact-no-link {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.v-compact-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.v-compact-action-btn {
+  font-size: var(--font-size-xs);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  color: var(--text);
+}
+
+.v-compact-action-btn:hover {
+  background: var(--surface-hover);
+}
+
+.v-compact-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--surface-hover);
+  color: var(--text-muted);
+}
+
+.v-compact-expanded {
+  display: none;
+  padding: var(--spacing-md);
+  background: var(--surface-hover);
+  border-top: 1px dashed var(--border);
+}
+
+.expanded .v-compact-expanded {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+}
+
+.v-compact-expanded-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--spacing-md);
+  align-items: start;
+  flex: 1;
+  min-width: min(100%, 20rem);
+}
+
+.expanded-desc-col {
+  min-width: 0;
+}
+
+.v-compact-expanded-aside {
+  flex-shrink: 0;
+  min-width: 8rem;
+}
+
+.expanded-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.confirm-extension {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--surface-hover);
+  border-top: 1px dashed var(--border);
+  gap: var(--spacing-md);
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.linked-icon {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+@media (max-width: 1024px) {
+  .v-compact-row-main {
+    grid-template-columns: 32px 44px 1fr 60px max-content max-content;
+  }
+
+  .v-compact-funding,
+  .v-compact-link,
+  .v-compact-actions-ghost {
+    display: none;
+  }
+
+  .v-compact-expanded-content {
+    grid-template-columns: 1fr;
+  }
+
+  .expanded .v-compact-expanded {
+    flex-direction: column;
+  }
+}
+
+.is-user-claimed {
+  background: color-mix(in srgb, var(--success) 8%, var(--surface)) !important;
+  border-color: color-mix(in srgb, var(--success) 30%, var(--border));
+}
+
+.is-user-claimed .v-compact-priority-rail {
+  background: color-mix(in srgb, var(--success) 12%, var(--surface-hover));
+}
+
+.is-user-claimed .v-compact-row-main:hover,
+.is-user-claimed.expanded .v-compact-row-main,
+.is-user-claimed .v-compact-expanded {
+  background: color-mix(in srgb, var(--success) 12%, var(--surface-hover));
+}
+
+.claimed-gray-out {
+  position: relative;
+  isolation: isolate;
+}
+
+.claimed-gray-out::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--surface) 20%, var(--text-muted));
+  opacity: 0.48;
+  pointer-events: none;
+  z-index: 2;
+  border-radius: inherit;
+}
+
+.user-claimed-highlight {
+  background: color-mix(in srgb, var(--success) 20%, var(--surface));
+}
+

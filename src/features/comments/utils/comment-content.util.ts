@@ -46,6 +46,44 @@ export function filterMentionCandidates(
     .slice(0, 6);
 }
 
+export function getMentionableParticipants(
+  participants: ListParticipant[],
+  options: {
+    isOwner: boolean;
+    isOwnerVisible: boolean;
+    listOwnerId?: string;
+  }
+): ListParticipant[] {
+  const { isOwner, isOwnerVisible, listOwnerId } = options;
+  if (isOwner || isOwnerVisible || !listOwnerId) {
+    return participants;
+  }
+  return participants.filter((participant) => participant.userId !== listOwnerId);
+}
+
+export function demoteUserMentionsInMarkdown(content: string, userIds: string[]): string {
+  if (!content || userIds.length === 0) return content;
+
+  const escapedIds = userIds.map((id) => id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const mentionRegex = new RegExp(`\\[([^\\]]+)\\]\\(user:(${escapedIds})\\)`, 'g');
+
+  return content.replace(mentionRegex, (_match, label: string) => `@${label}`);
+}
+
+export function demoteUserMentionsInElement(editorEl: HTMLElement, userIds: string[]): void {
+  if (userIds.length === 0) return;
+
+  editorEl.querySelectorAll('[data-user-id]').forEach((node) => {
+    const element = node as HTMLElement;
+    const userId = element.getAttribute('data-user-id');
+    if (!userId || !userIds.includes(userId)) return;
+
+    const username =
+      element.getAttribute('data-username') || element.innerText.replace(/^@/, '') || 'user';
+    element.replaceWith(document.createTextNode(`@${username}`));
+  });
+}
+
 export function insertUserMention(
   content: string,
   start: number,

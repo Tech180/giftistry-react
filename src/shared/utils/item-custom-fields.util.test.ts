@@ -9,23 +9,7 @@ import {
 } from './item-custom-fields.util';
 
 describe('normalizeItemDescriptionMetadata', () => {
-  test('migrates legacy flat fields to CustomFields', () => {
-    const normalized = normalizeItemDescriptionMetadata({
-      text: 'Blue shirt',
-      shirtSize: 'M',
-      color: 'Navy',
-      custom: [{ name: 'Fit', value: 'Regular' }],
-    });
-
-    expect(normalized.Text).toBe('Blue shirt');
-    expect(normalized.CustomFields?.Predefined).toMatchObject({
-      ShirtSize: 'M',
-      Color: 'Navy',
-    });
-    expect(normalized.CustomFields?.UserDefined).toEqual({ Fit: 'Regular' });
-  });
-
-  test('reads new CustomFields shape', () => {
+  test('reads CustomFields shape', () => {
     const normalized = normalizeItemDescriptionMetadata({
       Text: 'Notes',
       CustomFields: {
@@ -39,10 +23,21 @@ describe('normalizeItemDescriptionMetadata', () => {
       { name: 'PrintStyle', value: 'Puff' },
     ]);
   });
+
+  test('reads PascalCase favorites and variations', () => {
+    const normalized = normalizeItemDescriptionMetadata({
+      Text: 'Socks',
+      IsPinned: true,
+      Variations: [{ Name: 'Blue', Quantity: 1 }],
+    });
+
+    expect(normalized.IsPinned).toBe(true);
+    expect(normalized.Variations).toEqual([{ Name: 'Blue', Quantity: 1 }]);
+  });
 });
 
 describe('buildItemDescriptionPayload', () => {
-  test('serializes new JSON shape with PascalCase top-level fields', () => {
+  test('serializes PascalCase top-level fields', () => {
     const payload = buildItemDescriptionPayload({
       text: 'Soft tee',
       predefined: { shirtSize: 'L', pantsSize: null },
@@ -60,6 +55,27 @@ describe('buildItemDescriptionPayload', () => {
       },
       MultiCount: true,
       DesiredQuantity: 2,
+    });
+  });
+
+  test('serializes IsFavorite and Variations', () => {
+    const payload = buildItemDescriptionPayload({
+      text: 'Socks',
+      predefined: {},
+      userDefined: {},
+      isFavorite: true,
+      variations: [{ name: 'Red', quantity: 2 }],
+      alwaysJson: true,
+    });
+
+    expect(JSON.parse(payload)).toEqual({
+      Text: 'Socks',
+      CustomFields: {
+        Predefined: {},
+        UserDefined: {},
+      },
+      Variations: [{ Name: 'Red', Quantity: 2 }],
+      IsFavorite: true,
     });
   });
 });
@@ -82,11 +98,13 @@ describe('buildSummarizeCustomFields', () => {
 });
 
 describe('getMetadataDisplayEntries', () => {
-  test('formats legacy metadata for display', () => {
+  test('formats CustomFields metadata for display', () => {
     const entries = getMetadataDisplayEntries({
-      text: 'Item',
-      shoesSize: '10',
-      custom: [{ name: 'Width', value: 'Wide' }],
+      Text: 'Item',
+      CustomFields: {
+        Predefined: { ShoesSize: '10' },
+        UserDefined: { Width: 'Wide' },
+      },
     });
 
     expect(entries).toEqual([

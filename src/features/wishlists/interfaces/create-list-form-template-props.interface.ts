@@ -18,6 +18,9 @@ export interface CreateListFormTemplateProps {
   setCustomCategory: (val: string) => void;
   aiEnabled: boolean;
   setAiEnabled: (val: boolean) => void;
+  webSearchEnabled: boolean;
+  setWebSearchEnabled: (val: boolean) => void;
   globalAiEnabled: boolean;
+  globalWebSearchEnabled: boolean;
   isUnverified?: boolean;
 }

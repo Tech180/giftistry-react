@@ -32,6 +32,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   setReplyTaggedItemIds,
   isThreadChild = false,
   isOwner = false,
+  isOwnerVisible = true,
 }) => {
   const { user } = useAuth();
   const { segments, itemIds } = parseCommentContent(comment.Content);
@@ -106,6 +107,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       participants={participants}
       items={items}
       currentUserId={currentUserId}
+      isOwner={isOwner}
+      isOwnerVisible={isOwnerVisible}
+      listOwnerId={listOwnerId}
       isTaggingModeActive={isReplyTaggingModeActive}
       setIsTaggingModeActive={(active) => setIsReplyTaggingModeActive?.(active)}
       taggedItemIds={replyTaggedItemIds}
@@ -150,6 +154,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               toggleReaction={toggleReaction}
               isThreadChild
               isOwner={isOwner}
+              isOwnerVisible={isOwnerVisible}
             />
           </div>
         ))

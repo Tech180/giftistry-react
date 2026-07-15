@@ -35,4 +35,49 @@ describe('PromptCodeEditor', () => {
 
     expect(onChange).toHaveBeenCalledWith('Hello world');
   });
+
+  test('readOnly editor does not call onChange', () => {
+    const onChange = vi.fn();
+
+    render(
+      <PromptCodeEditor
+        value="Read only prompt"
+        readOnly
+        onChange={onChange}
+        knownTokens={[]}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('AI prompt editor'), {
+      target: { value: 'Changed' },
+    });
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  test('grayed linked sections render read-only styling', () => {
+    const { container } = render(
+      <PromptCodeEditor
+        value={`=== Populate Prompt ===
+Editable body
+
+=== Description ===
+Linked description
+
+=== Category ===
+Linked category`}
+        onChange={vi.fn()}
+        knownTokens={[]}
+        readOnlyFromIndex={`=== Populate Prompt ===
+Editable body`.length}
+        showSectionDividers
+      />
+    );
+
+    expect(container.querySelector('[class*="sectionDividerTitle"]')).toHaveTextContent(
+      'Populate Prompt'
+    );
+    expect(container.querySelectorAll('[class*="sectionDividerTitle"]')).toHaveLength(3);
+    expect(container.querySelector('[class*="codeLineReadOnly"]')).not.toBeNull();
+  });
 });

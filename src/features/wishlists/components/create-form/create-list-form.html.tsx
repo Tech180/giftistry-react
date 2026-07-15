@@ -22,7 +22,10 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
   setCustomCategory,
   aiEnabled,
   setAiEnabled,
+  webSearchEnabled,
+  setWebSearchEnabled,
   globalAiEnabled,
+  globalWebSearchEnabled,
   isUnverified = false,
 }) => {
   return (
@@ -129,6 +132,26 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
               <strong>Enable AI Reviews on Items</strong>
               <span className={styles['checkbox-subtext']}>
                 Automatically generates product summaries, pros and cons, and compiles representative reviews.
+              </span>
+            </span>
+          </label>
+        </div>
+      )}
+
+      {globalAiEnabled && globalWebSearchEnabled && (
+        <div className={styles['checkbox-wrapper']}>
+          <label className={styles['checkbox-label']}>
+            <input
+              type="checkbox"
+              checked={webSearchEnabled}
+              onChange={(e) => setWebSearchEnabled(e.target.checked)}
+              disabled={!aiEnabled}
+              className={styles.checkbox}
+            />
+            <span className={styles['checkbox-text']}>
+              <strong>Enable Web Search</strong>
+              <span className={styles['checkbox-subtext']}>
+                Lets AI look up product pages and enrich item details when grabbing info.
               </span>
             </span>
           </label>

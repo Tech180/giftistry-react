@@ -17,6 +17,7 @@ export const wishlistsApi = {
     category?: string,
     revealSuggestions?: boolean,
     aiEnabled?: boolean,
+    webSearchEnabled?: boolean,
   ) =>
     apiClient.post<Wishlist>(
       '/api/wishlists',
@@ -27,15 +28,16 @@ export const wishlistsApi = {
         Category: category,
         RevealSuggestions: revealSuggestions,
         AiEnabled: aiEnabled,
+        WebSearchEnabled: webSearchEnabled,
       },
       'Lists'
     ),
 
   deactivateWishlist: (listId: string) =>
-    apiClient.put<{ success: boolean }>(`/api/wishlists/${listId}/deactivate`, {}),
+    apiClient.put<Record<string, never>>(`/api/wishlists/${listId}/deactivate`, {}),
 
   deleteWishlist: (listId: string) =>
-    apiClient.delete<{ success: boolean }>(`/api/wishlists/${listId}`),
+    apiClient.delete<Record<string, never>>(`/api/wishlists/${listId}`),
 
   updateWishlist: (
     listId: string,
@@ -45,6 +47,7 @@ export const wishlistsApi = {
     category?: string,
     revealSuggestions?: boolean,
     aiEnabled?: boolean,
+    webSearchEnabled?: boolean,
   ) =>
     apiClient.put<Wishlist>(
       `/api/wishlists/${listId}`,
@@ -55,6 +58,7 @@ export const wishlistsApi = {
         Category: category,
         RevealSuggestions: revealSuggestions,
         AiEnabled: aiEnabled,
+        WebSearchEnabled: webSearchEnabled,
       },
       'Lists'
     ),
@@ -77,7 +81,7 @@ export const wishlistsApi = {
     ),
 
   removeShare: (listId: string, shareId: string) =>
-    apiClient.delete<{ success: boolean }>(`/api/wishlists/${listId}/shares/${shareId}`),
+    apiClient.delete<Record<string, never>>(`/api/wishlists/${listId}/shares/${shareId}`),
 
   bulkShareWithFriends: (listId: string, friendIds: string[], role: 'viewer' | 'collaborator') =>
     apiClient.post<ListShare[]>(
@@ -103,7 +107,7 @@ export const wishlistsApi = {
     apiClient.get<unknown[]>(`/api/wishlists/${listId}/link-invites`),
 
   revokeLinkInvite: (listId: string, inviteId: string) =>
-    apiClient.delete<{ success: boolean }>(`/api/wishlists/${listId}/link-invites/${inviteId}`),
+    apiClient.delete<Record<string, never>>(`/api/wishlists/${listId}/link-invites/${inviteId}`),
 
   listPriorities: (wishlistId?: string) =>
     apiClient.get<Priority[]>(wishlistId ? `/api/priorities?wishlistId=${wishlistId}` : '/api/priorities'),

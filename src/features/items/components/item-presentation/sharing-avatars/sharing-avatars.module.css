@@ -1,0 +1,69 @@
+.user-avatar-box-avatars {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sharing-avatar {
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid var(--surface-hover);
+  margin-left: -6px;
+  box-shadow: var(--shadow);
+  transition: transform var(--transition-normal);
+  cursor: pointer;
+}
+
+.user-avatar-box-avatars > :first-child .sharing-avatar {
+  margin-left: 0;
+}
+
+.sharing-avatar:hover {
+  transform: scale(1.08);
+  z-index: 1;
+  position: relative;
+}
+
+.sharing-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sharing-avatar-initials {
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.sharing-avatar-count-text {
+  font-size: 0.6875rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.sharing-avatar-overflow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.375rem;
+  height: 1.375rem;
+  padding: 0 4px;
+  margin-left: -6px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--surface-hover);
+  background: var(--surface);
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  box-shadow: var(--shadow);
+}

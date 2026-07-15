@@ -18,6 +18,7 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
   isOwner,
   listId,
   listAiEnabled,
+  canUseWebSearchOnList = false,
   canShowAi,
   onClose,
   onSuccess,
@@ -105,6 +106,7 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
         onDirtyChange={onFormDirtyChange}
         canShowAi={canShowAi}
         listAiEnabled={listAiEnabled}
+        canUseWebSearchOnList={canUseWebSearchOnList}
       />
     </Drawer>
   );

@@ -56,6 +56,19 @@
   line-height: 1.5;
 }
 
+.ai-section-divider{
+  height: 1px;
+  background: var(--border);
+  margin: var(--spacing-md) 0;
+}
+
+.ai-feature-label{
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text);
+  margin: 0;
+}
+
 .alert{
   display: flex;
   align-items: center;

@@ -1,8 +1,10 @@
 import React from 'react';
 import { Wishlist, Priority } from 'features/wishlists';
 import { Item } from 'features/items';
+import { ItemViewMode } from 'features/items/types/item-view-mode.type';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import { LinkingAudienceContext } from 'features/items/utils/item-audience.util';
+import type { BackgroundJobView } from 'features/jobs';
 
 export interface WishlistDetailTemplateProps {
   isWishlistLoading: boolean;
@@ -40,13 +42,17 @@ export interface WishlistDetailTemplateProps {
   saveDate: (date: string) => Promise<void>;
   toggleRevealSuggestions: () => void;
   toggleAiEnabled?: () => void;
+  toggleWebSearchEnabled?: () => void;
+  canUseWebSearchOnList?: boolean;
   formatDate: (dateStr: string | null) => string;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isShareOpen: boolean;
   setIsShareOpen: (open: boolean) => void;
-  viewMode: 'full' | 'compact' | 'grid';
-  handleSetViewMode: (mode: 'full' | 'compact' | 'grid') => void;
+  isImportOpen: boolean;
+  setIsImportOpen: (open: boolean) => void;
+  viewMode: ItemViewMode;
+  handleSetViewMode: (mode: ItemViewMode) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectedItem: Item | null;
@@ -54,6 +60,8 @@ export interface WishlistDetailTemplateProps {
   selectedItemId: string | null;
   selectedItemPriorityLabel: string | undefined;
   groupedItems: { categoryKey: string; label: string; items: Item[] }[];
+  collapsedGroupKeys: Set<string>;
+  toggleGroupCollapsed: (categoryKey: string) => void;
   displayItems: Item[];
   listShares: ListShare[];
   handleItemTaggedClick: (itemId: string) => void;
@@ -68,4 +76,7 @@ export interface WishlistDetailTemplateProps {
   handleSelectTag: (itemId: string) => void;
   handleSelectReplyTag: (itemId: string) => void;
   isLoading: boolean;
+  activeJob: BackgroundJobView | null;
+  isCancellingJob: boolean;
+  onCancelJob: () => void;
 }

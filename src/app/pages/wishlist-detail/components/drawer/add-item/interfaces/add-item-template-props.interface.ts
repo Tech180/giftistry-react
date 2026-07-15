@@ -16,6 +16,7 @@ export interface AddItemTemplateProps {
   isOwner: boolean;
   listId: string;
   listAiEnabled: boolean;
+  canUseWebSearchOnList?: boolean;
   canShowAi: boolean;
   listShares: ListShare[];
   onClose: () => void;

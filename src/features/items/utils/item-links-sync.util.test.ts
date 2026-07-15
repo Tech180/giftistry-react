@@ -9,7 +9,7 @@ function makeItem(id: string, linkedIds: string[]): Item {
     PriorityId: null,
     SuggestedByUserId: null,
     Name: `Item ${id}`,
-    Description: JSON.stringify({ linkedItemIds: linkedIds }),
+    Description: JSON.stringify({ LinkedItemIds: linkedIds }),
     IsHiddenIdea: false,
     Category: 'uncategorized',
     Links: [],

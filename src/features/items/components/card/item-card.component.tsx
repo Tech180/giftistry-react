@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { itemsApi } from '../../api/items.api';
 import { useAuth } from 'app/providers/auth-context';
 import { ItemCardProps } from '../../interfaces/item-card-props.interface';
-import { ItemCardTemplate } from './item-card.html';
+import { ItemCardRouter } from '../views/item-card-router.component';
 import { getCategoryMeta } from './category-icons';
 import { getSiteName } from 'shared/utils/get-site-name.util';
 import {
@@ -30,14 +30,15 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   isTaggingModeActive,
   isTaggedSelection,
   onSelectTag,
-  viewMode = 'full',
+  viewMode = 'detailed',
   isSelected,
   onSelect,
   wishlistItems = [],
   isLinkingContext = false,
+  aiEnabled,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { user } = useAuth();
+  const { user, canShowAi } = useAuth();
   const claimedByCurrentUser = !!(user && item.Claims.some(c => c.UserId === user.Id));
 
   const [urlInput, setUrlInput] = useState('');
@@ -59,8 +60,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const [localIsFavorite, setLocalIsFavorite] = useState(false);
 
   useEffect(() => {
-    setLocalIsFavorite(getItemFavoriteFlag(item.Description));
-  }, [item.Description]);
+    setLocalIsFavorite(getItemFavoriteFlag(item.Description, item.Metadata));
+  }, [item.Description, item.Metadata]);
 
   const toggleFavorite = async (e?: React.MouseEvent) => {
     if (e) {
@@ -68,14 +69,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     }
 
     try {
-      const parsed = parseItemDescription(item.Description);
-      const metadata = parsed.metadata ?? { text: item.Description || '' };
+      const parsed = parseItemDescription(item.Description, item.Metadata);
+      const metadata = parsed.metadata ?? { Text: item.Description || '' };
       const newFavoriteState = !localIsFavorite;
 
       if (isOwner) {
-        metadata.isFavorite = newFavoriteState;
+        metadata.IsFavorite = newFavoriteState;
       } else {
-        metadata.isPinned = newFavoriteState;
+        metadata.IsPinned = newFavoriteState;
       }
 
       const updatedDescription = serializeItemDescription(parsed.text, metadata);
@@ -190,8 +191,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   };
 
   const { text: displayDescription, metadata } = useMemo(
-    () => parseItemDescription(item.Description),
-    [item.Description]
+    () => parseItemDescription(item.Description, item.Metadata),
+    [item.Description, item.Metadata]
   );
 
   const userDefinedEntries = useMemo(
@@ -226,7 +227,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   );
 
   return (
-    <ItemCardTemplate
+    <ItemCardRouter
       item={item}
       isOwner={isOwner}
       isExpired={isExpired}
@@ -284,6 +285,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       isPrivate={isPrivate}
       linkedItems={linkedItems}
       isLinkingContext={isLinkingContext}
+      aiEnabled={aiEnabled}
+      canShowAi={canShowAi}
     />
   );
 };

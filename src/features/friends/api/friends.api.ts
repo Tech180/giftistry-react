@@ -15,10 +15,10 @@ export const friendsApi = {
     apiClient.post<FriendRequest>(`/api/friends/requests/${requestId}/accept`, {}),
 
   rejectRequest: (requestId: string) =>
-    apiClient.post<{ success: boolean }>(`/api/friends/requests/${requestId}/decline`, {}),
+    apiClient.post<Record<string, never>>(`/api/friends/requests/${requestId}/decline`, {}),
 
   removeFriend: (friendUserId: string) =>
-    apiClient.delete<{ success: boolean }>(`/api/friends/${friendUserId}`),
+    apiClient.delete<Record<string, never>>(`/api/friends/${friendUserId}`),
 
   searchUsers: (query: string) =>
     apiClient.get<UserSearchResult[]>(`/api/users/search?q=${encodeURIComponent(query)}`),

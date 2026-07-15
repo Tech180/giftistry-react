@@ -16,8 +16,19 @@ function isJsonDescription(description: string): boolean {
 }
 
 export function parseItemDescription(
-  description: string | null | undefined
+  description: string | null | undefined,
+  metadata?: any
 ): ParsedItemDescription {
+  if (metadata && typeof metadata === 'object') {
+    const normalized = normalizeItemDescriptionMetadata(metadata);
+    const text = getMetadataText(normalized);
+    return {
+      text: text.length > 0 ? text : (description && !isJsonDescription(description) ? description : null),
+      metadata: normalized,
+      isJson: true,
+    };
+  }
+
   if (!description) {
     return { text: null, metadata: null, isJson: false };
   }
@@ -44,14 +55,14 @@ export function parseItemDescription(
   return { text: description, metadata: null, isJson: false };
 }
 
-export function getItemFavoriteFlag(description: string | null | undefined): boolean {
-  const { metadata } = parseItemDescription(description);
-  return !!metadata?.isFavorite;
+export function getItemFavoriteFlag(description: string | null | undefined, metadata?: any): boolean {
+  const { metadata: parsedMeta } = parseItemDescription(description, metadata);
+  return !!parsedMeta?.IsFavorite;
 }
 
-export function getItemFavoriteOrPinnedFlag(description: string | null | undefined): boolean {
-  const { metadata } = parseItemDescription(description);
-  return !!(metadata?.isFavorite || metadata?.isPinned);
+export function getItemFavoriteOrPinnedFlag(description: string | null | undefined, metadata?: any): boolean {
+  const { metadata: parsedMeta } = parseItemDescription(description, metadata);
+  return !!(parsedMeta?.IsFavorite || parsedMeta?.IsPinned);
 }
 
 export function serializeItemDescription(
@@ -69,13 +80,16 @@ export function serializeItemDescription(
     text: text || getMetadataText(normalized),
     predefined: normalized.CustomFields?.Predefined ?? {},
     userDefined: normalized.CustomFields?.UserDefined ?? {},
-    desiredQuantity: normalized.desiredQuantity,
-    variations: normalized.variations,
-    linkedItemIds: normalized.linkedItemIds,
-    otherUsersCanSee: normalized.otherUsersCanSee,
-    multiCount: normalized.multiCount,
-    isFavorite: normalized.isFavorite,
-    isPinned: normalized.isPinned,
+    desiredQuantity: normalized.DesiredQuantity,
+    variations: normalized.Variations?.map((variation) => ({
+      name: variation.Name,
+      quantity: variation.Quantity,
+    })),
+    linkedItemIds: normalized.LinkedItemIds,
+    otherUsersCanSee: normalized.OtherUsersCanSee,
+    multiCount: normalized.MultiCount,
+    isFavorite: normalized.IsFavorite,
+    isPinned: normalized.IsPinned,
     alwaysJson: true,
   });
 }

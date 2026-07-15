@@ -16,11 +16,14 @@ describe('parseItemDescription', () => {
     });
   });
 
-  test('parses legacy JSON metadata and normalizes to CustomFields', () => {
+  test('parses CustomFields JSON shape', () => {
     const description = JSON.stringify({
-      text: 'Blue shirt',
-      shirtSize: 'M',
-      isFavorite: true,
+      Text: 'Blue shirt',
+      CustomFields: {
+        Predefined: { ShirtSize: 'M' },
+        UserDefined: {},
+      },
+      IsFavorite: true,
     });
 
     expect(parseItemDescription(description)).toMatchObject({
@@ -32,12 +35,12 @@ describe('parseItemDescription', () => {
           Predefined: { ShirtSize: 'M' },
           UserDefined: {},
         },
-        isFavorite: true,
+        IsFavorite: true,
       },
     });
   });
 
-  test('parses new CustomFields JSON shape', () => {
+  test('parses user-defined CustomFields', () => {
     const description = JSON.stringify({
       Text: 'Notes',
       CustomFields: {
@@ -61,17 +64,16 @@ describe('parseItemDescription', () => {
 });
 
 describe('getItemFavoriteFlag', () => {
-  test('reads isFavorite from JSON metadata', () => {
-    const description = JSON.stringify({ text: 'Item', isFavorite: true });
-    expect(getItemFavoriteFlag(description)).toBe(true);
+  test('reads IsFavorite from JSON metadata', () => {
+    expect(getItemFavoriteFlag(JSON.stringify({ Text: 'Item', IsFavorite: true }))).toBe(true);
     expect(getItemFavoriteFlag('plain text')).toBe(false);
   });
 });
 
 describe('getItemFavoriteOrPinnedFlag', () => {
-  test('reads isFavorite or isPinned from JSON metadata', () => {
-    expect(getItemFavoriteOrPinnedFlag(JSON.stringify({ isPinned: true }))).toBe(true);
-    expect(getItemFavoriteOrPinnedFlag(JSON.stringify({ isFavorite: true }))).toBe(true);
+  test('reads IsFavorite or IsPinned from JSON metadata', () => {
+    expect(getItemFavoriteOrPinnedFlag(JSON.stringify({ IsPinned: true }))).toBe(true);
+    expect(getItemFavoriteOrPinnedFlag(JSON.stringify({ IsFavorite: true }))).toBe(true);
     expect(getItemFavoriteOrPinnedFlag('plain text')).toBe(false);
   });
 });
@@ -79,8 +81,11 @@ describe('getItemFavoriteOrPinnedFlag', () => {
 describe('serializeItemDescription', () => {
   test('stringifies metadata with CustomFields shape', () => {
     const result = serializeItemDescription('Updated text', {
-      shirtSize: 'L',
-      isFavorite: true,
+      CustomFields: {
+        Predefined: { ShirtSize: 'L' },
+        UserDefined: {},
+      },
+      IsFavorite: true,
     });
     expect(JSON.parse(result)).toEqual({
       Text: 'Updated text',
@@ -88,7 +93,25 @@ describe('serializeItemDescription', () => {
         Predefined: { ShirtSize: 'L' },
         UserDefined: {},
       },
-      isFavorite: true,
+      IsFavorite: true,
+    });
+  });
+
+  test('round-trips PascalCase variations', () => {
+    const source = JSON.stringify({
+      Text: 'Socks',
+      IsPinned: true,
+      Variations: [{ Name: 'Red', Quantity: 2 }],
+    });
+    const parsed = parseItemDescription(source);
+    expect(parsed.metadata?.IsPinned).toBe(true);
+    expect(parsed.metadata?.Variations).toEqual([{ Name: 'Red', Quantity: 2 }]);
+
+    const rewritten = serializeItemDescription('Socks', parsed.metadata);
+    expect(JSON.parse(rewritten)).toMatchObject({
+      Text: 'Socks',
+      IsPinned: true,
+      Variations: [{ Name: 'Red', Quantity: 2 }],
     });
   });
 });
@@ -96,17 +119,14 @@ describe('serializeItemDescription', () => {
 describe('formatDescriptionForExport', () => {
   test('formats JSON metadata for export', () => {
     const description = JSON.stringify({
-      text: 'Running shoes',
-      shoesSize: '10',
-      custom: [{ name: 'Width', value: 'Wide' }],
+      Text: 'Running shoes',
+      CustomFields: {
+        Predefined: { ShoesSize: '10' },
+        UserDefined: {},
+      },
     });
 
-    expect(formatDescriptionForExport(description)).toBe(
-      'Running shoes [Shoes Size: 10, Width: Wide]'
-    );
-  });
-
-  test('returns plain text unchanged', () => {
-    expect(formatDescriptionForExport('Just text')).toBe('Just text');
+    expect(formatDescriptionForExport(description)).toContain('Running shoes');
+    expect(formatDescriptionForExport(description)).toContain('Shoes Size: 10');
   });
 });

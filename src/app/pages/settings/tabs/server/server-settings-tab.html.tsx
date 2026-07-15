@@ -5,6 +5,7 @@ import { ServerSettingsTabTemplateProps } from './interfaces/server-settings-tab
 import styles from './server-settings-tab.module.css';
 import { DbSection } from './components/db-section/db-section.component';
 import { SmtpSection } from './components/smtp-section/smtp-section.component';
+import { ScrapeSection } from './components/scrape-section/scrape-section.component';
 import { AiSection } from './components/ai-section/ai-section.component';
 
 export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps> = ({
@@ -33,12 +34,32 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   handleSave,
   aiEnabled,
   setAiEnabled,
-  aiProvider,
-  setAiProvider,
-  aiApiKey,
-  setAiApiKey,
-  aiModel,
-  setAiModel,
+  aiWebSearchEnabled,
+  setAiWebSearchEnabled,
+  aiRateLimitEnabled,
+  setAiRateLimitEnabled,
+  aiCompletionTimeoutMs,
+  setAiCompletionTimeoutMs,
+  scrapeFetchTimeoutMs,
+  setScrapeFetchTimeoutMs,
+  scrapePlaywrightTimeoutMs,
+  setScrapePlaywrightTimeoutMs,
+  aiFastProvider,
+  setAiFastProvider,
+  aiFastEndpoint,
+  setAiFastEndpoint,
+  aiFastApiKey,
+  setAiFastApiKey,
+  aiFastModel,
+  setAiFastModel,
+  aiIntelligentProvider,
+  setAiIntelligentProvider,
+  aiIntelligentEndpoint,
+  setAiIntelligentEndpoint,
+  aiIntelligentApiKey,
+  setAiIntelligentApiKey,
+  aiIntelligentModel,
+  setAiIntelligentModel,
   aiPrompt,
   setAiPrompt,
   aiDescriptionPrompt,
@@ -47,25 +68,33 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   setAiPopulatePrompt,
   aiCategoryPrompt,
   setAiCategoryPrompt,
+  aiImportPrompt,
+  setAiImportPrompt,
   aiDefaultPrompts,
   onResetPrompt,
-  aiEndpoint,
-  setAiEndpoint,
-  showAiKey,
-  setShowAiKey,
+  showFastAiKey,
+  setShowFastAiKey,
+  showIntelligentAiKey,
+  setShowIntelligentAiKey,
   openrouterModels,
   isLoadingModels,
   companies,
-  selectedCompany,
-  setSelectedCompany,
-  filteredModels,
-  localAiModels,
-  localModelMode,
+  selectedFastCompany,
+  setSelectedFastCompany,
+  selectedIntelligentCompany,
+  setSelectedIntelligentCompany,
+  filteredFastModels,
+  filteredIntelligentModels,
+  localFastModels,
+  localIntelligentModels,
+  localFastModelMode,
+  localIntelligentModelMode,
   onLocalModelSelection,
-  aiConnectionStatus,
-  aiConnectionMessage,
+  fastConnectionStatus,
+  fastConnectionMessage,
+  intelligentConnectionStatus,
+  intelligentConnectionMessage,
   onTestAiConnection,
-  isTestingAiConnection,
   isServerOwner,
   onDeleteServer,
   isDeletingServer,
@@ -128,16 +157,39 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
           setShowPassword={setShowPassword}
         />
 
+        <ScrapeSection
+          scrapeFetchTimeoutMs={scrapeFetchTimeoutMs}
+          setScrapeFetchTimeoutMs={setScrapeFetchTimeoutMs}
+          scrapePlaywrightTimeoutMs={scrapePlaywrightTimeoutMs}
+          setScrapePlaywrightTimeoutMs={setScrapePlaywrightTimeoutMs}
+        />
+
         {/* AI Integration Section */}
         <AiSection
           aiEnabled={aiEnabled}
           setAiEnabled={setAiEnabled}
-          aiProvider={aiProvider}
-          setAiProvider={setAiProvider}
-          aiApiKey={aiApiKey}
-          setAiApiKey={setAiApiKey}
-          aiModel={aiModel}
-          setAiModel={setAiModel}
+          aiWebSearchEnabled={aiWebSearchEnabled}
+          setAiWebSearchEnabled={setAiWebSearchEnabled}
+          aiRateLimitEnabled={aiRateLimitEnabled}
+          setAiRateLimitEnabled={setAiRateLimitEnabled}
+          aiCompletionTimeoutMs={aiCompletionTimeoutMs}
+          setAiCompletionTimeoutMs={setAiCompletionTimeoutMs}
+          aiFastProvider={aiFastProvider}
+          setAiFastProvider={setAiFastProvider}
+          aiFastEndpoint={aiFastEndpoint}
+          setAiFastEndpoint={setAiFastEndpoint}
+          aiFastApiKey={aiFastApiKey}
+          setAiFastApiKey={setAiFastApiKey}
+          aiFastModel={aiFastModel}
+          setAiFastModel={setAiFastModel}
+          aiIntelligentProvider={aiIntelligentProvider}
+          setAiIntelligentProvider={setAiIntelligentProvider}
+          aiIntelligentEndpoint={aiIntelligentEndpoint}
+          setAiIntelligentEndpoint={setAiIntelligentEndpoint}
+          aiIntelligentApiKey={aiIntelligentApiKey}
+          setAiIntelligentApiKey={setAiIntelligentApiKey}
+          aiIntelligentModel={aiIntelligentModel}
+          setAiIntelligentModel={setAiIntelligentModel}
           aiPrompt={aiPrompt}
           setAiPrompt={setAiPrompt}
           aiDescriptionPrompt={aiDescriptionPrompt}
@@ -146,25 +198,33 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
           setAiPopulatePrompt={setAiPopulatePrompt}
           aiCategoryPrompt={aiCategoryPrompt}
           setAiCategoryPrompt={setAiCategoryPrompt}
+          aiImportPrompt={aiImportPrompt}
+          setAiImportPrompt={setAiImportPrompt}
           aiDefaultPrompts={aiDefaultPrompts}
           onResetPrompt={onResetPrompt}
-          aiEndpoint={aiEndpoint}
-          setAiEndpoint={setAiEndpoint}
-          showAiKey={showAiKey}
-          setShowAiKey={setShowAiKey}
+          showFastAiKey={showFastAiKey}
+          setShowFastAiKey={setShowFastAiKey}
+          showIntelligentAiKey={showIntelligentAiKey}
+          setShowIntelligentAiKey={setShowIntelligentAiKey}
           openrouterModels={openrouterModels}
           isLoadingModels={isLoadingModels}
           companies={companies}
-          selectedCompany={selectedCompany}
-          setSelectedCompany={setSelectedCompany}
-          filteredModels={filteredModels}
-          localAiModels={localAiModels}
-          localModelMode={localModelMode}
+          selectedFastCompany={selectedFastCompany}
+          setSelectedFastCompany={setSelectedFastCompany}
+          selectedIntelligentCompany={selectedIntelligentCompany}
+          setSelectedIntelligentCompany={setSelectedIntelligentCompany}
+          filteredFastModels={filteredFastModels}
+          filteredIntelligentModels={filteredIntelligentModels}
+          localFastModels={localFastModels}
+          localIntelligentModels={localIntelligentModels}
+          localFastModelMode={localFastModelMode}
+          localIntelligentModelMode={localIntelligentModelMode}
           onLocalModelSelection={onLocalModelSelection}
-          aiConnectionStatus={aiConnectionStatus}
-          aiConnectionMessage={aiConnectionMessage}
+          fastConnectionStatus={fastConnectionStatus}
+          fastConnectionMessage={fastConnectionMessage}
+          intelligentConnectionStatus={intelligentConnectionStatus}
+          intelligentConnectionMessage={intelligentConnectionMessage}
           onTestAiConnection={onTestAiConnection}
-          isTestingAiConnection={isTestingAiConnection}
         />
       </form>
 

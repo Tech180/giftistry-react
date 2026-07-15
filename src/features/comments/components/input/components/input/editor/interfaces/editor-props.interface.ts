@@ -5,5 +5,8 @@ export interface EditorProps {
   setContent: (content: string) => void;
   participants: ListParticipant[];
   currentUserId?: string;
+  isOwner?: boolean;
+  isOwnerVisible?: boolean;
+  listOwnerId?: string;
   onSubmit: (e: React.SyntheticEvent) => void;
 }

@@ -1,6 +1,7 @@
 import type {
   ItemCustomFields,
   ItemDescriptionMetadata,
+  ItemDescriptionVariation,
 } from 'shared/interfaces/item-description-metadata.interface';
 
 export const CORE_PREDEFINED_FORM_KEYS = [
@@ -23,29 +24,18 @@ const CORE_FORM_TO_STORAGE: Record<CorePredefinedFormKey, string> = {
 
 const CORE_STORAGE_TO_FORM: Record<string, CorePredefinedFormKey> = {
   PantsSize: 'pantsSize',
-  pantsSize: 'pantsSize',
   ShirtSize: 'shirtSize',
-  shirtSize: 'shirtSize',
   ShoesSize: 'shoesSize',
-  shoesSize: 'shoesSize',
   SocksSize: 'socksSize',
-  socksSize: 'socksSize',
   Color: 'color',
-  color: 'color',
 };
 
 const KNOWN_PREDEFINED_LABELS: Record<string, string> = {
   PantsSize: 'Pants Size',
-  pantsSize: 'Pants Size',
   ShirtSize: 'Shirt Size',
-  shirtSize: 'Shirt Size',
   ShoesSize: 'Shoes Size',
-  shoesSize: 'Shoes Size',
   SocksSize: 'Socks Size',
-  socksSize: 'Socks Size',
   Color: 'Color',
-  color: 'Color',
-  preferredColor: 'Preferred Color',
   PreferredColor: 'Preferred Color',
   ModelNumber: 'Model Number',
   StorageCapacity: 'Storage Capacity',
@@ -53,38 +43,25 @@ const KNOWN_PREDEFINED_LABELS: Record<string, string> = {
 
 export function formatPredefinedKeyToLabel(key: string): string {
   if (KNOWN_PREDEFINED_LABELS[key]) return KNOWN_PREDEFINED_LABELS[key];
-  if (/^[a-z]/.test(key)) {
-    return key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()).trim();
-  }
   return key
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/^./, (s) => s.toUpperCase())
     .trim();
 }
 
-const RESERVED_METADATA_KEYS = new Set([
-  'Text',
-  'text',
-  'CustomFields',
-  'pantsSize',
-  'shirtSize',
-  'shoesSize',
-  'socksSize',
-  'color',
-  'custom',
-  'isFavorite',
-  'isPinned',
-  'desiredQuantity',
-  'DesiredQuantity',
-  'variations',
-  'Variations',
-  'linkedItemIds',
-  'LinkedItemIds',
-  'otherUsersCanSee',
-  'OtherUsersCanSee',
-  'multiCount',
-  'MultiCount',
-]);
+function normalizeVariations(raw: ItemDescriptionVariation[] | undefined): ItemDescriptionVariation[] | undefined {
+  if (!raw?.length) return undefined;
+  return raw
+    .map((variation) => {
+      const name = typeof variation.Name === 'string' ? variation.Name.trim() : '';
+      const quantity = Number(variation.Quantity);
+      return {
+        Name: name,
+        Quantity: Number.isFinite(quantity) ? quantity : 0,
+      };
+    })
+    .filter((variation) => variation.Name.length > 0);
+}
 
 export function emptyCustomFields(): ItemCustomFields {
   return { Predefined: {}, UserDefined: {} };
@@ -100,8 +77,7 @@ export function toFormPredefinedKey(storageKey: string): string {
 
 export function getMetadataText(metadata: ItemDescriptionMetadata | null | undefined): string {
   if (!metadata) return '';
-  const text = metadata.Text ?? metadata.text;
-  return typeof text === 'string' ? text : '';
+  return typeof metadata.Text === 'string' ? metadata.Text : '';
 }
 
 export function normalizeItemDescriptionMetadata(
@@ -111,44 +87,19 @@ export function normalizeItemDescriptionMetadata(
     return { Text: '', CustomFields: emptyCustomFields() };
   }
 
-  const predefined: Record<string, string | null> = {
-    ...(raw.CustomFields?.Predefined ?? {}),
-  };
-
-  for (const formKey of CORE_PREDEFINED_FORM_KEYS) {
-    const legacyVal = raw[formKey];
-    if (typeof legacyVal === 'string' && legacyVal.trim()) {
-      predefined[toStoragePredefinedKey(formKey)] = legacyVal.trim();
-    }
-  }
-
-  for (const [key, value] of Object.entries(raw)) {
-    if (RESERVED_METADATA_KEYS.has(key)) continue;
-    if (value == null || value === '') continue;
-    if (typeof value === 'string') {
-      predefined[key] = value;
-    }
-  }
-
-  const userDefined: Record<string, string> = { ...(raw.CustomFields?.UserDefined ?? {}) };
-  if (Array.isArray(raw.custom)) {
-    for (const field of raw.custom) {
-      if (field.name?.trim() && field.value?.trim()) {
-        userDefined[field.name.trim()] = field.value.trim();
-      }
-    }
-  }
-
   return {
     Text: getMetadataText(raw),
-    CustomFields: { Predefined: predefined, UserDefined: userDefined },
-    desiredQuantity: raw.desiredQuantity ?? raw.DesiredQuantity,
-    variations: raw.variations ?? raw.Variations,
-    linkedItemIds: raw.linkedItemIds ?? raw.LinkedItemIds,
-    otherUsersCanSee: raw.otherUsersCanSee ?? raw.OtherUsersCanSee,
-    multiCount: raw.multiCount ?? raw.MultiCount,
-    isFavorite: raw.isFavorite,
-    isPinned: raw.isPinned,
+    CustomFields: {
+      Predefined: { ...(raw.CustomFields?.Predefined ?? {}) },
+      UserDefined: { ...(raw.CustomFields?.UserDefined ?? {}) },
+    },
+    DesiredQuantity: raw.DesiredQuantity,
+    Variations: normalizeVariations(raw.Variations),
+    LinkedItemIds: raw.LinkedItemIds,
+    OtherUsersCanSee: raw.OtherUsersCanSee,
+    MultiCount: raw.MultiCount,
+    IsFavorite: raw.IsFavorite === true,
+    IsPinned: raw.IsPinned === true,
   };
 }
 
@@ -226,13 +177,7 @@ export function getMetadataDisplayEntries(
   return entries;
 }
 
-export const METADATA_BADGE_EMOJI: Record<string, string> = {
-  Pants: '👖',
-  Shirt: '👕',
-  Shoes: '👟',
-  Socks: '🧦',
-  Color: '🎨',
-};
+export const METADATA_BADGE_EMOJI: Record<string, string> = {};
 
 export function buildItemDescriptionPayload(input: {
   text: string;
@@ -290,11 +235,16 @@ export function buildItemDescriptionPayload(input: {
 
   if (input.multiCount) payload.MultiCount = true;
   if (input.desiredQuantity !== undefined) payload.DesiredQuantity = input.desiredQuantity;
-  if (input.variations?.length) payload.Variations = input.variations;
+  if (input.variations?.length) {
+    payload.Variations = input.variations.map((variation) => ({
+      Name: variation.name,
+      Quantity: variation.quantity,
+    }));
+  }
   if (input.linkedItemIds?.length) payload.LinkedItemIds = input.linkedItemIds;
   if (input.otherUsersCanSee !== undefined) payload.OtherUsersCanSee = input.otherUsersCanSee;
-  if (input.isFavorite) payload.isFavorite = true;
-  if (input.isPinned) payload.isPinned = true;
+  if (input.isFavorite) payload.IsFavorite = true;
+  if (input.isPinned) payload.IsPinned = true;
 
   return JSON.stringify(payload);
 }

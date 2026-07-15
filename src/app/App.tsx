@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, useLocation } from 'react-router-dom';
-import { ThemeProvider } from 'app/providers/theme-context';
+import { ThemeProvider } from 'app/providers/theme-provider';
 import { AuthProvider, useAuth } from 'app/providers/auth-context';
 import { ToastProvider } from 'app/providers/toast-context';
 import { AppLoadingTemplate, AppSetupTemplate, AppContentTemplate } from './App.html';

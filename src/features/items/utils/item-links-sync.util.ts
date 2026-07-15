@@ -9,7 +9,7 @@ import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description
 
 export function getLinkedItemIds(item: Pick<Item, 'Description'>): string[] {
   const { metadata } = parseItemDescription(item.Description);
-  return metadata?.linkedItemIds ?? [];
+  return metadata?.LinkedItemIds ?? [];
 }
 
 export function resolveLinkedItems(
@@ -54,14 +54,23 @@ export function resolveEditorLinkedItemIds(
 }
 
 export function hasLinkedItems(metadata: ItemDescriptionMetadata | null): boolean {
-  return (metadata?.linkedItemIds?.length ?? 0) > 0;
+  return (metadata?.LinkedItemIds?.length ?? 0) > 0;
 }
 
 function hasMetadataBeyondLinks(metadata: ItemDescriptionMetadata): boolean {
   return Object.entries(metadata).some(([key, value]) => {
-    if (key === 'linkedItemIds' || key === 'text') return false;
+    if (key === 'LinkedItemIds' || key === 'Text') return false;
     if (value === null || value === undefined || value === '') return false;
     if (Array.isArray(value) && value.length === 0) return false;
+    if (key === 'CustomFields') {
+      const fields = value as ItemDescriptionMetadata['CustomFields'];
+      const hasPredefined = Object.values(fields?.Predefined ?? {}).some(
+        (entry) => entry != null && String(entry).trim()
+      );
+      const hasUserDefined = Object.values(fields?.UserDefined ?? {}).some((entry) => entry.trim());
+      return hasPredefined || hasUserDefined;
+    }
+    if (value === false) return false;
     return true;
   });
 }
@@ -74,9 +83,9 @@ export function buildDescriptionWithLinkedIds(
   const metadata: ItemDescriptionMetadata = { ...(parsed.metadata ?? {}) };
 
   if (linkedIds.length > 0) {
-    metadata.linkedItemIds = linkedIds;
+    metadata.LinkedItemIds = linkedIds;
   } else {
-    delete metadata.linkedItemIds;
+    delete metadata.LinkedItemIds;
   }
 
   if (!parsed.isJson && linkedIds.length === 0) {
@@ -153,29 +162,5 @@ export async function syncBidirectionalItemLinks(
   wishlistItems: Item[],
   previousLinkedIds?: string[]
 ): Promise<void> {
-  const updates = computeLinkSyncUpdates(
-    currentItemId,
-    newLinkedIds,
-    wishlistItems,
-    previousLinkedIds
-  );
-
-  await Promise.all(
-    updates
-      .filter((update) => update.itemId !== currentItemId)
-      .map((update) => {
-        const item = wishlistItems.find((i) => i.Id === update.itemId);
-        if (!item) return Promise.resolve();
-
-        return itemsApi.updateItem(
-          update.itemId,
-          item.Name,
-          update.description,
-          item.PriorityId,
-          item.Category,
-          item.Priority ?? null,
-          getItemSharedWithUserIds(item)
-        );
-      })
-  );
+  await itemsApi.syncItemLinks(currentItemId, newLinkedIds);
 }

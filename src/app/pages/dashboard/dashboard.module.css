@@ -16,6 +16,13 @@
   padding-bottom: var(--spacing-lg);
 }
 
+.header-actions{
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
 .greeting{
   font-size: 1.875rem;
   font-weight: 800;

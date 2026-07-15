@@ -13,7 +13,10 @@ export interface ReplyInputTemplateProps {
   content: string;
   setContent: (content: string) => void;
   participants: ListParticipant[];
-  currentUserId?: string;
+  currentUserId?: string | null;
+  isOwner: boolean;
+  isOwnerVisible: boolean;
+  listOwnerId?: string;
   onSubmit: (e: React.SyntheticEvent) => void;
   setImageUrl: (url: string | null) => void;
   onUploadError: (message: string | null) => void;

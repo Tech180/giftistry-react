@@ -48,7 +48,7 @@ export interface ItemCardTemplateProps {
   isTaggingModeActive?: boolean;
   isTaggedSelection?: boolean;
   onSelectTag?: () => void;
-  viewMode?: 'full' | 'compact' | 'grid';
+  viewMode?: import('../types/item-view-mode.type').ItemViewMode;
   isSelected?: boolean;
   onSelect?: () => void;
   isExpanded?: boolean;

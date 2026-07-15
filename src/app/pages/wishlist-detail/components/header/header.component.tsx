@@ -5,7 +5,7 @@ import { useAuth } from 'app/providers/auth-context';
 
 export const Header: React.FC<HeaderProps> = (props) => {
   const { wishlist, isOwner } = props;
-  const { canShowAi, user } = useAuth();
+  const { canShowAi, canShowWebSearch, user } = useAuth();
 
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -78,6 +78,10 @@ export const Header: React.FC<HeaderProps> = (props) => {
       setTempDate={setTempDate}
       exportRef={exportRef}
       canShowAi={canShowAi}
+      canShowWebSearch={canShowWebSearch}
+      canImport={props.canImport}
+      isImportOpen={props.isImportOpen}
+      onImportToggle={props.onImportToggle}
     />
   );
 };

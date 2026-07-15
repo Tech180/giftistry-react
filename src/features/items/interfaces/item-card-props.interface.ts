@@ -1,4 +1,5 @@
 import { Item } from './item.interface';
+import { ItemViewMode } from '../types/item-view-mode.type';
 
 export interface ItemCardProps {
   item: Item;
@@ -12,9 +13,10 @@ export interface ItemCardProps {
   isTaggingModeActive?: boolean;
   isTaggedSelection?: boolean;
   onSelectTag?: () => void;
-  viewMode?: 'full' | 'compact' | 'grid';
+  viewMode?: ItemViewMode;
   isSelected?: boolean;
   onSelect?: () => void;
   wishlistItems?: Item[];
   isLinkingContext?: boolean;
+  aiEnabled?: boolean;
 }

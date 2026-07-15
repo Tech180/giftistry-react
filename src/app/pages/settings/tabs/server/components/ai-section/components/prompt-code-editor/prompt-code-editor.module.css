@@ -14,6 +14,29 @@
   box-shadow: 0 0 0 1px var(--primary);
 }
 
+.readOnly {
+  opacity: 0.92;
+}
+
+.readOnly:focus-within {
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+.readOnly .editor {
+  height: 12rem;
+  max-height: 12rem;
+}
+
+.readOnly .gutter {
+  background: color-mix(in srgb, var(--surface) 94%, var(--bg));
+}
+
+.readOnly .textarea {
+  cursor: default;
+  caret-color: transparent;
+}
+
 .editor {
   display: flex;
   align-items: stretch;
@@ -112,6 +135,98 @@
   font-weight: 600;
   background: rgba(217, 119, 6, 0.14);
   border-radius: 0.15rem;
+}
+
+.sectionReadOnly {
+  color: var(--text-muted);
+}
+
+.sectionReadOnly .tokenKnown {
+  color: color-mix(in srgb, var(--primary) 50%, var(--text-muted));
+  font-weight: 500;
+  background: rgba(var(--primary-rgb), 0.08);
+}
+
+.sectionReadOnly .tokenUnknown {
+  color: color-mix(in srgb, #d97706 45%, var(--text-muted));
+  font-weight: 500;
+  background: rgba(217, 119, 6, 0.08);
+}
+
+.lineNumberReadOnly {
+  color: color-mix(in srgb, var(--text-muted) 72%, transparent);
+}
+
+.sectionDivider {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  height: calc(0.8125rem * 1.6);
+  margin: 0;
+  user-select: none;
+}
+
+.sectionDivider:first-child {
+  margin-top: 0;
+}
+
+.sectionDividerLine {
+  flex: 1;
+  height: 1px;
+  background: color-mix(in srgb, var(--border) 88%, transparent);
+}
+
+.sectionDividerTitle {
+  flex-shrink: 0;
+  padding: 0.15rem var(--spacing-sm);
+  border-radius: calc(var(--radius) - 0.125rem);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 90%, var(--bg));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.sectionDividerActive .sectionDividerTitle {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--primary) 32%, var(--border));
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+.sectionDividerReadOnly .sectionDividerTitle {
+  color: color-mix(in srgb, var(--text-muted) 92%, var(--text));
+  background: color-mix(in srgb, var(--surface) 96%, var(--bg));
+}
+
+.sectionDividerReadOnly .sectionDividerLine {
+  opacity: 0.72;
+}
+
+.codeLine {
+  display: block;
+  min-height: calc(0.8125rem * 1.6);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.codeLineReadOnly {
+  color: var(--text-muted);
+}
+
+.codeLineReadOnly .tokenKnown {
+  color: color-mix(in srgb, var(--primary) 50%, var(--text-muted));
+  font-weight: 500;
+  background: rgba(var(--primary-rgb), 0.08);
+}
+
+.codeLineReadOnly .tokenUnknown {
+  color: color-mix(in srgb, #d97706 45%, var(--text-muted));
+  font-weight: 500;
+  background: rgba(217, 119, 6, 0.08);
 }
 
 :global([data-appearance='dark']) .tokenUnknown {

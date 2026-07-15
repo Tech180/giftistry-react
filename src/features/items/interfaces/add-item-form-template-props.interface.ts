@@ -41,6 +41,7 @@ export interface AddItemFormTemplateProps {
   isAutopopulating: boolean;
   hasScraped: boolean;
   handleScrapeClick: (e: React.MouseEvent) => void;
+  canUseWebSearchOnList?: boolean;
   customFields: CustomFieldRow[];
   handleAddCustomField: () => void;
   handleRemoveCustomField: (id: string) => void;
@@ -49,6 +50,8 @@ export interface AddItemFormTemplateProps {
   showExtraFields: boolean;
   setShowExtraFields: (val: boolean) => void;
   renderedCategories: { id: string; label: string; isCustom?: boolean; isFromList?: boolean }[];
+  aiCategoryChips: Array<{ id: string; label: string; variant: 'primary' | 'suggestion' }>;
+  aiCategoryIds: Set<string>;
   isAddingCustom: boolean;
   setIsAddingCustom: (val: boolean) => void;
   newCustomInput: string;

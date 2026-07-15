@@ -70,7 +70,7 @@ async function executeRequest<T>(
 
     if (!response.ok) {
       const status = response.status;
-      const errorMsg = json.Result?.Message || json.Result?.message || json.Message || json.message || 'An error occurred';
+      const errorMsg = json.Result?.Message || json.Message || 'An error occurred';
       const errorCode = json.Meta?.Code || 'API_ERROR';
       throw new ApiError(errorMsg, status, errorCode);
     }

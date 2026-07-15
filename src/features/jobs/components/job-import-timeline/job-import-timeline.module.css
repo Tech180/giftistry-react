@@ -1,0 +1,205 @@
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(var(--timeline-cols, 6), minmax(0, 1fr));
+  gap: var(--spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  align-items: start;
+}
+
+.timelineItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.timelineItemBranch {
+  min-width: 0;
+}
+
+.timelinePending {
+  color: var(--text-muted);
+}
+
+.timelineActive {
+  color: var(--text);
+  font-weight: var(--font-weight-medium);
+}
+
+.timelineDone {
+  color: var(--text);
+}
+
+.timelineError {
+  color: var(--error);
+}
+
+.timelineNode {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 0.75rem;
+}
+
+.timelineDot {
+  z-index: 1;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--border);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.timelineActive .timelineDot {
+  background: var(--primary);
+}
+
+.timelineDone .timelineDot {
+  background: var(--success);
+}
+
+.timelineError .timelineDot {
+  background: var(--error);
+}
+
+.timelineConnector {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 0.35rem);
+  right: calc(-50% + 0.35rem);
+  height: 0;
+  border-top: 1px dotted var(--border);
+  transform: translateY(-50%);
+  background: transparent;
+}
+
+.timelineDone .timelineConnector {
+  border-top-color: color-mix(in srgb, var(--success) 55%, var(--border));
+}
+
+.timelineLabel {
+  max-width: 100%;
+  font-size: var(--font-size-xs, 0.75rem);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.nestedBranch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  min-width: 0;
+  margin-top: 0.1rem;
+}
+
+.branchStem {
+  width: 0;
+  height: 0.55rem;
+  border-left: 1px dotted var(--border);
+}
+
+.streamsCaption {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.nestedStreams {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.streamItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  flex: 1 1 0;
+  min-width: 2.75rem;
+  max-width: 4.5rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.streamNode {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 0.55rem;
+}
+
+.streamDot {
+  z-index: 1;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--border);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.streamConnector {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 0.28rem);
+  right: calc(-50% + 0.28rem);
+  height: 0;
+  border-top: 1px dotted var(--border);
+  transform: translateY(-50%);
+}
+
+.streamItem.timelineActive .streamDot {
+  background: var(--primary);
+}
+
+.streamItem.timelineError .streamDot {
+  background: var(--error);
+}
+
+.streamItem.timelineDone .streamDot {
+  background: var(--success);
+}
+
+.streamLabel {
+  max-width: 100%;
+  font-size: 0.65rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 40rem) {
+  .timeline {
+    gap: 0.125rem;
+  }
+
+  .timelineLabel {
+    font-size: 0.65rem;
+  }
+
+  .streamItem {
+    min-width: 2.25rem;
+  }
+}

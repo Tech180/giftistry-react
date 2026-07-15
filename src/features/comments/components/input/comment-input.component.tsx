@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { CommentInputProps } from '../../interfaces/comment-input-props.interface';
 import { CommentInputTemplate } from './comment-input.html';
 import {
@@ -12,6 +12,7 @@ import {
   InputToolbar,
   InputFooter,
 } from './components/input';
+import { getMentionableParticipants } from '../../utils/comment-content.util';
 
 export const CommentInput: React.FC<CommentInputProps> = ({
   isOwner,
@@ -32,11 +33,22 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   setIsAnonymous,
   participants,
   currentUserId,
+  listOwnerId,
   imageUrl,
   setImageUrl,
 }) => {
   const editorHandle = useRef<CommentEditorHandle>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const mentionParticipants = useMemo(
+    () =>
+      getMentionableParticipants(participants, {
+        isOwner,
+        isOwnerVisible,
+        listOwnerId,
+      }),
+    [participants, isOwner, isOwnerVisible, listOwnerId]
+  );
 
   return (
     <CommentInputTemplate
@@ -62,8 +74,11 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           ref={editorHandle}
           content={content}
           setContent={setContent}
-          participants={participants}
+          participants={mentionParticipants}
           currentUserId={currentUserId}
+          isOwner={isOwner}
+          isOwnerVisible={isOwnerVisible}
+          listOwnerId={listOwnerId}
           onSubmit={handleSubmit}
         />
       }

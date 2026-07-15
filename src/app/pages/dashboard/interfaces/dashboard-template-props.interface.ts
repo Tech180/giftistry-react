@@ -11,6 +11,8 @@ export interface DashboardTemplateProps {
   getGreeting: () => string;
   isCreateOpen: boolean;
   setIsCreateOpen: (open: boolean) => void;
+  isImportOpen: boolean;
+  setIsImportOpen: (open: boolean) => void;
   activeTab: 'my-lists' | 'shared' | 'archive';
   setActiveTab: (tab: 'my-lists' | 'shared' | 'archive') => void;
   searchQuery: string;
@@ -20,6 +22,7 @@ export interface DashboardTemplateProps {
   isLoading: boolean;
   error: string | null;
   handleCreateSuccess: () => void;
+  handleImportStarted: (result: { listId: string; jobId: string }) => void;
   emptyIcon: React.ReactNode;
   emptyTitle: string;
   emptyDesc: string;

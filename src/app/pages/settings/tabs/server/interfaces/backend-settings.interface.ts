@@ -3,7 +3,10 @@ export interface AiDefaultPromptsView {
   Description: string;
   Populate: string;
   Category: string;
+  Import: string;
 }
+
+export type AiSlotProvider = 'local' | 'openrouter';
 
 export interface BackendSettings {
   DbType: 'local' | 'remote';
@@ -16,13 +19,27 @@ export interface BackendSettings {
   SmtpSecure: boolean;
   SmtpFrom: string;
   AiEnabled?: boolean;
-  AiProvider?: 'gemini' | 'openai' | 'anthropic' | 'local' | 'openrouter';
-  AiApiKey?: string;
-  AiModel?: string;
+  AiWebSearchEnabled?: boolean;
+  AiRateLimitEnabled?: boolean;
+  AiFastProvider?: AiSlotProvider;
+  AiFastEndpoint?: string;
+  AiFastApiKey?: string;
+  AiFastModel?: string;
+  AiIntelligentProvider?: AiSlotProvider;
+  AiIntelligentEndpoint?: string;
+  AiIntelligentApiKey?: string;
+  AiIntelligentModel?: string;
   AiPrompt?: string;
   AiDescriptionPrompt?: string;
   AiPopulatePrompt?: string;
   AiCategoryPrompt?: string;
-  AiEndpoint?: string;
+  AiImportPrompt?: string;
+  AiCompletionTimeoutMs?: number;
+  ScrapeFetchTimeoutMs?: number;
+  ScrapePlaywrightTimeoutMs?: number;
   AiDefaultPrompts?: AiDefaultPromptsView;
+}
+
+export function normalizeAiSlotProvider(value?: string | null): AiSlotProvider {
+  return value === 'local' ? 'local' : 'openrouter';
 }

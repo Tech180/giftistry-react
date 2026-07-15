@@ -3,29 +3,21 @@ export interface ItemCustomFields {
   UserDefined: Record<string, string>;
 }
 
+export interface ItemDescriptionVariation {
+  Name: string;
+  Quantity: number;
+}
+
 export interface ItemDescriptionMetadata {
-  Text?: string;
-  text?: string;
+  Text?: string | null;
   CustomFields?: ItemCustomFields;
-  pantsSize?: string;
-  shirtSize?: string;
-  shoesSize?: string;
-  socksSize?: string;
-  color?: string;
-  custom?: { name: string; value: string }[];
-  isFavorite?: boolean;
-  isPinned?: boolean;
-  desiredQuantity?: number;
+  IsFavorite?: boolean;
+  IsPinned?: boolean;
   DesiredQuantity?: number;
-  variations?: { name: string; quantity: number }[];
-  Variations?: { name: string; quantity: number }[];
-  linkedItemIds?: string[];
+  Variations?: ItemDescriptionVariation[];
   LinkedItemIds?: string[];
-  otherUsersCanSee?: boolean;
   OtherUsersCanSee?: boolean;
-  multiCount?: boolean;
   MultiCount?: boolean;
-  [key: string]: unknown;
 }
 
 export interface ParsedItemDescription {

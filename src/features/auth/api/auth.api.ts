@@ -10,10 +10,10 @@ export const authApi = {
     apiClient.post<AuthResponse>('/api/auth/signup', { Username: username, Email: email, Password: password, FirstName: firstName, LastName: lastName }, 'Auth'),
 
   logout: () =>
-    apiClient.post<{ success: boolean }>('/api/auth/logout', {}),
+    apiClient.post<Record<string, never>>('/api/auth/logout', {}),
 
   getMe: () =>
-    apiClient.get<{ User: ApiUser }>('/api/auth/me'),
+    apiClient.get<{ User: ApiUser; Capabilities?: { CanUseAi: boolean; CanUseWebSearch: boolean } }>('/api/auth/me'),
 
   updateProfile: (
     username?: string,
@@ -22,7 +22,8 @@ export const authApi = {
     bio?: string,
     theme?: string,
     avatar?: string | null,
-    aiEnabled?: boolean
+    aiEnabled?: boolean,
+    webSearchEnabled?: boolean
   ) =>
     apiClient.put<{ User: ApiUser }>(
       '/api/auth/profile',
@@ -34,6 +35,7 @@ export const authApi = {
         Theme: theme,
         Avatar: avatar,
         AiEnabled: aiEnabled,
+        WebSearchEnabled: webSearchEnabled,
       },
       'Auth'
     ),
@@ -42,16 +44,16 @@ export const authApi = {
     apiClient.get<{ User: ApiUser }>(`/api/users/${userId}/preview`),
 
   verifyEmail: (token: string) =>
-    apiClient.post<{ success: boolean }>('/api/auth/verify-email', { Token: token }, 'Auth'),
+    apiClient.post<Record<string, never>>('/api/auth/verify-email', { Token: token }, 'Auth'),
 
   resendVerification: () =>
-    apiClient.post<{ success: boolean }>('/api/auth/resend-verification', {}),
+    apiClient.post<Record<string, never>>('/api/auth/resend-verification', {}),
 
   passkeyRegisterOptions: () =>
     apiClient.post<{ Options: unknown }>('/api/auth/passkey/register/options', {}),
 
   passkeyRegisterVerify: (registrationResponse: unknown) =>
-    apiClient.post<{ success: boolean }>('/api/auth/passkey/register/verify', { RegistrationResponse: registrationResponse }, 'Auth'),
+    apiClient.post<Record<string, never>>('/api/auth/passkey/register/verify', { RegistrationResponse: registrationResponse }, 'Auth'),
 
   passkeyLoginOptions: () =>
     apiClient.post<{ Options: unknown }>('/api/auth/passkey/login/options', {}),
@@ -69,17 +71,17 @@ export const authApi = {
     apiClient.post<{ RecoveryCodes?: string[] }>('/api/auth/2fa/enable', { Secret: secret, Code: code }, 'Auth'),
 
   disable2fa: (code: string) =>
-    apiClient.post<{ success: boolean }>('/api/auth/2fa/disable', { Code: code }, 'Auth'),
+    apiClient.post<Record<string, never>>('/api/auth/2fa/disable', { Code: code }, 'Auth'),
 
   getPasskeys: () =>
     apiClient.get<{ Passkeys: unknown[] }>('/api/auth/passkeys'),
 
   deletePasskey: (passkeyId: string) =>
-    apiClient.delete<{ success: boolean }>(`/api/auth/passkeys/${passkeyId}`),
+    apiClient.delete<Record<string, never>>(`/api/auth/passkeys/${passkeyId}`),
 
   disableAccount: () =>
-    apiClient.post<{ success: boolean }>('/api/auth/account/disable', {}, 'Auth'),
+    apiClient.post<Record<string, never>>('/api/auth/account/disable', {}, 'Auth'),
 
   deleteAccount: (password: string) =>
-    apiClient.delete<{ success: boolean }>('/api/auth/account', { Password: password }, 'Auth'),
+    apiClient.delete<Record<string, never>>('/api/auth/account', { Password: password }, 'Auth'),
 };

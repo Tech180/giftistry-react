@@ -204,6 +204,30 @@ export function getAudienceDisplayName(user: ItemAudienceUser | ListShare): stri
   return user.Username || user.Email || 'User';
 }
 
+export function getAudienceUserInitials(user: ItemAudienceUser): string {
+  if (user.FirstName || user.LastName) {
+    return `${user.FirstName?.[0] || ''}${user.LastName?.[0] || ''}`.toUpperCase();
+  }
+  return user.Username?.substring(0, 2).toUpperCase() || '??';
+}
+
+export function shouldShowSharingAvatars(
+  item: ItemAudienceContext,
+  isOwner?: boolean,
+  currentUserId?: string
+): boolean {
+  if (getItemAudienceMode(item) !== 'restricted') {
+    return false;
+  }
+  if (isOwner) {
+    return true;
+  }
+  if (currentUserId && item.SharedWith?.some((u) => u.UserId === currentUserId)) {
+    return true;
+  }
+  return false;
+}
+
 export function formatAudienceLabel(
   sharedWith: ItemAudienceUser[] | undefined,
   currentUserId?: string,
@@ -224,12 +248,14 @@ export function formatAudienceLabel(
     return 'Only Me';
   }
 
-  if (!isOwner && currentUserId && sharedWith.some(u => u.UserId === currentUserId)) {
-    return 'Shared with you';
+  if (!isOwner) {
+    if (currentUserId && sharedWith.some((u) => u.UserId === currentUserId)) {
+      return 'Shared with you';
+    }
+    return null;
   }
 
-  const names = sharedWith.map(getAudienceDisplayName);
-  return `Shared with: ${names.join(', ')}`;
+  return 'Shared with';
 }
 
 export function formatAudienceForExport(

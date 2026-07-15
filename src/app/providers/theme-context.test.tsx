@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen, act } from "@testing-library/react";
-import { ThemeProvider, useTheme } from "./theme-context";
+import { useTheme } from "./theme-context";
+import { ThemeProvider } from "./theme-provider";
 import { AuthContext } from "app/providers/auth-context";
 
 vi.mock("app/providers/auth-context", () => {

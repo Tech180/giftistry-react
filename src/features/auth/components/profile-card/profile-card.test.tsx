@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 
 const mockUpdateAiEnabled = vi.fn();
+const mockUpdateWebSearchEnabled = vi.fn();
 const mockUseAuth = vi.fn();
 
 vi.mock('react-router-dom', () => ({
@@ -31,6 +32,7 @@ const baseUser = {
   Bio: '',
   Avatar: 'hsl(200, 70%, 45%)',
   AiEnabled: true,
+  WebSearchEnabled: true,
   Policy: { CanUseAiFeatures: true },
 };
 
@@ -38,12 +40,15 @@ describe('ProfileCard AI badge', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUpdateAiEnabled.mockResolvedValue({ ...baseUser, AiEnabled: false });
+    mockUpdateWebSearchEnabled.mockResolvedValue({ ...baseUser, WebSearchEnabled: false });
     mockUseAuth.mockReturnValue({
       user: baseUser,
       updateProfile: vi.fn(),
       updateAiEnabled: mockUpdateAiEnabled,
+      updateWebSearchEnabled: mockUpdateWebSearchEnabled,
       logout: vi.fn(),
       canShowAiSettings: true,
+      canShowWebSearchSettings: true,
     });
   });
 
@@ -91,6 +96,24 @@ describe('ProfileCard AI badge', () => {
 
     await waitFor(() => {
       expect(mockUpdateAiEnabled).toHaveBeenCalledWith(false);
+    });
+  });
+
+  test('shows web search toggle in AI features section when available', () => {
+    render(<ProfileCard />);
+
+    expect(screen.getByText('AI Features')).toBeInTheDocument();
+    expect(screen.getByText('Web Search')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Web search enabled/i })).toHaveTextContent('Enabled');
+  });
+
+  test('clicking web search toggle toggles preference', async () => {
+    render(<ProfileCard />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Web search enabled/i }));
+
+    await waitFor(() => {
+      expect(mockUpdateWebSearchEnabled).toHaveBeenCalledWith(false);
     });
   });
 });

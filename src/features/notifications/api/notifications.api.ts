@@ -7,10 +7,8 @@ type ApiNotification = {
   UserId: string;
   Type: Notification['Type'];
   Title: string;
-  Body?: string;
-  Message?: string;
+  Message: string;
   ReadAt?: string | null;
-  IsRead?: boolean;
   CreatedAt: string;
   Metadata?: Record<string, string>;
 };
@@ -52,8 +50,8 @@ function mapNotification(notification: ApiNotification): Notification {
     UserId: notification.UserId,
     Type: notification.Type,
     Title: notification.Title,
-    Message: notification.Message ?? notification.Body ?? '',
-    IsRead: notification.IsRead ?? !!notification.ReadAt,
+    Message: notification.Message ?? '',
+    IsRead: !!notification.ReadAt,
     CreatedAt: notification.CreatedAt,
     Metadata: notification.Metadata,
   };
@@ -66,16 +64,16 @@ export const notificationsApi = {
   },
 
   markAsRead: (notificationId: string) =>
-    apiClient.patch<{ success: boolean }>(`/api/notifications/${notificationId}/read`, {}),
+    apiClient.patch<Record<string, never>>(`/api/notifications/${notificationId}/read`, {}),
 
   markAllAsRead: () =>
-    apiClient.post<{ success: boolean }>('/api/notifications/read-all', {}),
+    apiClient.post<Record<string, never>>('/api/notifications/read-all', {}),
 
   clearAll: () =>
-    apiClient.delete<{ success: boolean }>('/api/notifications'),
+    apiClient.delete<Record<string, never>>('/api/notifications'),
 
   deleteNotification: (notificationId: string) =>
-    apiClient.delete<{ success: boolean }>(`/api/notifications/${notificationId}`),
+    apiClient.delete<Record<string, never>>(`/api/notifications/${notificationId}`),
 
   getPreferences: async () => {
     const result = await apiClient.get<ApiNotificationPreferences>('/api/notifications/preferences');

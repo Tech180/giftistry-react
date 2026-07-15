@@ -15,6 +15,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { wishlists, isLoading, error, fetchWishlists } = useWishlistController();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'my-lists' | 'shared' | 'archive'>('my-lists');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -48,6 +49,10 @@ export default function Dashboard() {
   const handleCreateSuccess = () => {
     setIsCreateOpen(false);
     fetchWishlists();
+  };
+
+  const handleImportStarted = (_result: { listId: string }) => {
+    void fetchWishlists();
   };
 
   const getGreeting = () => {
@@ -145,6 +150,8 @@ export default function Dashboard() {
       getGreeting={getGreeting}
       isCreateOpen={isCreateOpen}
       setIsCreateOpen={setIsCreateOpen}
+      isImportOpen={isImportOpen}
+      setIsImportOpen={setIsImportOpen}
       activeTab={activeTab}
       setActiveTab={setActiveTab}
       searchQuery={searchQuery}
@@ -154,6 +161,7 @@ export default function Dashboard() {
       isLoading={isLoading}
       error={error}
       handleCreateSuccess={handleCreateSuccess}
+      handleImportStarted={handleImportStarted}
       emptyIcon={emptyIcon}
       emptyTitle={emptyTitle}
       emptyDesc={emptyDesc}

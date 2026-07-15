@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Wishlist, Priority } from 'features/wishlists';
 import { Item } from 'features/items';
 
@@ -18,7 +19,11 @@ export interface HeaderProps {
   formatDate: (dateStr: string | null) => string;
   toggleRevealSuggestions: () => void;
   toggleAiEnabled: () => void;
+  toggleWebSearchEnabled: () => void;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsShareOpen: (open: boolean) => void;
+  canImport: boolean;
+  isImportOpen: boolean;
+  onImportToggle: () => void;
 }

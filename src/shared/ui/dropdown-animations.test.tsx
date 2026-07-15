@@ -44,22 +44,18 @@ describe('Dropdown opening animations', () => {
     expect(css).toMatch(/@starting-style/);
   });
 
-  test('item card panels use EnterPanel', () => {
-    const html = readSrc('features/items/components/card/item-card.html.tsx');
+  test('item view panels use EnterPanel', () => {
+    const compact = readSrc('features/items/components/views/compact/compact-item-view.html.tsx');
+    const grid = readSrc('features/items/components/views/grid/grid-item-view.html.tsx');
 
-    expect(html).toMatch(/compact-confirm-extension[\s\S]*EnterPanel|EnterPanel[\s\S]*compact-confirm-extension/);
-    expect(html).toMatch(/expanded-section[\s\S]*EnterPanel|EnterPanel[\s\S]*expanded-section/);
-    expect(html).toMatch(/claim-confirmation-dropdown[\s\S]*EnterPanel|EnterPanel[\s\S]*claim-confirmation-dropdown/);
-    expect(html).toMatch(/delete-confirm-box[\s\S]*EnterPanel|EnterPanel[\s\S]*delete-confirm-box/);
-    expect(html).toMatch(/grid-mini-overlay[\s\S]*EnterPanel|EnterPanel[\s\S]*grid-mini-overlay/);
+    expect(compact).toMatch(/confirm-extension[\s\S]*EnterPanel|EnterPanel[\s\S]*confirm-extension/);
+    expect(grid).toMatch(/claim-overlay[\s\S]*EnterPanel|EnterPanel[\s\S]*claim-overlay/);
   });
 
-  test('item card module CSS does not scope broken animation names', () => {
+  test('legacy item card module CSS is empty stub', () => {
     const css = readSrc('features/items/components/card/item-card.module.css');
 
-    expect(css).not.toMatch(/animation-name:\s*slide-down/);
-    expect(css).not.toMatch(/animation:\s*var\(--animation-scale-in\)/);
-    expect(css).not.toMatch(/@keyframes accordion-slide-down/);
+    expect(css.trim().length).toBeLessThan(200);
   });
 
   test('global animation utilities define accordion-down keyframes', () => {

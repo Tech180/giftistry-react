@@ -3,6 +3,10 @@ import { ItemLink } from '../interfaces/item-link.interface';
 import { Claim } from '../interfaces/item-claim.interface';
 import { Item } from '../interfaces/item.interface';
 import { FieldDefinition } from '../interfaces/field-definition.interface';
+import type { ImportFileFormat } from '../interfaces/import-file-format.interface';
+import type { ImportedItemPreview } from '../interfaces/imported-item-preview.interface';
+import type { ImportPreviewResult } from '../interfaces/import-preview-result.interface';
+import type { BulkAddResult } from '../interfaces/bulk-add-result.interface';
 
 export interface ExtractMetadataCustomFields {
   Predefined: Record<string, string>;
@@ -26,8 +30,8 @@ function normalizeExtractCustomFields(raw: unknown): ExtractMetadataCustomFields
   }
 
   const source = raw as Record<string, unknown>;
-  const predefined = source.Predefined ?? source.predefined ?? {};
-  const userDefined = source.UserDefined ?? source.userDefined ?? {};
+  const predefined = source.Predefined ?? {};
+  const userDefined = source.UserDefined ?? {};
 
   return {
     Predefined: toStringFieldMap(predefined),
@@ -40,7 +44,9 @@ export interface ExtractMetadataResult {
   Price: number | null;
   Description: string | null;
   Category: string | null;
+  CategoryAlternatives: string[];
   ImageUrl: string | null;
+  WebsiteName: string | null;
   CustomFields: ExtractMetadataCustomFields;
 }
 
@@ -78,19 +84,34 @@ export const itemsApi = {
       'Items'
     ),
 
-  extractMetadata: async (url: string): Promise<ExtractMetadataResult> => {
+  extractMetadata: async (
+    url: string,
+    options?: { listId?: string }
+  ): Promise<ExtractMetadataResult> => {
     const result = await apiClient.post<{
       Title?: string;
       Price?: number | null;
       Description?: string | null;
       Category?: string | null;
+      CategoryAlternatives?: string[] | null;
       ImageUrl?: string | null;
+      WebsiteName?: string | null;
       CustomFields?: {
         Predefined?: Record<string, string>;
         UserDefined?: Record<string, string>;
       };
+      Diagnostics?: {
+        Source?: string;
+        Confidence?: number;
+        FieldsFound?: string[];
+        Blocked?: boolean;
+        ValidationReason?: string;
+      };
       Message?: string;
-    }>(`/api/items/extract-metadata`, { Url: url }, 'Items');
+    }>(`/api/items/extract-metadata`, {
+      Url: url,
+      ListId: options?.listId,
+    }, 'Items');
 
     if (result.Message && !result.Title) {
       throw new ApiError(result.Message, 422, 'SCRAPE_FAILED');
@@ -101,7 +122,9 @@ export const itemsApi = {
       Price: result.Price ?? null,
       Description: result.Description ?? null,
       Category: result.Category ?? null,
+      CategoryAlternatives: result.CategoryAlternatives ?? [],
       ImageUrl: result.ImageUrl ?? null,
+      WebsiteName: result.WebsiteName ?? null,
       CustomFields: normalizeExtractCustomFields(result.CustomFields),
     };
   },
@@ -110,6 +133,13 @@ export const itemsApi = {
     apiClient.post<ItemLink>(
       `/api/items/${itemId}/links`,
       { Url: url },
+      'Items'
+    ),
+
+  syncItemLinks: (itemId: string, targetItemIds: string[]) =>
+    apiClient.post<void>(
+      `/api/items/${itemId}/links/sync`,
+      { TargetItemIds: targetItemIds },
       'Items'
     ),
 
@@ -206,6 +236,82 @@ export const itemsApi = {
     }
 
     return result.Description ?? '';
+  },
+
+  importPreview: async (input: {
+    listId?: string;
+    fileName: string;
+    format?: ImportFileFormat;
+    content: string;
+    contentEncoding: 'text' | 'base64' | 'data-url';
+  }): Promise<ImportPreviewResult> => {
+    const result = await apiClient.post<{
+      Items?: ImportedItemPreview[];
+      Warnings?: string[];
+      SourceFormat?: ImportFileFormat;
+      ParseMode?: 'deterministic' | 'ai';
+      SuggestedWishlistTitle?: string;
+      Message?: string;
+      Success?: boolean;
+    }>('/api/items/import-preview', {
+      ListId: input.listId,
+      FileName: input.fileName,
+      Format: input.format,
+      Content: input.content,
+      ContentEncoding: input.contentEncoding,
+    }, 'Items');
+
+    if (result.Message && !result.Items) {
+      throw new ApiError(result.Message, 422, 'IMPORT_PREVIEW_FAILED');
+    }
+
+    return {
+      Items: result.Items ?? [],
+      Warnings: result.Warnings ?? [],
+      SourceFormat: result.SourceFormat ?? input.format ?? 'unknown',
+      ParseMode: result.ParseMode ?? 'ai',
+      SuggestedWishlistTitle: result.SuggestedWishlistTitle,
+    };
+  },
+
+  bulkAdd: async (
+    listId: string,
+    items: Array<{
+      name: string;
+      description?: string | null;
+      linkUrl?: string | null;
+      price?: number | null;
+      category?: string | null;
+      priority?: number | null;
+    }>
+  ): Promise<BulkAddResult> => {
+    const result = await apiClient.post<{
+      Created?: number;
+      Items?: Item[];
+      Failed?: Array<{ Index?: number; Message?: string }>;
+    }>(
+      `/api/wishlists/${listId}/items/bulk`,
+      {
+        Items: items.map((item) => ({
+          Name: item.name,
+          Description: item.description,
+          LinkUrl: item.linkUrl,
+          Price: item.price,
+          Category: item.category,
+          Priority: item.priority,
+        })),
+      },
+      'Items'
+    );
+
+    return {
+      Created: result.Created ?? 0,
+      Items: Array.isArray(result.Items) ? result.Items : [],
+      Failed: (result.Failed ?? []).map((row) => ({
+        Index: row.Index ?? 0,
+        Message: row.Message ?? 'Failed to create item',
+      })),
+    };
   },
 };
 export type { ItemLink, Claim, Item, FieldDefinition };

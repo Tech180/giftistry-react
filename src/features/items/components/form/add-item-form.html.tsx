@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Link, Globe, DollarSign, Star, Plus, Trash2, Pin,
-  Wand2, ChevronDown, Gift, AlertTriangle, Check, Undo2, Pencil,
+  Wand2, ChevronDown, Gift, AlertTriangle, Check, Undo2, Pencil, Sparkles, Search,
 } from 'lucide-react';
 import { Button, Chip, Switch, AiStatusBadge } from 'shared/ui';
 import { AddItemFormTemplateProps } from '../../interfaces/add-item-form-template-props.interface';
@@ -35,6 +35,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   setIsFavorite,
   isAutopopulating,
   handleScrapeClick,
+  canUseWebSearchOnList = false,
   customFields,
   handleAddCustomField,
   handleRemoveCustomField,
@@ -43,6 +44,8 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   showExtraFields,
   setShowExtraFields,
   renderedCategories,
+  aiCategoryChips,
+  aiCategoryIds,
   isAddingCustom,
   setIsAddingCustom,
   newCustomInput,
@@ -122,7 +125,19 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       {/* Section 1: Core details */}
       <div className={styles.section}>
         <div className={styles['form-group']}>
-          <label className={styles.label}>Item Link</label>
+          <div className={styles['link-label-row']}>
+            <label className={styles.label}>Item Link</label>
+            {canUseWebSearchOnList && (
+              <span
+                className={styles['web-search-indicator']}
+                title="Web search enabled — scrape will also search the web for specs"
+                aria-label="Web search enabled for this list"
+                role="img"
+              >
+                <Search size={14} aria-hidden="true" />
+              </span>
+            )}
+          </div>
           <div className={styles['input-wrapper']}>
             <button
               type="button"
@@ -147,6 +162,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
               disabled={isAutopopulating || !linkUrl.trim()}
               className={`${styles['input-action']} ${isScrapeButtonPulsing ? styles['input-action-pulse'] : ''}`}
               title="Auto-fill details from link"
+              aria-label="Auto-fill details from link"
             >
               <Wand2 size={14} />
             </button>
@@ -154,7 +170,11 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           {isAutopopulating && (
             <div className={styles['autopopulate-loader']}>
               <div className={styles.spinner} />
-              <span>Fetching product details...</span>
+              <span>
+                {canUseWebSearchOnList
+                  ? 'Fetching product details and searching the web...'
+                  : 'Fetching product details...'}
+              </span>
             </div>
           )}
         </div>
@@ -252,14 +272,39 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       <div className={styles.section}>
         <div className={styles['form-group']}>
           <label className={styles.label}>Category</label>
-          {canShowAi && category === 'uncategorized' && renderedCategories.every((cat) => !cat.isCustom && !cat.isFromList) && (
+          {canShowAi &&
+            aiCategoryChips.length === 0 &&
+            category === 'uncategorized' &&
+            renderedCategories.every((cat) => !cat.isCustom && !cat.isFromList) && (
             <p className={styles['ai-category-hint']}>
               Assigned automatically when you auto-fill from a product link.
             </p>
           )}
           <div className={styles['chip-group']}>
+            {aiCategoryChips.map((chip) => {
+              const isSelected = category === chip.id;
+              return (
+                <button
+                  key={chip.id}
+                  type="button"
+                  className={[
+                    styles['ai-category-chip'],
+                    chip.variant === 'suggestion' ? styles['ai-category-chip-suggestion'] : '',
+                    isSelected ? styles['ai-category-chip-active'] : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  onClick={() => setCategory(isSelected ? 'uncategorized' : chip.id)}
+                  aria-pressed={isSelected}
+                >
+                  <Sparkles size={11} className={styles['ai-category-icon']} aria-hidden="true" />
+                  <span>{chip.label}</span>
+                </button>
+              );
+            })}
             {renderedCategories
               .filter((cat) => !canShowAi || cat.isCustom || cat.isFromList)
+              .filter((cat) => !aiCategoryIds.has(cat.id))
               .map((cat) => {
                 const isSelected = category === cat.id;
                 if (cat.isCustom) {
@@ -341,12 +386,13 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                     type="button"
                     variant="secondary"
                     size="sm"
+                    iconOnly
                     onClick={onUndoSummarize}
                     disabled={isSummarizingNotes || isLoading}
-                  >
-                    <Undo2 size={14} />
-                    Undo
-                  </Button>
+                    aria-label="Undo summarize"
+                    title="Undo summarize"
+                    leftIcon={<Undo2 size={14} />}
+                  />
                 )}
                 <AiStatusBadge
                   enabled

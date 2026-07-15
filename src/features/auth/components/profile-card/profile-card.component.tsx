@@ -15,7 +15,7 @@ import { ProfileCardTemplate } from './profile-card.html';
 import { ImageCropper } from '../image-cropper/image-cropper.component';
 
 export const ProfileCard: React.FC = () => {
-  const { user, updateProfile, updateAiEnabled, logout, canShowAiSettings } = useAuth();
+  const { user, updateProfile, updateAiEnabled, updateWebSearchEnabled, logout, canShowAiSettings, canShowWebSearchSettings } = useAuth();
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
@@ -36,6 +36,8 @@ export const ProfileCard: React.FC = () => {
   const [isAccountActionLoading, setIsAccountActionLoading] = useState(false);
   const [isAiSaving, setIsAiSaving] = useState(false);
   const [aiEnabledLocal, setAiEnabledLocal] = useState(true);
+  const [isWebSearchSaving, setIsWebSearchSaving] = useState(false);
+  const [webSearchEnabledLocal, setWebSearchEnabledLocal] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -45,7 +47,8 @@ export const ProfileCard: React.FC = () => {
     setBio(user.Bio || '');
     setAvatar(user.Avatar ?? null);
     setAiEnabledLocal(user.AiEnabled !== false);
-  }, [user?.Id, user?.Username, user?.FirstName, user?.LastName, user?.Bio, user?.Avatar, user?.AiEnabled]);
+    setWebSearchEnabledLocal(user.WebSearchEnabled !== false);
+  }, [user?.Id, user?.Username, user?.FirstName, user?.LastName, user?.Bio, user?.Avatar, user?.AiEnabled, user?.WebSearchEnabled]);
 
   const hasChanges = useMemo(() => {
     if (!user) return false;
@@ -222,6 +225,22 @@ export const ProfileCard: React.FC = () => {
     }
   };
 
+  const handleWebSearchToggle = async () => {
+    if (!user || isWebSearchSaving) return;
+    const next = !webSearchEnabledLocal;
+    setIsWebSearchSaving(true);
+    setErrorMsg(null);
+    setWebSearchEnabledLocal(next);
+    try {
+      await updateWebSearchEnabled(next);
+    } catch (err) {
+      setWebSearchEnabledLocal(!next);
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to update web search preference.');
+    } finally {
+      setIsWebSearchSaving(false);
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -268,6 +287,10 @@ export const ProfileCard: React.FC = () => {
         aiEnabled={aiEnabledLocal}
         isAiSaving={isAiSaving}
         onAiToggle={handleAiToggle}
+        showWebSearchBadge={canShowWebSearchSettings}
+        webSearchEnabled={webSearchEnabledLocal}
+        isWebSearchSaving={isWebSearchSaving}
+        onWebSearchToggle={handleWebSearchToggle}
       />
       {cropperSrc && (
         <ImageCropper

@@ -1,28 +1,313 @@
-.badge{
+.svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.root {
+  position: relative;
   display: inline-flex;
+  flex-shrink: 0;
+  align-self: center;
+  user-select: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+  box-sizing: border-box;
+}
+
+.root:not(.interactive) {
+  pointer-events: none;
+}
+
+.interactive {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.interactive:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.interactive:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.size-compact.interactive:not(:disabled):active {
+  transform: scale(0.92);
+}
+
+/* --- Rainbow chrome --- */
+
+.glow {
+  display: none;
+}
+
+.effect-rainbow .glow {
+  display: block;
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #5e42f8 40%, transparent) 0%,
+    color-mix(in srgb, #f15565 40%, transparent) 100%
+  );
+  filter: blur(1rem);
+  opacity: 0;
+  z-index: 0;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(2px) scale(0.95);
+}
+
+.border-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  padding: 0;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.effect-rainbow .border-wrapper {
+  padding: 1px;
+}
+
+.border-gradient {
+  display: none;
+}
+
+.effect-rainbow .border-gradient {
+  display: block;
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    transparent 30%,
+    #5e42f8 40%,
+    #b656cb 50%,
+    #f15565 60%,
+    transparent 70%,
+    transparent 100%
+  );
+  animation: badge-rainbow-spin 4s linear infinite;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
   align-items: center;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-full, 624.9375rem);
-  font-size: var(--font-size-xs, 0.75rem);
+  gap: 0.375rem;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    color 0.3s ease;
+  color: var(--text-muted);
+}
+
+.effect-rainbow .inner {
+  border: none;
+  background: var(--surface);
+  border-radius: calc(var(--radius-md) - 1px);
+  box-shadow: inset 0 1px 1px color-mix(in srgb, var(--text) 5%, transparent);
+}
+
+/* --- Sizes --- */
+
+.size-sm .inner {
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
   font-weight: var(--font-weight-medium, 500);
-  line-height: 1.4;
+  line-height: 1;
+}
+
+.size-md .inner {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.02em;
+  line-height: 1.25rem;
+}
+
+.size-compact .glow,
+.size-compact .border-wrapper {
+  border-radius: var(--radius-full);
+}
+
+.size-compact .inner {
+  width: 2.125rem;
+  height: 2.125rem;
+  padding: 0;
+  justify-content: center;
+  border-radius: calc(var(--radius-full) - 1px);
+  gap: 0;
+}
+
+.size-compact.effect-rainbow .inner {
+  border-radius: calc(var(--radius-full) - 1px);
+}
+
+/* --- Active / inactive --- */
+
+.active .inner {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface-elevated));
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border-subtle));
+}
+
+.effect-rainbow.active .border-gradient {
+  opacity: 1;
+}
+
+.effect-rainbow.active .glow {
+  opacity: 0.6;
+}
+
+.effect-rainbow.active .inner {
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  backdrop-filter: blur(8px);
+  border: none;
+  box-shadow: inset 0 1px 1px color-mix(in srgb, var(--text) 5%, transparent);
+  color: transparent;
+}
+
+/* Lucide / currentColor icons stay visible; gradient SVG icons use fill url(#id). */
+.effect-rainbow.active .icon-face {
+  color: var(--text);
+}
+
+.effect-rainbow:not(.active) .border-wrapper {
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.effect-rainbow:not(.active) .inner {
+  background: color-mix(in srgb, var(--bg) 95%, var(--surface));
+  box-shadow: none;
+  color: color-mix(in srgb, var(--text) 50%, transparent);
+}
+
+.interactive:not(.effect-rainbow):hover:not(:disabled) .inner {
+  background: var(--surface-hover);
+}
+
+.interactive:not(.effect-rainbow).active:hover:not(:disabled) .inner {
+  background: color-mix(in srgb, var(--primary) 18%, var(--surface-elevated));
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--border-subtle));
+}
+
+.interactive.effect-rainbow.active:not(:disabled):hover .glow {
+  opacity: 0.8;
+  filter: blur(1.25rem);
+  transform: translateY(2px) scale(1);
+}
+
+.interactive.effect-rainbow:not(.active):not(:disabled):hover .border-wrapper {
+  background: var(--surface-hover);
+}
+
+.interactive.effect-rainbow:not(.active):not(:disabled):hover .inner {
+  background: color-mix(in srgb, var(--bg) 95%, var(--surface));
+}
+
+/* --- Icons --- */
+
+.icon-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.size-compact .icon-slot {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.icon-face {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  color: inherit;
+}
+
+.size-compact .icon-face {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.icon-face svg {
+  width: 100%;
+  height: 100%;
+}
+
+.icon-slot-single .icon-face {
+  position: relative;
+  opacity: 1;
+  transform: none;
+}
+
+.icon-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.icon-inactive {
+  opacity: 0;
+  transform: scale(0.5);
+  color: color-mix(in srgb, var(--text) 40%, transparent);
+}
+
+.root:not(.active) .icon-slot-pair .icon-active {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.root:not(.active) .icon-slot-pair .icon-inactive {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.label {
   white-space: nowrap;
 }
 
-.default{
-  background-color: var(--surface-hover);
-  color: var(--text);
-  border: 1px solid var(--border);
+.effect-rainbow.active .label {
+  background: linear-gradient(to right, var(--text), color-mix(in srgb, var(--text) 70%, transparent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.primary{
-  background-color: rgba(var(--primary-rgb), 0.15);
-  color: var(--primary);
-  border: 1px solid transparent;
-}
+@keyframes badge-rainbow-spin {
+  from {
+    transform: rotate(0deg);
+  }
 
-.muted{
-  background-color: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
+  to {
+    transform: rotate(360deg);
+  }
 }

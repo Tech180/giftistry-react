@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Archive, Trash2, Edit2, Calendar, Users, Eye, EyeOff, Download, MessageSquare, Share2 } from 'lucide-react';
-import { Button, EnterPanel, AiStatusBadge } from 'shared/ui';
-import { exportToCsv, exportToXlsx, exportToTxt, exportToJson } from 'shared/utils/wishlist-export';
+import { ArrowLeft, Archive, Trash2, Edit2, Calendar, Users, Eye, EyeOff, Download, Upload, MessageSquare, Share2, Search } from 'lucide-react';
+import { Button, EnterPanel, AiStatusBadge, Badge } from 'shared/ui';
+import { OwnerBadge } from 'features/items/components/item-presentation';
+import { exportToCsv, exportToXlsx, exportToTxt, exportToJson, exportToPdf } from 'shared/utils/wishlist-export';
 import { HeaderTemplateProps } from './interfaces/header-template-props.interface';
 import styles from '../../wishlist-detail.module.css';
 
@@ -23,10 +24,15 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   formatDate,
   toggleRevealSuggestions,
   toggleAiEnabled,
+  toggleWebSearchEnabled,
   canShowAi,
+  canShowWebSearch,
   isCommentsOpen,
   setIsCommentsOpen,
   setIsShareOpen,
+  canImport,
+  isImportOpen,
+  onImportToggle,
   isEditingTitle,
   setIsEditingTitle,
   tempTitle,
@@ -185,120 +191,183 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                 <span>{wishlist.RevealSuggestions ? 'Reveal suggestions after expiration' : 'Hide suggestions permanently'}</span>
               </button>
             )}
-            {canShowAi && isOwner && (
-              <AiStatusBadge
-                enabled={!!wishlist.AiEnabled}
-                onToggle={toggleAiEnabled}
-                ariaLabelEnabled="AI reviews enabled for this list. Click to disable."
-                ariaLabelDisabled="AI reviews disabled for this list. Click to enable."
-              />
-            )}
-            {canShowAi && !isOwner && wishlist.AiEnabled && (
-              <AiStatusBadge
-                enabled
-                ariaLabelEnabled="AI reviews active on this list"
-                ariaLabelDisabled="AI reviews inactive on this list"
-              />
-            )}
-            {!isOwner && (
-              <div className={styles['meta-item']}>
-                <Eye size={14} />
-                <span>Owner: {wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Registry Owner'}</span>
-              </div>
-            )}
           </div>
         </div>
 
-        <div className={styles.actions}>
-          {wishlist && (
-            <div className={styles['export-dropdown-container']} ref={exportRef} title="Export">
-              <Button
-                variant="secondary"
-                className={styles['export-dropdown-trigger']}
-                onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
-                aria-label="Export"
-              >
-                <Download size={16} />
-              </Button>
-              {isExportDropdownOpen && (
-                <EnterPanel animation="dropdown" className={styles['export-dropdown-menu']}>
-                  <button
-                    className={styles['export-dropdown-item']}
-                    onClick={() => {
-                      exportToCsv(
-                        wishlist.Title,
-                        items,
-                        priorities,
-                        exportContext
-                      );
-                      setIsExportDropdownOpen(false);
-                    }}
-                  >
-                    CSV
-                  </button>
-                  <button
-                    className={styles['export-dropdown-item']}
-                    onClick={() => {
-                      exportToXlsx(
-                        wishlist.Title,
-                        items,
-                        priorities,
-                        exportContext
-                      );
-                      setIsExportDropdownOpen(false);
-                    }}
-                  >
-                    XLSX
-                  </button>
-                  <button
-                    className={styles['export-dropdown-item']}
-                    onClick={() => {
-                      exportToTxt(
-                        wishlist.Title,
-                        items,
-                        priorities,
-                        exportContext
-                      );
-                      setIsExportDropdownOpen(false);
-                    }}
-                  >
-                    TXT
-                  </button>
-                  <button
-                    className={styles['export-dropdown-item']}
-                    onClick={() => {
-                      exportToJson(
-                        wishlist.Title,
-                        items,
-                        priorities,
-                        exportContext
-                      );
-                      setIsExportDropdownOpen(false);
-                    }}
-                  >
-                    JSON
-                  </button>
-                </EnterPanel>
-              )}
-            </div>
-          )}
-          <Button
-            variant="secondary"
-            onClick={() => setIsCommentsOpen(!isCommentsOpen)}
-            title="Discussion"
-            aria-label="Discussion"
-          >
-            <MessageSquare size={16} />
-          </Button>
-          {isOwner && (
+        <div className={styles['right-container']}>
+          <div className={styles.actions}>
+            {wishlist && canImport && (
+              <Badge
+                effect="rainbow"
+                active={isImportOpen}
+                size="compact"
+                icon={<Upload size={16} />}
+                ariaLabel="Import wishlist"
+                ariaPressed={isImportOpen}
+                onClick={onImportToggle}
+              />
+            )}
+            {wishlist && (
+              <div className={styles['export-dropdown-container']} ref={exportRef} title="Export">
+                <Button
+                  variant="secondary"
+                  className={styles['export-dropdown-trigger']}
+                  onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+                  aria-label="Export"
+                >
+                  <Download size={16} />
+                </Button>
+                {isExportDropdownOpen && (
+                  <EnterPanel animation="dropdown" className={styles['export-dropdown-menu']}>
+                    <button
+                      className={styles['export-dropdown-item']}
+                      onClick={() => {
+                        exportToCsv(
+                          wishlist.Id,
+                          wishlist.Title,
+                          exportContext
+                        );
+                        setIsExportDropdownOpen(false);
+                      }}
+                    >
+                      CSV
+                    </button>
+                    <button
+                      className={styles['export-dropdown-item']}
+                      onClick={() => {
+                        exportToXlsx(
+                          wishlist.Id,
+                          wishlist.Title,
+                          exportContext
+                        );
+                        setIsExportDropdownOpen(false);
+                      }}
+                    >
+                      XLSX
+                    </button>
+                    <button
+                      className={styles['export-dropdown-item']}
+                      onClick={() => {
+                        exportToTxt(
+                          wishlist.Id,
+                          wishlist.Title,
+                          exportContext
+                        );
+                        setIsExportDropdownOpen(false);
+                      }}
+                    >
+                      TXT
+                    </button>
+                    <button
+                      className={styles['export-dropdown-item']}
+                      onClick={() => {
+                        exportToJson(
+                          wishlist.Id,
+                          wishlist.Title,
+                          exportContext
+                        );
+                        setIsExportDropdownOpen(false);
+                      }}
+                    >
+                      JSON
+                    </button>
+                    <button
+                      className={styles['export-dropdown-item']}
+                      onClick={() => {
+                        exportToPdf(
+                          wishlist.Id,
+                          wishlist.Title,
+                          exportContext
+                        );
+                        setIsExportDropdownOpen(false);
+                      }}
+                    >
+                      PDF
+                    </button>
+                  </EnterPanel>
+                )}
+              </div>
+            )}
             <Button
               variant="secondary"
-              onClick={() => setIsShareOpen(true)}
-              title="Share Registry"
-              aria-label="Share Registry"
+              onClick={() => setIsCommentsOpen(!isCommentsOpen)}
+              title="Discussion"
+              aria-label="Discussion"
             >
-              <Share2 size={16} />
+              <MessageSquare size={16} />
             </Button>
+            {isOwner && (
+              <Button
+                variant="secondary"
+                onClick={() => setIsShareOpen(true)}
+                title="Share Registry"
+                aria-label="Share Registry"
+              >
+                <Share2 size={16} />
+              </Button>
+            )}
+          </div>
+          {((canShowAi && (isOwner || wishlist.AiEnabled)) ||
+            (canShowWebSearch && (isOwner || wishlist.WebSearchEnabled)) ||
+            !isOwner) && (
+            <div className={styles['owner-badge-container']}>
+              {canShowAi && (
+                isOwner ? (
+                  <AiStatusBadge
+                    enabled={!!wishlist.AiEnabled}
+                    onToggle={toggleAiEnabled}
+                    ariaLabelEnabled="AI reviews enabled for this list. Click to disable."
+                    ariaLabelDisabled="AI reviews disabled for this list. Click to enable."
+                  />
+                ) : (
+                  wishlist.AiEnabled && (
+                    <AiStatusBadge
+                      enabled
+                      ariaLabelEnabled="AI reviews active on this list"
+                      ariaLabelDisabled="AI reviews inactive on this list"
+                    />
+                  )
+                )
+              )}
+              {canShowWebSearch && (
+                isOwner ? (
+                  <Badge
+                    size="md"
+                    icon={<Search size={16} />}
+                    active={!!wishlist.WebSearchEnabled}
+                    onClick={toggleWebSearchEnabled}
+                    ariaPressed={!!wishlist.WebSearchEnabled}
+                    ariaLabel={
+                      wishlist.WebSearchEnabled
+                        ? 'Web search enabled for this list. Click to disable.'
+                        : 'Web search disabled for this list. Click to enable.'
+                    }
+                  >
+                    Web Search {wishlist.WebSearchEnabled ? 'Enabled' : 'Disabled'}
+                  </Badge>
+                ) : (
+                  wishlist.WebSearchEnabled && (
+                    <Badge
+                      size="md"
+                      icon={<Search size={16} />}
+                      active
+                      ariaLabel="Web search active on this list"
+                    >
+                      Web Search Enabled
+                    </Badge>
+                  )
+                )
+              )}
+              {!isOwner && (
+                <OwnerBadge
+                  userId={wishlist.UserId}
+                  displayName={wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Registry Owner'}
+                  username={wishlist.OwnerUsername}
+                  firstName={wishlist.OwnerFirstName}
+                  avatar={wishlist.OwnerAvatar}
+                />
+              )}
+            </div>
           )}
         </div>
       </div>
