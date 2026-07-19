@@ -14,7 +14,10 @@ export const AdminSitePolicyTab: React.FC<AdminTabProps> = ({ showToast }) => {
     adminApi
       .getSitePolicy()
       .then((res) => {
-        setPolicy(res.Policy);
+        setPolicy({
+          ...res.Policy,
+          RequireStrongPasswords: res.Policy.RequireStrongPasswords ?? true,
+        });
         setDomainsText((res.Policy.AllowedEmailDomains ?? []).join(', '));
       })
       .catch((err) => showToast(err.message || 'Failed to load site policy', 'error'))

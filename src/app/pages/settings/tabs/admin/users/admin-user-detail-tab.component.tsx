@@ -24,7 +24,6 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
     firstName: '',
     lastName: '',
     bio: '',
-    emailVerified: false,
   });
   const [policyFlags, setPolicyFlags] = useState<AdminUserPolicyFlagsState>({
     isAdmin: false,
@@ -50,7 +49,6 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
         firstName: res.User.FirstName,
         lastName: res.User.LastName,
         bio: res.User.Bio ?? '',
-        emailVerified: !!res.User.EmailVerified,
       });
       setPolicyFlags({
         isAdmin: !!res.User.IsAdmin,
@@ -74,20 +72,15 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
   const isSelf = currentUser?.Id === userId;
 
   const saveProfile = async () => {
-    if (!userId) return;
+    if (!userId || !isSelf) return;
     try {
-      if (isSelf) {
-        await adminApi.updateUser(userId, {
-          username: profileForm.username,
-          email: profileForm.email,
-          firstName: profileForm.firstName,
-          lastName: profileForm.lastName,
-          bio: profileForm.bio,
-          emailVerified: profileForm.emailVerified,
-        });
-      } else {
-        await adminApi.updateUser(userId, { emailVerified: profileForm.emailVerified });
-      }
+      await adminApi.updateUser(userId, {
+        username: profileForm.username,
+        email: profileForm.email,
+        firstName: profileForm.firstName,
+        lastName: profileForm.lastName,
+        bio: profileForm.bio,
+      });
       showToast('Profile updated', 'success');
       loadUser();
     } catch (err: unknown) {

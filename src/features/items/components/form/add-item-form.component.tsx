@@ -8,7 +8,6 @@ import { getFriendlyCategoryLabel } from '../../utils/category-label.util';
 import { STANDARD_CATEGORIES } from '../../constants/standard-categories';
 import { getItemFavoriteFlag, parseItemDescription } from 'shared/utils/parse-item-description.util';
 import {
-  buildItemDescriptionPayload,
   buildSummarizeCustomFields,
   getMetadataText,
   normalizeItemDescriptionMetadata,
@@ -343,7 +342,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   };
 
   const buildDescriptionPayload = useCallback(
-    (options: { isOwner: boolean; isFavorite: boolean }) => {
+    (options: { isOwner: boolean; isFavorite: boolean }): ItemDescriptionMetadata | null => {
       const visibleDynamicValues: Record<string, string> = {};
       definitions.forEach((def) => {
         if (isFieldVisible(def)) {
@@ -376,21 +375,24 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         return null;
       }
 
-      return buildItemDescriptionPayload({
-        text: description.trim(),
-        predefined: {
-          ...visibleDynamicValues,
-          ...rowPredefined,
+      return normalizeItemDescriptionMetadata({
+        Text: description.trim() || null,
+        CustomFields: {
+          Predefined: {
+            ...visibleDynamicValues,
+            ...rowPredefined,
+          },
+          UserDefined: rowUserDefined,
         },
-        userDefined: rowUserDefined,
-        multiCount: isMultiCount,
-        desiredQuantity: isMultiCount ? (desiredQuantity as number) : 1,
-        variations: isMultiCount ? variations : [],
-        linkedItemIds,
-        otherUsersCanSee: options.isOwner ? true : otherUsersCanSee,
-        isFavorite: options.isOwner ? options.isFavorite : undefined,
-        isPinned: !options.isOwner ? options.isFavorite : undefined,
-        alwaysJson: shouldSerialize,
+        MultiCount: isMultiCount || undefined,
+        DesiredQuantity: isMultiCount ? (desiredQuantity as number) : undefined,
+        Variations: isMultiCount
+          ? variations.map((v) => ({ Name: v.name, Quantity: v.quantity }))
+          : undefined,
+        LinkedItemIds: linkedItemIds.length > 0 ? linkedItemIds : undefined,
+        OtherUsersCanSee: options.isOwner ? true : otherUsersCanSee,
+        IsFavorite: options.isOwner ? options.isFavorite || undefined : undefined,
+        IsPinned: !options.isOwner ? options.isFavorite || undefined : undefined,
       });
     },
     [
@@ -842,7 +844,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setErrorMsg(null);
 
     try {
-      const descPayload = buildDescriptionPayload({ isOwner, isFavorite });
+      const metadataPayload = buildDescriptionPayload({ isOwner, isFavorite });
 
       const priorityVal = priorityWeight.trim() ? parseInt(priorityWeight, 10) : null;
 
@@ -856,21 +858,22 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         await itemsApi.updateItem(
           item.Id,
           name.trim(),
-          descPayload,
+          null,
           null,
           category === 'uncategorized' ? null : category,
           priorityVal,
           finalSharedWith,
           linkUrl.trim() || null,
           price.trim() ? parseFloat(price) : null,
-          websiteName.trim() || null
+          websiteName.trim() || null,
+          metadataPayload
         );
         savedItemId = item.Id;
       } else {
         createdItem = await itemsApi.addItem(
           listId,
           name.trim(),
-          descPayload,
+          null,
           null,
           isOwner ? false : isHiddenIdea,
           linkUrl.trim() || null,
@@ -878,7 +881,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           websiteName.trim() || null,
           category === 'uncategorized' ? null : category,
           priorityVal,
-          finalSharedWith
+          finalSharedWith,
+          metadataPayload
         );
         savedItemId = createdItem.Id;
 
@@ -899,7 +903,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           : wishlistItems;
         const itemsForSync = baseItems.map((wishlistItem) =>
           wishlistItem.Id === savedItemId
-            ? { ...wishlistItem, Description: descPayload }
+            ? {
+                ...wishlistItem,
+                Metadata: metadataPayload,
+              }
             : wishlistItem
         );
         await syncBidirectionalItemLinks(

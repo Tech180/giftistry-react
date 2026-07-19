@@ -16,58 +16,65 @@ const CORE_DEFAULT_THEMES: Theme[] = [
 
 let lastRequestedUrl = "";
 
+type ThemeStylesheetResult = { ok: boolean; url: string };
+
 /**
- * Loads the theme stylesheet in the background and swaps it into the DOM once loaded
- * to avoid visual Flash of Unstyled Content (FOUC).
+ * Loads the theme stylesheet in the background and swaps it into the DOM once loaded.
+ * Callers should update data-theme / data-appearance only after a successful load,
+ * otherwise selectors stop matching while the previous stylesheet is still active
+ * (blank/white screen).
  */
-function updateThemeStylesheet(theme: string, appearance: string): Promise<void> {
+function updateThemeStylesheet(theme: string, appearance: string): Promise<ThemeStylesheetResult> {
   return new Promise((resolve) => {
     const url = `${BASE_URL}/api/themes/${theme}/${appearance}/css`;
     lastRequestedUrl = url;
 
-    // Check if the current active stylesheet already has this URL
     const activeLink = document.getElementById("theme-stylesheet") as HTMLLinkElement | null;
     if (activeLink && activeLink.href === url) {
-      resolve();
+      resolve({ ok: true, url });
       return;
     }
 
-    // Create new temporary link element
     const newLink = document.createElement("link");
     newLink.rel = "stylesheet";
     newLink.href = url;
     newLink.setAttribute("data-theme-style", "pending");
 
-    // Once loaded, swap it into place
-    newLink.onload = () => {
-      if (lastRequestedUrl === url) {
-        const oldLink = document.getElementById("theme-stylesheet");
-        newLink.id = "theme-stylesheet";
-        newLink.removeAttribute("data-theme-style");
-        
-        if (oldLink && oldLink !== newLink) {
-          oldLink.parentNode?.removeChild(oldLink);
-        }
-      } else {
-        // Discard stale style load
+    const finish = (ok: boolean) => {
+      if (lastRequestedUrl !== url) {
         if (newLink.parentNode) {
           newLink.parentNode.removeChild(newLink);
         }
+        resolve({ ok: false, url });
+        return;
       }
-      resolve();
+
+      if (!ok) {
+        console.error(`Failed to load theme stylesheet from: ${url}`);
+        if (newLink.parentNode) {
+          newLink.parentNode.removeChild(newLink);
+        }
+        resolve({ ok: false, url });
+        return;
+      }
+
+      const oldLink = document.getElementById("theme-stylesheet");
+      newLink.id = "theme-stylesheet";
+      newLink.removeAttribute("data-theme-style");
+
+      if (oldLink && oldLink !== newLink) {
+        oldLink.parentNode?.removeChild(oldLink);
+      }
+
+      resolve({ ok: true, url });
     };
 
-    newLink.onerror = () => {
-      console.error(`Failed to load theme stylesheet from: ${url}`);
-      if (newLink.parentNode) {
-        newLink.parentNode.removeChild(newLink);
-      }
-      resolve();
-    };
+    newLink.onload = () => finish(true);
+    newLink.onerror = () => finish(false);
 
-    // If no existing stylesheet, set ID immediately so it can be resolved early (and by tests)
-    const existingLink = document.getElementById("theme-stylesheet");
-    if (!existingLink) {
+    // First paint: promote immediately so tests / early consumers can find the link.
+    // Subsequent swaps stay pending until load succeeds so the prior theme keeps matching.
+    if (!activeLink) {
       newLink.id = "theme-stylesheet";
       newLink.removeAttribute("data-theme-style");
     }
@@ -275,7 +282,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [user?.Theme]);
 
-  // Effect to handle theme and appearance changes reactively
+  // Effect to handle theme and appearance changes reactively.
+  // Load CSS first, then set data-* attributes so selectors always match an active sheet.
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -285,36 +293,52 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         : appMode;
     };
 
-    const effectiveAppearance = getEffectiveAppearance(appearance);
+    let cancelled = false;
 
-    // Apply attributes for CSS selector matching
-    document.documentElement.setAttribute("data-theme", theme);
-    document.documentElement.setAttribute("data-appearance", effectiveAppearance);
+    const applyTheme = async (nextTheme: string, nextAppearance: Appearance) => {
+      const effectiveAppearance = getEffectiveAppearance(nextAppearance);
+      const hasLocalCustom = nextTheme.startsWith('custom-') && (() => {
+        try {
+          const savedCustom = localStorage.getItem('giftistry-custom-theme');
+          return savedCustom && JSON.parse(savedCustom).id === nextTheme;
+        } catch {
+          return false;
+        }
+      })();
 
-    // If it's a custom theme, does the user have local configs?
-    const hasLocalCustom = theme.startsWith('custom-') && (() => {
-      try {
-        const savedCustom = localStorage.getItem('giftistry-custom-theme');
-        return savedCustom && JSON.parse(savedCustom).id === theme;
-      } catch {
-        return false;
+      const stylesheetTheme = nextTheme.startsWith('custom-') && hasLocalCustom ? 'default' : nextTheme;
+      const hadThemeAttr = document.documentElement.hasAttribute('data-theme');
+
+      // First paint only: set attributes immediately so tokens resolve while the sheet loads.
+      // On later switches, wait until the new sheet is ready to avoid a blank frame where
+      // data-theme no longer matches the still-active previous stylesheet.
+      if (!hadThemeAttr) {
+        document.documentElement.setAttribute('data-theme', nextTheme);
+        document.documentElement.setAttribute('data-appearance', effectiveAppearance);
       }
-    })();
 
-    // Trigger Double Link Swap
-    updateThemeStylesheet(theme.startsWith('custom-') && hasLocalCustom ? 'default' : theme, effectiveAppearance);
+      const result = await updateThemeStylesheet(stylesheetTheme, effectiveAppearance);
+      if (cancelled || !result.ok) {
+        return;
+      }
 
-    // Listen for system appearance updates if system mode is active
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      document.documentElement.setAttribute('data-appearance', effectiveAppearance);
+    };
+
+    void applyTheme(theme, appearance);
+
     const handleSystemChange = () => {
       if (appearance === "system") {
-        const nextEffective = mediaQuery.matches ? "dark" : "light";
-        document.documentElement.setAttribute("data-appearance", nextEffective);
-        updateThemeStylesheet(theme.startsWith('custom-') && hasLocalCustom ? 'default' : theme, nextEffective);
+        void applyTheme(theme, appearance);
       }
     };
 
     mediaQuery.addEventListener("change", handleSystemChange);
-    return () => mediaQuery.removeEventListener("change", handleSystemChange);
+    return () => {
+      cancelled = true;
+      mediaQuery.removeEventListener("change", handleSystemChange);
+    };
   }, [theme, appearance]);
 
   // Apply custom theme CSS variables if enabled

@@ -1,4 +1,5 @@
 import { Item } from './item.interface';
+import type { ItemActions } from './item-actions.interface';
 
 export interface ItemShowcaseProps {
   item: Item;
@@ -7,9 +8,10 @@ export interface ItemShowcaseProps {
   isExpired: boolean;
   canCollaborate: boolean;
   allowGroupFunds: boolean;
-  onUpdate: () => void;
+  itemActions: ItemActions;
   onEdit: () => void;
   onClose: () => void;
   wishlistItems?: Item[];
   aiEnabled?: boolean;
+  variant?: 'card' | 'inline';
 }

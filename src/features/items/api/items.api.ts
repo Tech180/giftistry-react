@@ -2,11 +2,13 @@ import { apiClient, ApiError } from 'core/api/client';
 import { ItemLink } from '../interfaces/item-link.interface';
 import { Claim } from '../interfaces/item-claim.interface';
 import { Item } from '../interfaces/item.interface';
+import type { ItemListResult } from '../interfaces/item-list-result.interface';
 import { FieldDefinition } from '../interfaces/field-definition.interface';
-import type { ImportFileFormat } from '../interfaces/import-file-format.interface';
-import type { ImportedItemPreview } from '../interfaces/imported-item-preview.interface';
-import type { ImportPreviewResult } from '../interfaces/import-preview-result.interface';
-import type { BulkAddResult } from '../interfaces/bulk-add-result.interface';
+import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
+import type {
+  ClaimItemResult,
+  UnclaimItemResult,
+} from '../interfaces/claim-mutation-result.interface';
 
 export interface ExtractMetadataCustomFields {
   Predefined: Record<string, string>;
@@ -52,7 +54,7 @@ export interface ExtractMetadataResult {
 
 export const itemsApi = {
   listItems: (listId: string) =>
-    apiClient.get<Item[]>(`/api/wishlists/${listId}/items`),
+    apiClient.get<ItemListResult | Item[]>(`/api/wishlists/${listId}/items`),
 
   addItem: (
     listId: string,
@@ -65,7 +67,8 @@ export const itemsApi = {
     websiteName?: string | null,
     category?: string | null,
     priority?: number | null,
-    sharedWithUserIds?: string[]
+    sharedWithUserIds?: string[],
+    metadata?: ItemDescriptionMetadata | null
   ) =>
     apiClient.post<Item>(
       `/api/wishlists/${listId}/items`,
@@ -80,6 +83,7 @@ export const itemsApi = {
         Category: category,
         Priority: priority,
         SharedWithUserIds: sharedWithUserIds,
+        Metadata: metadata,
       },
       'Items'
     ),
@@ -149,16 +153,24 @@ export const itemsApi = {
     claimedByName?: string | null,
     anonymous?: boolean,
     quantity?: number,
-    selection?: string | null
+    selection?: string | null,
+    includeLinked?: boolean
   ) =>
-    apiClient.post<Claim>(
+    apiClient.post<ClaimItemResult>(
       `/api/items/${itemId}/claims`,
-      { Amount: amount, ClaimedByName: claimedByName, Anonymous: anonymous, Quantity: quantity, Selection: selection },
+      {
+        Amount: amount,
+        ClaimedByName: claimedByName,
+        Anonymous: anonymous,
+        Quantity: quantity,
+        Selection: selection,
+        IncludeLinked: includeLinked,
+      },
       'Items'
     ),
 
   unclaimItem: (itemId: string) =>
-    apiClient.delete<void>(`/api/items/${itemId}/claims`),
+    apiClient.delete<UnclaimItemResult>(`/api/items/${itemId}/claims`),
 
   updateItem: (
     itemId: string,
@@ -170,7 +182,8 @@ export const itemsApi = {
     sharedWithUserIds?: string[],
     linkUrl?: string | null,
     price?: number | null,
-    websiteName?: string | null
+    websiteName?: string | null,
+    metadata?: ItemDescriptionMetadata | null
   ) =>
     apiClient.put<Item>(
       `/api/items/${itemId}`,
@@ -184,6 +197,7 @@ export const itemsApi = {
         LinkUrl: linkUrl,
         Price: price,
         WebsiteName: websiteName,
+        Metadata: metadata,
       },
       'Items'
     ),
@@ -236,82 +250,6 @@ export const itemsApi = {
     }
 
     return result.Description ?? '';
-  },
-
-  importPreview: async (input: {
-    listId?: string;
-    fileName: string;
-    format?: ImportFileFormat;
-    content: string;
-    contentEncoding: 'text' | 'base64' | 'data-url';
-  }): Promise<ImportPreviewResult> => {
-    const result = await apiClient.post<{
-      Items?: ImportedItemPreview[];
-      Warnings?: string[];
-      SourceFormat?: ImportFileFormat;
-      ParseMode?: 'deterministic' | 'ai';
-      SuggestedWishlistTitle?: string;
-      Message?: string;
-      Success?: boolean;
-    }>('/api/items/import-preview', {
-      ListId: input.listId,
-      FileName: input.fileName,
-      Format: input.format,
-      Content: input.content,
-      ContentEncoding: input.contentEncoding,
-    }, 'Items');
-
-    if (result.Message && !result.Items) {
-      throw new ApiError(result.Message, 422, 'IMPORT_PREVIEW_FAILED');
-    }
-
-    return {
-      Items: result.Items ?? [],
-      Warnings: result.Warnings ?? [],
-      SourceFormat: result.SourceFormat ?? input.format ?? 'unknown',
-      ParseMode: result.ParseMode ?? 'ai',
-      SuggestedWishlistTitle: result.SuggestedWishlistTitle,
-    };
-  },
-
-  bulkAdd: async (
-    listId: string,
-    items: Array<{
-      name: string;
-      description?: string | null;
-      linkUrl?: string | null;
-      price?: number | null;
-      category?: string | null;
-      priority?: number | null;
-    }>
-  ): Promise<BulkAddResult> => {
-    const result = await apiClient.post<{
-      Created?: number;
-      Items?: Item[];
-      Failed?: Array<{ Index?: number; Message?: string }>;
-    }>(
-      `/api/wishlists/${listId}/items/bulk`,
-      {
-        Items: items.map((item) => ({
-          Name: item.name,
-          Description: item.description,
-          LinkUrl: item.linkUrl,
-          Price: item.price,
-          Category: item.category,
-          Priority: item.priority,
-        })),
-      },
-      'Items'
-    );
-
-    return {
-      Created: result.Created ?? 0,
-      Items: Array.isArray(result.Items) ? result.Items : [],
-      Failed: (result.Failed ?? []).map((row) => ({
-        Index: row.Index ?? 0,
-        Message: row.Message ?? 'Failed to create item',
-      })),
-    };
   },
 };
 export type { ItemLink, Claim, Item, FieldDefinition };

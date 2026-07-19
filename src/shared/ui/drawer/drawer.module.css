@@ -193,12 +193,55 @@
   overflow: visible;
 }
 
+/* Full-viewport mobile sheet (≤48rem) — covers nav + list content */
+@media (max-width: 48rem) {
+  .drawer-wrapper.sheet{
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: 100dvh;
+    border: none;
+    box-shadow: none;
+    z-index: calc(var(--zindex-overlay) + 2);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
+
+  .drawer-wrapper.sheet.left,
+  .drawer-wrapper.sheet.right{
+    border: none;
+    box-shadow: none;
+  }
+
+  .drawer-wrapper.sheet .drawer-header,
+  .drawer-wrapper.sheet .drawer-header-overlay{
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    flex-shrink: 0;
+    background: var(--surface);
+  }
+
+  .drawer-wrapper.sheet .drawer-footer{
+    padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom, 0px));
+  }
+
+  .overlay.sheet-scrim{
+    z-index: calc(var(--zindex-overlay) + 1);
+  }
+}
+
 @media (max-width: 30rem) {
-  .drawer-wrapper{
+  .drawer-wrapper:not(.sheet){
     width: 100vw;
   }
 
-  .overlay-variant.drawer-wrapper{
+  .overlay-variant.drawer-wrapper:not(.sheet){
     width: 100vw;
   }
 }

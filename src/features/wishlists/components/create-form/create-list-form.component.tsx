@@ -4,9 +4,8 @@ import { CreateListFormProps } from '../../interfaces/create-list-form-props.int
 import { CreateListFormTemplate } from './create-list-form.html';
 import { useAuth } from 'app/providers/auth-context';
 
-export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => {
-  const { user, canShowAi, canShowWebSearch } = useAuth();
-  const isUnverified = user ? !user.EmailVerified : false;
+export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess, onCancel }) => {
+  const { canShowAi, canShowWebSearch } = useAuth();
 
   const [title, setTitle] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
@@ -36,10 +35,6 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (isUnverified) {
-      setErrorMsg('Please verify your email address to create wishlists.');
-      return;
-    }
 
     if (!title.trim()) {
       setErrorMsg('Please enter a list title.');
@@ -105,7 +100,7 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess }) => 
       setWebSearchEnabled={setWebSearchEnabled}
       globalAiEnabled={canShowAi}
       globalWebSearchEnabled={canShowWebSearch}
-      isUnverified={isUnverified}
+      onCancel={onCancel}
     />
   );
 };

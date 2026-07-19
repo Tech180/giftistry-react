@@ -10,6 +10,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   error,
   leftIcon,
   leftIconClickable,
+  rightIcon,
+  rightIconClickable,
   variant = 'default',
   className = '',
   id,
@@ -20,6 +22,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   const inputClass = [
     styles.input,
     leftIcon ? styles['has-left-icon'] : '',
+    rightIcon ? styles['has-right-icon'] : '',
   ].filter(Boolean).join(' ');
 
   const wrapperClass = [
@@ -34,6 +37,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       error={error}
       leftIcon={leftIcon}
       leftIconClickable={leftIconClickable}
+      rightIcon={rightIcon}
+      rightIconClickable={rightIconClickable}
       className={className}
       type={type}
       inputId={inputId}

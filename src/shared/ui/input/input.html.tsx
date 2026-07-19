@@ -7,6 +7,8 @@ export const InputTemplate = forwardRef<HTMLInputElement, InputTemplateProps>(({
   error,
   leftIcon,
   leftIconClickable,
+  rightIcon,
+  rightIconClickable,
   className = '',
   type = 'text',
   inputId,
@@ -15,9 +17,15 @@ export const InputTemplate = forwardRef<HTMLInputElement, InputTemplateProps>(({
   id,
   ...props
 }, ref) => {
-  const iconClass = [
+  const leftIconClass = [
     styles.icon,
     leftIconClickable ? styles['clickable-icon'] : '',
+  ].filter(Boolean).join(' ');
+
+  const rightIconClass = [
+    styles.icon,
+    styles['icon-right'],
+    rightIconClickable ? styles['clickable-icon'] : '',
   ].filter(Boolean).join(' ');
 
   return (
@@ -28,7 +36,7 @@ export const InputTemplate = forwardRef<HTMLInputElement, InputTemplateProps>(({
         </label>
       )}
       <div className={wrapperClass}>
-        {leftIcon && <span className={iconClass}>{leftIcon}</span>}
+        {leftIcon && <span className={leftIconClass}>{leftIcon}</span>}
         <input
           ref={ref}
           id={inputId}
@@ -36,6 +44,7 @@ export const InputTemplate = forwardRef<HTMLInputElement, InputTemplateProps>(({
           className={inputClass}
           {...props}
         />
+        {rightIcon && <span className={rightIconClass}>{rightIcon}</span>}
       </div>
       {error && <span className={styles['error-text']}>{error}</span>}
     </div>

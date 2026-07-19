@@ -9,11 +9,11 @@ vi.mock('features/wishlists', () => ({
 }));
 
 vi.mock('features/items', () => ({
-  ImportStrip: () => <div data-testid="import-strip" />,
+  ImportStrip: React.forwardRef(() => <div data-testid="import-strip" />),
 }));
 
 describe('DashboardTemplate import control', () => {
-  test('renders icon-only Import wishlist Badge without Import Wishlist text', () => {
+  test('renders icon-only Import wishlist Button without Import Wishlist text', () => {
     const setIsImportOpen = vi.fn();
 
     render(
@@ -23,6 +23,8 @@ describe('DashboardTemplate import control', () => {
         setIsCreateOpen={vi.fn()}
         isImportOpen={false}
         setIsImportOpen={setIsImportOpen}
+        canShowAi={true}
+        importStripRef={{ current: null }}
         activeTab="my-lists"
         setActiveTab={vi.fn()}
         searchQuery=""

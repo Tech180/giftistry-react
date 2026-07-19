@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { CollapsibleStripStatus } from 'shared/ui';
 import {
   jobsApi,
@@ -14,10 +14,20 @@ import {
   type ReadImportFileResult,
 } from 'features/items/utils/read-import-file.util';
 import { filenameStemAsTitle } from 'features/items/utils/detect-import-format.util';
+import {
+  getWishlistImportAccept,
+  type WishlistImportExtension,
+} from 'features/items/constants/wishlist-import.constants';
 import { useToast } from 'app/providers/toast-context';
+import { useAuth } from 'app/providers/auth-context';
+import { useUserSocket } from 'app/providers/user-socket-context';
 import type { ImportTimelineStep } from './interfaces/import-timeline-step.interface';
+import type { ImportStripHandle } from './interfaces/import-strip-handle.interface';
 import type { ImportStripPhase, ImportStripProps } from './interfaces/import-strip-props.interface';
 import { ImportStripTemplate } from './import-strip.html';
+import styles from './import-strip.module.css';
+
+export type { ImportStripHandle } from './interfaces/import-strip-handle.interface';
 
 function buildStatus(
   phase: ImportStripPhase,
@@ -58,20 +68,20 @@ function buildStatus(
   }
 }
 
-export const ImportStrip: React.FC<ImportStripProps> = ({
-  mode,
-  listId,
-  isExpanded,
-  onImported,
-  className,
-}) => {
+export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(function ImportStrip(
+  { mode, listId, isExpanded, onImported, className },
+  ref
+) {
   const { showToast } = useToast();
+  const { canShowAi } = useAuth();
   const [phase, setPhase] = useState<ImportStripPhase>('idle');
   const [dropzoneError, setDropzoneError] = useState<string | null>(null);
   const [uploadPercent, setUploadPercent] = useState(0);
   const [uploadLabel, setUploadLabel] = useState('Reading file…');
   const [fileName, setFileName] = useState<string | null>(null);
   const [pendingRead, setPendingRead] = useState<ReadImportFileResult | null>(null);
+  const [previewWarnings, setPreviewWarnings] = useState<string[]>([]);
+  const [previewReady, setPreviewReady] = useState(false);
   const [wishlistTitle, setWishlistTitle] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [createPercent, setCreatePercent] = useState(0);
@@ -83,20 +93,21 @@ export const ImportStrip: React.FC<ImportStripProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [successTone, setSuccessTone] = useState<CollapsibleStripStatus['tone']>('success');
   const handedOffRef = useRef(false);
-  const pollRef = useRef<number | null>(null);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const menuFileInputRef = useRef<HTMLInputElement>(null);
+  const { addEventListener, removeEventListener } = useUserSocket();
 
   const isBusy = phase === 'uploading' || phase === 'creating';
-  const canGrabInfo = phase === 'ready' && pendingRead !== null;
+  const canGrabInfo = canShowAi && phase === 'ready' && pendingRead !== null && previewReady;
   const grabInfoActive = phase === 'ready' && grabInfoArmed;
   const canConfirm =
     pendingRead !== null &&
+    previewReady &&
     (mode === 'existing-list' || wishlistTitle.trim().length > 0);
+  const defaultAccept = getWishlistImportAccept(canShowAi);
 
   const stopPolling = () => {
-    if (pollRef.current !== null) {
-      window.clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
+    setActiveJobId(null);
   };
 
   const applyJobTimeline = (job: BackgroundJobView) => {
@@ -110,6 +121,93 @@ export const ImportStrip: React.FC<ImportStripProps> = ({
 
   useEffect(() => () => stopPolling(), []);
 
+  useEffect(() => {
+    if (!activeJobId) return;
+
+    const notifyListReady = (targetListId: string, latest: BackgroundJobView) => {
+      if (handedOffRef.current) return;
+      handedOffRef.current = true;
+      onImported({
+        listId: targetListId,
+        jobId: latest.Id,
+        created: 0,
+        failed: 0,
+      });
+    };
+
+    const finishTerminal = (latest: BackgroundJobView) => {
+      setActiveJobId(null);
+      const summary = formatImportJobSummary(latest);
+
+      if (latest.Status === 'completed') {
+        setSuccessMessage(summary.message);
+        setSuccessTone('success');
+        setCreateLabel(summary.message);
+        setPhase('success');
+        const targetListId = latest.ListId ?? listId;
+        if (targetListId && !handedOffRef.current) {
+          notifyListReady(targetListId, latest);
+        }
+      } else {
+        setErrorMessage(summary.message);
+        setCreateLabel(summary.message);
+        setPhase('ready');
+      }
+
+      if (claimImportJobTerminalToast(latest.Id, latest.Status)) {
+        showToast(summary.message, summary.tone);
+      }
+    };
+
+    const handleJobUpdate = (data: any) => {
+      if (data && data.Job && data.Job.Id === activeJobId) {
+        applyJobTimeline(data.Job);
+
+        if (
+          data.Job.Status === 'failed' ||
+          data.Job.Status === 'cancelled' ||
+          data.Job.Status === 'completed'
+        ) {
+          finishTerminal(data.Job);
+        } else {
+          const nextListId = data.Job.ListId ?? listId ?? null;
+          if (nextListId) {
+            notifyListReady(nextListId, data.Job);
+          }
+        }
+      }
+    };
+
+    addEventListener('job.progress', handleJobUpdate);
+    addEventListener('job.completed', handleJobUpdate);
+    addEventListener('job.failed', handleJobUpdate);
+
+    let isCleanup = false;
+    jobsApi.getJob(activeJobId).then((latest) => {
+      if (isCleanup) return;
+      applyJobTimeline(latest);
+      if (
+        latest.Status === 'failed' ||
+        latest.Status === 'cancelled' ||
+        latest.Status === 'completed'
+      ) {
+        finishTerminal(latest);
+      } else {
+        const nextListId = latest.ListId ?? listId ?? null;
+        if (nextListId) {
+          notifyListReady(nextListId, latest);
+        }
+      }
+    }).catch(() => {});
+
+    return () => {
+      isCleanup = true;
+      removeEventListener('job.progress', handleJobUpdate);
+      removeEventListener('job.completed', handleJobUpdate);
+      removeEventListener('job.failed', handleJobUpdate);
+    };
+  }, [activeJobId, listId, onImported, showToast, addEventListener, removeEventListener]);
+
   const resetState = () => {
     stopPolling();
     handedOffRef.current = false;
@@ -119,6 +217,8 @@ export const ImportStrip: React.FC<ImportStripProps> = ({
     setUploadLabel('Reading file…');
     setFileName(null);
     setPendingRead(null);
+    setPreviewWarnings([]);
+    setPreviewReady(false);
     setWishlistTitle('');
     setErrorMessage(null);
     setCreatePercent(0);
@@ -137,6 +237,8 @@ export const ImportStrip: React.FC<ImportStripProps> = ({
     setDropzoneError(null);
     setErrorMessage(null);
     setPendingRead(null);
+    setPreviewWarnings([]);
+    setPreviewReady(false);
     setGrabInfoArmed(false);
     setTimelineSteps([]);
     setTimelineStreams([]);
@@ -150,19 +252,42 @@ export const ImportStrip: React.FC<ImportStripProps> = ({
 
     try {
       const read = await readImportFile(file, {
+        allowAi: canShowAi,
         onProgress: (percent) => {
           setUploadPercent(percent);
         },
       });
       setUploadPercent(100);
-      setUploadLabel('Upload complete');
+      setUploadLabel('Parsing preview…');
       setPendingRead(read);
+
+      const preview = await jobsApi.previewWishlistImport({
+        listId: mode === 'existing-list' ? listId : null,
+        fileName: read.fileName,
+        format: read.format,
+        content: read.content,
+        contentEncoding: read.contentEncoding,
+        allowAi: canShowAi,
+      });
+
+      const itemCount = preview.Items?.length ?? 0;
+      const parseMode = preview.ParseMode || 'unknown';
+      const summary = `Parsed ${itemCount} item${itemCount === 1 ? '' : 's'} (${parseMode})`;
+      const serverWarnings = Array.isArray(preview.Warnings) ? preview.Warnings : [];
+      setPreviewWarnings([summary, ...serverWarnings]);
+      setPreviewReady(true);
+      if (mode === 'create-list' && preview.SuggestedWishlistTitle?.trim()) {
+        setWishlistTitle(preview.SuggestedWishlistTitle.trim());
+      }
+      setUploadLabel('Upload complete');
       setPhase('ready');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to read file';
       setDropzoneError(message);
       setErrorMessage(message);
       setPendingRead(null);
+      setPreviewWarnings([]);
+      setPreviewReady(false);
       setPhase('error');
     }
   };
@@ -202,7 +327,8 @@ export const ImportStrip: React.FC<ImportStripProps> = ({
         format: pendingRead.format,
         content: pendingRead.content,
         contentEncoding: pendingRead.contentEncoding,
-        grabInfo: grabInfoArmed,
+        grabInfo: grabInfoArmed && canShowAi,
+        allowAi: canShowAi,
       });
 
       applyJobTimeline(job);
@@ -219,7 +345,6 @@ export const ImportStrip: React.FC<ImportStripProps> = ({
       };
 
       const finishTerminal = (latest: BackgroundJobView) => {
-        stopPolling();
         const summary = formatImportJobSummary(latest);
 
         if (latest.Status === 'completed') {
@@ -256,35 +381,9 @@ export const ImportStrip: React.FC<ImportStripProps> = ({
         return;
       }
 
-      const pollOnce = async () => {
-        try {
-          const latest = await jobsApi.getJob(job.Id);
-          applyJobTimeline(latest);
-
-          if (
-            latest.Status === 'failed' ||
-            latest.Status === 'cancelled' ||
-            latest.Status === 'completed'
-          ) {
-            finishTerminal(latest);
-            return;
-          }
-
-          const nextListId = latest.ListId ?? listId ?? null;
-          if (nextListId) {
-            notifyListReady(nextListId, latest);
-          }
-        } catch {
-          /* ignore transient poll errors */
-        }
-      };
-
-      void pollOnce();
-      pollRef.current = window.setInterval(() => {
-        void pollOnce();
-      }, 2000);
+      setActiveJobId(job.Id);
     } catch (err) {
-      stopPolling();
+      setActiveJobId(null);
       const message = err instanceof Error ? err.message : 'Import failed';
       setErrorMessage(message);
       setCreateLabel('Import failed');
@@ -307,40 +406,75 @@ export const ImportStrip: React.FC<ImportStripProps> = ({
     successTone,
   });
 
-  return (
-    <ImportStripTemplate
-      mode={mode}
-      phase={phase}
-      isExpanded={isExpanded}
-      stripStatus={stripStatus}
-      title={mode === 'create-list' ? 'Import Wishlist' : 'Import Items'}
-      dropzoneError={dropzoneError}
-      errorMessage={errorMessage}
-      uploadPercent={uploadPercent}
-      uploadLabel={uploadLabel}
-      fileName={fileName}
-      warnings={[]}
-      wishlistTitle={wishlistTitle}
-      setWishlistTitle={setWishlistTitle}
-      timelineSteps={timelineSteps}
-      timelineStreams={timelineStreams}
-      streamsCaption={streamsCaption}
-      createPercent={createPercent}
-      createLabel={createLabel}
-      isBusy={isBusy}
-      canConfirm={canConfirm}
-      canGrabInfo={canGrabInfo}
-      grabInfoActive={grabInfoActive}
-      confirmLabel={mode === 'create-list' ? 'Create wishlist' : 'Import items'}
-      className={className}
-      onFileSelected={(file) => {
+  useImperativeHandle(
+    ref,
+    () => ({
+      browse(extension?: WishlistImportExtension) {
+        const input = menuFileInputRef.current;
+        if (!input || isBusy) return;
+        input.accept = extension ? `.${extension}` : defaultAccept;
+        input.click();
+      },
+      acceptFile(file: File) {
+        if (isBusy || !file) return;
         void handleFileSelected(file);
-      }}
-      onReset={resetState}
-      onConfirm={() => {
-        void handleConfirm();
-      }}
-      onGrabInfo={handleGrabInfoClick}
-    />
+      },
+    }),
+    [isBusy, defaultAccept, handleFileSelected]
   );
-};
+
+  return (
+    <>
+      <input
+        ref={menuFileInputRef}
+        className={styles.hiddenInput}
+        type="file"
+        accept={defaultAccept}
+        tabIndex={-1}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          event.target.accept = defaultAccept;
+          if (file) {
+            void handleFileSelected(file);
+          }
+        }}
+      />
+      <ImportStripTemplate
+        mode={mode}
+        phase={phase}
+        isExpanded={isExpanded}
+        stripStatus={stripStatus}
+        title={mode === 'create-list' ? 'Import Wishlist' : 'Import Items'}
+        dropzoneError={dropzoneError}
+        errorMessage={errorMessage}
+        uploadPercent={uploadPercent}
+        uploadLabel={uploadLabel}
+        fileName={fileName}
+        warnings={previewWarnings}
+        wishlistTitle={wishlistTitle}
+        setWishlistTitle={setWishlistTitle}
+        timelineSteps={timelineSteps}
+        timelineStreams={timelineStreams}
+        streamsCaption={streamsCaption}
+        createPercent={createPercent}
+        createLabel={createLabel}
+        isBusy={isBusy}
+        canConfirm={canConfirm}
+        canGrabInfo={canGrabInfo}
+        grabInfoActive={grabInfoActive}
+        allowAi={canShowAi}
+        confirmLabel={mode === 'create-list' ? 'Create wishlist' : 'Import items'}
+        className={className}
+        onFileSelected={(file) => {
+          void handleFileSelected(file);
+        }}
+        onReset={resetState}
+        onConfirm={() => {
+          void handleConfirm();
+        }}
+        onGrabInfo={handleGrabInfoClick}
+      />
+    </>
+  );
+});

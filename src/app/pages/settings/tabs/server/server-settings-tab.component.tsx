@@ -27,6 +27,7 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const { user, checkSystemStatus } = useAuth();
   const [dbType, setDbType] = useState<'local' | 'remote'>('local');
   const [dbUrl, setDbUrl] = useState('');
+  const [publicAppUrl, setPublicAppUrl] = useState('');
   const [smtpType, setSmtpType] = useState<'local' | 'remote'>('local');
   const [smtpHost, setSmtpHost] = useState('');
   const [smtpPort, setSmtpPort] = useState('1025');
@@ -55,6 +56,12 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [aiImportPrompt, setAiImportPrompt] = useState('');
   const [aiDefaultPrompts, setAiDefaultPrompts] = useState<BackendSettings['AiDefaultPrompts']>();
 
+  const [oauthEnabled, setOauthEnabled] = useState(false);
+  const [oauthIssuerUrl, setOauthIssuerUrl] = useState('');
+  const [oauthClientId, setOauthClientId] = useState('');
+  const [oauthClientSecret, setOauthClientSecret] = useState('');
+  const [oauthButtonText, setOauthButtonText] = useState('Sign in with SSO');
+  const [oauthAutoRegister, setOauthAutoRegister] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showFastAiKey, setShowFastAiKey] = useState(false);
   const [showIntelligentAiKey, setShowIntelligentAiKey] = useState(false);
@@ -129,6 +136,13 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const applySettingsToState = useCallback((s: BackendSettings) => {
     setDbType(s.DbType);
     setDbUrl(s.DbUrl || '');
+    setPublicAppUrl(s.PublicAppUrl || '');
+    setOauthEnabled(!!s.OAuthEnabled);
+    setOauthIssuerUrl(s.OAuthIssuerUrl || '');
+    setOauthClientId(s.OAuthClientId || '');
+    setOauthClientSecret(s.OAuthClientSecret || '');
+    setOauthButtonText(s.OAuthButtonText || 'Sign in with SSO');
+    setOauthAutoRegister(s.OAuthAutoRegister !== false);
     setSmtpType(s.SmtpType);
     setSmtpHost(s.SmtpHost || '');
     setSmtpPort(s.SmtpPort ? s.SmtpPort.toString() : '1025');
@@ -438,6 +452,13 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     const payload = {
       DbType: dbType,
       DbUrl: dbType === 'remote' ? dbUrl : '',
+      PublicAppUrl: publicAppUrl.trim(),
+      OAuthEnabled: oauthEnabled,
+      OAuthIssuerUrl: oauthIssuerUrl.trim(),
+      OAuthClientId: oauthClientId.trim(),
+      OAuthClientSecret: oauthClientSecret,
+      OAuthButtonText: oauthButtonText.trim() || 'Sign in with SSO',
+      OAuthAutoRegister: oauthAutoRegister,
       SmtpType: smtpType,
       SmtpHost: smtpType === 'remote' ? smtpHost : '',
       SmtpPort: smtpType === 'remote' ? Number(smtpPort) : 1025,
@@ -538,6 +559,20 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       setDbType={setDbType}
       dbUrl={dbUrl}
       setDbUrl={setDbUrl}
+      publicAppUrl={publicAppUrl}
+      setPublicAppUrl={setPublicAppUrl}
+      oauthEnabled={oauthEnabled}
+      setOauthEnabled={setOauthEnabled}
+      oauthIssuerUrl={oauthIssuerUrl}
+      setOauthIssuerUrl={setOauthIssuerUrl}
+      oauthClientId={oauthClientId}
+      setOauthClientId={setOauthClientId}
+      oauthClientSecret={oauthClientSecret}
+      setOauthClientSecret={setOauthClientSecret}
+      oauthButtonText={oauthButtonText}
+      setOauthButtonText={setOauthButtonText}
+      oauthAutoRegister={oauthAutoRegister}
+      setOauthAutoRegister={setOauthAutoRegister}
       smtpType={smtpType}
       setSmtpType={setSmtpType}
       smtpHost={smtpHost}

@@ -26,6 +26,7 @@ export interface ImportStripTemplateProps {
   canConfirm: boolean;
   canGrabInfo: boolean;
   grabInfoActive: boolean;
+  allowAi: boolean;
   confirmLabel: string;
   className?: string;
   onFileSelected: (file: File) => void;

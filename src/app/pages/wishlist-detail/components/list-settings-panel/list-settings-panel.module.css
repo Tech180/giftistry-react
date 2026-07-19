@@ -1,0 +1,101 @@
+.root {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  justify-content: center;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.row:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+  border-color: var(--border-subtle);
+}
+
+.row:active {
+  transform: scale(0.98);
+}
+
+.rowActive {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.rowActive:hover {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.rowIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--surface-hover);
+  color: var(--text-muted);
+}
+
+.rowIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rowIconAi {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #5e42f8 18%, transparent),
+    color-mix(in srgb, #f15565 18%, transparent)
+  );
+  color: #b656cb;
+}
+
+.rowText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+
+.rowMeta {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.rowActive .rowMeta {
+  color: color-mix(in srgb, var(--primary) 75%, var(--text-muted));
+}
+
+.switchSlot {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}

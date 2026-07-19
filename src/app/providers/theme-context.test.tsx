@@ -118,7 +118,7 @@ describe("ThemeProvider and useTheme", () => {
     expect(link?.href).toContain("/api/themes/neon/dark/css");
   });
 
-  test("updates theme, writes to localStorage, and updates document attributes", () => {
+  test("updates theme, writes to localStorage, and updates document attributes", async () => {
     render(
       <AuthContext.Provider value={{ user: null, isAuthenticated: false, isLoading: false } as any}>
         <ThemeProvider>
@@ -134,6 +134,14 @@ describe("ThemeProvider and useTheme", () => {
 
     expect(screen.getByTestId("theme").textContent).toBe("cyberpunk");
     expect(localStorage.getItem("giftistry-theme")).toBe("cyberpunk");
+
+    const pending = document.querySelector(
+      'link[data-theme-style="pending"]'
+    ) as HTMLLinkElement | null;
+    await act(async () => {
+      pending?.dispatchEvent(new Event("load"));
+    });
+
     expect(document.documentElement.getAttribute("data-theme")).toBe("cyberpunk");
   });
 

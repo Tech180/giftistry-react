@@ -38,4 +38,8 @@ export interface NavigationTemplateProps {
   handleSearchSelect: (wishlistId: string) => void;
   searchRef: RefObject<HTMLDivElement | null>;
   searchInputRef: RefObject<HTMLInputElement | null>;
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: (open: boolean) => void;
+  mobileMenuRef: RefObject<HTMLDivElement | null>;
+  hamburgerRef: RefObject<HTMLButtonElement | null>;
 }

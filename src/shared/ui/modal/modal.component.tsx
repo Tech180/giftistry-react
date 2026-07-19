@@ -8,6 +8,7 @@ export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
+  subtitle,
   children
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -39,6 +40,7 @@ export const Modal: React.FC<ModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={title}
+      subtitle={subtitle}
       modalRef={modalRef}
       handleBackdropClick={handleBackdropClick}
     >

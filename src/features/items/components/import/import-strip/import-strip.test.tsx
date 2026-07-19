@@ -4,11 +4,14 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { ImportStrip } from './import-strip.component';
 
+const canShowAiRef = { current: true };
+
 vi.mock('features/jobs', async () => {
   const actual = await vi.importActual<typeof import('features/jobs')>('features/jobs');
   return {
     ...actual,
     jobsApi: {
+      previewWishlistImport: vi.fn(),
       startWishlistImport: vi.fn(),
       getJob: vi.fn(),
     },
@@ -16,12 +19,15 @@ vi.mock('features/jobs', async () => {
 });
 
 vi.mock('features/items/utils/read-import-file.util', () => ({
-  readImportFile: vi.fn(async (file: File, options?: { onProgress?: (n: number) => void }) => {
+  readImportFile: vi.fn(async (file: File, options?: { onProgress?: (n: number) => void; allowAi?: boolean }) => {
     options?.onProgress?.(40);
     options?.onProgress?.(100);
+    if (!options?.allowAi && file.name.toLowerCase().endsWith('.pdf')) {
+      throw new Error('Unsupported file type. Use CSV, XLSX, TXT, or JSON.');
+    }
     return {
       fileName: file.name,
-      format: 'json' as const,
+      format: file.name.toLowerCase().endsWith('.pdf') ? ('pdf' as const) : ('json' as const),
       content: '{}',
       contentEncoding: 'text' as const,
     };
@@ -32,7 +38,20 @@ vi.mock('app/providers/toast-context', () => ({
   useToast: () => ({ showToast: vi.fn() }),
 }));
 
+vi.mock('app/providers/auth-context', () => ({
+  useAuth: () => ({ canShowAi: canShowAiRef.current }),
+}));
+
+vi.mock('app/providers/user-socket-context', () => ({
+  useUserSocket: () => ({
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    isConnected: true,
+  }),
+}));
+
 import { jobsApi } from 'features/jobs';
+import { readImportFile } from 'features/items/utils/read-import-file.util';
 
 function renderStrip(onImported = vi.fn()) {
   return render(
@@ -42,15 +61,26 @@ function renderStrip(onImported = vi.fn()) {
   );
 }
 
-async function selectFile(container: HTMLElement) {
-  const input = container.querySelector('input[type="file"]') as HTMLInputElement;
-  const file = new File(['{}'], 'gifts.json', { type: 'application/json' });
+async function selectFile(container: HTMLElement, name = 'gifts.json') {
+  const inputs = container.querySelectorAll('input[type="file"]');
+  const input = inputs[inputs.length - 1] as HTMLInputElement;
+  const file = new File(['{}'], name, {
+    type: name.endsWith('.pdf') ? 'application/pdf' : 'application/json',
+  });
   fireEvent.change(input, { target: { files: [file] } });
 }
 
 describe('ImportStrip', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    canShowAiRef.current = true;
+    vi.mocked(jobsApi.previewWishlistImport).mockResolvedValue({
+      Items: [{ Name: 'Widget' }],
+      Warnings: [],
+      SourceFormat: 'json',
+      ParseMode: 'deterministic',
+      SuggestedWishlistTitle: 'Gifts',
+    });
   });
 
   test('uploads a file and waits for create without starting a job yet', async () => {
@@ -108,6 +138,15 @@ describe('ImportStrip', () => {
     fireEvent.click(screen.getByRole('button', { name: /create wishlist/i }));
 
     await waitFor(() => {
+      expect(jobsApi.startWishlistImport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          allowAi: true,
+          grabInfo: true,
+        })
+      );
+    });
+
+    await waitFor(() => {
       expect(screen.getByRole('list', { name: /import steps/i })).toBeInTheDocument();
     });
     expect(screen.getByRole('list', { name: /import steps/i })).toHaveTextContent('Upload');
@@ -123,12 +162,114 @@ describe('ImportStrip', () => {
     });
   });
 
-  test('renders nothing when collapsed', () => {
+  test('hides Grab info and omits PDF from accept when AI is unavailable', async () => {
+    canShowAiRef.current = false;
+    const { container } = renderStrip();
+    const inputs = container.querySelectorAll('input[type="file"]');
+    expect(inputs.length).toBeGreaterThan(0);
+    for (const input of Array.from(inputs)) {
+      expect((input as HTMLInputElement).accept).toBe('.csv,.xlsx,.txt,.json');
+      expect((input as HTMLInputElement).accept).not.toContain('pdf');
+    }
+
+    await selectFile(container);
+    await waitFor(() => {
+      expect(screen.getByText('Ready')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: /grab info/i })).toBeNull();
+    expect(readImportFile).toHaveBeenCalledWith(
+      expect.any(File),
+      expect.objectContaining({ allowAi: false })
+    );
+  });
+
+  test('rejects PDF via reader when AI is unavailable', async () => {
+    canShowAiRef.current = false;
+    const { container } = renderStrip();
+    await selectFile(container, 'scan.pdf');
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByText(/Unsupported file type\. Use CSV, XLSX, TXT, or JSON\./i).length
+      ).toBeGreaterThan(0);
+    });
+    expect(jobsApi.startWishlistImport).not.toHaveBeenCalled();
+  });
+
+  test('shows AI formats hint and sends AllowAi when AI is available', async () => {
+    canShowAiRef.current = true;
+    vi.mocked(jobsApi.startWishlistImport).mockResolvedValue({
+      Id: 'job-2',
+      Kind: 'wishlist-import',
+      ListId: 'list-2',
+      UserId: 'user-1',
+      Status: 'completed',
+      Phase: 'completed',
+      ProgressDone: 1,
+      ProgressTotal: 1,
+      Message: 'Done',
+      Error: null,
+      GrabInfo: false,
+      Mode: 'create-list',
+    });
+
+    const { container } = renderStrip();
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(input.accept).toContain('.pdf');
+    expect(screen.getByText(/CSV, XLSX, TXT, JSON, or PDF/i)).toBeInTheDocument();
+
+    await selectFile(container);
+    await waitFor(() => {
+      expect(screen.getByText('Ready')).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByLabelText(/wishlist title/i), {
+      target: { value: 'Holiday' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /create wishlist/i }));
+
+    await waitFor(() => {
+      expect(jobsApi.startWishlistImport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          allowAi: true,
+          grabInfo: false,
+        })
+      );
+    });
+  });
+
+  test('keeps a hidden file input when collapsed for menu browse', () => {
     const { container } = render(
       <MemoryRouter>
         <ImportStrip mode="create-list" isExpanded={false} onImported={() => {}} />
       </MemoryRouter>
     );
-    expect(container.querySelector('input[type="file"]')).toBeNull();
+    expect(container.querySelector('input[type="file"]')).not.toBeNull();
+    expect(screen.queryByText(/drop your wishlist export/i)).toBeNull();
+  });
+
+  test('browse() opens the menu file input filtered to an extension', async () => {
+    const ref = React.createRef<import('./interfaces/import-strip-handle.interface').ImportStripHandle>();
+    const { container } = render(
+      <MemoryRouter>
+        <ImportStrip ref={ref} mode="create-list" isExpanded={false} onImported={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const clickSpy = vi.spyOn(input, 'click').mockImplementation(() => {});
+
+    ref.current?.browse('csv');
+    expect(input.accept).toBe('.csv');
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+
+    const file = new File(['a,b'], 'items.csv', { type: 'text/csv' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(readImportFile).toHaveBeenCalledWith(
+        expect.any(File),
+        expect.objectContaining({ allowAi: true })
+      );
+    });
   });
 });

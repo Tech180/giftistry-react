@@ -1,18 +1,45 @@
-export const WISHLIST_IMPORT_ACCEPT = '.csv,.xlsx,.txt,.json,.pdf';
 export const WISHLIST_IMPORT_MAX_BYTES = 5 * 1024 * 1024;
-/** Hard ceiling for a single import (preview rejects above this). */
-export const WISHLIST_IMPORT_MAX_ITEMS = 2500;
-/** Must match backend MAX_BULK_ADD_BATCH. */
-export const WISHLIST_IMPORT_BULK_CHUNK_SIZE = 500;
-export const WISHLIST_IMPORT_ALLOWED_EXTENSIONS = [
-  'csv',
-  'xlsx',
-  'txt',
-  'json',
-  'pdf',
-] as const;
+
+export const WISHLIST_IMPORT_BASE_EXTENSIONS = ['csv', 'xlsx', 'txt', 'json'] as const;
+export const WISHLIST_IMPORT_AI_EXTENSIONS = ['pdf'] as const;
+
+export type WishlistImportBaseExtension =
+  (typeof WISHLIST_IMPORT_BASE_EXTENSIONS)[number];
+export type WishlistImportAiExtension =
+  (typeof WISHLIST_IMPORT_AI_EXTENSIONS)[number];
+export type WishlistImportExtension =
+  | WishlistImportBaseExtension
+  | WishlistImportAiExtension;
+
+export function getWishlistImportAllowedExtensions(
+  allowAi: boolean
+): readonly WishlistImportExtension[] {
+  return allowAi
+    ? [...WISHLIST_IMPORT_BASE_EXTENSIONS, ...WISHLIST_IMPORT_AI_EXTENSIONS]
+    : WISHLIST_IMPORT_BASE_EXTENSIONS;
+}
+
+export function getWishlistImportAccept(allowAi: boolean): string {
+  return getWishlistImportAllowedExtensions(allowAi)
+    .map((ext) => `.${ext}`)
+    .join(',');
+}
+
+export function getWishlistImportTypeError(allowAi: boolean): string {
+  return allowAi
+    ? 'Unsupported file type. Use CSV, XLSX, TXT, JSON, or PDF.'
+    : 'Unsupported file type. Use CSV, XLSX, TXT, or JSON.';
+}
 
 export const WISHLIST_IMPORT_SIZE_ERROR =
   'File is too large. Maximum size is 5MB.';
-export const WISHLIST_IMPORT_TYPE_ERROR =
-  'Unsupported file type. Use CSV, XLSX, TXT, JSON, or PDF.';
+
+export function getWishlistImportFormatOptions(allowAi: boolean): {
+  id: WishlistImportExtension;
+  label: string;
+}[] {
+  return getWishlistImportAllowedExtensions(allowAi).map((extension) => ({
+    id: extension,
+    label: extension.toUpperCase(),
+  }));
+}

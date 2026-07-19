@@ -8,4 +8,6 @@ export interface MiniDrawerProps {
   isActive: boolean;
   position: 'left' | 'right';
   label?: string;
+  /** When true, render as an in-panel strip under 48rem (full-screen sheet parents). */
+  inlineOnMobile?: boolean;
 }

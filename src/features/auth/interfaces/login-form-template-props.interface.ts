@@ -1,8 +1,8 @@
 import React from 'react';
 
 export interface LoginFormTemplateProps {
-  email: string;
-  setEmail: (val: string) => void;
+  username: string;
+  setUsername: (val: string) => void;
   password: string;
   setPassword: (val: string) => void;
   isLoading: boolean;
@@ -18,6 +18,18 @@ export interface LoginFormTemplateProps {
   handlePasskeyLogin: () => void;
 
   switcherAccounts: any[];
-  handleSwitcherSelect: (email: string) => void;
-  handleRemoveSwitcherAccount: (email: string) => void;
+  handleSwitcherSelect: (username: string) => void;
+  handleRemoveSwitcherAccount: (username: string) => void;
+
+  isBiometricModalOpen: boolean;
+  biometricLabel: string;
+  cancelBiometrics: () => void;
+
+  allowPasswordLogin: boolean;
+  oauthEnabled: boolean;
+  oauthButtonText: string;
+  handleOauthLogin: () => void;
+
+  showPassword: boolean;
+  onToggleShowPassword: () => void;
 }

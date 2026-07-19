@@ -3,7 +3,7 @@ import { GiftistryUserPolicy } from 'features/admin/interfaces/giftistry-user-po
 
 export interface ApiUser extends PublicUserSummary {
   Id: string;
-  Email: string;
+  Email: string | null;
   EmailVerified?: boolean;
   TwoFactorEnabled?: boolean;
   IsAdmin?: boolean;
@@ -11,4 +11,6 @@ export interface ApiUser extends PublicUserSummary {
   AiEnabled?: boolean;
   WebSearchEnabled?: boolean;
   Policy?: GiftistryUserPolicy;
+  HasPasskey?: boolean;
+  IsOnboarded?: boolean;
 }

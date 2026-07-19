@@ -1,5 +1,5 @@
 import React from 'react';
-import { DrawerVariant } from './drawer-props.interface';
+import { DrawerMobilePresentation, DrawerVariant } from './drawer-props.interface';
 
 export interface DrawerTemplateProps {
   drawerClass: string;
@@ -10,6 +10,8 @@ export interface DrawerTemplateProps {
   overflowVisible?: boolean;
   miniDrawer?: React.ReactNode;
   variant?: DrawerVariant;
+  mobilePresentation?: DrawerMobilePresentation;
+  showScrim?: boolean;
   footer?: React.ReactNode;
   titleIcon?: React.ReactNode;
   titleExtra?: React.ReactNode;

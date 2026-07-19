@@ -4,10 +4,16 @@
   background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none; /* Hide scrollbar for clean look */
 }
 
-@media (max-width: 48rem) {
-  .tabs-container{
-    flex-direction: column;
-  }
+.tabs-container::-webkit-scrollbar {
+  display: none; /* Hide scrollbar on Chrome/Safari/Webkit */
+}
+
+.tabs-container > button {
+  flex: 1;
+  justify-content: center;
 }

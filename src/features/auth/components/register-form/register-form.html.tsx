@@ -79,13 +79,12 @@ export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
         />
 
         <Input
-          label="Email Address *"
+          label="Email Address (optional)"
           type="email"
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           leftIcon={<Mail size={16} />}
-          required
         />
 
         <Input

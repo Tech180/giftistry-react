@@ -39,6 +39,7 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
       position="left"
       title={isEdit ? 'Edit Item' : 'Add New Item'}
       titleIcon={isEdit ? <Pencil size={18} /> : <PlusCircle size={18} />}
+      mobilePresentation="sheet"
       headerExtra={
         canShowAi ? (
           <AiStatusBadge

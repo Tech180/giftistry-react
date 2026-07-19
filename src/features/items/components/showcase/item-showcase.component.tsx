@@ -15,6 +15,7 @@ import {
 } from 'shared/utils/item-custom-fields.util';
 import { formatAudienceLabel, isPrivateItem } from '../../utils/item-audience.util';
 import { resolveLinkedItems } from '../../utils/item-links-sync.util';
+import { getCategoryMeta } from '../card/category-icons';
 
 export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   item,
@@ -23,11 +24,12 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   isExpired,
   canCollaborate,
   allowGroupFunds,
-  onUpdate,
+  itemActions,
   onEdit,
   onClose,
   wishlistItems = [],
   aiEnabled,
+  variant = 'card',
 }) => {
   const { user, canShowAi } = useAuth();
   const claimedByCurrentUser = !!(user && item.Claims.some(c => c.UserId === user.Id));
@@ -141,11 +143,17 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       const finalQuantity = metadata?.MultiCount ? claimQty : undefined;
       const claimerName = anonymous ? null : (user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null);
 
-      await itemsApi.claimItem(item.Id, amount, claimerName, anonymous, finalQuantity, finalSelection);
+      await itemActions.claimItem({
+        itemId: item.Id,
+        amount,
+        claimedByName: claimerName,
+        anonymous,
+        quantity: finalQuantity,
+        selection: finalSelection,
+      });
       setClaimAmount('');
       setAnonymous(false);
       setShowClaimForm(false);
-      onUpdate();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to claim item');
     } finally {
@@ -162,25 +170,19 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       const finalQuantity = metadata?.MultiCount ? claimQty : undefined;
       const claimerName = anonymous ? null : (user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null);
 
-      // 1. Claim primary item
-      await itemsApi.claimItem(item.Id, amount, claimerName, anonymous, finalQuantity, finalSelection);
-
-      // 2. Claim all unclaimed linked items
-      const linkedIds = metadata?.LinkedItemIds || [];
-      const unclaimedLinkedItems = wishlistItems.filter(
-        (wi: any) => linkedIds.includes(wi.Id) && !wi.IsClaimed
-      );
-
-      await Promise.all(
-        unclaimedLinkedItems.map((wi: any) =>
-          itemsApi.claimItem(wi.Id, null, claimerName, anonymous, 1)
-        )
-      );
+      await itemActions.claimItem({
+        itemId: item.Id,
+        amount,
+        claimedByName: claimerName,
+        anonymous,
+        quantity: finalQuantity,
+        selection: finalSelection,
+        includeLinked: true,
+      });
 
       setClaimAmount('');
       setAnonymous(false);
       setShowClaimForm(false);
-      onUpdate();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to claim linked items');
     } finally {
@@ -191,8 +193,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const handleUnclaim = async () => {
     setClaimLoading(true);
     try {
-      await itemsApi.unclaimItem(item.Id);
-      onUpdate();
+      await itemActions.unclaimItem(item.Id, user?.Id);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to unclaim item');
     } finally {
@@ -203,8 +204,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
-      await itemsApi.deleteItem(item.Id);
-      onUpdate();
+      await itemActions.deleteItem(item.Id);
       onClose();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete item.');
@@ -213,24 +213,36 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     }
   };
 
-  // Group funding & Multi-count calculations
-  const totalExtractedPrice = item.Links.reduce((acc, link) => {
-    return Math.max(acc, link.ExtractedPrice || 0);
-  }, 0);
+  // Group funding & Multi-count calculations — prefer server claim summaries
+  const totalExtractedPrice =
+    item.FundingTarget != null
+      ? item.FundingTarget
+      : item.Links.reduce((acc, link) => Math.max(acc, link.ExtractedPrice || 0), 0);
 
-  const totalClaimedAmount = item.Claims.reduce((acc, claim) => {
-    return acc + (claim.Amount || 0);
-  }, 0);
+  const totalClaimedAmount =
+    item.TotalClaimedAmount != null
+      ? item.TotalClaimedAmount
+      : item.Claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
 
-  const isMultiCount = !!(metadata && metadata.MultiCount);
-  const totalClaimedQty = item.Claims.reduce((acc, c) => acc + (c.Quantity || 1), 0);
-  const desiredQtyVal = (metadata && metadata.DesiredQuantity) || 1;
+  const isMultiCount =
+    item.IsMultiCount != null ? item.IsMultiCount : !!(metadata && metadata.MultiCount);
+  const totalClaimedQty =
+    item.TotalClaimedQuantity != null
+      ? item.TotalClaimedQuantity
+      : item.Claims.reduce((acc, c) => acc + (c.Quantity || 1), 0);
+  const desiredQtyVal =
+    item.DesiredQuantity != null
+      ? item.DesiredQuantity
+      : (metadata && metadata.DesiredQuantity) || 1;
 
-  const isFullyClaimed = isMultiCount
-    ? totalClaimedQty >= desiredQtyVal
-    : (allowGroupFunds && totalExtractedPrice > 0
-      ? totalClaimedAmount >= totalExtractedPrice
-      : item.IsClaimed);
+  const isFullyClaimed =
+    item.IsFullyClaimed != null
+      ? item.IsFullyClaimed
+      : isMultiCount
+        ? totalClaimedQty >= desiredQtyVal
+        : (allowGroupFunds && totalExtractedPrice > 0
+          ? totalClaimedAmount >= totalExtractedPrice
+          : item.IsClaimed);
 
   const progressPercent = isMultiCount
     ? Math.min(100, Math.round((totalClaimedQty / desiredQtyVal) * 100))
@@ -249,6 +261,8 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     () => resolveLinkedItems(item, wishlistItems),
     [item, wishlistItems]
   );
+
+  const categoryMeta = useMemo(() => getCategoryMeta(item.Category), [item.Category]);
 
   return (
     <ItemShowcaseTemplate
@@ -304,6 +318,9 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       audienceLabel={audienceLabel}
       isPrivate={isPrivate}
       linkedItems={linkedItems}
+      variant={variant}
+      CategoryIcon={categoryMeta.icon}
+      categoryLabel={categoryMeta.label}
     />
   );
 };

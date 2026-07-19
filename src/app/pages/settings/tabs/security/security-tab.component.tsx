@@ -4,6 +4,7 @@ import { useAuth } from 'app/providers/auth-context';
 import { authApi } from 'features/auth';
 import { startRegistration } from '@simplewebauthn/browser';
 import { SecurityTabProps } from './interfaces/security-tab-props.interface';
+import { camelcaseKeys } from 'shared/utils/api-case.util';
 
 export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
   const { user, refreshUser } = useAuth();
@@ -142,7 +143,7 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
       // SimpleWebAuthn browser registration
       let regResponse;
       try {
-        regResponse = await startRegistration({ optionsJSON: res.Options });
+        regResponse = await startRegistration({ optionsJSON: camelcaseKeys(res.Options) });
       } catch (browserErr) {
         // Silent return: The browser handles the UI for all local WebAuthn prompt cancellations/failures
         return;

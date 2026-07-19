@@ -1,10 +1,32 @@
 import { apiClient } from 'core/api/client';
 import type { BackgroundJobView } from '../interfaces/background-job.interface';
+import type { ImportPreviewResult } from '../interfaces/import-preview-result.interface';
 import type { ImportFileFormat } from 'features/items/interfaces/import-file-format.interface';
 import type { ImportContentEncoding } from 'features/items/utils/read-import-file.util';
 import { normalizeJobsPayload } from '../utils/normalize-jobs-payload.util';
 
 export const jobsApi = {
+  previewWishlistImport: (payload: {
+    listId?: string | null;
+    fileName: string;
+    format?: ImportFileFormat | null;
+    content: string;
+    contentEncoding: ImportContentEncoding;
+    allowAi: boolean;
+  }) =>
+    apiClient.post<ImportPreviewResult>(
+      '/api/jobs/wishlist-import/preview',
+      {
+        ListId: payload.listId,
+        FileName: payload.fileName,
+        Format: payload.format,
+        Content: payload.content,
+        ContentEncoding: payload.contentEncoding,
+        AllowAi: payload.allowAi,
+      },
+      'Jobs'
+    ),
+
   startWishlistImport: (payload: {
     mode: 'create-list' | 'existing-list';
     listId?: string | null;
@@ -14,6 +36,7 @@ export const jobsApi = {
     content: string;
     contentEncoding: ImportContentEncoding;
     grabInfo: boolean;
+    allowAi: boolean;
   }) =>
     apiClient.post<BackgroundJobView>(
       '/api/jobs/wishlist-import',
@@ -26,6 +49,7 @@ export const jobsApi = {
         Content: payload.content,
         ContentEncoding: payload.contentEncoding,
         GrabInfo: payload.grabInfo,
+        AllowAi: payload.allowAi,
       },
       'Jobs'
     ),

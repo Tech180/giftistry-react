@@ -153,18 +153,6 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
               </div>
             </div>
           </div>
-          <SettingGroup>
-            <SettingItem
-              title="Email verified"
-              description="Mark this account as having a verified email address."
-            >
-              <Switch
-                checked={profileForm.emailVerified}
-                onChange={(checked) => onProfileFormChange({ emailVerified: checked })}
-                aria-label="Email verified"
-              />
-            </SettingItem>
-          </SettingGroup>
           <div className={`${styles['actions-row']} ${styles['actions-row-split']}`}>
             <div>
               {canDeleteAccount && (

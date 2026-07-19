@@ -7,13 +7,18 @@ import {
 } from 'shared/utils/parse-item-description.util';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
 
-export function getLinkedItemIds(item: Pick<Item, 'Description'>): string[] {
+export function getLinkedItemIds(
+  item: Pick<Item, 'Description' | 'Metadata'>
+): string[] {
+  if (item.Metadata != null && Array.isArray(item.Metadata.LinkedItemIds)) {
+    return item.Metadata.LinkedItemIds;
+  }
   const { metadata } = parseItemDescription(item.Description);
   return metadata?.LinkedItemIds ?? [];
 }
 
 export function resolveLinkedItems(
-  item: Pick<Item, 'Description' | 'Id'>,
+  item: Pick<Item, 'Description' | 'Metadata' | 'Id'>,
   wishlistItems: Item[]
 ): Item[] {
   return getLinkedItemIds(item)
@@ -76,9 +81,15 @@ function hasMetadataBeyondLinks(metadata: ItemDescriptionMetadata): boolean {
 }
 
 export function buildDescriptionWithLinkedIds(
-  item: Pick<Item, 'Description'>,
+  item: Pick<Item, 'Description' | 'Metadata'>,
   linkedIds: string[]
 ): string | null {
+  // Prefer Metadata when present; only rewrite Description for legacy rows
+  // that still store link ids in the JSON Description blob.
+  if (item.Metadata != null) {
+    return item.Description ?? null;
+  }
+
   const parsed = parseItemDescription(item.Description);
   const metadata: ItemDescriptionMetadata = { ...(parsed.metadata ?? {}) };
 

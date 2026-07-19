@@ -57,7 +57,6 @@
   color: var(--primary-text);
   border-color: var(--button-primary-border);
   box-shadow: var(--button-shadow);
-  text-shadow: 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 .primary:hover:not(:disabled){
@@ -76,7 +75,6 @@
   color: var(--button-secondary-text);
   border-color: var(--button-secondary-border);
   box-shadow: var(--button-secondary-shadow);
-  text-shadow: 1px 2px 0 rgba(0, 0, 0, 0.15);
 }
 
 .secondary:hover:not(:disabled){
@@ -179,4 +177,125 @@
 
 .icon-only .icon{
   z-index: 1;
+}
+
+/* --- Rainbow effect button overrides --- */
+.effect-rainbow {
+  position: relative;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--button-radius, var(--radius));
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #5e42f8 40%, transparent) 0%,
+    color-mix(in srgb, #f15565 40%, transparent) 100%
+  );
+  filter: blur(1rem);
+  opacity: 0.6;
+  z-index: 0;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(2px) scale(0.95);
+}
+
+.effect-rainbow:hover:not(:disabled) .glow {
+  opacity: 0.85;
+  filter: blur(1.25rem);
+  transform: translateY(2px) scale(1.02);
+}
+
+.border-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--button-radius, var(--radius));
+  padding: 1px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.border-gradient {
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    transparent 30%,
+    #5e42f8 40%,
+    #b656cb 50%,
+    #f15565 60%,
+    transparent 70%,
+    transparent 100%
+  );
+  animation: button-rainbow-spin 4s linear infinite;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: calc(var(--button-radius, var(--radius)) - 1px);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.primary .inner {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+
+.primary:hover:not(:disabled) .inner {
+  background: var(--primary-hover);
+}
+
+.secondary .inner {
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+}
+
+.secondary:hover:not(:disabled) .inner {
+  background: var(--surface-hover);
+}
+
+/* Match inner padding to standard button size paddings since the button container padding is 0 */
+.sm .inner {
+  padding: var(--spacing-xs) var(--spacing-base);
+}
+
+.md .inner {
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.lg .inner {
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+@keyframes button-rainbow-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

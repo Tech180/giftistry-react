@@ -2,25 +2,17 @@ import React, { useState } from 'react';
 import { wishlistsApi } from 'features/wishlists/api/wishlists.api';
 import { FormProps } from './interfaces/form.interface';
 import { ShareFormTemplate } from './form.html';
-import { useAuth } from 'app/providers/auth-context';
 
 export const ShareForm: React.FC<FormProps> = ({ listId, onSuccess }) => {
-  const { user } = useAuth();
-  const isUnverified = user ? !user.EmailVerified : false;
-
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'viewer' | 'collaborator'>('viewer');
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isUnverified) {
-      setErrorMsg('Please verify your email address to share wishlists.');
-      return;
-    }
 
     if (!email.trim()) {
       setErrorMsg('Please enter an email address.');
@@ -54,7 +46,6 @@ export const ShareForm: React.FC<FormProps> = ({ listId, onSuccess }) => {
       errorMsg={errorMsg}
       successMsg={successMsg}
       handleSubmit={handleSubmit}
-      isUnverified={isUnverified}
     />
   );
 };

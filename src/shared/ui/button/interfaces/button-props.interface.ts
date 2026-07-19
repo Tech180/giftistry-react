@@ -7,4 +7,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   iconOnly?: boolean;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
+  effect?: 'none' | 'rainbow';
+  gradientId?: string;
 }

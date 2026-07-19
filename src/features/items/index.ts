@@ -1,6 +1,7 @@
 export * from './components/card/item-card.component';
 export * from './components/form/add-item-form.component';
 export { ADD_ITEM_FORM_ID } from './components/form/add-item-form.html';
+export * from './interfaces/item-actions.interface';
 export * from './hooks/use-item-controller';
 export * from './api/items.api';
 export * from './interfaces/item.interface';
@@ -25,3 +26,7 @@ export {
 } from './utils/item-view-mode.util';
 export { ItemCardRouter } from './components/views/item-card-router.component';
 export { ImportStrip } from './components/import/import-strip/import-strip.component';
+export type { ImportStripHandle } from './components/import/import-strip/interfaces/import-strip-handle.interface';
+export { ImportDropzone } from './components/import/import-dropzone/import-dropzone.component';
+export type { WishlistImportExtension } from './constants/wishlist-import.constants';
+export { getWishlistImportFormatOptions } from './constants/wishlist-import.constants';

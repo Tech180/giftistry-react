@@ -1,6 +1,6 @@
 import React from 'react';
-import { Calendar, Tag, AlertCircle, ChevronDown } from 'lucide-react';
-import { Input, Button } from 'shared/ui';
+import { ChevronDown, Bot, Globe, ArrowRight, Loader2 } from 'lucide-react';
+import { Input, Switch } from 'shared/ui';
 import { CreateListFormTemplateProps } from '../../interfaces/create-list-form-template-props.interface';
 import styles from './create-list-form.module.css';
 
@@ -26,147 +26,183 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
   setWebSearchEnabled,
   globalAiEnabled,
   globalWebSearchEnabled,
-  isUnverified = false,
+  onCancel,
 }) => {
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
+    <form onSubmit={handleSubmit} className={styles.form} noValidate>
       {errorMsg && (
         <div className={`${styles.alert} animate-slide-up`}>
-          <AlertCircle size={16} />
+          <Loader2 size={16} style={{ display: 'none' }} />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      <Input
-        label="Wishlist Title *"
-        type="text"
-        placeholder="Birthday Wishlist 2026"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        leftIcon={<Tag size={16} />}
-        required
-      />
-
-      <div className={styles['form-group']}>
-        <label className={styles.label}>Category</label>
-        <div className={styles['select-wrapper']}>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className={styles.select}
-          >
-            <option value="generic">General</option>
-            <option value="birthday">Birthday</option>
-            <option value="holiday">Holiday</option>
-            <option value="wedding">Wedding</option>
-            <option value="custom">Custom...</option>
-          </select>
-          <ChevronDown size={16} className={styles['select-icon']} />
-        </div>
-      </div>
-
-      {category === 'custom' && (
+      <div className={styles['form-scroll-content']}>
+        {/* Title Input */}
         <Input
-          label="Custom Category Name *"
+          label="Wishlist Title *"
           type="text"
-          placeholder="Housewarming, Graduation"
-          value={customCategory}
-          onChange={(e) => setCustomCategory(e.target.value)}
-          leftIcon={<Tag size={16} />}
+          placeholder="e.g., Birthday 2026, Office Secret Santa"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className={styles['input-group']}
           required
         />
-      )}
 
-      <Input
-        label="Expiration Date (Optional)"
-        type="date"
-        value={expiresAt}
-        onChange={(e) => setExpiresAt(e.target.value)}
-        leftIcon={<Calendar size={16} />}
-      />
+        <div className={styles['category-section']}>
+          {/* Category & Expiration Row */}
+          <div className={styles['row-split']}>
+            {/* Category */}
+            <div className={styles['flex-3']}>
+              <label className={styles.label}>Category</label>
+              <div className={styles['select-wrapper']}>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className={styles.select}
+                >
+                  <option value="generic">General</option>
+                  <option value="birthday">Birthday</option>
+                  <option value="holiday">Holiday</option>
+                  <option value="wedding">Wedding</option>
+                  <option value="custom">Custom...</option>
+                </select>
+                <span className={styles['select-icon']}>
+                  <ChevronDown size={16} />
+                </span>
+              </div>
+            </div>
 
-      <div className={styles['checkbox-wrapper']}>
-        <label className={styles['checkbox-label']}>
-          <input
-            type="checkbox"
-            checked={allowGroupFunds}
-            onChange={(e) => setAllowGroupFunds(e.target.checked)}
-            className={styles.checkbox}
-          />
-          <span className={styles['checkbox-text']}>
-            <strong>Enable Group Funding</strong>
-            <span className={styles['checkbox-subtext']}>
-              Allows friends to pool money together to claim high-ticket items.
-            </span>
-          </span>
-        </label>
+            {/* Date */}
+            <div className={styles['flex-2']}>
+              <Input
+                label="Date (Optional)"
+                type="date"
+                value={expiresAt}
+                onChange={(e) => setExpiresAt(e.target.value)}
+                className={styles['input-group']}
+              />
+            </div>
+          </div>
+
+          {/* Custom Category Input (always in DOM, animated via styles['grid-collapse']) */}
+          <div className={`${styles['grid-collapse']} ${category === 'custom' ? styles['is-open'] : ''}`}>
+            <div>
+              <Input
+                label="Custom Category Name *"
+                type="text"
+                placeholder="e.g., Baby Shower"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                className={styles['input-group']}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.divider}></div>
+
+        <div className={styles['advanced-options']}>
+          <h3 className={styles['advanced-title']}>Advanced Options</h3>
+
+          {/* Group Funding Toggle */}
+          <div className={styles['toggle-wrapper']}>
+            <div className={styles['toggle-text-block']}>
+              <div className={styles['toggle-title']}>Group Funding</div>
+              <div className={styles['toggle-description']}>Allow friends to pool money together for expensive items on this list.</div>
+            </div>
+            <Switch
+              checked={allowGroupFunds}
+              onChange={setAllowGroupFunds}
+              aria-label="Group Funding"
+            />
+          </div>
+
+          {/* Reveal Suggestions Toggle */}
+          <div className={styles['toggle-wrapper']}>
+            <div className={styles['toggle-text-block']}>
+              <div className={styles['toggle-title']}>Reveal Suggestions</div>
+              <div className={styles['toggle-description']}>Keep user suggestions anonymous until the list's expiration date passes.</div>
+            </div>
+            <Switch
+              checked={revealSuggestions}
+              onChange={setRevealSuggestions}
+              aria-label="Reveal Suggestions"
+            />
+          </div>
+
+          {/* AI Features Toggle Card */}
+          {globalAiEnabled && (
+            <div className={styles['ai-section-card']}>
+              <div className={styles['toggle-wrapper']}>
+                <div className={styles['toggle-text-block']}>
+                  <div className={`${styles['toggle-title']} ${styles['ai-title']}`}>
+                    <Bot size={16} className={styles['ai-icon']} />
+                    Enable AI Features
+                  </div>
+                  <div className={styles['toggle-description']}>Automatically generate summaries and extract product details from URLs.</div>
+                </div>
+                <Switch
+                  checked={aiEnabled}
+                  onChange={setAiEnabled}
+                  aria-label="Enable AI Features"
+                />
+              </div>
+
+              {/* Nested Web Search Toggle */}
+              {globalWebSearchEnabled && (
+                <div className={`${styles['grid-collapse']} ${aiEnabled ? styles['is-open'] : ''}`}>
+                  <div className={styles['nested-toggle-container']}>
+                    <div className={`${styles['toggle-wrapper']} ${styles['nested-toggle']} ${!aiEnabled ? styles.disabled : ''}`}>
+                      <div className={styles['nested-title-block']}>
+                        <Globe size={14} className={styles['globe-icon']} />
+                        <span className={styles['nested-text']}>Allow live web search</span>
+                      </div>
+                      <Switch
+                        checked={webSearchEnabled}
+                        onChange={setWebSearchEnabled}
+                        disabled={!aiEnabled}
+                        size="sm"
+                        aria-label="Allow live web search"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+        </div>
       </div>
 
-      <div className={styles['checkbox-wrapper']}>
-        <label className={styles['checkbox-label']}>
-          <input
-            type="checkbox"
-            checked={revealSuggestions}
-            onChange={(e) => setRevealSuggestions(e.target.checked)}
-            className={styles.checkbox}
-          />
-          <span className={styles['checkbox-text']}>
-            <strong>Reveal Suggestions After Expiration</strong>
-            <span className={styles['checkbox-subtext']}>
-              Collaborators can suggest gifts anonymously. Reveal who suggested what after the list expires.
+      {/* Sticky footer buttons */}
+      <div className={styles.footer}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className={styles['cancel-btn']}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={`${styles['submit-btn']} ${isLoading ? styles.loading : ''}`}
+        >
+          {isLoading ? (
+            <span className={styles['spinner-wrapper']}>
+              <Loader2 size={16} className={styles.spinner} />
+              Saving...
             </span>
-          </span>
-        </label>
+          ) : (
+            <span className={styles['btn-text']}>
+              Create Wishlist
+              <ArrowRight size={14} className={styles['arrow-icon']} />
+            </span>
+          )}
+        </button>
       </div>
 
-      {globalAiEnabled && (
-        <div className={styles['checkbox-wrapper']}>
-          <label className={styles['checkbox-label']}>
-            <input
-              type="checkbox"
-              checked={aiEnabled}
-              onChange={(e) => setAiEnabled(e.target.checked)}
-              className={styles.checkbox}
-            />
-            <span className={styles['checkbox-text']}>
-              <strong>Enable AI Reviews on Items</strong>
-              <span className={styles['checkbox-subtext']}>
-                Automatically generates product summaries, pros and cons, and compiles representative reviews.
-              </span>
-            </span>
-          </label>
-        </div>
-      )}
-
-      {globalAiEnabled && globalWebSearchEnabled && (
-        <div className={styles['checkbox-wrapper']}>
-          <label className={styles['checkbox-label']}>
-            <input
-              type="checkbox"
-              checked={webSearchEnabled}
-              onChange={(e) => setWebSearchEnabled(e.target.checked)}
-              disabled={!aiEnabled}
-              className={styles.checkbox}
-            />
-            <span className={styles['checkbox-text']}>
-              <strong>Enable Web Search</strong>
-              <span className={styles['checkbox-subtext']}>
-                Lets AI look up product pages and enrich item details when grabbing info.
-              </span>
-            </span>
-          </label>
-        </div>
-      )}
-
-      <Button
-        type="submit"
-        variant="primary"
-        isLoading={isLoading}
-        disabled={isUnverified}
-        className={styles['submit-btn']}
-      >
-        Create Wishlist
-      </Button>
     </form>
   );
 };

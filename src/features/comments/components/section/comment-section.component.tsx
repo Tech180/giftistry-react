@@ -25,6 +25,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   ownerUsername,
   ownerDisplayName,
   isOwner,
+  isExpired = false,
   items = [],
   onItemTaggedClick,
   isTaggingModeActive,
@@ -46,6 +47,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     addComment,
     toggleReaction: toggleReactionHook,
     deleteComment,
+    setComments,
   } = useCommentController();
 
   const [content, setContent] = useState('');
@@ -368,6 +370,51 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
               }
             }
           }
+        } else if (data.Type === 'comment.created') {
+          if (data.Comment) {
+            // Defense in depth: server should already omit surprise events for owners.
+            if (isOwner && !isExpired && data.Comment.IsOwnerVisible === false) {
+              return;
+            }
+            setComments(prev => {
+              if (prev.some(c => c.Id === data.Comment.Id)) return prev;
+              return [...prev, data.Comment];
+            });
+          }
+        } else if (data.Type === 'comment.deleted') {
+          if (data.CommentId) {
+            setComments(prev =>
+              prev.map(c =>
+                c.Id === data.CommentId
+                  ? { ...c, IsDeleted: true, Content: 'Comment was deleted.' }
+                  : c
+              )
+            );
+          }
+        } else if (data.Type === 'reaction.toggled') {
+          if (data.CommentId) {
+            setComments(prev =>
+              prev.map(c => {
+                if (c.Id !== data.CommentId) return c;
+                const existing = c.Reactions || [];
+                let newReactions = [...existing];
+                if (data.Added) {
+                  if (!newReactions.some(r => r.UserId === data.UserId && r.Reaction === data.Reaction)) {
+                    newReactions.push({
+                      UserId: data.UserId,
+                      Username: data.Username,
+                      Reaction: data.Reaction
+                    });
+                  }
+                } else {
+                  newReactions = newReactions.filter(
+                    r => !(r.UserId === data.UserId && r.Reaction === data.Reaction)
+                  );
+                }
+                return { ...c, Reactions: newReactions };
+              })
+            );
+          }
         }
       } catch (err) {
         console.error('Error parsing WS message:', err);
@@ -385,7 +432,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       socketRef.current = null;
       Object.values(currentTimeoutMap).forEach(clearTimeout);
     };
-  }, [listId, user, isAuthenticated]);
+  }, [listId, user, isAuthenticated, setComments, isOwner, isExpired]);
 
   const handleContentChange = (val: string) => {
     setContent(val);

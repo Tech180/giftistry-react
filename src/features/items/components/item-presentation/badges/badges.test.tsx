@@ -41,4 +41,18 @@ describe('Badges', () => {
 
     expect(screen.queryByText('Priority 1')).not.toBeInTheDocument();
   });
+
+  it('shows Everyone audience with globe affordance', () => {
+    const { container } = render(
+      <Badges
+        item={baseItem}
+        audienceLabel="Everyone"
+        isPrivate={false}
+        showPriority={false}
+      />
+    );
+
+    expect(screen.getByText('Everyone')).toBeInTheDocument();
+    expect(container.querySelector('svg')).toBeTruthy();
+  });
 });

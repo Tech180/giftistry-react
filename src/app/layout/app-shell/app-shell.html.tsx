@@ -10,17 +10,19 @@ export const AppShellTemplate: React.FC<AppShellProps> = ({
   isSettingsPage = false,
   hasBanner = false,
   isFullWidth = false,
+  isAuthPage = false,
 }) => (
   <div className={styles.container}>
-    {navigation}
-    {banner}
+    {!isAuthPage && navigation}
+    {!isAuthPage && banner}
     <EnterPanel
       as="main"
       animation="fade"
       className={[
         isSettingsPage ? styles['settings-main'] : styles.main,
         isFullWidth ? styles['full-width'] : '',
-        hasBanner ? styles['has-banner'] : '',
+        hasBanner && !isAuthPage ? styles['has-banner'] : '',
+        isAuthPage ? styles['auth-main'] : '',
       ].filter(Boolean).join(' ')}
     >
       {children}

@@ -1,7 +1,8 @@
 import {
   WISHLIST_IMPORT_MAX_BYTES,
   WISHLIST_IMPORT_SIZE_ERROR,
-  WISHLIST_IMPORT_TYPE_ERROR,
+  getWishlistImportAllowedExtensions,
+  getWishlistImportTypeError,
 } from '../constants/wishlist-import.constants';
 import type { ImportFileFormat } from '../interfaces/import-file-format.interface';
 import { detectImportFormat } from './detect-import-format.util';
@@ -17,6 +18,7 @@ export interface ReadImportFileResult {
 
 export interface ReadImportFileOptions {
   onProgress?: (percent: number) => void;
+  allowAi?: boolean;
 }
 
 function clampPercent(value: number): number {
@@ -56,9 +58,11 @@ export async function readImportFile(
     throw new Error(WISHLIST_IMPORT_SIZE_ERROR);
   }
 
+  const allowAi = options.allowAi ?? false;
   const format = detectImportFormat(file.name);
-  if (format === 'unknown') {
-    throw new Error(WISHLIST_IMPORT_TYPE_ERROR);
+  const allowed = getWishlistImportAllowedExtensions(allowAi) as readonly string[];
+  if (format === 'unknown' || !allowed.includes(format)) {
+    throw new Error(getWishlistImportTypeError(allowAi));
   }
 
   options.onProgress?.(0);

@@ -1,9 +1,15 @@
 import styles from './wishlist-detail.module.css';
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Download, MessageSquare, Settings, Share2, Upload } from 'lucide-react';
 import { wishlistsApi, Wishlist, Priority } from 'features/wishlists';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
-import { useItemController, Item } from 'features/items';
+import {
+  useItemController,
+  Item,
+  type ImportStripHandle,
+  ImportDropzone,
+} from 'features/items';
 import {
   ITEM_VIEW_MODE_STORAGE_KEY,
 } from 'features/items/constants/item-view-mode.constants';
@@ -13,19 +19,28 @@ import {
 import type { ItemViewMode } from 'features/items/types/item-view-mode.type';
 import { useAuth } from 'app/providers/auth-context';
 import { useToast } from 'app/providers/toast-context';
+import { useRegisterPageActions } from 'app/providers/mobile-page-actions-context';
+import type { FloatingAction } from 'shared/ui';
 import { useWishlistJob, formatImportJobSummary, claimImportJobTerminalToast } from 'features/jobs';
 import { WishlistDetailTemplate } from './wishlist-detail.html';
+import { ListSettingsPanel } from './components/list-settings-panel/list-settings-panel.component';
 import { getFriendlyCategoryLabel, normalizeCategoryLabel } from 'features/items/utils/category-label.util';
-import { canViewItem, canLinkItemsByAudience, linkingContextFromItem, LinkingAudienceContext } from 'features/items/utils/item-audience.util';
+import { canLinkItemsByAudience, linkingContextFromItem, LinkingAudienceContext } from 'features/items/utils/item-audience.util';
 import { resolveEditorLinkedItemIds } from 'features/items/utils/item-links-sync.util';
 import { isWishlistExpired } from 'features/wishlists/utils/is-wishlist-expired.util';
-import { getItemFavoriteFlag } from 'shared/utils/parse-item-description.util';
 import { formatWishlistExpirationDate } from 'shared/utils/format-date.util';
+import {
+  exportToCsv,
+  exportToJson,
+  exportToPdf,
+  exportToTxt,
+  exportToXlsx,
+} from 'shared/utils/wishlist-export';
 
 export default function WishlistDetail() {
   const { listId } = useParams<{ listId: string }>();
   const navigate = useNavigate();
-  const { user, canShowWebSearch } = useAuth();
+  const { user, canShowWebSearch, canShowAi } = useAuth();
   const { showToast } = useToast();
   const {
     job: activeJob,
@@ -41,10 +56,11 @@ export default function WishlistDetail() {
   const [listShares, setListShares] = useState<ListShare[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { items, isLoading: isItemsLoading, fetchItems } = useItemController();
+  const { items, itemGroups, isLoading: isItemsLoading, fetchItems, itemActions } = useItemController();
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const importStripRef = useRef<ImportStripHandle>(null);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
@@ -67,6 +83,30 @@ export default function WishlistDetail() {
   );
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(new Set());
+
+  // Synchronize inspector sidebar states for Grid view
+  useEffect(() => {
+    if (viewMode === 'grid' && selectedItemId !== null) {
+      setIsCommentsOpen(false);
+      setIsAddOpen(false);
+      setEditingItem(null);
+    }
+  }, [selectedItemId, viewMode]);
+
+  useEffect(() => {
+    if (viewMode === 'grid' && isCommentsOpen) {
+      setSelectedItemId(null);
+      setIsAddOpen(false);
+      setEditingItem(null);
+    }
+  }, [isCommentsOpen, viewMode]);
+
+  useEffect(() => {
+    if (viewMode === 'grid' && (isAddOpen || editingItem)) {
+      setSelectedItemId(null);
+      setIsCommentsOpen(false);
+    }
+  }, [isAddOpen, editingItem, viewMode]);
 
   const handleSetViewMode = (mode: ItemViewMode) => {
     setSelectedItemId(null);
@@ -98,9 +138,8 @@ export default function WishlistDetail() {
     );
   }, []);
 
-  const loadData = useCallback(async () => {
+  const reloadListContent = useCallback(async () => {
     if (!listId) return;
-    setIsWishlistLoading(true);
     setWishlistError(null);
     try {
       const [wl, prio, shares] = await Promise.all([
@@ -111,22 +150,30 @@ export default function WishlistDetail() {
       setWishlist(wl);
       setPriorities(prio || []);
       setListShares(shares || []);
-      await fetchItems(listId);
+      await fetchItems(listId, { silent: true });
     } catch (err) {
       setWishlistError(err instanceof Error ? err.message : 'Failed to load wishlist.');
-    } finally {
-      setIsWishlistLoading(false);
     }
   }, [listId, fetchItems]);
 
   const softReloadItems = useCallback(async () => {
     if (!listId) return;
     try {
-      await fetchItems(listId);
+      await fetchItems(listId, { silent: true });
     } catch {
       /* keep current items on transient job refresh failures */
     }
   }, [listId, fetchItems]);
+
+  const loadData = useCallback(async () => {
+    if (!listId) return;
+    setIsWishlistLoading(true);
+    try {
+      await reloadListContent();
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  }, [listId, reloadListContent]);
 
   useEffect(() => {
     loadData();
@@ -326,6 +373,127 @@ export default function WishlistDetail() {
     }
   };
 
+  const pageActions = useMemo((): FloatingAction[] => {
+    if (!wishlist) return [];
+
+    const exporterName = user?.FirstName || user?.Username || 'Export';
+    const exportContext = {
+      exporterName,
+      isOwner,
+      currentUserId: user?.Id,
+    };
+
+    const actions: FloatingAction[] = [];
+
+    if (canCollaborate && !isExpired) {
+      actions.push({
+        id: 'import',
+        label: 'Import',
+        icon: <Upload size={18} aria-hidden />,
+        panelWidth: 288,
+        panelHeight: 268,
+        panelContent: ({ closeMenu }) => (
+          <ImportDropzone
+            variant="menu"
+            allowAi={Boolean(canShowAi && wishlist.AiEnabled)}
+            onFileSelected={(file) => {
+              setIsImportOpen(true);
+              importStripRef.current?.acceptFile(file);
+              closeMenu();
+            }}
+          />
+        ),
+      });
+    }
+
+    actions.push({
+      id: 'export',
+      label: 'Export',
+      icon: <Download size={18} aria-hidden />,
+      children: [
+        {
+          id: 'csv',
+          label: 'CSV',
+          onClick: () => exportToCsv(wishlist.Id, wishlist.Title, exportContext),
+        },
+        {
+          id: 'xlsx',
+          label: 'XLSX',
+          onClick: () => exportToXlsx(wishlist.Id, wishlist.Title, exportContext),
+        },
+        {
+          id: 'txt',
+          label: 'TXT',
+          onClick: () => exportToTxt(wishlist.Id, wishlist.Title, exportContext),
+        },
+        {
+          id: 'json',
+          label: 'JSON',
+          onClick: () => exportToJson(wishlist.Id, wishlist.Title, exportContext),
+        },
+        {
+          id: 'pdf',
+          label: 'PDF',
+          onClick: () => exportToPdf(wishlist.Id, wishlist.Title, exportContext),
+        },
+      ],
+    });
+
+    actions.push({
+      id: 'comments',
+      label: 'Comments',
+      icon: <MessageSquare size={18} aria-hidden />,
+      onClick: () => setIsCommentsOpen((prev) => !prev),
+    });
+
+    if (isOwner) {
+      actions.push({
+        id: 'share',
+        label: 'Share',
+        icon: <Share2 size={18} aria-hidden />,
+        onClick: () => setIsShareOpen(true),
+      });
+
+      if (canShowAi || canShowWebSearch) {
+        actions.push({
+          id: 'settings',
+          label: 'Settings',
+          icon: <Settings size={18} aria-hidden />,
+          panelWidth: 260,
+          panelHeight: canShowAi && canShowWebSearch ? 176 : 132,
+          panelContent: (
+            <ListSettingsPanel
+              aiEnabled={!!wishlist.AiEnabled}
+              webSearchEnabled={!!wishlist.WebSearchEnabled}
+              canShowAi={canShowAi}
+              canShowWebSearch={canShowWebSearch}
+              onToggleAi={() => {
+                void toggleAiEnabled();
+              }}
+              onToggleWebSearch={() => {
+                void toggleWebSearchEnabled();
+              }}
+            />
+          ),
+        });
+      }
+    }
+
+    return actions;
+  }, [
+    wishlist,
+    user?.FirstName,
+    user?.Username,
+    user?.Id,
+    isOwner,
+    canCollaborate,
+    isExpired,
+    canShowAi,
+    canShowWebSearch,
+  ]);
+
+  useRegisterPageActions(pageActions);
+
   const handleDeactivateConfirm = async () => {
     if (!wishlist) return;
 
@@ -442,49 +610,53 @@ export default function WishlistDetail() {
     });
   }, [items, editingItem, editingItemDraft]);
 
-  const visibleItems = useMemo(() => {
-    return displayItems.filter((item) => canViewItem(item, user?.Id, isOwner));
-  }, [displayItems, user?.Id, isOwner]);
+  const visibleItems = useMemo(() => displayItems, [displayItems]);
 
   const groupedItems = useMemo(() => {
-    const filtered = visibleItems.filter((item) => {
+    const matchesQuery = (item: Item) => {
       const query = searchQuery.toLowerCase().trim();
       if (!query) return true;
       return (
         item.Name.toLowerCase().includes(query) ||
         (item.Description && item.Description.toLowerCase().includes(query))
       );
-    });
+    };
 
+    if (itemGroups && itemGroups.length > 0) {
+      return itemGroups
+        .map((group) => ({
+          categoryKey: group.CategoryKey,
+          label: group.CategoryLabel,
+          items: group.Items.filter((item) => {
+            const inVisible = visibleItems.some((visible) => visible.Id === item.Id);
+            return inVisible && matchesQuery(item);
+          }),
+        }))
+        .filter((group) => group.items.length > 0);
+    }
+
+    const filtered = visibleItems.filter(matchesQuery);
+
+    // Preserve server export order within each category group.
     const groups: { [categoryKey: string]: { label: string; items: Item[] } } = {};
 
     for (const item of filtered) {
-      const raw = item.Category && item.Category.trim() ? item.Category.trim() : 'uncategorized';
-      const cat = normalizeCategoryLabel(raw);
+      const cat =
+        item.CategoryKey ||
+        normalizeCategoryLabel(
+          item.Category && item.Category.trim() ? item.Category.trim() : 'uncategorized'
+        );
       if (!groups[cat]) {
         groups[cat] = {
-          label: cat === 'uncategorized' ? 'General Items' : getFriendlyCategoryLabel(raw),
+          label:
+            item.CategoryLabel ||
+            (cat === 'uncategorized'
+              ? 'General Items'
+              : getFriendlyCategoryLabel(item.Category || cat)),
           items: [],
         };
       }
       groups[cat].items.push(item);
-    }
-
-    // Sort items within each category: favorites first, then by ascending numeric Priority, nulls last
-    for (const key of Object.keys(groups)) {
-      groups[key].items.sort((a, b) => {
-        const aFav = getItemFavoriteFlag(a.Description);
-        const bFav = getItemFavoriteFlag(b.Description);
-        if (aFav && !bFav) return -1;
-        if (!aFav && bFav) return 1;
-
-        const aPri = a.Priority ?? null;
-        const bPri = b.Priority ?? null;
-        if (aPri !== null && bPri !== null) return aPri - bPri;
-        if (aPri !== null && bPri === null) return -1;
-        if (aPri === null && bPri !== null) return 1;
-        return 0;
-      });
     }
 
     // Sort groups: named categories first (alphabetically), uncategorized last
@@ -496,7 +668,7 @@ export default function WishlistDetail() {
         if (b.categoryKey === 'uncategorized') return -1;
         return a.label.localeCompare(b.label);
       });
-  }, [visibleItems, searchQuery]);
+  }, [visibleItems, searchQuery, itemGroups]);
 
   const selectedItem = useMemo(() => {
     return visibleItems.find((i) => i.Id === selectedItemId);
@@ -543,6 +715,9 @@ export default function WishlistDetail() {
       isItemLinkCompatible={isItemLinkCompatible}
       handleLinkItemToggle={handleLinkItemToggle}
       loadData={loadData}
+      reloadListContent={reloadListContent}
+      onItemsChange={softReloadItems}
+      itemActions={itemActions}
       confirmAction={confirmAction}
       setConfirmAction={setConfirmAction}
       isDeactivating={isDeactivating}
@@ -562,6 +737,7 @@ export default function WishlistDetail() {
       setIsShareOpen={setIsShareOpen}
       isImportOpen={isImportOpen}
       setIsImportOpen={setIsImportOpen}
+      importStripRef={importStripRef}
       viewMode={viewMode}
       handleSetViewMode={handleSetViewMode}
       searchQuery={searchQuery}
@@ -592,6 +768,7 @@ export default function WishlistDetail() {
       onCancelJob={() => {
         void handleCancelJob();
       }}
+      canShowAi={canShowAi}
     />
   );
 }

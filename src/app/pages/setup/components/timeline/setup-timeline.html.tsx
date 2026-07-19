@@ -1,6 +1,6 @@
 import React from 'react';
-import styles from './setup-timeline.module.css';
 import { Check } from 'lucide-react';
+import styles from './setup-timeline.module.css';
 import { SetupTimelineTemplateProps } from './interfaces/setup-timeline-template-props.interface';
 
 export const SetupTimelineTemplate: React.FC<SetupTimelineTemplateProps> = ({
@@ -8,29 +8,38 @@ export const SetupTimelineTemplate: React.FC<SetupTimelineTemplateProps> = ({
   steps,
 }) => {
   return (
-    <div className={styles.timeline}>
-      {steps.map((s) => {
-        const isActive = step === s.id;
-        const isCompleted = step > s.id;
-        const Icon = s.icon;
+    <nav aria-label="Progress" className={styles.nav}>
+      <ol className={styles.timeline}>
+        {steps.map((s, index) => {
+          const isLast = index === steps.length - 1;
+          const completed = step >= 4 ? true : step > s.id;
+          const active = step >= 4 ? false : step === s.id;
 
-        return (
-          <div
-            key={s.id}
-            className={`${styles.step} ${isActive ? styles['step-active'] : ''} ${
-              isCompleted ? styles['step-completed'] : ''
-            }`}
-          >
-            <div className={styles['step-circle']}>
-              {isCompleted ? <Check size={14} /> : <Icon size={14} />}
-            </div>
-            <div className={styles['step-info']}>
-              <span className={styles['step-label']}>{s.label}</span>
-              <span className={styles['step-desc']}>{s.desc}</span>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+          return (
+            <li
+              key={s.id}
+              className={`${styles.step} ${active ? styles['step-active'] : ''} ${
+                completed ? styles['step-completed'] : ''
+              }`}
+            >
+              {!isLast && <div className={styles['step-line']} aria-hidden="true" />}
+              <div className={styles['step-row']}>
+                <span className={styles['step-circle']}>
+                  {completed ? (
+                    <Check size={12} className={styles['check-icon']} />
+                  ) : (
+                    <span className={styles['step-number']}>{s.id}</span>
+                  )}
+                </span>
+                <span className={styles['step-info']}>
+                  <span className={styles['step-label']}>{s.label}</span>
+                  <span className={styles['step-desc']}>{s.desc}</span>
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 };

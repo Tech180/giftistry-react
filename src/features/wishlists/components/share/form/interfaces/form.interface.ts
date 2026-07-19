@@ -14,5 +14,4 @@ export interface FormTemplateProps {
   errorMsg: string | null;
   successMsg: string | null;
   handleSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
-  isUnverified?: boolean;
 }

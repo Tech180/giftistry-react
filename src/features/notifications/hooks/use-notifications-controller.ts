@@ -1,11 +1,29 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { notificationsApi } from '../api/notifications.api';
 import { Notification } from '../interfaces/notification.interface';
+import { useUserSocket } from 'app/providers/user-socket-context';
 
 export const useNotificationsController = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { addEventListener, removeEventListener } = useUserSocket();
+
+  useEffect(() => {
+    const handleNewNotification = (data: any) => {
+      if (data && data.Notification) {
+        setNotifications((prev) => {
+          if (prev.some((n) => n.Id === data.Notification.Id)) return prev;
+          return [data.Notification, ...prev];
+        });
+      }
+    };
+
+    addEventListener('notification.received', handleNewNotification);
+    return () => {
+      removeEventListener('notification.received', handleNewNotification);
+    };
+  }, [addEventListener, removeEventListener]);
 
   const fetchNotifications = useCallback(async () => {
     setIsLoading(true);

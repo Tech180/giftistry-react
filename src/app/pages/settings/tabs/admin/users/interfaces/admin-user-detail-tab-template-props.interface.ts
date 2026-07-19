@@ -8,7 +8,6 @@ export interface AdminUserProfileFormState {
   firstName: string;
   lastName: string;
   bio: string;
-  emailVerified: boolean;
 }
 
 export interface AdminUserPolicyFlagsState {

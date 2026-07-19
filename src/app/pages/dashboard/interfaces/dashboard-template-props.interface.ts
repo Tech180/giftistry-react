@@ -1,5 +1,6 @@
 import React from 'react';
 import { Wishlist } from 'features/wishlists';
+import type { ImportStripHandle } from 'features/items';
 
 export interface DashboardTab {
   id: string;
@@ -13,6 +14,8 @@ export interface DashboardTemplateProps {
   setIsCreateOpen: (open: boolean) => void;
   isImportOpen: boolean;
   setIsImportOpen: (open: boolean) => void;
+  canShowAi: boolean;
+  importStripRef: React.RefObject<ImportStripHandle | null>;
   activeTab: 'my-lists' | 'shared' | 'archive';
   setActiveTab: (tab: 'my-lists' | 'shared' | 'archive') => void;
   searchQuery: string;

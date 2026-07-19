@@ -20,6 +20,7 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
   ownerUsername,
   ownerDisplayName,
   isOwner,
+  isExpired,
   handleItemTaggedClick,
 }) => {
   const drawerTaggingActive = isTaggingModeActive || isReplyTaggingModeActive;
@@ -31,6 +32,7 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
       position="right"
       title="Comments"
       onClose={onClose}
+      mobilePresentation="sheet"
       overflowVisible={true}
       miniDrawer={
         <MiniDrawer
@@ -56,6 +58,7 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
         ownerUsername={ownerUsername}
         ownerDisplayName={ownerDisplayName}
         isOwner={isOwner}
+        isExpired={isExpired}
         items={items}
         onItemTaggedClick={handleItemTaggedClick}
         isTaggingModeActive={isTaggingModeActive}

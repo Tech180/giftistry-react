@@ -4,7 +4,7 @@ import { useAuth } from 'app/providers/auth-context';
 import { RegisterFormTemplate } from './register-form.html';
 
 export const RegisterForm: React.FC = () => {
-  const { signup, registrationMode } = useAuth();
+  const { signup, registrationMode, requireStrongPasswords } = useAuth();
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
@@ -19,16 +19,34 @@ export const RegisterForm: React.FC = () => {
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (registrationMode === 'disabled') {
-      setLocalError('Registration is currently disabled on this server.');
+    if (registrationMode === 'disabled' || registrationMode === 'invite_only') {
+      setLocalError(
+        registrationMode === 'disabled'
+          ? 'Registration is currently disabled on this server.'
+          : 'Registration is invite-only. Contact an administrator for access.'
+      );
       return;
     }
-    if (!username || !email || !password || !firstName || !lastName) {
+    if (!username || !password || !firstName || !lastName) {
       setLocalError('Please fill out all required fields.');
       return;
     }
 
-    if (password.length < 6) {
+    if (email.trim() && !/\S+@\S+\.\S+/.test(email.trim())) {
+      setLocalError('Please enter a valid email address, or leave it blank.');
+      return;
+    }
+
+    if (requireStrongPasswords) {
+      if (password.length < 8) {
+        setLocalError('Password must be at least 8 characters long.');
+        return;
+      }
+      if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+        setLocalError('Password must include at least one letter and one number.');
+        return;
+      }
+    } else if (password.length < 6) {
       setLocalError('Password must be at least 6 characters long.');
       return;
     }
@@ -42,7 +60,7 @@ export const RegisterForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await signup(username, email, password, firstName, lastName);
+      await signup(username, email.trim() || null, password, firstName, lastName);
       navigate('/dashboard');
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'Registration failed. Username or email may already be taken.');
@@ -53,7 +71,7 @@ export const RegisterForm: React.FC = () => {
 
   return (
     <RegisterFormTemplate
-      registrationClosed={registrationMode === 'disabled'}
+      registrationClosed={registrationMode === 'disabled' || registrationMode === 'invite_only'}
       registrationClosedMessage={
         registrationMode === 'disabled'
           ? 'Registration is currently disabled on this server.'

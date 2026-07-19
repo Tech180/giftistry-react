@@ -9,6 +9,8 @@ export const ImportDropzone: React.FC<ImportDropzoneProps> = ({
   uploadLabel,
   fileName,
   error,
+  allowAi = false,
+  variant = 'default',
   onFileSelected,
   children,
 }) => {
@@ -35,6 +37,8 @@ export const ImportDropzone: React.FC<ImportDropzoneProps> = ({
       uploadLabel={uploadLabel}
       fileName={fileName}
       error={error}
+      allowAi={allowAi}
+      variant={variant}
       children={children}
       onFileSelected={onFileSelected}
       isDragActive={isDragActive}

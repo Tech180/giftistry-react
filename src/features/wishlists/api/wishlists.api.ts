@@ -4,8 +4,19 @@ import { ListShare } from '../interfaces/list-share.interface';
 import { Priority } from '../interfaces/priority.interface';
 
 export const wishlistsApi = {
-  listWishlists: () =>
-    apiClient.get<Wishlist[]>('/api/wishlists'),
+  listWishlists: (params?: {
+    bucket?: 'my' | 'shared' | 'archive' | 'all';
+    q?: string;
+  }) => {
+    const search = new URLSearchParams();
+    if (params?.bucket) search.set('bucket', params.bucket);
+    if (params?.q) search.set('q', params.q);
+    const qs = search.toString();
+    return apiClient.get<{
+      Wishlists: Wishlist[];
+      Counts: { My: number; Shared: number; Archive: number };
+    } | Wishlist[]>(`/api/wishlists${qs ? `?${qs}` : ''}`);
+  },
 
   getWishlist: (listId: string) =>
     apiClient.get<Wishlist>(`/api/wishlists/${listId}`),

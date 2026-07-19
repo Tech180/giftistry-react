@@ -15,6 +15,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSystemInitialized, setIsSystemInitialized] = useState(true);
+  const [systemStatus, setSystemStatus] = useState<'loading' | 'ready' | 'unreachable'>('loading');
+  const [allowSetup, setAllowSetup] = useState(false);
+  const [allowPasswordLogin, setAllowPasswordLogin] = useState(true);
+  const [requireStrongPasswords, setRequireStrongPasswords] = useState(true);
+  const [oauthEnabled, setOauthEnabled] = useState(false);
+  const [oauthButtonText, setOauthButtonText] = useState('Sign in with SSO');
   const [globalAiEnabled, setGlobalAiEnabled] = useState(false);
   const [globalWebSearchEnabled, setGlobalWebSearchEnabled] = useState(false);
   const [registrationMode, setRegistrationMode] = useState<'open' | 'invite_only' | 'disabled'>('open');
@@ -53,10 +59,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const checkSystemStatus = async () => {
+    setSystemStatus('loading');
     try {
       const res = await apiClient.get<SystemStatusResult>('/api/system/status');
+      setSystemStatus('ready');
       if (res && res.Initialized !== undefined) {
         setIsSystemInitialized(Boolean(res.Initialized));
+      }
+      if (res?.AllowSetup !== undefined) {
+        setAllowSetup(Boolean(res.AllowSetup));
+      }
+      if (res?.AllowPasswordLogin !== undefined) {
+        setAllowPasswordLogin(Boolean(res.AllowPasswordLogin));
+      }
+      if (res?.RequireStrongPasswords !== undefined) {
+        setRequireStrongPasswords(Boolean(res.RequireStrongPasswords));
+      }
+      if (res?.OAuthEnabled !== undefined) {
+        setOauthEnabled(Boolean(res.OAuthEnabled));
+      }
+      if (res?.OAuthButtonText) {
+        setOauthButtonText(res.OAuthButtonText);
       }
       if (res && res.AiEnabled !== undefined) {
         setGlobalAiEnabled(Boolean(res.AiEnabled));
@@ -74,16 +97,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setMaintenanceMessage(res.MaintenanceMessage);
       }
     } catch (err) {
-      setIsSystemInitialized(false);
-      setGlobalAiEnabled(false);
-      setGlobalWebSearchEnabled(false);
+      setSystemStatus('unreachable');
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     setError(null);
     try {
-      const res = await authApi.login(email, password);
+      const res = await authApi.login(username, password);
       if (res && res.Token) {
         localStorage.setItem('giftistry-token', res.Token);
       }
@@ -98,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (
     username: string,
-    email: string,
+    email: string | null | undefined,
     password: string,
     firstName?: string,
     lastName?: string
@@ -320,7 +341,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error,
         clearError,
         refreshUser: fetchCurrentUser,
+        systemStatus,
         isSystemInitialized,
+        allowSetup,
+        allowPasswordLogin,
+        requireStrongPasswords,
+        oauthEnabled,
+        oauthButtonText,
         globalAiEnabled,
         globalWebSearchEnabled,
         canShowAi,

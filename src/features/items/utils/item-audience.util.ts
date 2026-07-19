@@ -235,7 +235,7 @@ export function formatAudienceLabel(
   suggestedByUserId?: string | null
 ): string | null {
   if (!sharedWith || sharedWith.length === 0) {
-    return null;
+    return isOwner ? 'Everyone' : null;
   }
 
   if (

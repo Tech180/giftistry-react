@@ -169,9 +169,10 @@ export const ProfileCardTemplate: React.FC<ProfileCardTemplateProps> = ({
               <input
                 type="email"
                 className={styles['input-field']}
-                value={user.Email}
+                value={user.Email ?? ''}
                 disabled
-                title="Contact support to change email"
+                title={user.Email ? 'Contact support to change email' : 'No email on this account'}
+                placeholder="No email set"
               />
             </div>
 

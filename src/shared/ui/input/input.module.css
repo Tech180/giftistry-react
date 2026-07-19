@@ -79,6 +79,10 @@
   padding-left: var(--spacing-2xl);
 }
 
+.has-right-icon{
+  padding-right: var(--spacing-2xl);
+}
+
 .icon{
   position: absolute;
   left: var(--spacing-base);
@@ -90,6 +94,11 @@
   pointer-events: none;
 }
 
+.icon-right{
+  left: auto;
+  right: var(--spacing-base);
+}
+
 .clickable-icon{
   z-index: 2;
   pointer-events: auto;
@@ -99,6 +108,12 @@
   color: inherit;
   pointer-events: auto;
   cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .error-text{

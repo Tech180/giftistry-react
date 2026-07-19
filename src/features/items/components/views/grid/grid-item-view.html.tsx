@@ -35,6 +35,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
     isPrivate,
     linkedItems,
     isLinkingContext,
+    allowGroupFunds,
   } = props;
 
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
@@ -66,7 +67,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
 
   return (
     <div
-      className={`${styles['v-grid-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass}`}
+      className={`${styles['gift-card']} ${modifierClass} ${isSelected ? styles['is-selected'] : ''}`}
       onClick={onSelect}
       role="button"
       tabIndex={0}
@@ -84,154 +85,62 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
         onSelectTag={onSelectTag}
       />
 
-      <div className={styles['v-grid-visual']}>
-        {displayCategoryBadge && (
-          <span className={styles['v-grid-category-icon']}>
-            <CategoryIcon size={14} />
+      <div className={styles['card-badges-tl']}>
+        {isFullyClaimed && (
+          <span className={`${styles.badge} ${styles['badge-success']}`}>Claimed</span>
+        )}
+        {!isFullyClaimed && item.Claims && item.Claims.length > 0 && (
+          <span className={`${styles.badge} ${styles['badge-success']}`}>
+            {allowGroupFunds ? 'Funded' : 'Claimed'}
           </span>
         )}
-        <CategoryIcon size={48} style={{ opacity: 0.2, color: 'var(--text-muted)' }} />
-        <div className={styles['v-grid-top-actions']}>
-          {isTaggingModeActive && (
-            <TaggingSelect
-              isTaggingModeActive={isTaggingModeActive}
-              isTaggedSelection={isTaggedSelection}
-              onSelectTag={onSelectTag}
-            />
-          )}
-          {isOwner ? (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFavorite();
-              }}
-              className={styles['v-grid-star-btn']}
-              title={isFavorite ? 'Remove Favorite' : 'Mark as Favorite'}
-            >
-              <Star
-                size={12}
-                fill={isFavorite ? 'var(--warning)' : 'none'}
-                stroke={isFavorite ? 'var(--warning)' : 'currentColor'}
-              />
-            </button>
-          ) : isFavorite ? (
-            <span className={styles['v-grid-star-btn']}>
-              <Star size={12} fill="var(--warning)" stroke="var(--warning)" />
-            </span>
-          ) : null}
-        </div>
-
-        <div className={styles['v-grid-overlay']}>
-          <div className={styles['overlay-badges']}>
-            <Badges
-              item={item}
-              audienceLabel={audienceLabel}
-              isPrivate={isPrivate}
-            />
-          </div>
-          <button
-            type="button"
-            className={styles['overlay-btn']}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect?.();
-            }}
-          >
-            Preview Details
-          </button>
-        </div>
+        {isPrivate && (
+          <span className={`${styles.badge} ${styles['badge-private']}`}>Private</span>
+        )}
+        {item.IsSuggestion && (
+          <span className={`${styles.badge} ${styles['badge-suggestion']}`}>Suggestion</span>
+        )}
       </div>
 
-      <div className={styles['v-grid-content']}>
-        <h4 className={styles['v-grid-title']}>
+      <div className={styles['card-badges-tr']}>
+        {isOwner ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite();
+            }}
+            className={styles['star-btn']}
+            title={isFavorite ? 'Remove Favorite' : 'Mark as Favorite'}
+          >
+            <Star
+              size={14}
+              fill={isFavorite ? 'var(--warning)' : 'none'}
+              stroke={isFavorite ? 'var(--warning)' : 'currentColor'}
+            />
+          </button>
+        ) : isFavorite ? (
+          <span className={styles['star-btn-static']}>
+            <Star size={14} fill="var(--warning)" stroke="var(--warning)" />
+          </span>
+        ) : null}
+      </div>
+
+      <div className={styles['card-visual']}>
+        <CategoryIcon size={40} className={styles['card-icon']} />
+      </div>
+
+      <div className={styles['card-content']}>
+        <h4 className={styles['card-title']}>
           {isLinkedToItems && (
-            <Link2 size={11} className={styles['linked-icon']} aria-hidden="true" />
+            <Link2 size={12} className={styles['linked-icon']} aria-hidden="true" />
           )}
           {item.Name}
         </h4>
-        <div className={styles['v-grid-price-row']}>
-          <span className={styles['v-grid-price']}>
-            {primaryPrice != null ? `$${primaryPrice}` : '—'}
-          </span>
-          {showClaimBadge && (
-            <ClaimBadge
-              userId={primaryClaim.userId}
-              displayName={primaryClaim.displayName}
-              anonymous={primaryClaim.anonymous}
-            />
-          )}
-        </div>
+        <span className={styles['card-price']}>
+          {primaryPrice != null ? `$${primaryPrice}` : '—'}
+        </span>
       </div>
-
-      {showClaimForm && (
-        <EnterPanel
-          animation="fade"
-          className={styles['claim-overlay']}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <span>Claim?</span>
-          <div className={styles['claim-overlay-actions']}>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleClaim();
-              }}
-              isLoading={claimLoading}
-            >
-              Yes
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowClaimForm(false);
-              }}
-            >
-              No
-            </Button>
-          </div>
-        </EnterPanel>
-      )}
-
-      {!isOwner && !showClaimForm && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 8,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 20,
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {claimedByCurrentUser ? (
-            <button
-              type="button"
-              onClick={handleUnclaim}
-              disabled={claimLoading}
-              className={styles['overlay-btn']}
-            >
-              Unclaim
-            </button>
-          ) : isFullyClaimed ? (
-            <span className={styles['overlay-btn']} style={{ opacity: 0.7 }}>
-              Claimed
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowClaimForm(true)}
-              className={styles['overlay-btn']}
-            >
-              Claim
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 };

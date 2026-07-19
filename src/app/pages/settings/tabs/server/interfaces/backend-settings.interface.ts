@@ -18,6 +18,15 @@ export interface BackendSettings {
   SmtpPass: string;
   SmtpSecure: boolean;
   SmtpFrom: string;
+  PublicAppUrl?: string;
+  OAuthEnabled?: boolean;
+  OAuthIssuerUrl?: string;
+  OAuthClientId?: string;
+  OAuthClientSecret?: string;
+  OAuthScopes?: string;
+  OAuthButtonText?: string;
+  OAuthAutoRegister?: boolean;
+  OAuthAutoLaunch?: boolean;
   AiEnabled?: boolean;
   AiWebSearchEnabled?: boolean;
   AiRateLimitEnabled?: boolean;

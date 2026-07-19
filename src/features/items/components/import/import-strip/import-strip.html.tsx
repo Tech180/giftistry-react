@@ -29,6 +29,7 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
   canConfirm,
   canGrabInfo,
   grabInfoActive,
+  allowAi,
   confirmLabel,
   className,
   onFileSelected,
@@ -97,6 +98,7 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
             uploadLabel={uploadLabel}
             fileName={fileName}
             error={phase === 'ready' ? errorMessage : dropzoneError}
+            allowAi={allowAi}
             onFileSelected={onFileSelected}
           >
             {phase === 'ready' && mode === 'create-list' ? (

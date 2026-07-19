@@ -12,6 +12,8 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
   children,
   miniDrawer,
   variant = 'default',
+  mobilePresentation = 'rail',
+  showScrim = false,
   footer,
   titleIcon,
   titleExtra,
@@ -20,18 +22,25 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
   onOverlayClick,
 }) => {
   const isOverlay = variant === 'overlay';
+  const isSheet = mobilePresentation === 'sheet';
 
   return (
     <>
-      {isOverlay && (
+      {showScrim && (
         <div
-          className={`${styles.overlay} ${isOpen ? styles['overlay-active'] : ''}`}
+          className={`${styles.overlay} ${isSheet ? styles['sheet-scrim'] : ''} ${isOpen ? styles['overlay-active'] : ''}`}
           onClick={onOverlayClick}
           aria-hidden={!isOpen}
+          data-testid="drawer-scrim"
         />
       )}
-      <div ref={drawerRef} className={drawerClass}>
-        {miniDrawer}
+      <div
+        ref={drawerRef}
+        className={drawerClass}
+        data-testid="drawer-panel"
+        aria-hidden={!isOpen}
+      >
+        {!isSheet && miniDrawer}
         <div className={styles['drawer-panel']}>
           <div className={isOverlay ? styles['drawer-header-overlay'] : styles['drawer-header']}>
             <h4 className={isOverlay ? styles['drawer-title-overlay'] : styles['drawer-title']}>
@@ -50,12 +59,13 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
                   onClick={onClose}
                 />
               ) : (
-                <button onClick={onClose} className={styles['drawer-close']}>
+                <button onClick={onClose} className={styles['drawer-close']} aria-label="Close">
                   &times;
                 </button>
               )}
             </div>
           </div>
+          {isSheet && miniDrawer}
           <div className={isOverlay ? styles['drawer-body-overlay'] : styles['drawer-body']}>
             {children}
           </div>

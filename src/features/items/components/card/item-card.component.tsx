@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { itemsApi } from '../../api/items.api';
 import { useAuth } from 'app/providers/auth-context';
 import { ItemCardProps } from '../../interfaces/item-card-props.interface';
 import { ItemCardRouter } from '../views/item-card-router.component';
@@ -8,7 +7,6 @@ import { getSiteName } from 'shared/utils/get-site-name.util';
 import {
   getItemFavoriteFlag,
   parseItemDescription,
-  serializeItemDescription,
 } from 'shared/utils/parse-item-description.util';
 import {
   getMetadataDisplayEntries,
@@ -24,7 +22,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   isExpired,
   canCollaborate,
   allowGroupFunds,
-  onUpdate,
+  itemActions,
   priorityLabel,
   onEdit,
   isTaggingModeActive,
@@ -70,30 +68,39 @@ export const ItemCard: React.FC<ItemCardProps> = ({
 
     try {
       const parsed = parseItemDescription(item.Description, item.Metadata);
-      const metadata = parsed.metadata ?? { Text: item.Description || '' };
+      const metadata = {
+        ...(parsed.metadata ?? { Text: parsed.text }),
+        Text: parsed.text,
+      };
       const newFavoriteState = !localIsFavorite;
 
       if (isOwner) {
         metadata.IsFavorite = newFavoriteState;
+        if (!newFavoriteState) {
+          delete metadata.IsPinned;
+        }
       } else {
         metadata.IsPinned = newFavoriteState;
+        if (!newFavoriteState) {
+          delete metadata.IsFavorite;
+        }
       }
 
-      const updatedDescription = serializeItemDescription(parsed.text, metadata);
-
-      // Preserve the item's existing PriorityId (no overrides to a favorite section!)
-      await itemsApi.updateItem(
+      await itemActions.updateItem(
         item.Id,
         item.Name,
-        updatedDescription,
+        null,
         item.PriorityId,
         item.Category,
         item.Priority ?? null,
-        getItemSharedWithUserIds(item)
+        getItemSharedWithUserIds(item),
+        undefined,
+        undefined,
+        undefined,
+        metadata
       );
 
       setLocalIsFavorite(newFavoriteState);
-      onUpdate();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to update favorite status');
     }
@@ -105,10 +112,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({
 
     setLinkLoading(true);
     try {
-      await itemsApi.addItemLink(item.Id, urlInput.trim());
+      await itemActions.addItemLink(item.Id, urlInput.trim());
       setUrlInput('');
       setShowAddLink(false);
-      onUpdate();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to add link');
     } finally {
@@ -123,12 +129,16 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     try {
       const amount = claimAmount ? parseFloat(claimAmount) : null;
       const claimerName = anonymous ? null : (user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null);
-      await itemsApi.claimItem(item.Id, amount, claimerName, anonymous);
+      await itemActions.claimItem({
+        itemId: item.Id,
+        amount,
+        claimedByName: claimerName,
+        anonymous,
+      });
       setClaimAmount('');
       setClaimedByName('');
       setAnonymous(false);
       setShowClaimForm(false);
-      onUpdate();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to claim item');
     } finally {
@@ -139,8 +149,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
-      await itemsApi.deleteItem(item.Id);
-      onUpdate();
+      await itemActions.deleteItem(item.Id);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete item.');
     } finally {
@@ -151,8 +160,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const handleUnclaim = async () => {
     setClaimLoading(true);
     try {
-      await itemsApi.unclaimItem(item.Id);
-      onUpdate();
+      await itemActions.unclaimItem(item.Id, user?.Id);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to unclaim item');
     } finally {
@@ -160,18 +168,23 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     }
   };
 
-  // Group funding calculations
-  const totalExtractedPrice = item.Links.reduce((acc, link) => {
-    return Math.max(acc, link.ExtractedPrice || 0);
-  }, 0);
+  // Group funding calculations — prefer server claim summaries when present
+  const totalExtractedPrice =
+    item.FundingTarget != null
+      ? item.FundingTarget
+      : item.Links.reduce((acc, link) => Math.max(acc, link.ExtractedPrice || 0), 0);
 
-  const totalClaimedAmount = item.Claims.reduce((acc, claim) => {
-    return acc + (claim.Amount || 0);
-  }, 0);
+  const totalClaimedAmount =
+    item.TotalClaimedAmount != null
+      ? item.TotalClaimedAmount
+      : item.Claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
 
-  const isFullyClaimed = allowGroupFunds && totalExtractedPrice > 0
-    ? totalClaimedAmount >= totalExtractedPrice
-    : item.IsClaimed;
+  const isFullyClaimed =
+    item.IsFullyClaimed != null
+      ? item.IsFullyClaimed
+      : allowGroupFunds && totalExtractedPrice > 0
+        ? totalClaimedAmount >= totalExtractedPrice
+        : item.IsClaimed;
 
   const [isPinned, setIsPinned] = useState(() => {
     try {

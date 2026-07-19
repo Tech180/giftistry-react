@@ -48,10 +48,9 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
         <SettingItem
           title="Registration mode"
           description={REGISTRATION_LABELS[policy.RegistrationMode]}
-          layout="column"
         >
           <select
-            className={styles['form-input']}
+            className={`${styles['form-input']} ${styles['form-input-inline']}`}
             value={policy.RegistrationMode}
             onChange={(e) =>
               onPolicyChange({ ...policy, RegistrationMode: e.target.value as SitePolicy['RegistrationMode'] })
@@ -61,16 +60,6 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
             <option value="invite_only">Invite only</option>
             <option value="disabled">Disabled</option>
           </select>
-        </SettingItem>
-        <SettingItem
-          title="Require email verification"
-          description="Accounts must verify email before accessing the platform."
-        >
-          <Switch
-            checked={policy.RequireEmailVerification}
-            onChange={(checked) => onPolicyChange({ ...policy, RequireEmailVerification: checked })}
-            aria-label="Require email verification"
-          />
         </SettingItem>
         <SettingItem
           title="Allow password login"
@@ -85,10 +74,9 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
         <SettingItem
           title="Allowed email domains"
           description="Comma-separated allowlist (empty = all domains permitted)."
-          layout="column"
         >
           <input
-            className={styles['form-input']}
+            className={`${styles['form-input']} ${styles['form-input-inline']}`}
             value={domainsText}
             onChange={(e) => onDomainsTextChange(e.target.value)}
             placeholder="example.com, company.org"
@@ -99,12 +87,21 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
       <h2 className={styles['section-title']}>Security defaults</h2>
       <SettingGroup>
         <SettingItem
+          title="Require strong passwords"
+          description="Require at least 8 characters with a letter and a number. When off, passwords only need 6 characters."
+        >
+          <Switch
+            checked={policy.RequireStrongPasswords}
+            onChange={(checked) => onPolicyChange({ ...policy, RequireStrongPasswords: checked })}
+            aria-label="Require strong passwords"
+          />
+        </SettingItem>
+        <SettingItem
           title="Login attempts before lockout"
           description="Failed attempts before the account is locked."
-          layout="column"
         >
           <input
-            className={styles['form-input']}
+            className={`${styles['form-input']} ${styles['form-input-compact']}`}
             type="number"
             min={0}
             value={policy.LoginAttemptsBeforeLockout}
@@ -114,10 +111,9 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
         <SettingItem
           title="Lockout duration (minutes)"
           description="How long accounts stay locked (0 = manual unlock only)."
-          layout="column"
         >
           <input
-            className={styles['form-input']}
+            className={`${styles['form-input']} ${styles['form-input-compact']}`}
             type="number"
             min={0}
             value={policy.LockoutDurationMinutes}
@@ -141,10 +137,9 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
         <SettingItem
           title="Maintenance message"
           description="Message shown to users during maintenance."
-          layout="column"
         >
           <textarea
-            className={styles['form-input']}
+            className={`${styles['form-input']} ${styles['form-input-inline']}`}
             rows={2}
             value={policy.MaintenanceMessage}
             onChange={(e) => onPolicyChange({ ...policy, MaintenanceMessage: e.target.value })}

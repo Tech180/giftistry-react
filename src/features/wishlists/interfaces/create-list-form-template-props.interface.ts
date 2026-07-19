@@ -22,5 +22,5 @@ export interface CreateListFormTemplateProps {
   setWebSearchEnabled: (val: boolean) => void;
   globalAiEnabled: boolean;
   globalWebSearchEnabled: boolean;
-  isUnverified?: boolean;
+  onCancel?: () => void;
 }

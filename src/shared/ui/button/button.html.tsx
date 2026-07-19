@@ -12,18 +12,57 @@ export const ButtonTemplate: React.FC<ButtonTemplateProps> = ({
   variant,
   size,
   className,
+  effect = 'none',
+  gradientId,
   ...props
 }) => {
+  const isRainbow = effect === 'rainbow';
+
+  const content = (
+    <>
+      {isRainbow && <div className={styles.glow} aria-hidden="true" />}
+      <div className={isRainbow ? styles['border-wrapper'] : undefined}>
+        {isRainbow && <div className={styles['border-gradient']} aria-hidden="true" />}
+        <div className={isRainbow ? styles.inner : undefined}>
+          {isLoading && <span className={styles.spinner} />}
+          {!isLoading && leftIcon && <span className={styles.icon}>{leftIcon}</span>}
+          <span className={styles.content}>{children}</span>
+          {!isLoading && rightIcon && <span className={styles.icon}>{rightIcon}</span>}
+        </div>
+      </div>
+    </>
+  );
+
+  const defs =
+    isRainbow && gradientId ? (
+      <svg className={styles['svg-defs']} aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#5E42F8" />
+            <stop offset="50%" stopColor="#B656CB" />
+            <stop offset="100%" stopColor="#F15565" />
+          </linearGradient>
+        </defs>
+      </svg>
+    ) : null;
+
   return (
-    <button
-      className={buttonClass}
-      disabled={disabled || isLoading}
-      {...props}
-    >
-      {isLoading && <span className={styles.spinner} />}
-      {!isLoading && leftIcon && <span className={styles.icon}>{leftIcon}</span>}
-      <span className={styles.content}>{children}</span>
-      {!isLoading && rightIcon && <span className={styles.icon}>{rightIcon}</span>}
-    </button>
+    <>
+      {defs}
+      <button
+        className={buttonClass}
+        disabled={disabled || isLoading}
+        {...props}
+      >
+        {isRainbow ? content : (
+          <>
+            {isLoading && <span className={styles.spinner} />}
+            {!isLoading && leftIcon && <span className={styles.icon}>{leftIcon}</span>}
+            <span className={styles.content}>{children}</span>
+            {!isLoading && rightIcon && <span className={styles.icon}>{rightIcon}</span>}
+          </>
+        )}
+      </button>
+    </>
   );
 };

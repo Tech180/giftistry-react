@@ -1,5 +1,6 @@
 import { Item } from './item.interface';
 import { ItemViewMode } from '../types/item-view-mode.type';
+import type { ItemActions } from './item-actions.interface';
 
 export interface ItemCardProps {
   item: Item;
@@ -7,7 +8,7 @@ export interface ItemCardProps {
   isExpired: boolean;
   canCollaborate: boolean;
   allowGroupFunds: boolean;
-  onUpdate: () => void;
+  itemActions: ItemActions;
   priorityLabel?: string;
   onEdit?: () => void;
   isTaggingModeActive?: boolean;

@@ -7,4 +7,5 @@ export interface AppShellProps {
   isSettingsPage?: boolean;
   hasBanner?: boolean;
   isFullWidth?: boolean;
+  isAuthPage?: boolean;
 }

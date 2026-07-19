@@ -273,6 +273,16 @@
   width: 100%;
 }
 
+.form-input-compact {
+  width: 7.5rem;
+  min-width: 7.5rem;
+}
+
+.form-input-inline {
+  width: min(18rem, 42vw);
+  min-width: 10rem;
+}
+
 .form-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 1px var(--primary);

@@ -7,12 +7,27 @@ import { DbSection } from './components/db-section/db-section.component';
 import { SmtpSection } from './components/smtp-section/smtp-section.component';
 import { ScrapeSection } from './components/scrape-section/scrape-section.component';
 import { AiSection } from './components/ai-section/ai-section.component';
+import dbStyles from './components/db-section/db-section.module.css';
 
 export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps> = ({
   dbType,
   setDbType,
   dbUrl,
   setDbUrl,
+  publicAppUrl,
+  setPublicAppUrl,
+  oauthEnabled,
+  setOauthEnabled,
+  oauthIssuerUrl,
+  setOauthIssuerUrl,
+  oauthClientId,
+  setOauthClientId,
+  oauthClientSecret,
+  setOauthClientSecret,
+  oauthButtonText,
+  setOauthButtonText,
+  oauthAutoRegister,
+  setOauthAutoRegister,
   smtpType,
   setSmtpType,
   smtpHost,
@@ -128,6 +143,125 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
             />
           </div>
         </div>
+
+        <section className={dbStyles.section}>
+          <h2 className={dbStyles['section-header']}>Public App URL</h2>
+          <div className={dbStyles['setting-list']}>
+            <div className={dbStyles['setting-row']}>
+              <div className={dbStyles['setting-info']}>
+                <span className={dbStyles['setting-label']}>Browser-facing URL</span>
+                <span className={dbStyles['setting-desc']}>
+                  Used for transactional emails, CORS, and WebAuthn. No trailing slash.
+                </span>
+              </div>
+              <div className={`${dbStyles['setting-action']} ${dbStyles['input-wrapper']}`} style={{ flex: 1, maxWidth: '24rem' }}>
+                <div className={dbStyles['input-box']}>
+                  <input
+                    type="url"
+                    className={dbStyles['input-field']}
+                    placeholder="https://giftistry.example.com"
+                    value={publicAppUrl}
+                    onChange={(e) => setPublicAppUrl(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className={dbStyles.section}>
+          <h2 className={dbStyles['section-header']}>Single Sign-On (OIDC)</h2>
+          <div className={dbStyles['setting-list']}>
+            <div className={dbStyles['setting-row']}>
+              <div className={dbStyles['setting-info']}>
+                <span className={dbStyles['setting-label']}>Enable OAuth login</span>
+                <span className={dbStyles['setting-desc']}>Shows an SSO button on the login page.</span>
+              </div>
+              <div className={dbStyles['setting-action']}>
+                <input
+                  type="checkbox"
+                  checked={oauthEnabled}
+                  onChange={(e) => setOauthEnabled(e.target.checked)}
+                />
+              </div>
+            </div>
+            {oauthEnabled && (
+              <>
+                <div className={dbStyles['setting-row']}>
+                  <div className={dbStyles['setting-info']}>
+                    <span className={dbStyles['setting-label']}>Issuer URL</span>
+                  </div>
+                  <div className={`${dbStyles['setting-action']} ${dbStyles['input-wrapper']}`} style={{ flex: 1, maxWidth: '24rem' }}>
+                    <div className={dbStyles['input-box']}>
+                      <input
+                        className={dbStyles['input-field']}
+                        value={oauthIssuerUrl}
+                        onChange={(e) => setOauthIssuerUrl(e.target.value)}
+                        placeholder="https://auth.example.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className={dbStyles['setting-row']}>
+                  <div className={dbStyles['setting-info']}>
+                    <span className={dbStyles['setting-label']}>Client ID</span>
+                  </div>
+                  <div className={`${dbStyles['setting-action']} ${dbStyles['input-wrapper']}`} style={{ flex: 1, maxWidth: '24rem' }}>
+                    <div className={dbStyles['input-box']}>
+                      <input
+                        className={dbStyles['input-field']}
+                        value={oauthClientId}
+                        onChange={(e) => setOauthClientId(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className={dbStyles['setting-row']}>
+                  <div className={dbStyles['setting-info']}>
+                    <span className={dbStyles['setting-label']}>Client secret</span>
+                    <span className={dbStyles['setting-desc']}>Or set OAUTH_CLIENT_SECRET in the environment.</span>
+                  </div>
+                  <div className={`${dbStyles['setting-action']} ${dbStyles['input-wrapper']}`} style={{ flex: 1, maxWidth: '24rem' }}>
+                    <div className={dbStyles['input-box']}>
+                      <input
+                        type="password"
+                        className={dbStyles['input-field']}
+                        value={oauthClientSecret}
+                        onChange={(e) => setOauthClientSecret(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className={dbStyles['setting-row']}>
+                  <div className={dbStyles['setting-info']}>
+                    <span className={dbStyles['setting-label']}>Button text</span>
+                  </div>
+                  <div className={`${dbStyles['setting-action']} ${dbStyles['input-wrapper']}`} style={{ flex: 1, maxWidth: '24rem' }}>
+                    <div className={dbStyles['input-box']}>
+                      <input
+                        className={dbStyles['input-field']}
+                        value={oauthButtonText}
+                        onChange={(e) => setOauthButtonText(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className={dbStyles['setting-row']}>
+                  <div className={dbStyles['setting-info']}>
+                    <span className={dbStyles['setting-label']}>Auto-register new SSO users</span>
+                  </div>
+                  <div className={dbStyles['setting-action']}>
+                    <input
+                      type="checkbox"
+                      checked={oauthAutoRegister}
+                      onChange={(e) => setOauthAutoRegister(e.target.checked)}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </section>
 
         {/* Database Configuration Section */}
         <DbSection

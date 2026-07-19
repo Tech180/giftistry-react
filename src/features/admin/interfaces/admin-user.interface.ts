@@ -3,7 +3,7 @@ import { GiftistryUserPolicy } from './giftistry-user-policy.interface';
 export interface AdminUser {
   Id: string;
   Username: string;
-  Email: string;
+  Email: string | null;
   FirstName: string;
   LastName: string;
   Bio?: string;

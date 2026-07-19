@@ -4,6 +4,10 @@
   gap: var(--spacing-md);
 }
 
+.hidden-input {
+  display: none;
+}
+
 .header-file-name {
   margin: 0;
   min-width: 0;

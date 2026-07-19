@@ -14,6 +14,14 @@ vi.mock('../api/jobs.api', () => ({
   },
 }));
 
+vi.mock('app/providers/user-socket-context', () => ({
+  useUserSocket: () => ({
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    isConnected: true,
+  }),
+}));
+
 import { useBackgroundJobs } from './use-background-jobs';
 import { jobsApi } from '../api/jobs.api';
 

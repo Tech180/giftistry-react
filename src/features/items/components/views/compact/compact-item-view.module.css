@@ -52,12 +52,16 @@
 
 .v-compact-row-main {
   display: grid;
-  grid-template-columns: 32px 44px minmax(200px, 2fr) 120px max-content max-content max-content max-content;
+  grid-template-columns: max-content minmax(200px, 2fr) 120px max-content max-content max-content max-content;
   align-items: center;
   flex: 1;
   min-width: 0;
   padding: var(--spacing-sm);
   gap: 8px;
+}
+
+.v-compact-row-main.tagging {
+  grid-template-columns: 32px max-content minmax(200px, 2fr) 120px max-content max-content max-content max-content;
 }
 
 .v-compact-row:hover .v-compact-row-main {
@@ -83,6 +87,10 @@
   align-items: center;
   gap: 4px;
   color: var(--text-muted);
+}
+
+.v-compact-star {
+  padding-inline: 6px;
 }
 
 .v-compact-star-btn {
@@ -135,6 +143,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 6px;
   min-width: 0;
   flex-shrink: 0;
 }
@@ -182,6 +191,11 @@
 }
 
 .v-compact-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
   font-size: var(--font-size-xs);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
@@ -263,13 +277,29 @@
 
 @media (max-width: 1024px) {
   .v-compact-row-main {
-    grid-template-columns: 32px 44px 1fr 60px max-content max-content;
+    grid-template-columns: max-content 1fr max-content max-content max-content max-content;
   }
 
-  .v-compact-funding,
-  .v-compact-link,
-  .v-compact-actions-ghost {
+  .v-compact-row-main.tagging {
+    grid-template-columns: 32px max-content 1fr max-content max-content max-content max-content;
+  }
+
+  .v-compact-funding {
     display: none;
+  }
+
+  .v-compact-link-label,
+  .v-compact-no-link {
+    display: none;
+  }
+
+  .v-compact-link a {
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
   }
 
   .v-compact-expanded-content {
@@ -278,6 +308,29 @@
 
   .expanded .v-compact-expanded {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 48rem) {
+  .v-compact-row-main {
+    grid-template-columns: max-content 1fr max-content max-content max-content max-content;
+    gap: 6px;
+  }
+
+  .v-compact-row-main.tagging {
+    grid-template-columns: 28px max-content 1fr max-content max-content max-content max-content;
+  }
+
+  .v-compact-meta-sub {
+    gap: 6px;
+  }
+
+  .v-compact-actions {
+    gap: 4px;
+  }
+
+  .v-compact-action-btn {
+    padding: 4px;
   }
 }
 

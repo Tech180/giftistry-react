@@ -4,8 +4,8 @@ export interface AuthContextType {
   user: ApiUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<any>;
-  signup: (username: string, email: string, password: string, firstName?: string, lastName?: string) => Promise<any>;
+  login: (username: string, password: string) => Promise<any>;
+  signup: (username: string, email: string | null | undefined, password: string, firstName?: string, lastName?: string) => Promise<any>;
   logout: () => Promise<void>;
   updateProfile: (
     username?: string,
@@ -21,7 +21,13 @@ export interface AuthContextType {
   error: string | null;
   clearError: () => void;
   refreshUser: () => Promise<void>;
+  systemStatus: 'loading' | 'ready' | 'unreachable';
   isSystemInitialized: boolean;
+  allowSetup: boolean;
+  allowPasswordLogin: boolean;
+  requireStrongPasswords: boolean;
+  oauthEnabled: boolean;
+  oauthButtonText: string;
   globalAiEnabled: boolean;
   globalWebSearchEnabled: boolean;
   canShowAi: boolean;

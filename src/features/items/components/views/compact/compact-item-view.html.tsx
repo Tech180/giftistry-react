@@ -1,17 +1,21 @@
 import React from 'react';
 import { Star, Link2, Link as LinkIcon, Pencil, Trash2 } from 'lucide-react';
+import { useAuth } from 'app/providers/auth-context';
 import { Button, EnterPanel } from 'shared/ui';
 import { ItemViewProps } from '../../../interfaces/item-view-props.interface';
 import {
+  Badges,
   ClaimBadge,
   ClaimPrompt,
   FundingWidget,
   MetadataGrid,
+  SharingAvatars,
   TaggingOverlay,
   TaggingSelect,
 } from '../../item-presentation';
 import { buildItemCardModifierClasses, getPrimaryClaimForBadge, getClaimedGrayOutClass, getUserClaimedHighlightClass, shouldShowClaimBadge } from '../shared/item-card-modifiers.util';
 import { hasPriorityValue } from '../../../utils/item-priority.util';
+import { shouldShowSharingAvatars } from '../../../utils/item-audience.util';
 import styles from './compact-item-view.module.css';
 
 export const CompactItemView: React.FC<ItemViewProps> = (props) => {
@@ -48,15 +52,19 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     userDefinedEntries,
     metadataBadgeEmoji,
     getSiteName,
+    audienceLabel,
     isPrivate,
     linkedItems,
     isLinkingContext,
   } = props;
 
+  const { user } = useAuth();
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
   const primaryClaim = getPrimaryClaimForBadge(item.Claims);
   const primaryLink = item.Links[0];
   const primaryPrice = primaryLink?.ExtractedPrice;
+  const showSharingAvatars = shouldShowSharingAvatars(item, isOwner, user?.Id);
+  const sharingUsers = item.SharedWith ?? [];
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -116,16 +124,18 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
             {item.Priority}
           </div>
         )}
-        <div className={styles['v-compact-row-main']}>
-        <div className={styles['v-compact-select']}>
-          {isTaggingModeActive && (
+        <div
+          className={`${styles['v-compact-row-main']} ${isTaggingModeActive ? styles.tagging : ''}`}
+        >
+        {isTaggingModeActive && (
+          <div className={styles['v-compact-select']}>
             <TaggingSelect
               isTaggingModeActive={isTaggingModeActive}
               isTaggedSelection={isTaggedSelection}
               onSelectTag={onSelectTag}
             />
-          )}
-        </div>
+          </div>
+        )}
 
         <div className={styles['v-compact-star']}>
           {isOwner ? (
@@ -165,6 +175,12 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
                 {entry.label}: {entry.value}
               </span>
             ))}
+            <Badges
+              item={item}
+              audienceLabel={showSharingAvatars ? null : audienceLabel}
+              isPrivate={isPrivate}
+              showPriority={false}
+            />
           </div>
         </div>
 
@@ -185,9 +201,13 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
+              title={getSiteName(primaryLink.Url, primaryLink.RetailerName)}
+              aria-label={`Open ${getSiteName(primaryLink.Url, primaryLink.RetailerName)}`}
             >
-              <LinkIcon size={12} />
-              {getSiteName(primaryLink.Url, primaryLink.RetailerName)}
+              <LinkIcon size={12} aria-hidden />
+              <span className={styles['v-compact-link-label']}>
+                {getSiteName(primaryLink.Url, primaryLink.RetailerName)}
+              </span>
             </a>
           ) : (
             <span className={styles['v-compact-no-link']}>No link</span>
@@ -199,6 +219,9 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
         </div>
 
         <div className={styles['v-compact-claim-badge']}>
+          {showSharingAvatars && (
+            <SharingAvatars users={sharingUsers} isOwner={isOwner} />
+          )}
           {showClaimBadge && (
             <ClaimBadge
               userId={primaryClaim.userId}
@@ -251,8 +274,9 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
                   e.stopPropagation();
                   onEdit?.();
                 }}
-                className={`${styles['v-compact-action-btn']} ${styles['v-compact-actions-ghost']}`}
+                className={styles['v-compact-action-btn']}
                 title="Edit Item"
+                aria-label="Edit item"
               >
                 <Pencil size={14} />
               </button>
@@ -262,8 +286,9 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
                   e.stopPropagation();
                   setShowDeleteConfirm(true);
                 }}
-                className={`${styles['v-compact-action-btn']} ${styles['v-compact-actions-ghost']}`}
+                className={styles['v-compact-action-btn']}
                 title="Delete Item"
+                aria-label="Delete item"
               >
                 <Trash2 size={14} />
               </button>

@@ -58,7 +58,7 @@ export interface ItemCardTemplateProps {
   predefinedDisplayEntries: { label: string; value: string }[];
   userDefinedEntries: { name: string; value: string }[];
   metadataBadgeEmoji: Record<string, string>;
-  CategoryIcon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+  CategoryIcon: React.ComponentType<{ size?: number; style?: React.CSSProperties; className?: string }>;
   displayCategoryBadge: boolean;
   categoryLabel: string;
   getSiteName: (url: string, retailerName?: string | null) => string;

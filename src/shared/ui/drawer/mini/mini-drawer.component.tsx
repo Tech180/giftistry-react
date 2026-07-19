@@ -5,13 +5,17 @@ import { MiniDrawerTemplate } from './mini-drawer.html';
 import styles from './mini-drawer.module.css';
 
 export const MiniDrawer: React.FC<MiniDrawerProps> = (props) => {
-  const { isActive, selectedIds, position, items } = props;
+  const { isActive, selectedIds, position, items, inlineOnMobile = false } = props;
 
   if (!isActive && selectedIds.length === 0) return null;
 
-  const drawerClass = `${styles['mini-drawer']} ${
-    position === 'right' ? styles['position-right'] : styles['position-left']
-  }`;
+  const drawerClass = [
+    styles['mini-drawer'],
+    position === 'right' ? styles['position-right'] : styles['position-left'],
+    inlineOnMobile ? styles['inline-on-mobile'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const matchedItems = selectedIds
     .map((id) => items.find((i) => i.Id === id))

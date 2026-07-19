@@ -2,7 +2,7 @@ import React from 'react';
 import { Plus, Upload } from 'lucide-react';
 import { WishlistCard, CreateListForm } from 'features/wishlists';
 import { ImportStrip } from 'features/items';
-import { Button, Badge, Modal, TabBar, SearchInput, EmptyState, LoadingState, EnterPanel } from 'shared/ui';
+import { Button, Modal, TabBar, SearchInput, EmptyState, LoadingState, EnterPanel } from 'shared/ui';
 import styles from './dashboard.module.css';
 import { DashboardTemplateProps } from './interfaces/dashboard-template-props.interface';
 
@@ -12,6 +12,8 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
   setIsCreateOpen,
   isImportOpen,
   setIsImportOpen,
+  canShowAi,
+  importStripRef,
   activeTab,
   setActiveTab,
   searchQuery,
@@ -38,15 +40,17 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
           </p>
         </div>
         <div className={styles.headerActions}>
-          <Badge
-            effect="rainbow"
-            active={isImportOpen}
-            size="compact"
-            icon={<Upload size={16} />}
-            ariaLabel="Import wishlist"
-            ariaPressed={isImportOpen}
-            onClick={() => setIsImportOpen(!isImportOpen)}
-          />
+          <span className={styles.headerImportAction}>
+            <Button
+              variant="secondary"
+              onClick={() => setIsImportOpen(!isImportOpen)}
+              aria-label="Import wishlist"
+              aria-pressed={isImportOpen}
+              effect={canShowAi ? 'rainbow' : 'none'}
+            >
+              <Upload size={16} />
+            </Button>
+          </span>
           <Button
             variant="primary"
             leftIcon={<Plus size={16} />}
@@ -58,6 +62,7 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
       </div>
 
       <ImportStrip
+        ref={importStripRef}
         mode="create-list"
         isExpanded={isImportOpen}
         onImported={handleImportStarted}
@@ -111,9 +116,13 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        title="Create New Wishlist"
+        title="Create new wishlist"
+        subtitle="Configure details and advanced settings."
       >
-        <CreateListForm onSuccess={handleCreateSuccess} />
+        <CreateListForm
+          onSuccess={handleCreateSuccess}
+          onCancel={() => setIsCreateOpen(false)}
+        />
       </Modal>
     </EnterPanel>
   );

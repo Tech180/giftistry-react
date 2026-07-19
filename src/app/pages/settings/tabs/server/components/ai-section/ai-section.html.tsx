@@ -55,7 +55,7 @@ const PROMPT_ITEMS: Array<{
     id: 'import',
     label: 'Import',
     description:
-      'Turn uploaded wishlist exports (CSV, XLSX, TXT, JSON, PDF) into structured items. Giftistry JSON/CSV may parse without AI.',
+      'Turn uploaded wishlist exports into structured items. CSV, XLSX, TXT, and JSON may parse without AI when they match a Giftistry export; PDF and unstructured files need AI.',
     tokens: ['{fileName}', '{format}', '{fileContent}', '{wishlistTitle}', '{existingCategories}'],
   },
 ];

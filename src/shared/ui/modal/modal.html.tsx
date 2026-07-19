@@ -8,6 +8,7 @@ export const ModalTemplate: React.FC<ModalTemplateProps> = ({
   isOpen,
   onClose,
   title,
+  subtitle,
   children,
   modalRef,
   handleBackdropClick,
@@ -25,7 +26,10 @@ export const ModalTemplate: React.FC<ModalTemplateProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <header className={styles.header}>
-          {title && <h3 className={styles.title}>{title}</h3>}
+          <div>
+            {title && <h3 className={styles.title}>{title}</h3>}
+            {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+          </div>
           <button className={styles['close-button']} onClick={onClose} aria-label="Close modal">
             <X size={18} />
           </button>

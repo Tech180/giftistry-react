@@ -1,0 +1,174 @@
+.profile-theming {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-xs);
+  border-bottom: 1px solid var(--border);
+}
+
+.segmented-control {
+  position: relative;
+  display: flex;
+  background-color: var(--input-fill, var(--bg));
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs);
+  border: var(--input-border-width, 1px) solid var(--input-border-color, var(--border));
+  box-shadow: var(--input-shadow);
+}
+
+.segmented-indicator {
+  position: absolute;
+  top: var(--spacing-xs);
+  bottom: var(--spacing-xs);
+  width: calc(33.333% - 0.125rem);
+  background-color: var(--surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm, var(--shadow));
+  transition: transform var(--transition-pop);
+  z-index: 1;
+}
+
+.segmented-control[data-state='system'] .segmented-indicator {
+  transform: translateX(0);
+}
+
+.segmented-control[data-state='dark'] .segmented-indicator {
+  transform: translateX(100%);
+}
+
+.segmented-control[data-state='light'] .segmented-indicator {
+  transform: translateX(200%);
+}
+
+.segmented-btn {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) 0;
+  font-size: var(--font-size-2xs, 0.75rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.segmented-btn.is-active {
+  color: var(--text);
+}
+
+.theme-swatch-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.theme-swatch-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full, 9999px);
+  background-color: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.theme-swatch-nav:hover:not(:disabled) {
+  background-color: var(--surface-hover);
+  color: var(--text);
+}
+
+.theme-swatch-nav:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.theme-swatches {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  padding: var(--spacing-xs) 0;
+}
+
+.theme-swatch {
+  position: relative;
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
+  border-radius: var(--radius-full, 9999px);
+  cursor: pointer;
+  transition: transform var(--transition-pop), box-shadow var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  padding: 0;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.theme-swatch-primary {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full, 9999px);
+  background-color: var(--swatch-primary, var(--primary));
+}
+
+.theme-swatch-secondary {
+  position: absolute;
+  right: -0.0625rem;
+  bottom: -0.0625rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: var(--radius-full, 9999px);
+  background-color: var(--swatch-secondary, var(--surface));
+  border: 2px solid var(--surface-hover);
+  z-index: 1;
+}
+
+.theme-swatch::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--spacing-xs) * -1);
+  border-radius: var(--radius-full, 9999px);
+  border: 2px solid transparent;
+  transition: border-color var(--transition-fast);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.theme-swatch.is-active {
+  box-shadow: var(--shadow-md, var(--shadow));
+}
+
+.theme-swatch.is-active::after {
+  border-color: var(--text);
+}
+
+.theme-swatch:active:not(:disabled) {
+  transform: scale(0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segmented-indicator,
+  .theme-swatch {
+    transition-duration: 0.01ms;
+  }
+}

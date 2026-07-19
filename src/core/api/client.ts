@@ -1,17 +1,21 @@
 import { env } from 'core/config/env';
 import { ResponseInterceptor } from './interfaces/response-interceptor.interface';
+import { formatApiErrorMessage } from 'shared/utils/format-api-error-message.util';
 
 export type { ResponseInterceptor } from './interfaces/response-interceptor.interface';
 
 export class ApiError extends Error {
   status: number;
   code: string;
+  /** Original API message payload (string, validation object, etc.). */
+  details: unknown;
 
-  constructor(message: string, status: number, code: string) {
+  constructor(message: string, status: number, code: string, details?: unknown) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.code = code;
+    this.details = details;
   }
 }
 
@@ -70,9 +74,10 @@ async function executeRequest<T>(
 
     if (!response.ok) {
       const status = response.status;
-      const errorMsg = json.Result?.Message || json.Message || 'An error occurred';
+      const rawMessage = json.Result?.Message ?? json.Message ?? 'An error occurred';
+      const errorMsg = formatApiErrorMessage(rawMessage);
       const errorCode = json.Meta?.Code || 'API_ERROR';
-      throw new ApiError(errorMsg, status, errorCode);
+      throw new ApiError(errorMsg, status, errorCode, rawMessage);
     }
 
     if (json.Result !== undefined) {

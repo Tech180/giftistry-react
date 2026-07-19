@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Sun, Moon, Palette } from 'lucide-react';
 import { useAuth } from 'app/providers/auth-context';
 import { useTheme, Theme, Appearance } from 'app/providers/theme-context';
@@ -10,6 +10,7 @@ export const AppNavigation: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { theme, appearance, setTheme, setAppearance, isThemeUnlocked, temporaryTheme, customThemes } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
@@ -26,10 +27,48 @@ export const AppNavigation: React.FC = () => {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const profileRef = useRef<HTMLDivElement>(null);
   const themeRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 48rem)');
+    const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    // Modern matchMedia API support
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleMediaChange);
+    } else {
+      // Deprecated matchMedia support for older engines
+      mediaQuery.addListener(handleMediaChange);
+    }
+
+    // Check initial match
+    if (mediaQuery.matches) {
+      setIsMobileMenuOpen(false);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleMediaChange);
+      } else {
+        mediaQuery.removeListener(handleMediaChange);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -41,6 +80,13 @@ export const AppNavigation: React.FC = () => {
       }
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setIsSearchOpen(false);
+      }
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target as Node) &&
+        !hamburgerRef.current?.contains(e.target as Node)
+      ) {
+        setIsMobileMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -74,8 +120,13 @@ export const AppNavigation: React.FC = () => {
       const fetchLists = async () => {
         setIsSearchLoading(true);
         try {
-          const res = await wishlistsApi.listWishlists();
-          setWishlists(res || []);
+          const res = await wishlistsApi.listWishlists({ bucket: 'all' });
+          const lists = Array.isArray(res)
+            ? res
+            : (res && typeof res === 'object' && 'Wishlists' in res)
+              ? (res as any).Wishlists
+              : [];
+          setWishlists(lists);
         } catch (err) {
           // fallback silently
         } finally {
@@ -192,6 +243,10 @@ export const AppNavigation: React.FC = () => {
       handleSearchSelect={handleSearchSelect}
       searchRef={searchRef}
       searchInputRef={searchInputRef}
+      isMobileMenuOpen={isMobileMenuOpen}
+      setIsMobileMenuOpen={setIsMobileMenuOpen}
+      mobileMenuRef={mobileMenuRef}
+      hamburgerRef={hamburgerRef}
     />
   );
 };

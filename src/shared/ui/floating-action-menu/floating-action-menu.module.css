@@ -1,0 +1,338 @@
+/* ─── Root Container (Shape-Shifting Dock) ─── */
+.root {
+  position: fixed;
+  right: max(var(--spacing-md), env(safe-area-inset-right, 0px));
+  bottom: max(var(--spacing-md), env(safe-area-inset-bottom, 0px));
+  z-index: calc(var(--zindex-overlay) - 2);
+
+  /* Core shape-shifting properties */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  /* Transitions for the morphing container */
+  transition:
+    width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-radius 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.4s ease,
+    box-shadow 0.4s ease,
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (min-width: 48.0625rem) {
+  .root {
+    display: none;
+  }
+
+  .backdrop {
+    display: none;
+  }
+}
+
+/* Hide FAB while a full-screen drawer sheet is open */
+:global(body[data-drawer-sheet-open]) .root {
+  display: none;
+}
+
+/* ─── State 1: Closed (The FAB Button) ─── */
+.stateClosed {
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, white));
+  box-shadow: var(--shadow-md), inset 0 1px 1px color-mix(in srgb, white 20%, transparent);
+  cursor: pointer;
+}
+
+.stateClosed:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-lg), inset 0 1px 1px color-mix(in srgb, white 30%, transparent);
+}
+
+.stateClosed:active {
+  transform: scale(0.95);
+}
+
+/* ─── State 2: Toolbar (Vertical Pill) ─── */
+/* Height is set inline from action count so 5+ icons are not clipped. */
+.stateToolbar {
+  width: 64px;
+  border-radius: 32px;
+  background: var(--surface-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ─── State 3: Panel (Expanded Menu) ─── */
+/* Width/height are set inline from children or panelContent. */
+.statePanel {
+  border-radius: 24px;
+  background: var(--surface-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ─── Backdrop ─── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--zindex-overlay) - 3);
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: var(--overlay-backdrop);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  cursor: default;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.backdropActive {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ─── Dock Faces (Cross-Fade Layer System) ─── */
+.dockFace {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 0.3s ease,
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0.5s;
+  visibility: hidden;
+}
+
+/* Activate face matching current state */
+.stateClosed .faceClosed,
+.stateToolbar .faceToolbar,
+.statePanel .facePanel {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+  transform: translate(0, 0) scale(1);
+  transition-delay: 0.05s;
+}
+
+/* ─── Off-Screen Morph Positions ─── */
+
+/* Toolbar entering from closed / exiting to panel */
+.stateClosed .faceToolbar {
+  transform: translateY(30px) scale(0.9);
+}
+.statePanel .faceToolbar {
+  transform: translateX(-40px);
+  opacity: 0;
+}
+
+/* Panel entering from closed / exiting to toolbar */
+.stateClosed .facePanel {
+  transform: translateX(40px) scale(0.9);
+}
+.stateToolbar .facePanel {
+  transform: translateX(40px);
+  opacity: 0;
+}
+
+/* Closed face exiting */
+.stateToolbar .faceClosed,
+.statePanel .faceClosed {
+  transform: scale(0.1) rotate(-90deg);
+  opacity: 0;
+}
+
+/* ─── Face 1: Closed ─── */
+.faceClosed {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-text);
+  cursor: pointer;
+}
+
+/* ─── Face 2: Toolbar ─── */
+.faceToolbar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.toolbarGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+}
+
+.toolBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.toolBtn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.toolBtn:active {
+  transform: scale(0.92);
+}
+
+.toolBtn.primary {
+  background: var(--primary-subtle);
+  color: var(--primary);
+}
+
+.toolBtn.primary:hover {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+
+.toolDivider {
+  width: 24px;
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+  border-radius: 1px;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Face 3: Panel ─── */
+.facePanel {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.backBtn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.backBtn:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+  border-color: var(--border);
+}
+
+.panelList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panelContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 38px;
+  padding: 0 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.listItem:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+  border-color: var(--border-subtle);
+  transform: translateX(2px);
+}
+
+.listItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ─── Global Tooltip ─── */
+.tooltip {
+  position: fixed;
+  background: var(--text);
+  color: var(--surface);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition:
+    opacity 0.2s ease,
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: translate(-100%, -50%) translateX(10px);
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+  visibility: hidden;
+}
+
+.tooltipVisible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-100%, -50%) translateX(0);
+}

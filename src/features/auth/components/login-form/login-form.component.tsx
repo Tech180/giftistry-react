@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from 'app/providers/auth-context';
+import { useToast } from 'app/providers/toast-context';
 import { authApi } from '../../api/auth.api';
 import { LoginFormTemplate } from './login-form.html';
 import { ApiUser } from '../../interfaces/api-user.interface';
+import { camelcaseKeys } from 'shared/utils/api-case.util';
 
 export const LoginForm: React.FC = () => {
-  const { login } = useAuth();
+  const { login, refreshUser, allowPasswordLogin, oauthEnabled, oauthButtonText } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { showToast } = useToast();
 
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [step, setStep] = useState<'credentials' | '2fa'>('credentials');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,48 +22,124 @@ export const LoginForm: React.FC = () => {
   const [totpCode, setTotpCode] = useState('');
   const [switcherAccounts, setSwitcherAccounts] = useState<any[]>([]);
 
+  const [isBiometricModalOpen, setIsBiometricModalOpen] = useState(false);
+  const [biometricLabel, setBiometricLabel] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const cancelBiometrics = () => {
+    setIsBiometricModalOpen(false);
+  };
+
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('giftistry-switcher-accounts');
-      if (raw) {
-        setSwitcherAccounts(JSON.parse(raw));
+    const loadAndVerifyAccounts = async () => {
+      try {
+        const raw = localStorage.getItem('giftistry-switcher-accounts');
+        if (!raw) return;
+
+        const accounts = JSON.parse(raw).map((acc: any) => ({
+          ...acc,
+          Username: acc.Username || acc.Email,
+        }));
+
+        const initialShow = accounts.filter((acc: any) => acc.HasPasskey !== false);
+        setSwitcherAccounts(initialShow);
+
+        let updated = false;
+        const checkedAccounts = await Promise.all(
+          accounts.map(async (acc: any) => {
+            if (acc.HasPasskey === undefined && acc.Username) {
+              try {
+                const res = await authApi.checkPasskey(acc.Username);
+                updated = true;
+                return { ...acc, HasPasskey: !!(res && res.HasPasskey) };
+              } catch {
+                return acc;
+              }
+            }
+            return acc;
+          })
+        );
+
+        if (updated) {
+          localStorage.setItem('giftistry-switcher-accounts', JSON.stringify(checkedAccounts));
+          const finalShow = checkedAccounts.filter((acc: any) => acc.HasPasskey !== false);
+          setSwitcherAccounts(finalShow);
+        }
+      } catch {
+        // Ignore
       }
-    } catch {
-      // Ignore
-    }
+    };
+
+    loadAndVerifyAccounts();
   }, []);
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (!token) return;
+
+    localStorage.setItem('giftistry-token', token);
+    refreshUser()
+      .then(async () => {
+        setSearchParams({}, { replace: true });
+        const me = await authApi.getMe();
+        navigate(me?.User?.IsOnboarded === false ? '/welcome' : '/dashboard', { replace: true });
+      })
+      .catch(() => {
+        setLocalError('OAuth sign-in failed. Please try again.');
+      });
+  }, [searchParams, setSearchParams, refreshUser, navigate]);
+
+  useEffect(() => {
+    if (oauthEnabled && searchParams.get('oauth') === 'auto') {
+      authApi.beginOauthLogin();
+    }
+  }, [oauthEnabled, searchParams]);
 
   const saveAccountToSwitcher = (user: ApiUser) => {
     try {
       const raw = localStorage.getItem('giftistry-switcher-accounts');
       const list = raw ? JSON.parse(raw) : [];
-      const exists = list.some((u: any) => u.Email === user.Email);
-      if (!exists) {
-        list.push({
-          Email: user.Email,
-          Username: user.Username,
-          FirstName: user.FirstName,
-          LastName: user.LastName,
-          Avatar: user.Avatar,
-        });
-        localStorage.setItem('giftistry-switcher-accounts', JSON.stringify(list));
-        setSwitcherAccounts(list);
+      const index = list.findIndex((u: any) => u.Username === user.Username);
+      const accountData = {
+        Username: user.Username,
+        Email: user.Email,
+        FirstName: user.FirstName,
+        LastName: user.LastName,
+        Avatar: user.Avatar,
+        HasPasskey: user.HasPasskey,
+      };
+
+      if (index > -1) {
+        list[index] = accountData;
+      } else {
+        list.push(accountData);
+      }
+
+      localStorage.setItem('giftistry-switcher-accounts', JSON.stringify(list));
+      setSwitcherAccounts(list.filter((acc: any) => acc.HasPasskey !== false));
+    } catch {
+      // Ignore
+    }
+  };
+
+  const handleRemoveSwitcherAccount = (usernameToRemove: string) => {
+    try {
+      const raw = localStorage.getItem('giftistry-switcher-accounts');
+      if (raw) {
+        const list = JSON.parse(raw);
+        const updated = list.filter((acc: any) => acc.Username !== usernameToRemove);
+        localStorage.setItem('giftistry-switcher-accounts', JSON.stringify(updated));
+        setSwitcherAccounts(updated.filter((acc: any) => acc.HasPasskey !== false));
       }
     } catch {
       // Ignore
     }
   };
 
-  const handleRemoveSwitcherAccount = (emailToRemove: string) => {
-    const updated = switcherAccounts.filter((acc) => acc.Email !== emailToRemove);
-    localStorage.setItem('giftistry-switcher-accounts', JSON.stringify(updated));
-    setSwitcherAccounts(updated);
-  };
-
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setLocalError('Please enter both email and password.');
+    if (!username || !password) {
+      setLocalError('Please enter both username and password.');
       return;
     }
 
@@ -67,7 +147,7 @@ export const LoginForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const res = await login(email, password);
+      const res = await login(username, password);
       if (res && res.Require2FA) {
         setTicket(res.Ticket || '');
         setStep('2fa');
@@ -75,7 +155,8 @@ export const LoginForm: React.FC = () => {
         if (res && res.User) {
           saveAccountToSwitcher(res.User);
         }
-        navigate('/dashboard');
+        showToast('Login successful!');
+        navigate(res?.User?.IsOnboarded === false ? '/welcome' : '/dashboard');
       }
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'Invalid credentials.');
@@ -101,7 +182,8 @@ export const LoginForm: React.FC = () => {
       }
       if (res && res.User) {
         saveAccountToSwitcher(res.User);
-        window.location.href = '/dashboard';
+        showToast('Authentication successful!');
+        window.location.href = res.User.IsOnboarded === false ? '/welcome' : '/dashboard';
       }
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'Invalid verification code.');
@@ -113,6 +195,8 @@ export const LoginForm: React.FC = () => {
   const handlePasskeyLogin = async () => {
     setLocalError(null);
     setIsLoading(true);
+    setBiometricLabel(username || 'Secure Sign In');
+    setIsBiometricModalOpen(true);
     try {
       const optionsRes = await authApi.passkeyLoginOptions();
       if (!optionsRes || !optionsRes.Options) {
@@ -120,9 +204,10 @@ export const LoginForm: React.FC = () => {
       }
 
       const { startAuthentication } = await import('@simplewebauthn/browser');
-      const authResponse = await startAuthentication({ optionsJSON: optionsRes.Options });
+      const authResponse = await startAuthentication({ optionsJSON: camelcaseKeys(optionsRes.Options) });
 
       const verifyRes = await authApi.passkeyLoginVerify(authResponse);
+      setIsBiometricModalOpen(false);
       if (verifyRes && verifyRes.Require2FA) {
         setTicket(verifyRes.Ticket || '');
         setStep('2fa');
@@ -132,30 +217,66 @@ export const LoginForm: React.FC = () => {
         }
         if (verifyRes && verifyRes.User) {
           saveAccountToSwitcher(verifyRes.User);
-          window.location.href = '/dashboard';
+          showToast('Passkey verified successfully!');
+          window.location.href = verifyRes.User.IsOnboarded === false ? '/welcome' : '/dashboard';
         }
       }
     } catch (err) {
+      setIsBiometricModalOpen(false);
       setLocalError(err instanceof Error ? err.message : 'Passkey authentication failed.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSwitcherSelect = async (selectedEmail: string) => {
-    setEmail(selectedEmail);
+  const handleSwitcherSelect = async (selectedUsername: string) => {
+    setUsername(selectedUsername);
     setLocalError(null);
     setIsLoading(true);
+
     try {
+      const localAcc = switcherAccounts.find((acc) => acc.Username === selectedUsername);
+      let hasPasskey = localAcc?.HasPasskey;
+
+      if (hasPasskey === undefined) {
+        const checkRes = await authApi.checkPasskey(selectedUsername);
+        hasPasskey = !!(checkRes && checkRes.HasPasskey);
+
+        try {
+          const raw = localStorage.getItem('giftistry-switcher-accounts');
+          if (raw) {
+            const list = JSON.parse(raw);
+            const idx = list.findIndex((u: any) => u.Username === selectedUsername);
+            if (idx > -1) {
+              list[idx].HasPasskey = hasPasskey;
+              localStorage.setItem('giftistry-switcher-accounts', JSON.stringify(list));
+              setSwitcherAccounts(list);
+            }
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
+      if (!hasPasskey) {
+        setLocalError('Please sign in using your password.');
+        setIsLoading(false);
+        return;
+      }
+
+      setBiometricLabel(selectedUsername);
+      setIsBiometricModalOpen(true);
+
       const optionsRes = await authApi.passkeyLoginOptions();
       if (!optionsRes || !optionsRes.Options) {
         throw new Error('Failed to fetch passkey options from server.');
       }
 
       const { startAuthentication } = await import('@simplewebauthn/browser');
-      const authResponse = await startAuthentication({ optionsJSON: optionsRes.Options });
+      const authResponse = await startAuthentication({ optionsJSON: camelcaseKeys(optionsRes.Options) });
 
       const verifyRes = await authApi.passkeyLoginVerify(authResponse);
+      setIsBiometricModalOpen(false);
       if (verifyRes && verifyRes.Require2FA) {
         setTicket(verifyRes.Ticket || '');
         setStep('2fa');
@@ -165,10 +286,12 @@ export const LoginForm: React.FC = () => {
         }
         if (verifyRes && verifyRes.User) {
           saveAccountToSwitcher(verifyRes.User);
-          window.location.href = '/dashboard';
+          showToast('Passkey verified successfully!');
+          window.location.href = verifyRes.User.IsOnboarded === false ? '/welcome' : '/dashboard';
         }
       }
     } catch (err) {
+      setIsBiometricModalOpen(false);
       setLocalError(err instanceof Error ? err.message : 'Passkey authentication failed.');
     } finally {
       setIsLoading(false);
@@ -177,8 +300,8 @@ export const LoginForm: React.FC = () => {
 
   return (
     <LoginFormTemplate
-      email={email}
-      setEmail={setEmail}
+      username={username}
+      setUsername={setUsername}
       password={password}
       setPassword={setPassword}
       isLoading={isLoading}
@@ -193,6 +316,15 @@ export const LoginForm: React.FC = () => {
       switcherAccounts={switcherAccounts}
       handleSwitcherSelect={handleSwitcherSelect}
       handleRemoveSwitcherAccount={handleRemoveSwitcherAccount}
+      isBiometricModalOpen={isBiometricModalOpen}
+      biometricLabel={biometricLabel}
+      cancelBiometrics={cancelBiometrics}
+      allowPasswordLogin={allowPasswordLogin}
+      oauthEnabled={oauthEnabled}
+      oauthButtonText={oauthButtonText}
+      handleOauthLogin={() => authApi.beginOauthLogin()}
+      showPassword={showPassword}
+      onToggleShowPassword={() => setShowPassword((prev) => !prev)}
     />
   );
 };

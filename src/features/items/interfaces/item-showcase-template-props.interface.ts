@@ -53,4 +53,7 @@ export interface ItemShowcaseTemplateProps {
   audienceLabel: string | null;
   isPrivate: boolean;
   linkedItems: Item[];
+  variant?: 'card' | 'inline';
+  CategoryIcon?: React.ComponentType<any>;
+  categoryLabel?: string;
 }

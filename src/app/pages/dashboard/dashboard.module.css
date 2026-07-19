@@ -153,13 +153,17 @@
     align-items: flex-start;
   }
 
-  .header button{
-    width: 100%;
+  .header-actions {
+    display: none;
   }
 
   .controls-row{
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .search-input{
+    max-width: none;
   }
 
   .grid, .loading-grid{

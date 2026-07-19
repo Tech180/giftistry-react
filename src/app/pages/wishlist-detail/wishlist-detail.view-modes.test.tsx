@@ -130,7 +130,7 @@ describe('ItemCardRouter', () => {
   it('calls onSelect in grid view when clicked', () => {
     const onSelect = vi.fn();
     const { container } = render(<ItemCardRouter {...baseProps} viewMode="grid" onSelect={onSelect} />);
-    fireEvent.click(container.querySelector('[class*="v-grid-card"]') as Element);
+    fireEvent.click(container.querySelector('[class*="gift-card"]') as Element);
     expect(onSelect).toHaveBeenCalled();
   });
 });

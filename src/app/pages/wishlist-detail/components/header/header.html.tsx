@@ -196,16 +196,18 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
 
         <div className={styles['right-container']}>
           <div className={styles.actions}>
+            <div className={styles.headerToolbarActions}>
             {wishlist && canImport && (
-              <Badge
-                effect="rainbow"
-                active={isImportOpen}
-                size="compact"
-                icon={<Upload size={16} />}
-                ariaLabel="Import wishlist"
-                ariaPressed={isImportOpen}
+              <Button
+                variant="secondary"
+                className={styles['export-dropdown-trigger']}
                 onClick={onImportToggle}
-              />
+                aria-label="Import wishlist"
+                aria-pressed={isImportOpen}
+                effect={wishlist.AiEnabled ? 'rainbow' : 'none'}
+              >
+                <Upload size={16} />
+              </Button>
             )}
             {wishlist && (
               <div className={styles['export-dropdown-container']} ref={exportRef} title="Export">
@@ -306,66 +308,71 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                 <Share2 size={16} />
               </Button>
             )}
+            </div>
           </div>
           {((canShowAi && (isOwner || wishlist.AiEnabled)) ||
             (canShowWebSearch && (isOwner || wishlist.WebSearchEnabled)) ||
             !isOwner) && (
             <div className={styles['owner-badge-container']}>
-              {canShowAi && (
-                isOwner ? (
-                  <AiStatusBadge
-                    enabled={!!wishlist.AiEnabled}
-                    onToggle={toggleAiEnabled}
-                    ariaLabelEnabled="AI reviews enabled for this list. Click to disable."
-                    ariaLabelDisabled="AI reviews disabled for this list. Click to enable."
-                  />
-                ) : (
-                  wishlist.AiEnabled && (
+              <div className={styles.desktopListFeatureBadges}>
+                {canShowAi && (
+                  isOwner ? (
                     <AiStatusBadge
-                      enabled
-                      ariaLabelEnabled="AI reviews active on this list"
-                      ariaLabelDisabled="AI reviews inactive on this list"
+                      enabled={!!wishlist.AiEnabled}
+                      onToggle={toggleAiEnabled}
+                      ariaLabelEnabled="AI reviews enabled for this list. Click to disable."
+                      ariaLabelDisabled="AI reviews disabled for this list. Click to enable."
                     />
+                  ) : (
+                    wishlist.AiEnabled && (
+                      <AiStatusBadge
+                        enabled
+                        ariaLabelEnabled="AI reviews active on this list"
+                        ariaLabelDisabled="AI reviews inactive on this list"
+                      />
+                    )
                   )
-                )
-              )}
-              {canShowWebSearch && (
-                isOwner ? (
-                  <Badge
-                    size="md"
-                    icon={<Search size={16} />}
-                    active={!!wishlist.WebSearchEnabled}
-                    onClick={toggleWebSearchEnabled}
-                    ariaPressed={!!wishlist.WebSearchEnabled}
-                    ariaLabel={
-                      wishlist.WebSearchEnabled
-                        ? 'Web search enabled for this list. Click to disable.'
-                        : 'Web search disabled for this list. Click to enable.'
-                    }
-                  >
-                    Web Search {wishlist.WebSearchEnabled ? 'Enabled' : 'Disabled'}
-                  </Badge>
-                ) : (
-                  wishlist.WebSearchEnabled && (
+                )}
+                {canShowWebSearch && (
+                  isOwner ? (
                     <Badge
                       size="md"
                       icon={<Search size={16} />}
-                      active
-                      ariaLabel="Web search active on this list"
+                      active={!!wishlist.WebSearchEnabled}
+                      onClick={toggleWebSearchEnabled}
+                      ariaPressed={!!wishlist.WebSearchEnabled}
+                      ariaLabel={
+                        wishlist.WebSearchEnabled
+                          ? 'Web search enabled for this list. Click to disable.'
+                          : 'Web search disabled for this list. Click to enable.'
+                      }
                     >
-                      Web Search Enabled
+                      Web Search {wishlist.WebSearchEnabled ? 'Enabled' : 'Disabled'}
                     </Badge>
+                  ) : (
+                    wishlist.WebSearchEnabled && (
+                      <Badge
+                        size="md"
+                        icon={<Search size={16} />}
+                        active
+                        ariaLabel="Web search active on this list"
+                      >
+                        Web Search Enabled
+                      </Badge>
+                    )
                   )
-                )
-              )}
+                )}
+              </div>
               {!isOwner && (
-                <OwnerBadge
-                  userId={wishlist.UserId}
-                  displayName={wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Registry Owner'}
-                  username={wishlist.OwnerUsername}
-                  firstName={wishlist.OwnerFirstName}
-                  avatar={wishlist.OwnerAvatar}
-                />
+                <div className={styles.mobileOwnerBadge}>
+                  <OwnerBadge
+                    userId={wishlist.UserId}
+                    displayName={wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Registry Owner'}
+                    username={wishlist.OwnerUsername}
+                    firstName={wishlist.OwnerFirstName}
+                    avatar={wishlist.OwnerAvatar}
+                  />
+                </div>
               )}
             </div>
           )}

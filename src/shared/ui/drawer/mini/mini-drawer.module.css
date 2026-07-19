@@ -54,3 +54,50 @@
   height: auto;
   max-height: calc(100vh - 11.25rem);
 }
+
+/* In-panel strip when parent is a full-screen mobile sheet */
+@media (max-width: 48rem) {
+  .mini-drawer.inline-on-mobile{
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    width: 100%;
+    min-width: 0;
+    max-height: none;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+    flex-shrink: 0;
+  }
+
+  .mini-drawer.inline-on-mobile.position-right,
+  .mini-drawer.inline-on-mobile.position-left{
+    right: auto;
+    left: auto;
+    border-radius: 0;
+    box-shadow: none;
+    border-right: none;
+    border-left: none;
+  }
+
+  .mini-drawer.inline-on-mobile .mini-drawer-label{
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .mini-drawer.inline-on-mobile .mini-drawer-squares{
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: center;
+    max-height: none;
+    flex: 1;
+    min-width: 0;
+  }
+}

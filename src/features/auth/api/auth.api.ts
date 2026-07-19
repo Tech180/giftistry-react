@@ -1,13 +1,25 @@
 import { apiClient } from 'core/api/client';
+import { env } from 'core/config/env';
 import { ApiUser } from '../interfaces/api-user.interface';
 import { AuthResponse } from '../interfaces/auth-response.interface';
+import { OnboardingPatchPayload, OnboardingState } from '../interfaces/onboarding-state.interface';
 
 export const authApi = {
-  login: (email: string, password: string) =>
-    apiClient.post<AuthResponse>('/api/auth/login', { Email: email, Password: password }, 'Auth'),
+  login: (username: string, password: string) =>
+    apiClient.post<AuthResponse>('/api/auth/login', { Username: username, Password: password }, 'Auth'),
 
-  signup: (username: string, email: string, password: string, firstName?: string, lastName?: string) =>
-    apiClient.post<AuthResponse>('/api/auth/signup', { Username: username, Email: email, Password: password, FirstName: firstName, LastName: lastName }, 'Auth'),
+  signup: (username: string, email: string | null | undefined, password: string, firstName?: string, lastName?: string) =>
+    apiClient.post<AuthResponse>(
+      '/api/auth/signup',
+      {
+        Username: username,
+        ...(email ? { Email: email } : {}),
+        Password: password,
+        FirstName: firstName,
+        LastName: lastName,
+      },
+      'Auth'
+    ),
 
   logout: () =>
     apiClient.post<Record<string, never>>('/api/auth/logout', {}),
@@ -43,12 +55,6 @@ export const authApi = {
   getUserPreview: (userId: string) =>
     apiClient.get<{ User: ApiUser }>(`/api/users/${userId}/preview`),
 
-  verifyEmail: (token: string) =>
-    apiClient.post<Record<string, never>>('/api/auth/verify-email', { Token: token }, 'Auth'),
-
-  resendVerification: () =>
-    apiClient.post<Record<string, never>>('/api/auth/resend-verification', {}),
-
   passkeyRegisterOptions: () =>
     apiClient.post<{ Options: unknown }>('/api/auth/passkey/register/options', {}),
 
@@ -60,6 +66,9 @@ export const authApi = {
 
   passkeyLoginVerify: (authenticationResponse: unknown) =>
     apiClient.post<AuthResponse>('/api/auth/passkey/login/verify', { AuthenticationResponse: authenticationResponse }, 'Auth'),
+
+  checkPasskey: (username: string) =>
+    apiClient.post<{ HasPasskey: boolean }>('/api/auth/passkey/check', { Username: username }, 'Auth'),
 
   verify2faLogin: (ticket: string, code: string) =>
     apiClient.post<AuthResponse>('/api/auth/2fa/login', { Ticket: ticket, Code: code }, 'Auth'),
@@ -84,4 +93,14 @@ export const authApi = {
 
   deleteAccount: (password: string) =>
     apiClient.delete<Record<string, never>>('/api/auth/account', { Password: password }, 'Auth'),
+
+  getOnboardingState: () =>
+    apiClient.get<OnboardingState>('/api/auth/onboarding'),
+
+  patchOnboarding: (payload: OnboardingPatchPayload) =>
+    apiClient.patch<OnboardingState & { User?: ApiUser }>('/api/auth/onboarding', payload, 'Onboarding'),
+
+  beginOauthLogin: () => {
+    window.location.href = `${env.apiUrl}/api/auth/oauth/authorize`;
+  },
 };

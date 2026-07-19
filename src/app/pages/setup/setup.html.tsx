@@ -1,341 +1,405 @@
 import React from 'react';
+import {
+  Gift,
+  ArrowRight,
+  ArrowLeft,
+  AtSign,
+  Info,
+  Check,
+  Loader2,
+  Zap,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 import styles from './setup.module.css';
-import { Database, Mail, User, Server, ArrowRight, ArrowLeft } from 'lucide-react';
 import { SetupTemplateProps } from './interfaces/setup-props.interface';
 import { SetupTimeline } from './components/timeline/setup-timeline.component';
 
 export const SetupTemplate: React.FC<SetupTemplateProps> = ({
   step,
+  mobileStep,
+  showFooterBack,
+  showFooter,
   dbType,
   dbUrl,
-  smtpType,
-  smtpHost,
-  smtpPort,
-  smtpUser,
-  smtpPass,
-  smtpSecure,
-  smtpFrom,
   adminUsername,
-  adminEmail,
   adminPassword,
   adminConfirmPassword,
   adminFirstName,
   adminLastName,
+  showPassword,
+  showConfirmPassword,
   errors,
   isSubmitting,
+  installTasks,
   onFieldChange,
+  onToggleShowPassword,
+  onToggleShowConfirmPassword,
   onNext,
   onPrev,
-}) => {
-  const renderDatabaseStep = () => (
-    <div className={styles['form-section']}>
-      <h3 className={styles['section-title']}>
-        <Database size={16} className={styles['section-icon']} />
-        Configure PostgreSQL Database
-      </h3>
-
-      <div className={styles['form-group']}>
-        <label className={styles.label}>Database Location</label>
-        <div className={styles['toggle-container']}>
-          <button
-            type="button"
-            className={`${styles['toggle-btn']} ${dbType === 'local' ? styles['toggle-btn-active'] : ''}`}
-            onClick={() => onFieldChange('dbType', 'local')}
-          >
-            Local (Embedded PostgreSQL)
-          </button>
-          <button
-            type="button"
-            className={`${styles['toggle-btn']} ${dbType === 'remote' ? styles['toggle-btn-active'] : ''}`}
-            onClick={() => onFieldChange('dbType', 'remote')}
-          >
-            Remote / External Server
-          </button>
+  onFinish,
+}) => (
+  <div className={styles['setup-shell']}>
+    <aside className={styles.sidebar}>
+      <div className={styles.brand}>
+        <div className={styles['brand-mark']}>
+          <Gift size={16} aria-hidden />
+        </div>
+        <div>
+          <h1 className={styles['brand-title']}>Giftistry</h1>
+          <p className={styles['brand-subtitle']}>Setup Wizard</p>
         </div>
       </div>
 
-      {dbType === 'local' ? (
-        <div className={`${styles.banner} ${styles['banner-info']}`}>
-          <Server size={16} className={styles['banner-icon']} />
-          <div>
-            This option uses the local PostgreSQL database built into the Nix environment. Perfect for plug-and-play setups.
-          </div>
-        </div>
-      ) : (
-        <div className={styles['form-group']}>
-          <label htmlFor="dbUrl" className={styles.label}>PostgreSQL Connection URL</label>
-          <input
-            id="dbUrl"
-            type="text"
-            className={styles.input}
-            placeholder="postgresql://user:password@host:port/database"
-            value={dbUrl}
-            onChange={(e) => onFieldChange('dbUrl', e.target.value)}
-          />
-          {errors.dbUrl && <span className={styles['field-error']}>{errors.dbUrl}</span>}
-        </div>
-      )}
-    </div>
-  );
+      <SetupTimeline step={step} />
 
-  const renderSMTPStep = () => (
-    <div className={styles['form-section']}>
-      <h3 className={styles['section-title']}>
-        <Mail size={16} className={styles['section-icon']} />
-        Configure Mail Server (SMTP)
-      </h3>
-
-      <div className={styles['form-group']}>
-        <label className={styles.label}>Mail Transport Location</label>
-        <div className={styles['toggle-container']}>
-          <button
-            type="button"
-            className={`${styles['toggle-btn']} ${smtpType === 'local' ? styles['toggle-btn-active'] : ''}`}
-            onClick={() => onFieldChange('smtpType', 'local')}
-          >
-            Local (Embedded Mailpit)
-          </button>
-          <button
-            type="button"
-            className={`${styles['toggle-btn']} ${smtpType === 'remote' ? styles['toggle-btn-active'] : ''}`}
-            onClick={() => onFieldChange('smtpType', 'remote')}
-          >
-            Remote / External SMTP
-          </button>
-        </div>
+      <div className={styles['sidebar-footer']}>
+        <p className={styles['sidebar-meta']}>Giftistry Setup</p>
       </div>
+    </aside>
 
-      {smtpType === 'local' ? (
-        <div className={`${styles.banner} ${styles['banner-info']}`}>
-          <Server size={16} className={styles['banner-icon']} />
-          <div>
-            Emails will be sent to the Mailpit server interface running locally in the development sandbox.
+    <main className={styles.main}>
+      <header className={styles['mobile-header']}>
+        <div className={styles['mobile-brand']}>
+          <div className={styles['brand-mark-sm']}>
+            <Gift size={12} aria-hidden />
           </div>
+          <span className={styles['mobile-title']}>Giftistry Setup</span>
         </div>
-      ) : (
-        <>
-          <div className={styles['form-group-inline']}>
-            <div>
-              <label htmlFor="smtpHost" className={styles.label}>SMTP Host</label>
-              <input
-                id="smtpHost"
-                type="text"
-                className={styles.input}
-                placeholder="smtp.example.com"
-                value={smtpHost}
-                onChange={(e) => onFieldChange('smtpHost', e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="smtpPort" className={styles.label}>SMTP Port</label>
-              <input
-                id="smtpPort"
-                type="number"
-                className={styles.input}
-                placeholder="587"
-                value={smtpPort || ''}
-                onChange={(e) => onFieldChange('smtpPort', e.target.value ? parseInt(e.target.value) : '')}
-              />
-            </div>
-          </div>
+        <div className={styles['mobile-step']}>Step {mobileStep} of 3</div>
+      </header>
 
-          <div className={styles['form-group-inline']}>
-            <div>
-              <label htmlFor="smtpUser" className={styles.label}>SMTP Username</label>
-              <input
-                id="smtpUser"
-                type="text"
-                className={styles.input}
-                placeholder="user@example.com"
-                value={smtpUser}
-                onChange={(e) => onFieldChange('smtpUser', e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="smtpPass" className={styles.label}>SMTP Password</label>
-              <input
-                id="smtpPass"
-                type="password"
-                className={styles.input}
-                placeholder="••••••••"
-                value={smtpPass}
-                onChange={(e) => onFieldChange('smtpPass', e.target.value)}
-              />
-            </div>
-          </div>
+      <div className={styles['main-scroll']}>
+        <div className={styles['main-inner']}>
+          {step === 1 && (
+            <div className={`${styles['step-content']} ${styles['step-content-active']}`}>
+              <header className={styles['step-header']}>
+                <h2 className={styles['step-heading']}>Database Configuration</h2>
+                <p className={styles['step-subheading']}>
+                  Select how you want to store application data. For standard deployments, the
+                  local option requires zero configuration.
+                </p>
+              </header>
 
-          <div className={styles['form-group-inline']}>
-            <div>
-              <label htmlFor="smtpFrom" className={styles.label}>Sender Address (From)</label>
-              <input
-                id="smtpFrom"
-                type="email"
-                className={styles.input}
-                placeholder="noreply@giftistry.local"
-                value={smtpFrom}
-                onChange={(e) => onFieldChange('smtpFrom', e.target.value)}
-              />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', paddingTop: 24 }}>
-              <label className={styles['checkbox-label']}>
-                <input
-                  type="checkbox"
-                  className={styles.checkbox}
-                  checked={smtpSecure}
-                  onChange={(e) => onFieldChange('smtpSecure', e.target.checked)}
-                />
-                Secure connection
-              </label>
-            </div>
-          </div>
-          {errors.smtp && <span className={styles['field-error']}>{errors.smtp}</span>}
-        </>
-      )}
-    </div>
-  );
+              <div className={styles['radio-list']}>
+                <label className={styles['radio-card']}>
+                  <input
+                    type="radio"
+                    name="db_type"
+                    value="local"
+                    className={styles['radio-input']}
+                    checked={dbType === 'local'}
+                    onChange={() => onFieldChange('dbType', 'local')}
+                  />
+                  <div className={styles['radio-card-ui']}>
+                    <div className={styles['radio-circle']} />
+                    <div className={styles['radio-body']}>
+                      <div className={styles['radio-title-row']}>
+                        <span className={styles['radio-title']}>Local PostgreSQL</span>
+                        <span className={styles.badge}>Recommended</span>
+                      </div>
+                      <p className={styles['radio-desc']}>
+                        Use the local PostgreSQL database from your environment. Best for
+                        personal use or small-scale deployments without an external database
+                        server.
+                      </p>
+                    </div>
+                  </div>
+                </label>
 
-  const renderAdminStep = () => (
-    <div className={styles['form-section']}>
-      <h3 className={styles['section-title']}>
-        <User size={16} className={styles['section-icon']} />
-        Create Administrator Account
-      </h3>
-
-      <div className={styles['form-group-inline']}>
-        <div>
-          <label htmlFor="adminFirstName" className={styles.label}>First Name</label>
-          <input
-            id="adminFirstName"
-            type="text"
-            className={styles.input}
-            placeholder="John"
-            value={adminFirstName}
-            onChange={(e) => onFieldChange('adminFirstName', e.target.value)}
-          />
-          {errors.adminFirstName && <span className={styles['field-error']}>{errors.adminFirstName}</span>}
-        </div>
-        <div>
-          <label htmlFor="adminLastName" className={styles.label}>Last Name</label>
-          <input
-            id="adminLastName"
-            type="text"
-            className={styles.input}
-            placeholder="Doe"
-            value={adminLastName}
-            onChange={(e) => onFieldChange('adminLastName', e.target.value)}
-          />
-          {errors.adminLastName && <span className={styles['field-error']}>{errors.adminLastName}</span>}
-        </div>
-      </div>
-
-      <div className={styles['form-group-inline']}>
-        <div>
-          <label htmlFor="adminUsername" className={styles.label}>Username</label>
-          <input
-            id="adminUsername"
-            type="text"
-            className={styles.input}
-            placeholder="admin"
-            value={adminUsername}
-            onChange={(e) => onFieldChange('adminUsername', e.target.value)}
-          />
-          {errors.adminUsername && <span className={styles['field-error']}>{errors.adminUsername}</span>}
-        </div>
-        <div>
-          <label htmlFor="adminEmail" className={styles.label}>Email Address</label>
-          <input
-            id="adminEmail"
-            type="email"
-            className={styles.input}
-            placeholder="admin@example.com"
-            value={adminEmail}
-            onChange={(e) => onFieldChange('adminEmail', e.target.value)}
-          />
-          {errors.adminEmail && <span className={styles['field-error']}>{errors.adminEmail}</span>}
-        </div>
-      </div>
-
-      <div className={styles['form-group-inline']}>
-        <div>
-          <label htmlFor="adminPassword" className={styles.label}>Password</label>
-          <input
-            id="adminPassword"
-            type="password"
-            className={styles.input}
-            placeholder="••••••••"
-            value={adminPassword}
-            onChange={(e) => onFieldChange('adminPassword', e.target.value)}
-          />
-          {errors.adminPassword && <span className={styles['field-error']}>{errors.adminPassword}</span>}
-        </div>
-        <div>
-          <label htmlFor="adminConfirmPassword" className={styles.label}>Confirm Password</label>
-          <input
-            id="adminConfirmPassword"
-            type="password"
-            className={styles.input}
-            placeholder="••••••••"
-            value={adminConfirmPassword}
-            onChange={(e) => onFieldChange('adminConfirmPassword', e.target.value)}
-          />
-          {errors.adminConfirmPassword && <span className={styles['field-error']}>{errors.adminConfirmPassword}</span>}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderInstallingStep = () => (
-    <div className={styles['installing-container']}>
-      <div className={styles.spinner} />
-      <h3 className={styles['installing-text']}>Setting up your homelab...</h3>
-      <p className={styles['installing-subtext']}>
-        Initializing PostgreSQL tables, seeding dynamic fields, writing config.json, and registering your administrator credentials.
-      </p>
-    </div>
-  );
-
-  return (
-    <div className={styles['setup-container']}>
-      <aside className={styles['setup-sidebar']}>
-        <div className={styles['sidebar-header']}>
-          <h1 className={styles['setup-title']}>Giftistry Setup</h1>
-          <p className={styles['setup-subtitle']}>Configure instance settings to finish installation</p>
-        </div>
-        <SetupTimeline step={step} />
-      </aside>
-
-      <main className={styles['setup-content']}>
-        <form onSubmit={(e) => e.preventDefault()} style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
-          <div>
-            {step === 1 && renderDatabaseStep()}
-            {step === 2 && renderSMTPStep()}
-            {step === 3 && renderAdminStep()}
-            {step === 4 && renderInstallingStep()}
-          </div>
-
-          {step < 4 && (
-            <div className={styles['setup-footer']}>
-              {step > 1 ? (
-                <button type="button" className={styles['btn-prev']} onClick={onPrev}>
-                  <ArrowLeft size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />
-                  Back
-                </button>
-              ) : (
-                <div />
-              )}
-              <button
-                type="button"
-                className={styles['btn-next']}
-                onClick={onNext}
-                disabled={isSubmitting}
-              >
-                {step === 3 ? 'Install & Bootstrap' : 'Continue'}
-                <ArrowRight size={14} style={{ marginLeft: 6, verticalAlign: 'middle' }} />
-              </button>
+                <label className={styles['radio-card']}>
+                  <input
+                    type="radio"
+                    name="db_type"
+                    value="remote"
+                    className={styles['radio-input']}
+                    checked={dbType === 'remote'}
+                    onChange={() => onFieldChange('dbType', 'remote')}
+                  />
+                  <div className={styles['radio-card-ui']}>
+                    <div className={styles['radio-circle']} />
+                    <div className={styles['radio-body']}>
+                      <span className={styles['radio-title']}>External PostgreSQL</span>
+                      <p className={styles['radio-desc']}>
+                        Connect to a dedicated database server for higher performance,
+                        reliability, and scaling in production environments.
+                      </p>
+                      {dbType === 'remote' && (
+                        <div className={styles['remote-fields']}>
+                          <label htmlFor="dbUrl" className={styles.label}>
+                            Connection URL
+                          </label>
+                          <input
+                            id="dbUrl"
+                            type="text"
+                            className={`${styles.input} ${
+                              errors.dbUrl ? styles['input-error'] : ''
+                            }`}
+                            placeholder="postgres://username:password@hostname:5432/database"
+                            value={dbUrl}
+                            onChange={(e) => onFieldChange('dbUrl', e.target.value)}
+                            autoComplete="off"
+                          />
+                          {errors.dbUrl && (
+                            <p className={styles['field-error']}>{errors.dbUrl}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </label>
+              </div>
             </div>
           )}
-        </form>
-      </main>
-    </div>
-  );
-};
+
+          {step === 2 && (
+            <div className={`${styles['step-content']} ${styles['step-content-active']}`}>
+              <header className={styles['step-header']}>
+                <h2 className={styles['step-heading']}>Create Administrator</h2>
+                <p className={styles['step-subheading']}>
+                  Set up the initial primary account. This user will have full administrative
+                  privileges over the instance.
+                </p>
+              </header>
+
+              {errors.setup && <p className={styles['setup-error']}>{errors.setup}</p>}
+
+              <div className={styles['form-stack']}>
+                <div className={styles['form-grid']}>
+                  <div>
+                    <label htmlFor="adminFirstName" className={styles.label}>
+                      First Name
+                    </label>
+                    <input
+                      id="adminFirstName"
+                      type="text"
+                      className={`${styles.input} ${
+                        errors.adminFirstName ? styles['input-error'] : ''
+                      }`}
+                      value={adminFirstName}
+                      onChange={(e) => onFieldChange('adminFirstName', e.target.value)}
+                      autoComplete="given-name"
+                    />
+                    {errors.adminFirstName && (
+                      <p className={styles['field-error']}>{errors.adminFirstName}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="adminLastName" className={styles.label}>
+                      Last Name
+                    </label>
+                    <input
+                      id="adminLastName"
+                      type="text"
+                      className={`${styles.input} ${
+                        errors.adminLastName ? styles['input-error'] : ''
+                      }`}
+                      value={adminLastName}
+                      onChange={(e) => onFieldChange('adminLastName', e.target.value)}
+                      autoComplete="family-name"
+                    />
+                    {errors.adminLastName && (
+                      <p className={styles['field-error']}>{errors.adminLastName}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="adminUsername" className={styles.label}>
+                    Username
+                  </label>
+                  <div className={styles['input-with-icon']}>
+                    <AtSign size={16} className={styles['input-icon']} aria-hidden />
+                    <input
+                      id="adminUsername"
+                      type="text"
+                      className={`${styles.input} ${styles['input-padded']} ${
+                        errors.adminUsername ? styles['input-error'] : ''
+                      }`}
+                      placeholder="admin"
+                      value={adminUsername}
+                      onChange={(e) => onFieldChange('adminUsername', e.target.value)}
+                      autoComplete="username"
+                    />
+                  </div>
+                  {errors.adminUsername && (
+                    <p className={styles['field-error']}>{errors.adminUsername}</p>
+                  )}
+                </div>
+
+                <div className={styles['form-grid']}>
+                  <div>
+                    <label htmlFor="adminPassword" className={styles.label}>
+                      Password
+                    </label>
+                    <div className={styles['input-with-toggle']}>
+                      <input
+                        id="adminPassword"
+                        type={showPassword ? 'text' : 'password'}
+                        className={`${styles.input} ${styles['input-toggle-padded']} ${
+                          errors.adminPassword ? styles['input-error'] : ''
+                        }`}
+                        placeholder="••••••••"
+                        value={adminPassword}
+                        onChange={(e) => onFieldChange('adminPassword', e.target.value)}
+                        autoComplete="new-password"
+                      />
+                      <button
+                        type="button"
+                        className={styles['password-toggle']}
+                        onClick={onToggleShowPassword}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                      </button>
+                    </div>
+                    {errors.adminPassword && (
+                      <p className={styles['field-error']}>{errors.adminPassword}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="adminConfirmPassword" className={styles.label}>
+                      Confirm Password
+                    </label>
+                    <div className={styles['input-with-toggle']}>
+                      <input
+                        id="adminConfirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        className={`${styles.input} ${styles['input-toggle-padded']} ${
+                          errors.adminConfirmPassword ? styles['input-error'] : ''
+                        }`}
+                        placeholder="••••••••"
+                        value={adminConfirmPassword}
+                        onChange={(e) => onFieldChange('adminConfirmPassword', e.target.value)}
+                        autoComplete="new-password"
+                      />
+                      <button
+                        type="button"
+                        className={styles['password-toggle']}
+                        onClick={onToggleShowConfirmPassword}
+                        aria-label={
+                          showConfirmPassword ? 'Hide password' : 'Show password'
+                        }
+                      >
+                        {showConfirmPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                      </button>
+                    </div>
+                    {errors.adminConfirmPassword && (
+                      <p className={styles['field-error']}>{errors.adminConfirmPassword}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.callout}>
+                  <Info size={16} className={styles['callout-icon']} aria-hidden />
+                  <p className={styles['callout-text']}>
+                    Password must be at least 8 characters and include a combination of letters
+                    and numbers.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className={`${styles['step-content']} ${styles['step-content-active']}`}>
+              <header className={styles['step-header-wide']}>
+                <h2 className={styles['step-heading']}>Installing System</h2>
+                <p className={styles['step-subheading']}>
+                  Please do not close this window while we configure your environment.
+                </p>
+              </header>
+
+              <div className={styles['install-panel']}>
+                <ul className={styles['install-log']}>
+                  {installTasks.map((task) => (
+                    <li key={task.id} className={styles['install-row']}>
+                      <span className={styles['install-icon']}>
+                        {task.status === 'active' && (
+                          <Loader2 size={16} className={styles.spin} aria-hidden />
+                        )}
+                        {task.status === 'done' && (
+                          <Check size={16} className={styles['install-check']} aria-hidden />
+                        )}
+                        {task.status === 'pending' && (
+                          <span className={styles['install-dot']} />
+                        )}
+                      </span>
+                      <span
+                        className={`${styles['install-label']} ${
+                          task.status === 'active'
+                            ? styles['install-label-active']
+                            : task.status === 'done'
+                              ? styles['install-label-done']
+                              : ''
+                        }`}
+                      >
+                        {task.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div
+              className={`${styles['step-content']} ${styles['step-content-active']} ${styles['success-panel']}`}
+            >
+              <div className={styles['success-icon-wrap']}>
+                <Check size={32} className={styles['success-icon']} aria-hidden />
+              </div>
+              <h2 className={styles['step-heading']}>Installation Complete</h2>
+              <p className={styles['success-text']}>
+                Giftistry has been successfully configured and is ready to use. You can now log
+                in with your administrator account.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showFooter && (
+        <div className={styles.footer}>
+          <button
+            type="button"
+            className={`${styles['btn-back']} ${showFooterBack ? '' : styles.invisible}`}
+            onClick={onPrev}
+            disabled={!showFooterBack}
+            tabIndex={showFooterBack ? 0 : -1}
+          >
+            <ArrowLeft size={16} aria-hidden />
+            Back
+          </button>
+
+          {step === 4 ? (
+            <button type="button" className={styles['btn-primary']} onClick={onFinish}>
+              Go to Login
+              <ArrowRight size={16} aria-hidden />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles['btn-continue']}
+              onClick={onNext}
+              disabled={isSubmitting}
+            >
+              {step === 2 ? (
+                <>
+                  Initialize System
+                  <Zap size={16} aria-hidden />
+                </>
+              ) : (
+                <>
+                  Continue
+                  <ArrowRight size={16} aria-hidden />
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      )}
+    </main>
+  </div>
+);

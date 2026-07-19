@@ -1,10 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Gift, Sun, Moon, LogOut, Settings, Search, ChevronDown, Palette, Lock, Users } from 'lucide-react';
+import { Gift, Sun, Moon, Search, ChevronDown, Palette, Lock, Menu, X } from 'lucide-react';
 import { NotificationBell } from 'features/notifications';
 import { getAvatarStyle, shouldShowAvatarInitials } from 'shared/utils/avatar.util';
 import { NavigationTemplateProps } from './interfaces/navigation-template-props.interface';
+import { BrandMark } from 'shared/ui/brand-mark/brand-mark.component';
 import { EnterPanel } from 'shared/ui/enter-panel/enter-panel.component';
+import { MobileDrawer } from './components/mobile-drawer/mobile-drawer.component';
+import { ProfileMenu } from './components/profile-menu/profile-menu.component';
 import styles from './app-navigation.module.css';
 
 export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
@@ -41,6 +44,10 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
   handleSearchSelect,
   searchRef,
   searchInputRef,
+  isMobileMenuOpen,
+  setIsMobileMenuOpen,
+  mobileMenuRef,
+  hamburgerRef,
 }) => {
   const avatarStyle: React.CSSProperties = user?.Avatar ? getAvatarStyle(user.Avatar) : getAvatarStyle(null);
 
@@ -48,28 +55,20 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
     <nav className={styles.navbar}>
       <div className={styles.container}>
         <div className={styles.left}>
-          <Link to={isAuthenticated ? '/dashboard' : '/'} className={styles.logo}>
-            <svg
-              className={styles['logo-icon']}
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <g className={styles['gift-lid']}>
-                <path d="M4 7h16v3H4z" />
-                <path d="M12 7c-1.5-2.5-4-2.5-4 0 0 1.5 2.5 2.5 4 0z" />
-                <path d="M12 7c1.5-2.5 4-2.5 4 0 0 1.5-2.5 2.5-4 0z" />
-              </g>
-              <path d="M5 10h14v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V10z" />
-              <path d="M12 10v12" />
-            </svg>
-            <span>Giftistry</span>
-          </Link>
+          {/* Hamburger Menu Button on mobile */}
+          <button
+            ref={hamburgerRef}
+            className={styles['hamburger-btn']}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Open navigation menu"
+            aria-expanded={isMobileMenuOpen}
+          >
+            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+
+          <div className={styles['brand-wrapper']}>
+            <BrandMark to={isAuthenticated ? '/dashboard' : '/'} />
+          </div>
 
           {isAuthenticated && (
             <div className={styles['nav-links']}>
@@ -145,7 +144,7 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
 
         <div className={styles.right}>
           {isAuthenticated && <NotificationBell />}
-          <div className={styles['dropdown-container']} ref={themeRef}>
+          <div className={`${styles['dropdown-container']} ${styles['theme-selector']}`} ref={themeRef}>
             <button
               className={`${styles['nav-button']} ${styles['theme-nav-button']}`}
               onClick={() => setIsThemeOpen(!isThemeOpen)}
@@ -278,7 +277,7 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
           </div>
 
           {isAuthenticated && user ? (
-            <div className={styles['dropdown-container']} ref={profileRef}>
+            <div className={`${styles['dropdown-container']} ${styles['profile-selector']}`} ref={profileRef}>
               <button
                 className={styles['profile-trigger']}
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -293,44 +292,18 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
               </button>
 
               {isProfileOpen && (
-                <EnterPanel animation="dropdown" className={styles['dropdown-menu']}>
-                  <div className={styles['user-info']}>
-                    <div className={styles['user-name']}>{user.FirstName} {user.LastName}</div>
-                    <div className={styles['user-email']}>@{user.Username}</div>
-                  </div>
-                  
-                  <div className={styles['menu-divider']} />
-                  
-                  <button
-                    className={styles['menu-item']}
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      navigate('/settings/account');
-                    }}
-                  >
-                    <Settings size={14} className={styles['item-icon']} />
-                    Settings
-                  </button>
-
-                  <button
-                    className={styles['menu-item']}
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      navigate('/friends/current');
-                    }}
-                  >
-                    <Users size={14} className={styles['item-icon']} />
-                    Friends
-                  </button>
-                  
-                  <button
-                    className={`${styles['menu-item']} ${styles['danger-item']}`}
-                    onClick={handleLogout}
-                  >
-                    <LogOut size={14} className={styles['item-icon']} />
-                    Sign Out
-                  </button>
-                </EnterPanel>
+                <ProfileMenu
+                  user={user}
+                  onSettings={() => {
+                    setIsProfileOpen(false);
+                    navigate('/settings/account');
+                  }}
+                  onFriends={() => {
+                    setIsProfileOpen(false);
+                    navigate('/friends/current');
+                  }}
+                  onLogout={handleLogout}
+                />
               )}
             </div>
           ) : (
@@ -342,7 +315,20 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
         </div>
       </div>
 
-
+      <MobileDrawer
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        user={user}
+        isAuthenticated={isAuthenticated}
+        theme={theme}
+        appearance={appearance}
+        setTheme={setTheme}
+        setAppearance={setAppearance}
+        isThemeUnlocked={isThemeUnlocked}
+        handleLogout={handleLogout}
+        navigate={navigate}
+        drawerRef={mobileMenuRef}
+      />
     </nav>
   );
 };

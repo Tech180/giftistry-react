@@ -1,0 +1,158 @@
+.nav {
+  --spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  --smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --timeline-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex: 1;
+  padding: 0 2rem;
+  position: relative;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 2rem;
+}
+
+.item:last-child {
+  padding-bottom: 0;
+}
+
+.line {
+  position: absolute;
+  left: 0.6875rem;
+  top: 1.75rem;
+  bottom: 0.25rem;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.line-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--accent, var(--primary));
+  transform-origin: top;
+  transform: scaleY(0);
+  transition: transform 0.7s var(--timeline-bounce);
+}
+
+.item-past .line-fill {
+  transform: scaleY(1);
+}
+
+.circle {
+  position: relative;
+  z-index: 1;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s var(--timeline-bounce);
+}
+
+.item-active .circle {
+  border-color: var(--accent, var(--primary));
+  background: color-mix(in srgb, var(--accent, var(--primary)) 10%, transparent);
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--accent, var(--primary)) 40%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--accent, var(--primary)) 12%, transparent);
+}
+
+.item-past .circle {
+  border-color: var(--accent, var(--primary));
+  background: var(--accent, var(--primary));
+}
+
+.num {
+  position: absolute;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.3s var(--smooth);
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: 0.1s;
+}
+
+.item-active .num,
+.item-past .num {
+  opacity: 0;
+  transform: scale(0.5);
+  transition-delay: 0s;
+}
+
+.dot {
+  position: absolute;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--accent, var(--primary));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent, var(--primary)) 80%, transparent);
+  transition: all 0.5s var(--timeline-bounce);
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.item-active .dot {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: 0.1s;
+}
+
+.check {
+  position: absolute;
+  color: var(--primary-text, #fff);
+  transition: all 0.5s var(--timeline-bounce);
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.item-past .check {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: 0.1s;
+}
+
+.title {
+  display: block;
+  padding-top: 0.125rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  transition: color 0.3s var(--smooth);
+}
+
+.item-active .title {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.item-past .title {
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line-fill,
+  .circle,
+  .num,
+  .dot,
+  .check,
+  .title {
+    transition: none;
+  }
+}

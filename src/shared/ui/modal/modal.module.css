@@ -40,6 +40,12 @@
   color: var(--text);
 }
 
+.subtitle{
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 .close-button{
   background: transparent;
   border: none;
@@ -62,4 +68,26 @@
   padding: var(--spacing-md);
   overflow-y: auto;
   max-height: calc(85vh - 3.75rem);
+}
+
+@media (max-width: 640px) {
+  .backdrop {
+    top: var(--spacing-2xl);
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .modal {
+    max-width: 100%;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .content {
+    max-height: none;
+    flex: 1;
+  }
 }

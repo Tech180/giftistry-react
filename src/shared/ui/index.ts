@@ -1,4 +1,5 @@
 export * from './button/button.component';
+export * from './brand-mark/brand-mark.component';
 export * from './input/input.component';
 export * from './card/card.component';
 export * from './modal/modal.component';
@@ -27,3 +28,4 @@ export * from './collapsible-strip/collapsible-strip.component';
 export * from './user-avatar/user-avatar.component';
 export * from './switch/switch.component';
 export * from './linked-item-squares';
+export * from './floating-action-menu/floating-action-menu.component';

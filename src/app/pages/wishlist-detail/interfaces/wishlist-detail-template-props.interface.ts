@@ -1,7 +1,7 @@
 import React from 'react';
 import { Wishlist, Priority } from 'features/wishlists';
-import { Item } from 'features/items';
-import { ItemViewMode } from 'features/items/types/item-view-mode.type';
+import { Item, type ImportStripHandle, type ItemActions } from 'features/items';
+import { ItemViewMode } from '../../../../features/items/types/item-view-mode.type';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import { LinkingAudienceContext } from 'features/items/utils/item-audience.util';
 import type { BackgroundJobView } from 'features/jobs';
@@ -32,6 +32,9 @@ export interface WishlistDetailTemplateProps {
   isItemLinkCompatible: (item: Item) => boolean;
   handleLinkItemToggle: (itemId: string) => void;
   loadData: () => Promise<void>;
+  reloadListContent: () => Promise<void>;
+  onItemsChange: () => void | Promise<void>;
+  itemActions: ItemActions;
   confirmAction: 'deactivate' | 'delete' | null;
   setConfirmAction: (action: 'deactivate' | 'delete' | null) => void;
   isDeactivating: boolean;
@@ -51,6 +54,7 @@ export interface WishlistDetailTemplateProps {
   setIsShareOpen: (open: boolean) => void;
   isImportOpen: boolean;
   setIsImportOpen: (open: boolean) => void;
+  importStripRef: React.RefObject<ImportStripHandle | null>;
   viewMode: ItemViewMode;
   handleSetViewMode: (mode: ItemViewMode) => void;
   searchQuery: string;
@@ -79,4 +83,5 @@ export interface WishlistDetailTemplateProps {
   activeJob: BackgroundJobView | null;
   isCancellingJob: boolean;
   onCancelJob: () => void;
+  canShowAi?: boolean;
 }
