@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { itemsApi } from '../../api/items.api';
+// Future: AI item reviews — re-enable with getItemReviews fetch below
+// import { itemsApi } from '../../api/items.api';
 import { useAuth } from 'app/providers/auth-context';
 import { ItemShowcaseProps } from '../../interfaces/item-showcase-props.interface';
 import { ItemShowcaseTemplate } from './item-showcase.html';
@@ -15,13 +16,26 @@ import {
 } from 'shared/utils/item-custom-fields.util';
 import { formatAudienceLabel, isPrivateItem } from '../../utils/item-audience.util';
 import { resolveLinkedItems } from '../../utils/item-links-sync.util';
+import { resolveRelatedItems } from '../../utils/item-related-sync.util';
 import { getCategoryMeta } from '../card/category-icons';
+import {
+  buildShowcaseRelationItems,
+  buildShowcaseVariationProgress,
+  formatShowcaseBestPrice,
+  formatShowcaseDisplayCategory,
+  formatShowcaseQuantityProgressMetric,
+  formatShowcaseStatusLabel,
+  formatShowcaseSuggestionLabel,
+  resolveShowcaseHasNumericPriority,
+  resolveShowcaseVariationOptions,
+} from '../../utils/build-item-showcase-display.util';
 
 export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   item,
-  priorityLabel,
+  priorityLabel: _priorityLabel,
   isOwner,
-  isExpired,
+  isExpired: _isExpired,
+  isArchived = false,
   canCollaborate,
   allowGroupFunds,
   itemActions,
@@ -31,7 +45,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   aiEnabled,
   variant = 'card',
 }) => {
-  const { user, canShowAi } = useAuth();
+  const { user } = useAuth();
   const claimedByCurrentUser = !!(user && item.Claims.some(c => c.UserId === user.Id));
 
   const [claimAmount, setClaimAmount] = useState('');
@@ -42,10 +56,8 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [localIsFavorite, setLocalIsFavorite] = useState(false);
 
-  // AI Reviews States
-  const [reviews, setReviews] = useState<{ summary: string; pros: string[]; cons: string[]; reviews: string[] } | null>(null);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
-  const [reviewsError, setReviewsError] = useState<string | null>(null);
+  // Future: AI item reviews — disabled for now (avoid /reviews AI work).
+  void aiEnabled;
 
   // Advanced States
   const [selectedVariation, setSelectedVariation] = useState('');
@@ -82,46 +94,47 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     setLocalIsFavorite(getItemFavoriteFlag(item.Description, item.Metadata));
   }, [item.Description, item.Metadata]);
 
-  useEffect(() => {
-    let active = true;
-    const fetchReviews = async () => {
-      if (!canShowAi || !aiEnabled || !item.Links || item.Links.length === 0) {
-        setReviews(null);
-        setReviewsError(null);
-        return;
-      }
-      
-      setReviewsLoading(true);
-      setReviewsError(null);
-      try {
-        const response = await itemsApi.getItemReviews(item.Id);
-        if (active) {
-          if (response) {
-            setReviews({
-              summary: response.Summary,
-              pros: response.Pros,
-              cons: response.Cons,
-              reviews: response.Reviews,
-            });
-          } else {
-            setReviews(null);
-          }
-        }
-      } catch (err: any) {
-        if (active) {
-          setReviewsError(err.message || 'Failed to load AI reviews');
-        }
-      } finally {
-        if (active) {
-          setReviewsLoading(false);
-        }
-      }
-    };
-    fetchReviews();
-    return () => {
-      active = false;
-    };
-  }, [item.Id, canShowAi, aiEnabled, item.Links]);
+  // Future: AI item reviews — disabled for now (avoid /reviews AI work).
+  // useEffect(() => {
+  //   let active = true;
+  //   const fetchReviews = async () => {
+  //     if (!canShowAi || !aiEnabled || !item.Links || item.Links.length === 0) {
+  //       setReviews(null);
+  //       setReviewsError(null);
+  //       return;
+  //     }
+  //
+  //     setReviewsLoading(true);
+  //     setReviewsError(null);
+  //     try {
+  //       const response = await itemsApi.getItemReviews(item.Id);
+  //       if (active) {
+  //         if (response) {
+  //           setReviews({
+  //             summary: response.Summary,
+  //             pros: response.Pros,
+  //             cons: response.Cons,
+  //             reviews: response.Reviews,
+  //           });
+  //         } else {
+  //           setReviews(null);
+  //         }
+  //       }
+  //     } catch (err: any) {
+  //       if (active) {
+  //         setReviewsError(err.message || 'Failed to load AI reviews');
+  //       }
+  //     } finally {
+  //       if (active) {
+  //         setReviewsLoading(false);
+  //       }
+  //     }
+  //   };
+  //   fetchReviews();
+  //   return () => {
+  //     active = false;
+  //   };
+  // }, [item.Id, canShowAi, aiEnabled, item.Links]);
 
   const handleClaim = async (e?: React.SyntheticEvent, skipLinkedCheck = false) => {
     if (e) e.preventDefault();
@@ -262,17 +275,60 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     [item, wishlistItems]
   );
 
+  const relatedItems = useMemo(
+    () => resolveRelatedItems(item, wishlistItems),
+    [item, wishlistItems]
+  );
+
   const categoryMeta = useMemo(() => getCategoryMeta(item.Category), [item.Category]);
+
+  const isLinkedToItems = linkedItems.length > 0;
+  const isRelatedToItems = relatedItems.length > 0;
+  const hasNumericPriority = resolveShowcaseHasNumericPriority(item.Priority);
+  const statusLabel = formatShowcaseStatusLabel(isFullyClaimed, claimedByCurrentUser);
+  const quantityProgressMetric = formatShowcaseQuantityProgressMetric(
+    progressPercent,
+    totalClaimedQty,
+    desiredQtyVal
+  );
+  const displayCategory = formatShowcaseDisplayCategory(categoryMeta.label, item);
+  const bestPriceDisplay = formatShowcaseBestPrice(totalExtractedPrice);
+  const variationProgress = useMemo(
+    () => buildShowcaseVariationProgress(item, metadata),
+    [item, metadata]
+  );
+  const variationOptions = useMemo(
+    () => resolveShowcaseVariationOptions(item, metadata),
+    [item, metadata]
+  );
+  const linkedRelationItems = useMemo(
+    () => buildShowcaseRelationItems(linkedItems),
+    [linkedItems]
+  );
+  const relatedRelationItems = useMemo(
+    () => buildShowcaseRelationItems(relatedItems),
+    [relatedItems]
+  );
+  const showSuggestionBadge = !!item.IsSuggestion;
+  const showHiddenSuggestionBadge = !!(item.IsHiddenIdea && !item.IsSuggestion);
+  const suggestionLabel = formatShowcaseSuggestionLabel(item.SuggestedByUsername);
+  const showHeroMeta =
+    showSuggestionBadge || showHiddenSuggestionBadge || !!audienceLabel || localIsFavorite;
+  const showGroupFunding = !isMultiCount && allowGroupFunds && totalExtractedPrice > 0;
+  const showQuantityProgress = isMultiCount;
+  const showVariationsProgress = isMultiCount && variationProgress.length > 0;
+
+  const onClaimQtyInputChange = (raw: string) => {
+    setClaimQty(Math.max(1, parseInt(raw, 10) || 1));
+  };
 
   return (
     <ItemShowcaseTemplate
       item={item}
-      priorityLabel={priorityLabel}
       isOwner={isOwner}
       canCollaborate={canCollaborate}
-      isExpired={isExpired}
+      isArchived={isArchived}
       allowGroupFunds={allowGroupFunds}
-      wishlistItems={wishlistItems}
       claimedByCurrentUser={claimedByCurrentUser}
       claimAmount={claimAmount}
       setClaimAmount={setClaimAmount}
@@ -289,6 +345,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       setSelectedVariation={setSelectedVariation}
       claimQty={claimQty}
       setClaimQty={setClaimQty}
+      onClaimQtyInputChange={onClaimQtyInputChange}
       showDependencyModal={showDependencyModal}
       setShowDependencyModal={setShowDependencyModal}
       displayDescription={displayDescription || ''}
@@ -303,24 +360,35 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       totalExtractedPrice={totalExtractedPrice}
       totalClaimedAmount={totalClaimedAmount}
       isMultiCount={isMultiCount}
-      totalClaimedQty={totalClaimedQty}
-      desiredQtyVal={desiredQtyVal}
       isFullyClaimed={isFullyClaimed}
       progressPercent={progressPercent}
       onClose={onClose}
       onEdit={onEdit}
       getSiteName={getSiteName}
-      reviews={reviews}
-      reviewsLoading={reviewsLoading}
-      reviewsError={reviewsError}
-      aiEnabled={aiEnabled}
-      canShowAi={canShowAi}
       audienceLabel={audienceLabel}
       isPrivate={isPrivate}
-      linkedItems={linkedItems}
       variant={variant}
       CategoryIcon={categoryMeta.icon}
-      categoryLabel={categoryMeta.label}
+      displayCategory={displayCategory}
+      bestPriceDisplay={bestPriceDisplay}
+      statusLabel={statusLabel}
+      quantityProgressMetric={quantityProgressMetric}
+      hasNumericPriority={hasNumericPriority}
+      priorityDisplay={hasNumericPriority ? (item.Priority as number) : null}
+      isLinkedToItems={isLinkedToItems}
+      isRelatedToItems={isRelatedToItems}
+      showGroupFunding={showGroupFunding}
+      showQuantityProgress={showQuantityProgress}
+      showVariationsProgress={showVariationsProgress}
+      showHeroMeta={showHeroMeta}
+      showSuggestionBadge={showSuggestionBadge}
+      showHiddenSuggestionBadge={showHiddenSuggestionBadge}
+      suggestionLabel={suggestionLabel}
+      variationProgress={variationProgress}
+      variationOptions={variationOptions}
+      linkedRelationItems={linkedRelationItems}
+      relatedRelationItems={relatedRelationItems}
+      maxContributionAmount={Math.max(0, totalExtractedPrice - totalClaimedAmount)}
     />
   );
 };

@@ -25,7 +25,11 @@ export const AppShellTemplate: React.FC<AppShellProps> = ({
         isAuthPage ? styles['auth-main'] : '',
       ].filter(Boolean).join(' ')}
     >
-      {children}
+      {isSettingsPage ? (
+        children
+      ) : (
+        <div className={styles.mainInner}>{children}</div>
+      )}
     </EnterPanel>
   </div>
 );

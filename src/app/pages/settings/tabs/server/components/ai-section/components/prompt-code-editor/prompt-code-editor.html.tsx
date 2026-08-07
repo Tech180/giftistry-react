@@ -1,6 +1,7 @@
-import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import React, { forwardRef, useCallback, useImperativeHandle, useLayoutEffect, useMemo, useRef } from 'react';
 import { parsePopulateHubHeaderLine } from '../../../../utils/populate-hub-prompt.util';
 import { splitPromptText } from '../../utils/highlight-prompt-text.util';
+import { PromptCodeEditorHandle } from './interfaces/prompt-code-editor-handle.interface';
 import { PromptCodeEditorProps } from './interfaces/prompt-code-editor-props.interface';
 import styles from './prompt-code-editor.module.css';
 
@@ -140,20 +141,28 @@ function HighlightedPromptText({
   );
 }
 
-export const PromptCodeEditorTemplate: React.FC<PromptCodeEditorProps> = ({
-  value,
-  onChange,
-  placeholder,
-  knownTokens = [],
-  rows = 14,
-  readOnly = false,
-  readOnlyFromIndex = null,
-  showSectionDividers = false,
-  'aria-label': ariaLabel = 'AI prompt editor',
-}) => {
+export const PromptCodeEditorTemplate = forwardRef<
+  PromptCodeEditorHandle,
+  PromptCodeEditorProps
+>(function PromptCodeEditorTemplate(
+  {
+    value,
+    onChange,
+    placeholder,
+    knownTokens = [],
+    rows = 14,
+    readOnly = false,
+    readOnlyFromIndex = null,
+    showSectionDividers = false,
+    'aria-label': ariaLabel = 'AI prompt editor',
+  },
+  ref
+) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLPreElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
+  const selectionRef = useRef({ start: 0, end: 0 });
+  const pendingCaretRef = useRef<number | null>(null);
 
   const lineCount = useMemo(() => {
     const lines = value.split('\n').length;
@@ -183,6 +192,15 @@ export const PromptCodeEditorTemplate: React.FC<PromptCodeEditorProps> = ({
     gutter.scrollTop = textarea.scrollTop;
   }, []);
 
+  const rememberSelection = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    selectionRef.current = {
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+    };
+  }, []);
+
   const enforceEditableSelection = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea || readOnlyFromIndex == null || readOnlyFromIndex < 0) return;
@@ -191,6 +209,7 @@ export const PromptCodeEditorTemplate: React.FC<PromptCodeEditorProps> = ({
       const start = Math.min(textarea.selectionStart, readOnlyFromIndex);
       const end = Math.min(textarea.selectionEnd, readOnlyFromIndex);
       textarea.setSelectionRange(start, end);
+      selectionRef.current = { start, end };
     }
   }, [readOnlyFromIndex]);
 
@@ -200,12 +219,52 @@ export const PromptCodeEditorTemplate: React.FC<PromptCodeEditorProps> = ({
     requestAnimationFrame(() => {
       syncScroll();
       enforceEditableSelection();
+      rememberSelection();
     });
   };
 
   useLayoutEffect(() => {
     syncScroll();
   }, [value, syncScroll]);
+
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea || pendingCaretRef.current == null) return;
+
+    const pos = pendingCaretRef.current;
+    pendingCaretRef.current = null;
+    textarea.focus();
+    textarea.setSelectionRange(pos, pos);
+    selectionRef.current = { start: pos, end: pos };
+  }, [value]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      insertAtCursor: (textToInsert: string) => {
+        if (readOnly || !onChange) return;
+
+        const textarea = textareaRef.current;
+        let start = selectionRef.current.start;
+        let end = selectionRef.current.end;
+
+        if (textarea && document.activeElement === textarea) {
+          start = textarea.selectionStart;
+          end = textarea.selectionEnd;
+        }
+
+        if (readOnlyFromIndex != null && readOnlyFromIndex >= 0) {
+          start = Math.min(start, readOnlyFromIndex);
+          end = Math.min(end, readOnlyFromIndex);
+        }
+
+        const nextValue = `${value.slice(0, start)}${textToInsert}${value.slice(end)}`;
+        pendingCaretRef.current = start + textToInsert.length;
+        onChange(nextValue);
+      },
+    }),
+    [onChange, readOnly, readOnlyFromIndex, value]
+  );
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (readOnly) return;
@@ -239,12 +298,8 @@ export const PromptCodeEditorTemplate: React.FC<PromptCodeEditorProps> = ({
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const nextValue = `${value.slice(0, start)}  ${value.slice(end)}`;
+    pendingCaretRef.current = start + 2;
     onChange?.(nextValue);
-
-    requestAnimationFrame(() => {
-      textarea.selectionStart = start + 2;
-      textarea.selectionEnd = start + 2;
-    });
   };
 
   return (
@@ -284,8 +339,16 @@ export const PromptCodeEditorTemplate: React.FC<PromptCodeEditorProps> = ({
             onChange={handleChange}
             onScroll={syncScroll}
             onKeyDown={handleKeyDown}
-            onSelect={enforceEditableSelection}
-            onClick={enforceEditableSelection}
+            onSelect={() => {
+              rememberSelection();
+              enforceEditableSelection();
+            }}
+            onClick={() => {
+              rememberSelection();
+              enforceEditableSelection();
+            }}
+            onKeyUp={rememberSelection}
+            onBlur={rememberSelection}
             spellCheck={false}
             autoComplete="off"
             autoCorrect="off"
@@ -299,6 +362,6 @@ export const PromptCodeEditorTemplate: React.FC<PromptCodeEditorProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default PromptCodeEditorTemplate;

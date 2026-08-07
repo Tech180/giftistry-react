@@ -17,6 +17,7 @@ import styles from './settings-sidebar.module.css';
 
 export const SettingsSidebarTemplate: React.FC<SettingsSidebarTemplateProps> = ({
   isAdmin,
+  isOwner,
   activePath,
   onNavigate,
 }) => {
@@ -82,12 +83,14 @@ export const SettingsSidebarTemplate: React.FC<SettingsSidebarTemplateProps> = (
               isActive={activePath === '/settings/admin/audit'}
               onClick={() => onNavigate('/settings/admin/audit')}
             />
-            <SidebarItem
-              icon={<Server size={15} />}
-              label="Server"
-              isActive={activePath === '/settings/admin/server'}
-              onClick={() => onNavigate('/settings/admin/server')}
-            />
+            {isOwner && (
+              <SidebarItem
+                icon={<Server size={15} />}
+                label="Server"
+                isActive={activePath === '/settings/admin/server'}
+                onClick={() => onNavigate('/settings/admin/server')}
+              />
+            )}
           </>
         )}
       </Sidebar>

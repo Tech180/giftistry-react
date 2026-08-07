@@ -94,6 +94,18 @@ export const authApi = {
   deleteAccount: (password: string) =>
     apiClient.delete<Record<string, never>>('/api/auth/account', { Password: password }, 'Auth'),
 
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    const res = await apiClient.post<AuthResponse>(
+      '/api/auth/password',
+      { CurrentPassword: currentPassword, NewPassword: newPassword },
+      'Auth'
+    );
+    if (res?.Token) {
+      localStorage.setItem('giftistry-token', res.Token);
+    }
+    return res;
+  },
+
   getOnboardingState: () =>
     apiClient.get<OnboardingState>('/api/auth/onboarding'),
 

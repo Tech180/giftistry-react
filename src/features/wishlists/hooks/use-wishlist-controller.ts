@@ -92,6 +92,19 @@ export function useWishlistController() {
     }
   };
 
+  const activateWishlist = async (listId: string) => {
+    setError(null);
+    try {
+      await wishlistsApi.activateWishlist(listId);
+      setWishlists((prev) =>
+        prev.map((list) => (list.Id === listId ? { ...list, IsActive: true } : list))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to activate wishlist.');
+      throw err;
+    }
+  };
+
   return {
     wishlists,
     counts,
@@ -100,5 +113,6 @@ export function useWishlistController() {
     fetchWishlists,
     createWishlist,
     deactivateWishlist,
+    activateWishlist,
   };
 }

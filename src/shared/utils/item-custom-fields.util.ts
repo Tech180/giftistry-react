@@ -96,6 +96,7 @@ export function normalizeItemDescriptionMetadata(
     DesiredQuantity: raw.DesiredQuantity,
     Variations: normalizeVariations(raw.Variations),
     LinkedItemIds: raw.LinkedItemIds,
+    RelatedItemIds: raw.RelatedItemIds,
     OtherUsersCanSee: raw.OtherUsersCanSee,
     MultiCount: raw.MultiCount,
     IsFavorite: raw.IsFavorite === true,
@@ -186,6 +187,7 @@ export function buildItemDescriptionPayload(input: {
   desiredQuantity?: number;
   variations?: { name: string; quantity: number }[];
   linkedItemIds?: string[];
+  relatedItemIds?: string[];
   otherUsersCanSee?: boolean;
   multiCount?: boolean;
   isFavorite?: boolean;
@@ -211,6 +213,7 @@ export function buildItemDescriptionPayload(input: {
   const hasTopLevel =
     input.multiCount ||
     (input.linkedItemIds?.length ?? 0) > 0 ||
+    (input.relatedItemIds?.length ?? 0) > 0 ||
     input.isFavorite ||
     input.isPinned ||
     input.otherUsersCanSee === false ||
@@ -242,6 +245,7 @@ export function buildItemDescriptionPayload(input: {
     }));
   }
   if (input.linkedItemIds?.length) payload.LinkedItemIds = input.linkedItemIds;
+  if (input.relatedItemIds?.length) payload.RelatedItemIds = input.relatedItemIds;
   if (input.otherUsersCanSee !== undefined) payload.OtherUsersCanSee = input.otherUsersCanSee;
   if (input.isFavorite) payload.IsFavorite = true;
   if (input.isPinned) payload.IsPinned = true;

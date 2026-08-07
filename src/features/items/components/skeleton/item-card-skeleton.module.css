@@ -1,0 +1,61 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+}
+
+.body-tight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.bar {
+  height: 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.bar-title {
+  height: 1rem;
+  width: 60%;
+}
+
+.bar-meta {
+  height: 0.625rem;
+  width: 35%;
+}
+
+.bar-line {
+  width: 100%;
+}
+
+.bar-short {
+  width: 45%;
+}
+
+.bar-pill {
+  height: 1.25rem;
+  width: 4.5rem;
+  border-radius: var(--radius);
+}
+
+.thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 0;
+}
+
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}

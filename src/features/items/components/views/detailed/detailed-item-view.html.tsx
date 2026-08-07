@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Link2, Link as LinkIcon } from 'lucide-react';
+import { Star, Link2, Link as LinkIcon, Layers2 } from 'lucide-react';
 import { Button, EnterPanel } from 'shared/ui';
 import { ItemViewProps } from '../../../interfaces/item-view-props.interface';
 import {
@@ -12,6 +12,7 @@ import {
   TaggingOverlay,
   TaggingSelect,
   SharingAvatars,
+  QuantityBadge,
 } from '../../item-presentation';
 import {
   buildItemCardModifierClasses,
@@ -22,7 +23,9 @@ import {
 } from '../shared/item-card-modifiers.util';
 import { hasPriorityValue } from '../../../utils/item-priority.util';
 import { shouldShowSharingAvatars } from '../../../utils/item-audience.util';
+import { resolveItemQuantitySummary } from '../../../utils/resolve-item-quantity.util';
 import { useAuth } from 'app/providers/auth-context';
+import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import styles from './detailed-item-view.module.css';
 
 export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
@@ -56,20 +59,26 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
     predefinedDisplayEntries,
     userDefinedEntries,
     metadataBadgeEmoji,
+    metadata,
     getSiteName,
     audienceLabel,
     isPrivate,
     linkedItems,
+    relatedItems,
     isLinkingContext,
+    isRelatingContext,
   } = props;
 
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
+  const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
   const primaryClaim = getPrimaryClaimForBadge(item.Claims);
   const primaryLink = item.Links[0];
   const { user } = useAuth();
   const primaryPrice = primaryLink?.ExtractedPrice;
+  const primaryImageUrl = getItemPrimaryImageUrl(item);
   const showSharingAvatars = shouldShowSharingAvatars(item, isOwner, user?.Id);
   const sharingUsers = item.SharedWith ?? [];
+  const showQuantity = resolveItemQuantitySummary(item, metadata).shouldDisplay;
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -86,7 +95,8 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
     isFullyClaimed,
     primaryClaim != null,
     claimedByCurrentUser,
-    styles
+    styles,
+    props.isArchived
   );
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
@@ -101,6 +111,12 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
         onSelectTag={onSelectTag}
       />
 
+      {primaryImageUrl && (
+        <div className={styles['v-detailed-photo']}>
+          <img src={primaryImageUrl} alt="" className={styles['v-detailed-photo-img']} />
+        </div>
+      )}
+
       <header className={styles['v-detailed-header']}>
         {hasPriorityValue(item.Priority) && (
           <div
@@ -112,83 +128,100 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
           </div>
         )}
         <div className={styles['v-detailed-header-main']}>
-          <div className={styles['v-detailed-title-area']}>
-            <div className={styles['v-detailed-title-row']}>
-              {isTaggingModeActive && (
-                <TaggingSelect
-                  isTaggingModeActive={isTaggingModeActive}
-                  isTaggedSelection={isTaggedSelection}
-                  onSelectTag={onSelectTag}
-                />
-              )}
-              {isOwner ? (
-                <button
-                  type="button"
-                  onClick={toggleFavorite}
-                  className={`${styles['star-btn']} ${isFavorite ? styles['star-btn-active'] : ''}`}
-                  title="Toggle favorite"
-                >
-                  <Star
-                    size={18}
-                    fill={isFavorite ? 'var(--warning)' : 'none'}
-                    stroke={isFavorite ? 'var(--warning)' : 'currentColor'}
+          <div className={styles['v-detailed-card-top']}>
+            <div className={styles['v-detailed-title-area']}>
+              <div className={styles['v-detailed-title-row']}>
+                {isTaggingModeActive && (
+                  <TaggingSelect
+                    isTaggingModeActive={isTaggingModeActive}
+                    isTaggedSelection={isTaggedSelection}
+                    onSelectTag={onSelectTag}
                   />
-                </button>
-              ) : isFavorite ? (
-                <span className={styles['star-display']} aria-label="Favorited">
-                  <Star size={18} fill="var(--warning)" stroke="var(--warning)" />
-                </span>
-              ) : null}
-              {isLinkedToItems && (
-                <Link2
-                  size={16}
-                  className={styles['linked-icon']}
-                  aria-label="Linked to other items"
+                )}
+                {isOwner ? (
+                  <button
+                    type="button"
+                    onClick={toggleFavorite}
+                    className={`${styles['star-btn']} ${isFavorite ? styles['star-btn-active'] : ''}`}
+                    title="Toggle favorite"
+                  >
+                    <Star
+                      size={18}
+                      fill={isFavorite ? 'var(--warning)' : 'none'}
+                      stroke={isFavorite ? 'var(--warning)' : 'currentColor'}
+                    />
+                  </button>
+                ) : isFavorite ? (
+                  <span className={styles['star-display']} aria-label="Favorited">
+                    <Star size={18} fill="var(--warning)" stroke="var(--warning)" />
+                  </span>
+                ) : null}
+                {isLinkedToItems && (
+                  <Link2
+                    size={16}
+                    className={styles['linked-icon']}
+                    aria-label="Linked to other items"
+                  />
+                )}
+                {isRelatedToItems && (
+                  <Layers2
+                    size={16}
+                    className={styles['linked-icon']}
+                    aria-label="Related to other items"
+                  />
+                )}
+                <h3 className={styles['v-detailed-title']}>{item.Name}</h3>
+              </div>
+              <div className={styles['v-detailed-badges']}>
+                {hasPriorityValue(item.Priority) && (
+                  <span className={styles['v-detailed-rank-tag']} aria-label={`Priority ${item.Priority}`}>
+                    #{item.Priority}
+                  </span>
+                )}
+                <Badges
+                  item={item}
+                  audienceLabel={showSharingAvatars ? null : audienceLabel}
+                  isPrivate={isPrivate}
+                  showPriority={false}
                 />
-              )}
-              <h3 className={styles['v-detailed-title']}>{item.Name}</h3>
+              </div>
             </div>
-            <div className={styles['v-detailed-badges']}>
-              <Badges
-                item={item}
-                audienceLabel={showSharingAvatars ? null : audienceLabel}
-                isPrivate={isPrivate}
-                showPriority={false}
-              />
-            </div>
-          </div>
-          <div className={styles['v-detailed-header-meta']}>
-            {primaryLink && (
-              <a
-                href={primaryLink.Url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles['v-detailed-header-link']}
-              >
-                <LinkIcon size={14} aria-hidden="true" />
-                {getSiteName(primaryLink.Url, primaryLink.RetailerName)}
-              </a>
-            )}
-            {(showSharingAvatars || primaryPrice != null || showClaimBadge) && (
-              <div className={styles['v-detailed-avatar-boxes']}>
-                {showSharingAvatars && <SharingAvatars users={sharingUsers} isOwner={isOwner} />}
-                {(primaryPrice != null || showClaimBadge) && (
-                  <div className={styles['v-detailed-price-row']}>
-                    {primaryPrice != null && (
-                      <span className={styles['v-detailed-price']}>${primaryPrice}</span>
-                    )}
-                    {showClaimBadge && (
-                      <ClaimBadge
-                        userId={primaryClaim.userId}
-                        displayName={primaryClaim.displayName}
-                        anonymous={primaryClaim.anonymous}
-                      />
-                    )}
-                  </div>
+            {(primaryPrice != null || showQuantity) && (
+              <div className={styles['v-detailed-price-pin']}>
+                <QuantityBadge item={item} metadata={metadata} />
+                {primaryPrice != null && (
+                  <span className={styles['v-detailed-price']}>${primaryPrice}</span>
                 )}
               </div>
             )}
           </div>
+          {(primaryLink || showSharingAvatars || showClaimBadge) && (
+            <div className={styles['v-detailed-header-meta']}>
+              {primaryLink && (
+                <a
+                  href={primaryLink.Url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles['v-detailed-header-link']}
+                >
+                  <LinkIcon size={14} aria-hidden="true" />
+                  {getSiteName(primaryLink.Url, primaryLink.RetailerName)}
+                </a>
+              )}
+              {(showSharingAvatars || showClaimBadge) && (
+                <div className={styles['v-detailed-avatar-boxes']}>
+                  {showSharingAvatars && <SharingAvatars users={sharingUsers} isOwner={isOwner} />}
+                  {showClaimBadge && (
+                    <ClaimBadge
+                      userId={primaryClaim.userId}
+                      displayName={primaryClaim.displayName}
+                      anonymous={primaryClaim.anonymous}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
@@ -220,6 +253,7 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
             <ActionButtons
               isOwner={isOwner}
               canCollaborate={canCollaborate}
+              isArchived={props.isArchived}
               claimedByCurrentUser={claimedByCurrentUser}
               isFullyClaimed={isFullyClaimed}
               claimLoading={claimLoading}
@@ -231,6 +265,7 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
               onDeleteRequest={() => setShowDeleteConfirm(true)}
               onDeleteConfirm={handleDelete}
               onDeleteCancel={() => setShowDeleteConfirm(false)}
+              splitOnMobile
             />
           </div>
         </aside>

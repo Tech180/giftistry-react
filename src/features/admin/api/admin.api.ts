@@ -26,7 +26,7 @@ export const adminApi = {
 
   createUser: (payload: {
     username: string;
-    email: string;
+    email?: string | null;
     password: string;
     firstName?: string;
     lastName?: string;
@@ -34,17 +34,20 @@ export const adminApi = {
     emailVerified?: boolean;
     forcePasswordChange?: boolean;
     policy?: Partial<GiftistryUserPolicy>;
-  }) => apiClient.post<{ UserId: string }>('/api/admin/users', {
-    Username: payload.username,
-    Email: payload.email,
-    Password: payload.password,
-    FirstName: payload.firstName,
-    LastName: payload.lastName,
-    IsAdmin: payload.isAdmin,
-    EmailVerified: payload.emailVerified,
-    ForcePasswordChange: payload.forcePasswordChange,
-    Policy: payload.policy,
-  }, 'AdminUser'),
+  }) => {
+    const email = payload.email?.trim() ?? '';
+    return apiClient.post<{ UserId: string }>('/api/admin/users', {
+      Username: payload.username,
+      Email: email,
+      Password: payload.password,
+      FirstName: payload.firstName,
+      LastName: payload.lastName,
+      IsAdmin: payload.isAdmin,
+      EmailVerified: email ? payload.emailVerified : false,
+      ForcePasswordChange: payload.forcePasswordChange,
+      Policy: payload.policy,
+    }, 'AdminUser');
+  },
 
   updateUser: (id: string, updates: {
     username?: string;

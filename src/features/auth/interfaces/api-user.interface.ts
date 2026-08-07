@@ -13,4 +13,5 @@ export interface ApiUser extends PublicUserSummary {
   Policy?: GiftistryUserPolicy;
   HasPasskey?: boolean;
   IsOnboarded?: boolean;
+  ForcePasswordChange?: boolean;
 }

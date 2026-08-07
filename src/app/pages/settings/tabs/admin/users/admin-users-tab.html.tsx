@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Eye, EyeOff, Plus } from 'lucide-react';
 import { EnterPanel, Button, Modal, Switch } from 'shared/ui';
-import type { AdminUser } from 'features/admin';
+import type { AdminUserListItem } from 'features/admin';
 import { AdminSearchInput } from '../components/admin-search-input';
 import { AdminUsersTabTemplateProps } from './interfaces/admin-users-tab-template-props.interface';
 import styles from '../admin.shared.module.css';
 
-const statusBadge = (user: AdminUser) => {
+const statusBadge = (user: AdminUserListItem) => {
   if (user.IsDisabled) return <span className={`${styles.badge} ${styles['badge-disabled']}`}>Disabled</span>;
   if (user.LockedUntil && new Date(user.LockedUntil) > new Date()) {
     return <span className={`${styles.badge} ${styles['badge-locked']}`}>Locked</span>;
@@ -23,10 +23,13 @@ export const AdminUsersTabTemplate: React.FC<AdminUsersTabTemplateProps> = ({
   isLoading,
   showCreate,
   createForm,
+  showCreatePassword,
+  currentUserIsOwner,
   onSearchChange,
   onOpenCreate,
   onCloseCreate,
   onCreateFormChange,
+  onToggleCreatePassword,
   onCreateSubmit,
   onPageChange,
 }) => {
@@ -100,7 +103,7 @@ export const AdminUsersTabTemplate: React.FC<AdminUsersTabTemplateProps> = ({
                   <td className={styles['text-right']}>
                     <Link to={`/settings/admin/users/${user.Id}`}>
                       <Button variant="secondary" size="sm">
-                        Manage
+                        {user.IsOwner && !currentUserIsOwner ? 'View' : 'Manage'}
                       </Button>
                     </Link>
                   </td>
@@ -128,7 +131,7 @@ export const AdminUsersTabTemplate: React.FC<AdminUsersTabTemplateProps> = ({
       <Modal isOpen={showCreate} onClose={onCloseCreate} title="Create new user">
         <form onSubmit={onCreateSubmit} className={styles['modal-form']}>
           <div className={styles['form-field']}>
-            <label>Username</label>
+            <label>Username *</label>
             <input
               className={styles['form-input']}
               required
@@ -140,7 +143,6 @@ export const AdminUsersTabTemplate: React.FC<AdminUsersTabTemplateProps> = ({
             <label>Email address</label>
             <input
               className={styles['form-input']}
-              required
               type="email"
               value={createForm.email}
               onChange={(e) => onCreateFormChange({ email: e.target.value })}
@@ -148,32 +150,44 @@ export const AdminUsersTabTemplate: React.FC<AdminUsersTabTemplateProps> = ({
           </div>
           <div className={styles['form-row-inline']}>
             <div className={styles['form-field']}>
-              <label>First name</label>
+              <label>First name *</label>
               <input
                 className={styles['form-input']}
+                required
                 value={createForm.firstName}
                 onChange={(e) => onCreateFormChange({ firstName: e.target.value })}
               />
             </div>
             <div className={styles['form-field']}>
-              <label>Last name</label>
+              <label>Last name *</label>
               <input
                 className={styles['form-input']}
+                required
                 value={createForm.lastName}
                 onChange={(e) => onCreateFormChange({ lastName: e.target.value })}
               />
             </div>
           </div>
           <div className={styles['form-field']}>
-            <label>Temporary password</label>
-            <input
-              className={styles['form-input']}
-              required
-              type="password"
-              minLength={6}
-              value={createForm.password}
-              onChange={(e) => onCreateFormChange({ password: e.target.value })}
-            />
+            <label>Temporary password *</label>
+            <div className={styles['password-input-wrap']}>
+              <input
+                className={`${styles['form-input']} ${styles['form-input-password']}`}
+                required
+                type={showCreatePassword ? 'text' : 'password'}
+                minLength={6}
+                value={createForm.password}
+                onChange={(e) => onCreateFormChange({ password: e.target.value })}
+              />
+              <button
+                type="button"
+                className={styles['password-toggle']}
+                onClick={onToggleCreatePassword}
+                aria-label={showCreatePassword ? 'Hide password' : 'Show password'}
+              >
+                {showCreatePassword ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
           </div>
           <div className={styles['modal-divider']}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>

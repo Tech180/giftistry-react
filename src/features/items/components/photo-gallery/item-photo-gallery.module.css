@@ -1,0 +1,243 @@
+.photo-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  background: var(--surface);
+  padding-bottom: var(--spacing-sm);
+}
+
+.photo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.photo-count {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.main-photo-area {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--surface-hover);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: border-color 0.2s, color 0.2s;
+  padding: 0;
+  font: inherit;
+}
+
+.main-photo-area:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.main-photo-area:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.main-photo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+.main-photo-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.thumbnails-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.photo-thumbnails {
+  display: flex;
+  gap: var(--spacing-sm);
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+  min-height: 3.75rem;
+  scroll-behavior: smooth;
+}
+
+.photo-thumbnails::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s, background 0.2s;
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.15));
+  margin-top: -0.125rem;
+  padding: 0;
+}
+
+.scroll-arrow:hover {
+  background: var(--surface-hover);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.scroll-arrow.visible {
+  opacity: 0.95;
+  pointer-events: auto;
+}
+
+.scroll-arrow.left {
+  left: -0.625rem;
+}
+
+.scroll-arrow.right {
+  right: -0.625rem;
+}
+
+.thumbnail-box {
+  position: relative;
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: grab;
+  border: 2px solid transparent;
+  background: var(--surface-hover);
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.thumbnail-box:active {
+  cursor: grabbing;
+}
+
+.thumbnail-box.active {
+  border-color: var(--primary);
+}
+
+.thumbnail-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.thumbnail-box.dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+  border: 2px dashed var(--primary);
+}
+
+.thumbnail-box.drag-over {
+  border: 2px solid var(--primary);
+}
+
+.thumb-remove-btn {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--color-white, #fff);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  font-size: 0.625rem;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s, background 0.2s;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.4);
+  padding: 0;
+}
+
+.thumb-remove-btn:hover {
+  transform: scale(1.1);
+  background: var(--error);
+}
+
+.thumbnail-box:hover .thumb-remove-btn {
+  opacity: 1;
+}
+
+.add-photo-btn {
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  padding: 0;
+}
+
+.add-photo-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--surface-hover);
+}
+
+.add-photo-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: var(--font-size-xs);
+  color: var(--error);
+  margin: 0;
+}
+
+.file-input {
+  display: none;
+}

@@ -1,3 +1,10 @@
+/** Known job kinds; the union stays open because the backend can add more. */
+export type BackgroundJobKind =
+  | 'wishlist-import'
+  | 'item-enrich'
+  | 'item-summarize'
+  | (string & {});
+
 export type BackgroundJobStatus =
   | 'queued'
   | 'running'
@@ -26,16 +33,32 @@ export interface JobItemsSummary {
   Skipped: number;
 }
 
+export type JobProgressRateUnit = 'tok/s' | 'items/s';
+
+export interface JobProgressRate {
+  Value: number;
+  Unit: JobProgressRateUnit;
+}
+
+export type GrabStreamPhase =
+  | 'scraping'
+  | 'categorizing'
+  | 'researching'
+  | 'populating';
+
 export interface JobActiveStream {
   Id: string;
   ItemId: string | null;
   Label: string;
   Status: 'pending' | 'running' | 'done' | 'failed' | 'skipped';
+  Phase?: GrabStreamPhase | null;
+  Detail?: string | null;
+  ProgressRate?: JobProgressRate | null;
 }
 
 export interface BackgroundJobView {
   Id: string;
-  Kind: string;
+  Kind: BackgroundJobKind;
   ListId: string | null;
   UserId: string;
   Status: BackgroundJobStatus;
@@ -45,6 +68,7 @@ export interface BackgroundJobView {
   Message: string;
   Error: string | null;
   Result?: Record<string, unknown>;
+  ProgressRate?: JobProgressRate | null;
   CreatedAt?: string;
   UpdatedAt?: string;
   StartedAt?: string | null;

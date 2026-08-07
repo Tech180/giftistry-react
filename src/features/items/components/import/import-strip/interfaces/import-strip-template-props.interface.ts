@@ -1,7 +1,7 @@
 import type { CollapsibleStripStatus } from 'shared/ui';
 import type { ImportTimelineStep } from './import-timeline-step.interface';
 import type { ImportStripMode, ImportStripPhase } from './import-strip-props.interface';
-import type { TimelineStreamLane } from 'features/jobs/utils/map-job-to-timeline.util';
+import type { TimelineStreamLane } from 'features/jobs/interfaces/job-timeline-view.interface';
 
 export interface ImportStripTemplateProps {
   mode: ImportStripMode;
@@ -20,7 +20,6 @@ export interface ImportStripTemplateProps {
   timelineSteps: ImportTimelineStep[];
   timelineStreams: TimelineStreamLane[];
   streamsCaption: string | null;
-  createPercent: number;
   createLabel: string;
   isBusy: boolean;
   canConfirm: boolean;

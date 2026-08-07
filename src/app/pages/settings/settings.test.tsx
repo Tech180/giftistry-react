@@ -24,6 +24,7 @@ describe('SettingsTemplate processes rail', () => {
           routes={<div>main content</div>}
           toasts={[]}
           isAdmin={false}
+          isOwner={false}
           processesRailScope="mine"
           onProcessesError={vi.fn()}
         />
@@ -41,6 +42,7 @@ describe('SettingsTemplate processes rail', () => {
           routes={<div>overview</div>}
           toasts={[]}
           isAdmin
+          isOwner
           processesRailScope="admin"
           onProcessesError={vi.fn()}
         />
@@ -57,6 +59,7 @@ describe('SettingsTemplate processes rail', () => {
           routes={<div>security</div>}
           toasts={[]}
           isAdmin={false}
+          isOwner={false}
           processesRailScope={null}
           onProcessesError={vi.fn()}
         />

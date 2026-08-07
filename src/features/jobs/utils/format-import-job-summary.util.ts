@@ -1,12 +1,5 @@
 import type { BackgroundJobView } from '../interfaces/background-job.interface';
-
-export type ImportJobSummaryTone = 'success' | 'info' | 'error';
-
-export interface ImportJobSummary {
-  message: string;
-  tone: ImportJobSummaryTone;
-  title: string;
-}
+import type { ImportJobSummary } from '../interfaces/import-job-summary.interface';
 
 function resultNumber(result: Record<string, unknown> | undefined, key: string): number {
   const raw = result?.[key];

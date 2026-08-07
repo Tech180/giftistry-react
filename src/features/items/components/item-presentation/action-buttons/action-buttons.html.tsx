@@ -1,14 +1,14 @@
 import React from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { Button } from 'shared/ui';
-import { ActionButtonsProps } from './interfaces/action-buttons-props.interface';
+import { ActionButtonsTemplateProps } from './interfaces/action-buttons-template-props.interface';
 import styles from './action-buttons.module.css';
 
-export const ActionButtons: React.FC<ActionButtonsProps> = ({
-  isOwner,
-  canCollaborate,
-  claimedByCurrentUser,
-  isFullyClaimed,
+export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
+  layoutMode,
+  size,
+  stackClassName,
+  confirmClassName,
   claimLoading,
   showDeleteConfirm,
   deleteLoading,
@@ -18,15 +18,10 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onDeleteRequest,
   onDeleteConfirm,
   onDeleteCancel,
-  compact = false,
 }) => {
-  const size = compact ? 'sm' : 'sm';
-
-  if (isOwner && canCollaborate) {
-    const stackClass = compact ? styles['actions-row'] : styles['actions-stack'];
-
+  if (layoutMode === 'owner-edit') {
     return (
-      <div className={stackClass}>
+      <div className={stackClassName}>
         <Button
           variant="ghost"
           size={size}
@@ -34,12 +29,19 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
           onClick={onEdit}
           aria-label="Edit item"
           title="Edit item"
+          className={styles['claim-icon-btn']}
         >
-          <Pencil size={14} />
+          <Pencil size={16} />
         </Button>
         {showDeleteConfirm ? (
-          <div className={compact ? styles['actions-row'] : styles['actions-stack']}>
-            <Button variant="primary" size={size} onClick={onDeleteConfirm} isLoading={deleteLoading}>
+          <div className={confirmClassName}>
+            <Button
+              variant="primary"
+              size={size}
+              onClick={onDeleteConfirm}
+              isLoading={deleteLoading}
+              className={styles['claim-action-btn']}
+            >
               Confirm
             </Button>
             <Button variant="ghost" size={size} onClick={onDeleteCancel}>
@@ -54,35 +56,46 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             onClick={onDeleteRequest}
             aria-label="Delete item"
             title="Delete item"
+            className={styles['claim-icon-btn']}
           >
-            <Trash2 size={14} />
+            <Trash2 size={16} />
           </Button>
         )}
       </div>
     );
   }
 
-  if (isOwner) return null;
-
-  if (claimedByCurrentUser) {
+  if (layoutMode === 'unclaim') {
     return (
-      <Button variant="secondary" size={size} onClick={onUnclaim} isLoading={claimLoading}>
+      <Button
+        variant="secondary"
+        size={size}
+        onClick={onUnclaim}
+        isLoading={claimLoading}
+        className={styles['claim-action-btn']}
+      >
         Unclaim
       </Button>
     );
   }
 
-  if (isFullyClaimed) {
+  if (layoutMode === 'claimed') {
     return (
-      <Button variant="secondary" size={size} disabled>
+      <Button variant="secondary" size={size} disabled className={styles['claim-action-btn']}>
         Claimed
       </Button>
     );
   }
 
   return (
-    <Button variant="primary" size={size} onClick={onClaim} isLoading={claimLoading}>
-      Claim Item
+    <Button
+      variant="primary"
+      size={size}
+      onClick={onClaim}
+      isLoading={claimLoading}
+      className={styles['claim-action-btn']}
+    >
+      Claim
     </Button>
   );
 };

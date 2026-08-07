@@ -11,11 +11,19 @@ export const MiniDrawerTemplate: React.FC<MiniDrawerTemplateProps> = ({
   drawerClass,
   matchedItems,
   position,
+  edgeOffset,
+  inlineOnMobile = false,
 }) => {
+  const style =
+    edgeOffset && !inlineOnMobile && position === 'left'
+      ? ({ ['--mini-drawer-edge-offset' as string]: edgeOffset } as React.CSSProperties)
+      : undefined;
+
   return (
     <EnterPanel
       animation={position === 'right' ? 'mini-right' : 'mini-left'}
       className={drawerClass}
+      style={style}
     >
       <span className={styles['mini-drawer-label']}>{label}</span>
       <LinkedItemSquares

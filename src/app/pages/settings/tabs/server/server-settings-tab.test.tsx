@@ -81,6 +81,9 @@ const defaultSettings = {
   AiCompletionTimeoutMs: 600000,
   ScrapeFetchTimeoutMs: 8000,
   ScrapePlaywrightTimeoutMs: 25000,
+  GrabInfoConcurrency: 3,
+  GrabInfoConcurrencyUnlimited: false,
+  GrabInfoActiveStreamLimit: 16,
   AiPrompt: '',
   AiDescriptionPrompt: '',
   AiPopulatePrompt: '',
@@ -212,6 +215,101 @@ describe('ServerSettingsTab local AI validation', () => {
       ScrapeFetchTimeoutMs: 15000,
       ScrapePlaywrightTimeoutMs: 50000,
     });
+  });
+
+  test('loads and saves grab info parallelism settings', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({
+      ...defaultSettings,
+      GrabInfoConcurrency: 12,
+      GrabInfoConcurrencyUnlimited: false,
+      GrabInfoActiveStreamLimit: 24,
+    });
+
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Concurrent Grab info workers')).toHaveValue(12);
+    });
+    expect(screen.getByLabelText('Max visible Grab info stream lanes')).toHaveValue(24);
+    expect(screen.getByLabelText('Unlimited Grab info concurrency')).not.toBeChecked();
+
+    fireEvent.change(screen.getByLabelText('Concurrent Grab info workers'), {
+      target: { value: '8' },
+    });
+    fireEvent.change(screen.getByLabelText('Max visible Grab info stream lanes'), {
+      target: { value: '32' },
+    });
+
+    const form = screen.getByLabelText('Save changes').closest('form');
+    expect(form).toBeTruthy();
+    fireEvent.submit(form!);
+
+    await waitFor(() => {
+      expect(apiClient.post).toHaveBeenCalled();
+    });
+
+    const postCall = vi.mocked(apiClient.post).mock.calls.find(
+      (call) => call[0] === '/api/system/settings'
+    );
+    expect(postCall).toBeDefined();
+    expect(postCall![1]).toMatchObject({
+      GrabInfoConcurrency: 8,
+      GrabInfoConcurrencyUnlimited: false,
+      GrabInfoActiveStreamLimit: 32,
+    });
+  });
+
+  test('unlimited concurrency confirm cancel keeps toggle off and workers enabled', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Concurrent Grab info workers')).toHaveValue(3);
+    });
+
+    fireEvent.click(screen.getByLabelText('Unlimited Grab info concurrency'));
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(screen.getByLabelText('Unlimited Grab info concurrency')).not.toBeChecked();
+    expect(screen.getByLabelText('Concurrent Grab info workers')).not.toBeDisabled();
+
+    confirmSpy.mockRestore();
+  });
+
+  test('unlimited concurrency confirm OK enables toggle and disables workers input', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Concurrent Grab info workers')).toHaveValue(3);
+    });
+
+    fireEvent.click(screen.getByLabelText('Unlimited Grab info concurrency'));
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/Unlimited Grab info concurrency will scrape every remaining product URL/i)
+    );
+    expect(screen.getByLabelText('Unlimited Grab info concurrency')).toBeChecked();
+    expect(screen.getByLabelText('Concurrent Grab info workers')).toBeDisabled();
+
+    const form = screen.getByLabelText('Save changes').closest('form');
+    fireEvent.submit(form!);
+
+    await waitFor(() => {
+      expect(apiClient.post).toHaveBeenCalled();
+    });
+
+    const postCall = vi.mocked(apiClient.post).mock.calls.find(
+      (call) => call[0] === '/api/system/settings'
+    );
+    expect(postCall![1]).toMatchObject({
+      GrabInfoConcurrency: 3,
+      GrabInfoConcurrencyUnlimited: true,
+    });
+
+    confirmSpy.mockRestore();
   });
 
   test('loads and saves AI completion timeout setting', async () => {

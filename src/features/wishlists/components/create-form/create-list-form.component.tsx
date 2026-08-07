@@ -59,7 +59,8 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess, onCan
         finalCategory,
         revealSuggestions,
         aiEnabled,
-        webSearchEnabled
+        webSearchEnabled,
+        true
       );
       setTitle('');
       setExpiresAt('');

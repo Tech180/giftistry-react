@@ -19,10 +19,11 @@ describe('normalizeJobsPayload', () => {
     expect(normalizeJobsPayload([sampleJob])).toEqual([sampleJob]);
   });
 
-  test('unwraps common wrapper keys', () => {
+  test('unwraps PascalCase wrapper keys', () => {
     expect(normalizeJobsPayload({ Data: [sampleJob] })).toEqual([sampleJob]);
     expect(normalizeJobsPayload({ Jobs: [sampleJob] })).toEqual([sampleJob]);
     expect(normalizeJobsPayload({ Result: [sampleJob] })).toEqual([sampleJob]);
+    expect(normalizeJobsPayload({ Items: [sampleJob] })).toEqual([sampleJob]);
   });
 
   test('unwraps nested Result.Data shapes', () => {
@@ -32,5 +33,10 @@ describe('normalizeJobsPayload', () => {
   test('returns empty for unexpected shapes', () => {
     expect(normalizeJobsPayload({ Ok: true })).toEqual([]);
     expect(normalizeJobsPayload(null)).toEqual([]);
+  });
+
+  test('does not unwrap camelCase wrappers', () => {
+    expect(normalizeJobsPayload({ data: [sampleJob] })).toEqual([]);
+    expect(normalizeJobsPayload({ jobs: [sampleJob] })).toEqual([]);
   });
 });

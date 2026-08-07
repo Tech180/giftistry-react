@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
-import { PromptCodeEditor } from './prompt-code-editor.component';
+import { PromptCodeEditor, type PromptCodeEditorHandle } from './prompt-code-editor.component';
 
 describe('PromptCodeEditor', () => {
   test('renders line numbers and highlights known tokens', () => {
@@ -79,5 +79,27 @@ Editable body`.length}
     );
     expect(container.querySelectorAll('[class*="sectionDividerTitle"]')).toHaveLength(3);
     expect(container.querySelector('[class*="codeLineReadOnly"]')).not.toBeNull();
+  });
+
+  test('insertAtCursor inserts at the remembered selection', () => {
+    const onChange = vi.fn();
+    const ref = React.createRef<PromptCodeEditorHandle>();
+
+    render(
+      <PromptCodeEditor
+        ref={ref}
+        value="Hello world"
+        onChange={onChange}
+        knownTokens={['{itemName}']}
+      />
+    );
+
+    const textarea = screen.getByLabelText('AI prompt editor') as HTMLTextAreaElement;
+    textarea.setSelectionRange(6, 6);
+    fireEvent.select(textarea);
+
+    ref.current?.insertAtCursor('{itemName}');
+
+    expect(onChange).toHaveBeenCalledWith('Hello {itemName}world');
   });
 });

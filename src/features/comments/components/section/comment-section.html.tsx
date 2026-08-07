@@ -11,6 +11,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   isOwner,
   listOwnerId,
   isAuthenticated,
+  canPostComments,
   currentUserId,
   participants,
   comments,
@@ -117,6 +118,10 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
           <div className={styles['auth-prompt']}>
             <p className={styles['auth-prompt-text']}>Sign in to join the conversation.</p>
             <Link to="/login" className={styles['auth-prompt-link']}>Sign in</Link>
+          </div>
+        ) : !canPostComments ? (
+          <div className={styles['auth-prompt']}>
+            <p className={styles['auth-prompt-text']}>Comments are read-only for archived lists.</p>
           </div>
         ) : (
           <CommentInput

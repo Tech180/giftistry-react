@@ -1,6 +1,6 @@
 export { adminApi } from './api/admin.api';
 export { useIsAdmin } from './hooks/use-is-admin';
-export type { AdminUser, AdminOverviewStats } from './interfaces/admin-user.interface';
+export type { AdminUser, AdminUserListItem, AdminOverviewStats } from './interfaces/admin-user.interface';
 export type { AuditLogEntry } from './interfaces/audit-log-entry.interface';
 export type { ContentReport } from './interfaces/content-report.interface';
 export type { GiftistryUserPolicy } from './interfaces/giftistry-user-policy.interface';

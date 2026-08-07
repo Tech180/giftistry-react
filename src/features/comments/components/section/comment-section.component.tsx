@@ -26,6 +26,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   ownerDisplayName,
   isOwner,
   isExpired = false,
+  isArchived = false,
   items = [],
   onItemTaggedClick,
   isTaggingModeActive,
@@ -152,6 +153,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     replyIsRollover?: boolean,
     replyImageUrl?: string | null
   ) => {
+    if (isArchived) return;
     setIsSubmitLoading(true);
     setLocalError(null);
     try {
@@ -462,7 +464,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated || !user || isArchived) return;
     if (!content.trim()) return;
 
     setIsSubmitLoading(true);
@@ -532,6 +534,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       isOwner={isOwner}
       listOwnerId={listOwnerId}
       isAuthenticated={isAuthenticated}
+      canPostComments={isAuthenticated && !isArchived}
       currentUserId={user?.Id}
       participants={participants}
       comments={comments}

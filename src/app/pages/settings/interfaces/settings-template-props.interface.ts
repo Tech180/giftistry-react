@@ -6,6 +6,7 @@ export interface SettingsTemplateProps {
   routes: React.ReactNode;
   toasts: ToastInfo[];
   isAdmin: boolean;
+  isOwner: boolean;
   processesRailScope: BackgroundJobsScope | null;
   onProcessesError: (message: string) => void;
 }

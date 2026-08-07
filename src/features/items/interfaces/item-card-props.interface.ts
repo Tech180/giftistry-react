@@ -6,6 +6,7 @@ export interface ItemCardProps {
   item: Item;
   isOwner: boolean;
   isExpired: boolean;
+  isArchived?: boolean;
   canCollaborate: boolean;
   allowGroupFunds: boolean;
   itemActions: ItemActions;
@@ -19,5 +20,6 @@ export interface ItemCardProps {
   onSelect?: () => void;
   wishlistItems?: Item[];
   isLinkingContext?: boolean;
+  isRelatingContext?: boolean;
   aiEnabled?: boolean;
 }

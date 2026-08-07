@@ -105,15 +105,25 @@
 
 .prompt-layout {
   display: grid;
-  grid-template-columns: 11rem 1fr;
+  grid-template-columns: 14rem 1fr;
   gap: var(--spacing-md);
   align-items: start;
+}
+
+.prompt-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .prompt-subnav {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex-shrink: 0;
 }
 
 .prompt-subnav-item {
@@ -186,6 +196,8 @@
   flex-direction: column;
   gap: var(--spacing-sm);
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .prompt-panel-header {
@@ -539,6 +551,18 @@
 .local-model-row .input-field {
   flex: 1;
   min-width: 0;
+}
+
+@media (max-width: 40rem) {
+  .local-model-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .local-model-row .select-box {
+    max-width: none;
+    width: 100%;
+  }
 }
 
 .endpoint-row {

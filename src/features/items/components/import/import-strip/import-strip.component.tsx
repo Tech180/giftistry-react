@@ -6,9 +6,12 @@ import {
   mapJobToTimeline,
   formatImportJobSummary,
   claimImportJobTerminalToast,
+  isTerminalJobStatus,
   type BackgroundJobView,
 } from 'features/jobs';
-import type { TimelineStreamLane } from 'features/jobs/utils/map-job-to-timeline.util';
+import type { TimelineStreamLane } from 'features/jobs/interfaces/job-timeline-view.interface';
+import { useElapsedSeconds } from 'features/jobs/hooks/use-elapsed-seconds';
+import { withActiveStepCaptions } from 'features/jobs/utils/with-active-step-captions.util';
 import {
   readImportFile,
   type ReadImportFileResult,
@@ -80,13 +83,10 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
   const [uploadLabel, setUploadLabel] = useState('Reading file…');
   const [fileName, setFileName] = useState<string | null>(null);
   const [pendingRead, setPendingRead] = useState<ReadImportFileResult | null>(null);
-  const [previewWarnings, setPreviewWarnings] = useState<string[]>([]);
-  const [previewReady, setPreviewReady] = useState(false);
   const [wishlistTitle, setWishlistTitle] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [createPercent, setCreatePercent] = useState(0);
   const [createLabel, setCreateLabel] = useState('Starting import…');
-  const [grabInfoArmed, setGrabInfoArmed] = useState(false);
+  const [grabInfoArmed, setGrabInfoArmed] = useState(() => canShowAi);
   const [timelineSteps, setTimelineSteps] = useState<ImportTimelineStep[]>([]);
   const [timelineStreams, setTimelineStreams] = useState<TimelineStreamLane[]>([]);
   const [streamsCaption, setStreamsCaption] = useState<string | null>(null);
@@ -98,15 +98,15 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
   const { addEventListener, removeEventListener } = useUserSocket();
 
   const isBusy = phase === 'uploading' || phase === 'creating';
-  const canGrabInfo = canShowAi && phase === 'ready' && pendingRead !== null && previewReady;
+  const canGrabInfo = canShowAi && phase === 'ready' && pendingRead !== null;
   const grabInfoActive = phase === 'ready' && grabInfoArmed;
   const canConfirm =
     pendingRead !== null &&
-    previewReady &&
+    phase === 'ready' &&
     (mode === 'existing-list' || wishlistTitle.trim().length > 0);
   const defaultAccept = getWishlistImportAccept(canShowAi);
 
-  const stopPolling = () => {
+  const stopImportPolling = () => {
     setActiveJobId(null);
   };
 
@@ -115,11 +115,10 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
     setTimelineSteps(view.steps);
     setTimelineStreams(view.streams);
     setStreamsCaption(view.streamsCaption);
-    setCreatePercent(view.percent);
     setCreateLabel(view.label);
   };
 
-  useEffect(() => () => stopPolling(), []);
+  useEffect(() => () => stopImportPolling(), []);
 
   useEffect(() => {
     if (!activeJobId) return;
@@ -159,21 +158,16 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
       }
     };
 
-    const handleJobUpdate = (data: any) => {
-      if (data && data.Job && data.Job.Id === activeJobId) {
-        applyJobTimeline(data.Job);
+    const handleJobUpdate = (data: { Job?: BackgroundJobView }) => {
+      if (data?.Job?.Id !== activeJobId) return;
+      applyJobTimeline(data.Job);
 
-        if (
-          data.Job.Status === 'failed' ||
-          data.Job.Status === 'cancelled' ||
-          data.Job.Status === 'completed'
-        ) {
-          finishTerminal(data.Job);
-        } else {
-          const nextListId = data.Job.ListId ?? listId ?? null;
-          if (nextListId) {
-            notifyListReady(nextListId, data.Job);
-          }
+      if (isTerminalJobStatus(data.Job.Status)) {
+        finishTerminal(data.Job);
+      } else {
+        const nextListId = data.Job.ListId ?? listId ?? null;
+        if (nextListId) {
+          notifyListReady(nextListId, data.Job);
         }
       }
     };
@@ -183,22 +177,21 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
     addEventListener('job.failed', handleJobUpdate);
 
     let isCleanup = false;
-    jobsApi.getJob(activeJobId).then((latest) => {
-      if (isCleanup) return;
-      applyJobTimeline(latest);
-      if (
-        latest.Status === 'failed' ||
-        latest.Status === 'cancelled' ||
-        latest.Status === 'completed'
-      ) {
-        finishTerminal(latest);
-      } else {
-        const nextListId = latest.ListId ?? listId ?? null;
-        if (nextListId) {
-          notifyListReady(nextListId, latest);
+    jobsApi
+      .getJob(activeJobId)
+      .then((latest) => {
+        if (isCleanup) return;
+        applyJobTimeline(latest);
+        if (isTerminalJobStatus(latest.Status)) {
+          finishTerminal(latest);
+        } else {
+          const nextListId = latest.ListId ?? listId ?? null;
+          if (nextListId) {
+            notifyListReady(nextListId, latest);
+          }
         }
-      }
-    }).catch(() => {});
+      })
+      .catch(() => {});
 
     return () => {
       isCleanup = true;
@@ -209,7 +202,7 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
   }, [activeJobId, listId, onImported, showToast, addEventListener, removeEventListener]);
 
   const resetState = () => {
-    stopPolling();
+    stopImportPolling();
     handedOffRef.current = false;
     setPhase('idle');
     setDropzoneError(null);
@@ -217,13 +210,10 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
     setUploadLabel('Reading file…');
     setFileName(null);
     setPendingRead(null);
-    setPreviewWarnings([]);
-    setPreviewReady(false);
     setWishlistTitle('');
     setErrorMessage(null);
-    setCreatePercent(0);
     setCreateLabel('Starting import…');
-    setGrabInfoArmed(false);
+    setGrabInfoArmed(canShowAi);
     setTimelineSteps([]);
     setTimelineStreams([]);
     setStreamsCaption(null);
@@ -232,14 +222,12 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
   };
 
   const handleFileSelected = async (file: File) => {
-    stopPolling();
+    stopImportPolling();
     handedOffRef.current = false;
     setDropzoneError(null);
     setErrorMessage(null);
     setPendingRead(null);
-    setPreviewWarnings([]);
-    setPreviewReady(false);
-    setGrabInfoArmed(false);
+    setGrabInfoArmed(canShowAi);
     setTimelineSteps([]);
     setTimelineStreams([]);
     setStreamsCaption(null);
@@ -258,36 +246,14 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
         },
       });
       setUploadPercent(100);
-      setUploadLabel('Parsing preview…');
-      setPendingRead(read);
-
-      const preview = await jobsApi.previewWishlistImport({
-        listId: mode === 'existing-list' ? listId : null,
-        fileName: read.fileName,
-        format: read.format,
-        content: read.content,
-        contentEncoding: read.contentEncoding,
-        allowAi: canShowAi,
-      });
-
-      const itemCount = preview.Items?.length ?? 0;
-      const parseMode = preview.ParseMode || 'unknown';
-      const summary = `Parsed ${itemCount} item${itemCount === 1 ? '' : 's'} (${parseMode})`;
-      const serverWarnings = Array.isArray(preview.Warnings) ? preview.Warnings : [];
-      setPreviewWarnings([summary, ...serverWarnings]);
-      setPreviewReady(true);
-      if (mode === 'create-list' && preview.SuggestedWishlistTitle?.trim()) {
-        setWishlistTitle(preview.SuggestedWishlistTitle.trim());
-      }
       setUploadLabel('Upload complete');
+      setPendingRead(read);
       setPhase('ready');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to read file';
       setDropzoneError(message);
       setErrorMessage(message);
       setPendingRead(null);
-      setPreviewWarnings([]);
-      setPreviewReady(false);
       setPhase('error');
     }
   };
@@ -314,7 +280,6 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
     setTimelineSteps(seeded.steps);
     setTimelineStreams([]);
     setStreamsCaption(null);
-    setCreatePercent(seeded.percent);
     setCreateLabel(seeded.label);
     setPhase('creating');
 
@@ -367,16 +332,12 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
         }
       };
 
-      let targetListId = job.ListId ?? listId ?? null;
+      const targetListId = job.ListId ?? listId ?? null;
       if (targetListId) {
         notifyListReady(targetListId, job);
       }
 
-      if (
-        job.Status === 'completed' ||
-        job.Status === 'failed' ||
-        job.Status === 'cancelled'
-      ) {
+      if (isTerminalJobStatus(job.Status)) {
         finishTerminal(job);
         return;
       }
@@ -396,6 +357,16 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
       setGrabInfoArmed((prev) => !prev);
     }
   };
+
+  const rateStepActive = timelineSteps.some(
+    (step) =>
+      (step.id === 'found' || step.id === 'grabInfo') && step.tone === 'active'
+  );
+  const elapsedSeconds = useElapsedSeconds(phase === 'creating' && rateStepActive);
+  const displayTimelineSteps = withActiveStepCaptions(timelineSteps, {
+    stepIds: ['found', 'grabInfo'],
+    elapsedSeconds,
+  });
 
   const stripStatus = buildStatus(phase, {
     wishlistTitle: wishlistTitle.trim() || 'Wishlist',
@@ -420,7 +391,7 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
         void handleFileSelected(file);
       },
     }),
-    [isBusy, defaultAccept, handleFileSelected]
+    [isBusy, defaultAccept]
   );
 
   return (
@@ -451,13 +422,12 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
         uploadPercent={uploadPercent}
         uploadLabel={uploadLabel}
         fileName={fileName}
-        warnings={previewWarnings}
+        warnings={[]}
         wishlistTitle={wishlistTitle}
         setWishlistTitle={setWishlistTitle}
-        timelineSteps={timelineSteps}
+        timelineSteps={displayTimelineSteps}
         timelineStreams={timelineStreams}
         streamsCaption={streamsCaption}
-        createPercent={createPercent}
         createLabel={createLabel}
         isBusy={isBusy}
         canConfirm={canConfirm}

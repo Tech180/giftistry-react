@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Gift,
   ArrowRight,
   ArrowLeft,
   AtSign,
@@ -11,6 +10,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react';
+import { BrandMark } from 'shared/ui';
 import styles from './setup.module.css';
 import { SetupTemplateProps } from './interfaces/setup-props.interface';
 import { SetupTimeline } from './components/timeline/setup-timeline.component';
@@ -42,10 +42,8 @@ export const SetupTemplate: React.FC<SetupTemplateProps> = ({
   <div className={styles['setup-shell']}>
     <aside className={styles.sidebar}>
       <div className={styles.brand}>
-        <div className={styles['brand-mark']}>
-          <Gift size={16} aria-hidden />
-        </div>
-        <div>
+        <BrandMark size="lg" showLabel={false} className={styles['brand-icon']} />
+        <div className={styles['brand-text']}>
           <h1 className={styles['brand-title']}>Giftistry</h1>
           <p className={styles['brand-subtitle']}>Setup Wizard</p>
         </div>
@@ -61,9 +59,7 @@ export const SetupTemplate: React.FC<SetupTemplateProps> = ({
     <main className={styles.main}>
       <header className={styles['mobile-header']}>
         <div className={styles['mobile-brand']}>
-          <div className={styles['brand-mark-sm']}>
-            <Gift size={12} aria-hidden />
-          </div>
+          <BrandMark size="sm" showLabel={false} />
           <span className={styles['mobile-title']}>Giftistry Setup</span>
         </div>
         <div className={styles['mobile-step']}>Step {mobileStep} of 3</div>

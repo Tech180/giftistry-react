@@ -5,6 +5,7 @@ export interface ItemCardTemplateProps {
   item: Item;
   isOwner: boolean;
   isExpired: boolean;
+  isArchived?: boolean;
   canCollaborate: boolean;
   allowGroupFunds: boolean;
   isFullyClaimed: boolean;
@@ -65,5 +66,7 @@ export interface ItemCardTemplateProps {
   audienceLabel: string | null;
   isPrivate: boolean;
   linkedItems: Item[];
+  relatedItems: Item[];
   isLinkingContext?: boolean;
+  isRelatingContext?: boolean;
 }

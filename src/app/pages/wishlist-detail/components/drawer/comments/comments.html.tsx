@@ -21,6 +21,7 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
   ownerDisplayName,
   isOwner,
   isExpired,
+  isArchived,
   handleItemTaggedClick,
 }) => {
   const drawerTaggingActive = isTaggingModeActive || isReplyTaggingModeActive;
@@ -59,6 +60,7 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
         ownerDisplayName={ownerDisplayName}
         isOwner={isOwner}
         isExpired={isExpired}
+        isArchived={isArchived}
         items={items}
         onItemTaggedClick={handleItemTaggedClick}
         isTaggingModeActive={isTaggingModeActive}

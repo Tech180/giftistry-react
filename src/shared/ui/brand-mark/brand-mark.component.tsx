@@ -12,7 +12,7 @@ export const BrandMark: React.FC<BrandMarkProps> = ({
   className = '',
 }) => {
   const rootClass = [styles.root, styles[`size-${size}`]].filter(Boolean).join(' ');
-  const iconSize = size === 'sm' ? 16 : 20;
+  const iconSize = size === 'sm' ? 16 : size === 'lg' ? 32 : 20;
 
   return (
     <BrandMarkTemplate

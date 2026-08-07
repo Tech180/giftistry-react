@@ -1,0 +1,108 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, expect, test, vi } from 'vitest';
+import { HeaderTemplate } from './header.html';
+import type { HeaderTemplateProps } from './interfaces/header-template-props.interface';
+
+vi.mock('app/providers/auth-context', () => ({
+  useAuth: () => ({
+    canShowAi: false,
+    canShowWebSearch: false,
+    user: { Id: 'u1', Username: 'owner' },
+  }),
+}));
+
+vi.mock('../list-settings-panel/list-settings-panel.component', () => ({
+  ListSettingsPanel: () => null,
+}));
+
+vi.mock('shared/utils/wishlist-export', () => ({
+  exportToCsv: vi.fn(),
+  exportToXlsx: vi.fn(),
+  exportToTxt: vi.fn(),
+  exportToJson: vi.fn(),
+  exportToPdf: vi.fn(),
+}));
+
+const wishlist = {
+  Id: 'list-1',
+  UserId: 'u1',
+  Title: 'Party List',
+  ExpiresAt: null,
+  AllowGroupFunds: false,
+  IsActive: true,
+} as HeaderTemplateProps['wishlist'];
+
+const baseProps: HeaderTemplateProps = {
+  wishlist,
+  items: [],
+  priorities: [],
+  isOwner: true,
+  isExpired: false,
+  isArchived: false,
+  isDeactivating: false,
+  isActivating: false,
+  isDeleting: false,
+  confirmAction: null,
+  setConfirmAction: vi.fn(),
+  handleDeactivateConfirm: vi.fn(),
+  handleActivateConfirm: vi.fn(),
+  handleDeleteConfirm: vi.fn(),
+  saveTitle: vi.fn(async () => undefined),
+  saveDate: vi.fn(async () => undefined),
+  formatDate: () => '',
+  toggleRevealSuggestions: vi.fn(),
+  toggleAiEnabled: vi.fn(),
+  toggleWebSearchEnabled: vi.fn(),
+  toggleManualJobBackground: vi.fn(),
+  canShowAi: false,
+  canShowWebSearch: false,
+  isCommentsOpen: false,
+  setIsCommentsOpen: vi.fn(),
+  setIsShareOpen: vi.fn(),
+  canImport: true,
+  isImportOpen: false,
+  onImportToggle: vi.fn(),
+  isEditingTitle: false,
+  setIsEditingTitle: vi.fn(),
+  tempTitle: 'Party List',
+  setTempTitle: vi.fn(),
+  isEditingDate: false,
+  setIsEditingDate: vi.fn(),
+  tempDate: '',
+  setTempDate: vi.fn(),
+  isExportDropdownOpen: false,
+  setIsExportDropdownOpen: vi.fn(),
+  exportRef: { current: null },
+  isListSettingsOpen: false,
+  setIsListSettingsOpen: vi.fn(),
+  listSettingsRef: { current: null },
+  exportContext: { exporterName: 'Owner', isOwner: true, currentUserId: 'u1' },
+  showListSettings: false,
+  showOwnerBadgeRegion: false,
+};
+
+function renderHeader(overrides: Partial<HeaderTemplateProps> = {}) {
+  return render(
+    <MemoryRouter>
+      <HeaderTemplate {...baseProps} {...overrides} />
+    </MemoryRouter>
+  );
+}
+
+describe('HeaderTemplate archive actions', () => {
+  test('active list shows archive only', () => {
+    renderHeader({ isArchived: false });
+    expect(screen.getByLabelText('Deactivate / Archive Wishlist')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Delete Wishlist and Items')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Restore Wishlist from Archive')).not.toBeInTheDocument();
+  });
+
+  test('archived list shows restore and delete', () => {
+    renderHeader({ isArchived: true, wishlist: { ...wishlist, IsActive: false } });
+    expect(screen.queryByLabelText('Deactivate / Archive Wishlist')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Restore Wishlist from Archive')).toBeInTheDocument();
+    expect(screen.getByLabelText('Delete Wishlist and Items')).toBeInTheDocument();
+  });
+});

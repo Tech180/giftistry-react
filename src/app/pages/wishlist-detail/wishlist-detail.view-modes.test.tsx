@@ -81,7 +81,9 @@ const baseProps = {
   audienceLabel: null,
   isPrivate: false,
   linkedItems: [],
+  relatedItems: [],
   isLinkingContext: false,
+  isRelatingContext: false,
   aiEnabled: false,
   canShowAi: false,
 };

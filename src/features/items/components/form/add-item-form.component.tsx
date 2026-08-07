@@ -17,6 +17,10 @@ import { isValidUrl } from 'shared/utils/is-valid-url.util';
 import { getSiteName } from 'shared/utils/get-site-name.util';
 import { syncBidirectionalItemLinks, resolveEditorLinkedItemIds } from '../../utils/item-links-sync.util';
 import {
+  syncBidirectionalItemRelated,
+  resolveEditorRelatedItemIds,
+} from '../../utils/item-related-sync.util';
+import {
   buildLinkingAudienceContext,
   buildDraftSharedWithUsers,
   canLinkItemsByAudience,
@@ -35,8 +39,14 @@ import {
   splitCustomFieldRowsForSave,
   type CustomFieldRow,
 } from '../../utils/add-item-custom-fields.util';
+import { jobsApi, waitForJob } from 'features/jobs';
+import { toExtractMetadataResult, toSummarizedDescription } from '../../utils/ai-job-result.util';
+import { abandonPendingManualJob } from '../../utils/abandon-pending-manual-job.util';
+import type { PendingManualJob } from '../../interfaces/pending-manual-job.interface';
+import type { ExtractMetadataResult } from '../../interfaces/extract-metadata-result.interface';
+import type { ItemPhotoGalleryEntry } from '../photo-gallery/interfaces/item-photo-gallery-props.interface';
 
-type ExtractedMetadataResponse = Awaited<ReturnType<typeof itemsApi.extractMetadata>>;
+type ExtractedMetadataResponse = ExtractMetadataResult;
 
 export const AddItemForm: React.FC<AddItemFormProps> = ({
   listId,
@@ -44,12 +54,18 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   onSuccess,
   existingCategories = [],
   item,
+  onItemEnriched,
+  onAutoEnrichStarted,
   onDraftChange,
   wishlistItems = [],
   linkedItemIds,
   resolvedLinkedCount,
+  relatedItemIds,
+  resolvedRelatedCount,
   isLinkingModeActive,
   setIsLinkingModeActive,
+  isRelatingModeActive,
+  setIsRelatingModeActive,
   onLinkingAudienceChange,
   onPriorityChange,
   isOpen,
@@ -58,6 +74,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   onDirtyChange,
   canShowAi = false,
   listAiEnabled = false,
+  listManualJobBackground = true,
   canUseWebSearchOnList = false,
 }) => {
   const { user } = useAuth();
@@ -92,6 +109,9 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
   const [customFields, setCustomFields] = useState<CustomFieldRow[]>([]);
   const [showExtraFields, setShowExtraFields] = useState(false);
+  const [photoEntries, setPhotoEntries] = useState<ItemPhotoGalleryEntry[]>([]);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const initialPhotosSnapshotRef = useRef<string>('[]');
   const loadedMetadataRef = useRef<{
     predefined: Record<string, string | null | undefined>;
     userDefined: Record<string, string>;
@@ -101,10 +121,62 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [warningMsg, setWarningMsg] = useState<string | null>(null);
   const [isSummarizingNotes, setIsSummarizingNotes] = useState(false);
   const [undoDescription, setUndoDescription] = useState<string | null>(null);
   const [loadedItemId, setLoadedItemId] = useState<string | null>(null);
   const initialEditSnapshotRef = useRef<string | null>(null);
+
+  // AI helpers run as background jobs; each run gets a token so a newer run (or
+  // an unmount/close) stops the previous poll from writing into the form.
+  const pendingJobRef = useRef<PendingManualJob | null>(null);
+  const jobRunRef = useRef(0);
+  const isUnmountedRef = useRef(false);
+  const abandonContextRef = useRef({
+    listId,
+    background: listManualJobBackground !== false,
+    onAutoEnrichStarted,
+  });
+  abandonContextRef.current = {
+    listId,
+    background: listManualJobBackground !== false,
+    onAutoEnrichStarted,
+  };
+
+  const runAbandonPendingJob = useCallback(async () => {
+    const pending = pendingJobRef.current;
+    pendingJobRef.current = null;
+    if (!pending) return;
+
+    const { listId: abandonListId, background, onAutoEnrichStarted: onStarted } =
+      abandonContextRef.current;
+    try {
+      const { outcome, result } = await abandonPendingManualJob({
+        pending,
+        listId: abandonListId,
+        background,
+      });
+      if (outcome === 'promoted' && result) {
+        onStarted?.(result);
+      }
+    } catch {
+      // Best-effort; form is already closing.
+    }
+  }, []);
+
+  useEffect(() => {
+    isUnmountedRef.current = false;
+    return () => {
+      isUnmountedRef.current = true;
+      void runAbandonPendingJob();
+    };
+  }, [runAbandonPendingJob]);
+
+  const startJobRun = useCallback(() => {
+    const runId = jobRunRef.current + 1;
+    jobRunRef.current = runId;
+    return () => isUnmountedRef.current || jobRunRef.current !== runId;
+  }, []);
 
   useEffect(() => {
     onLoadingChange?.(isLoading);
@@ -159,6 +231,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       sharedWithUserIds: comparableSharedWith,
       otherUsersCanSee,
       linkedItemIds: [...linkedItemIds].sort(),
+      relatedItemIds: [...relatedItemIds].sort(),
+      photos: photoEntries.map((p) => p.dataUrl),
     });
   }, [
     name,
@@ -177,6 +251,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     sharedWithUserIds,
     otherUsersCanSee,
     linkedItemIds,
+    relatedItemIds,
+    photoEntries,
     user?.Id,
     listShares,
   ]);
@@ -361,21 +437,27 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         Object.keys(rowPredefined).length > 0 ||
         Object.keys(rowUserDefined).length > 0 ||
         isMultiCount ||
-        linkedItemIds.length > 0;
+        linkedItemIds.length > 0 ||
+        relatedItemIds.length > 0;
+
+      const photosChanged =
+        JSON.stringify(photoEntries.map((p) => p.dataUrl)) !== initialPhotosSnapshotRef.current;
+      const includePhotos = photoEntries.length > 0 || photosChanged;
 
       const shouldSerialize = !!(
         hasVisibleDynamic ||
         hasExtraFields ||
         description.trim() ||
         !options.isOwner ||
-        options.isFavorite
+        options.isFavorite ||
+        includePhotos
       );
 
       if (!shouldSerialize) {
         return null;
       }
 
-      return normalizeItemDescriptionMetadata({
+      const payload = normalizeItemDescriptionMetadata({
         Text: description.trim() || null,
         CustomFields: {
           Predefined: {
@@ -390,10 +472,19 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           ? variations.map((v) => ({ Name: v.name, Quantity: v.quantity }))
           : undefined,
         LinkedItemIds: linkedItemIds.length > 0 ? linkedItemIds : undefined,
+        RelatedItemIds: relatedItemIds.length > 0 ? relatedItemIds : undefined,
         OtherUsersCanSee: options.isOwner ? true : otherUsersCanSee,
         IsFavorite: options.isOwner ? options.isFavorite || undefined : undefined,
         IsPinned: !options.isOwner ? options.isFavorite || undefined : undefined,
       });
+
+      // Always send Photos when gallery is available and there are photos,
+      // or when photos were cleared after having some (empty array on edit).
+      if (photosChanged || photoEntries.length > 0) {
+        payload.Photos = photoEntries.map((p) => ({ DataUrl: p.dataUrl }));
+      }
+
+      return payload;
     },
     [
       definitions,
@@ -401,11 +492,13 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       isFieldVisible,
       isMultiCount,
       linkedItemIds,
+      relatedItemIds,
       customFields,
       description,
       desiredQuantity,
       variations,
       otherUsersCanSee,
+      photoEntries,
     ]
   );
 
@@ -414,10 +507,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       resetOptionalFields();
       setName(item.Name || '');
 
-      const parsed = parseItemDescription(item.Description);
+      const parsed = parseItemDescription(item.Description, item.Metadata);
       if (parsed.isJson && parsed.metadata) {
         const meta = normalizeItemDescriptionMetadata(parsed.metadata);
-        setDescription(getMetadataText(meta));
+        setDescription(parsed.text || '');
 
         loadedMetadataRef.current = {
           predefined: meta.CustomFields?.Predefined ?? {},
@@ -468,7 +561,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         setVariations([]);
       }
 
-      setIsFavorite(getItemFavoriteFlag(item.Description));
+      setIsFavorite(getItemFavoriteFlag(item.Description, item.Metadata));
       setPriorityWeight(item.Priority !== undefined && item.Priority !== null ? item.Priority.toString() : '');
       setIsHiddenIdea(item.IsHiddenIdea || false);
       const audienceMode = getItemAudienceMode(item);
@@ -484,6 +577,16 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         setSharedWithUserIds([]);
       }
       setCategory(item.Category || 'uncategorized');
+
+      const sortedPhotos = [...(item.Photos ?? [])].sort((a, b) => a.SortOrder - b.SortOrder);
+      const loadedPhotos: ItemPhotoGalleryEntry[] = sortedPhotos.map((p) => ({
+        localId: p.Id,
+        id: p.Id,
+        dataUrl: p.Url,
+      }));
+      setPhotoEntries(loadedPhotos);
+      initialPhotosSnapshotRef.current = JSON.stringify(loadedPhotos.map((p) => p.dataUrl));
+      setPhotoError(null);
 
       if (item.Links && item.Links.length > 0) {
         setLinkUrl(item.Links[0].Url || '');
@@ -508,6 +611,9 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setPrice('');
       setIsFavorite(false);
       resetOptionalFields();
+      setPhotoEntries([]);
+      initialPhotosSnapshotRef.current = '[]';
+      setPhotoError(null);
       setLoadedItemId(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -515,6 +621,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
   useEffect(() => {
     if (isOpen === false) {
+      void runAbandonPendingJob();
       setName('');
       setDescription('');
       setPriorityWeight('');
@@ -527,12 +634,20 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setPrice('');
       setIsFavorite(false);
       resetOptionalFields();
+      setPhotoEntries([]);
+      initialPhotosSnapshotRef.current = '[]';
+      setPhotoError(null);
       setHasScraped(false);
       setLoadedItemId(null);
       setUndoDescription(null);
+      jobRunRef.current += 1;
+      pendingJobRef.current = null;
       setIsSummarizingNotes(false);
+      setIsAutopopulating(false);
+      setErrorMsg(null);
+      setWarningMsg(null);
     }
-  }, [isOpen]);
+  }, [isOpen, runAbandonPendingJob]);
 
   useEffect(() => {
     return () => {
@@ -552,12 +667,18 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     }
 
     if (onDraftChange) {
-      const descPayload = buildDescriptionPayload({ isOwner, isFavorite }) ?? '';
+      const metaPayload = buildDescriptionPayload({ isOwner, isFavorite });
 
       onDraftChange({
         Id: item.Id,
         Name: name.trim(),
-        Description: descPayload,
+        Description: metaPayload?.Text ?? (description.trim() || null),
+        Metadata: metaPayload,
+        Photos: photoEntries.map((p, index) => ({
+          Id: p.id ?? p.localId,
+          Url: p.dataUrl,
+          SortOrder: index,
+        })),
         Category: category === 'uncategorized' ? '' : category,
         PriorityId: null,
         Priority: priorityWeight ? parseInt(priorityWeight, 10) : null,
@@ -601,12 +722,14 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     desiredQuantity,
     variations,
     linkedItemIds,
+    relatedItemIds,
     buildDescriptionPayload,
     isFavorite,
     visibilityMode,
     sharedWithUserIds,
     listShares,
     user?.Id,
+    photoEntries,
   ]);
 
   useEffect(() => {
@@ -616,7 +739,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const canSummarizeNotes = canShowAi && listAiEnabled && !!name.trim();
 
   const handleSummarizeNotes = async () => {
-    if (!canSummarizeNotes || isSummarizingNotes) return;
+    if (!canSummarizeNotes || isSummarizingNotes || isAutopopulating) return;
 
     const visibleDynamicValues: Record<string, string> = {};
     definitions.forEach((def) => {
@@ -628,9 +751,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       }
     });
 
+    const isCancelled = startJobRun();
     setUndoDescription(description);
     setIsSummarizingNotes(true);
     setErrorMsg(null);
+    setWarningMsg(null);
 
     try {
       const summarizeCustomFields = buildSummarizeCustomFields({
@@ -640,8 +765,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         ),
       });
 
-      const summarized = await itemsApi.summarizeDescription({
+      const { Job } = await jobsApi.startItemSummarize({
         listId,
+        itemId: item?.Id,
+        writeBack: false,
         name: name.trim(),
         text: description.trim() || undefined,
         linkUrl: linkUrl.trim() || undefined,
@@ -659,12 +786,28 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         desiredQuantity: typeof desiredQuantity === 'number' ? desiredQuantity : undefined,
       });
 
+      if (isCancelled()) return;
+      pendingJobRef.current = { jobId: Job.Id, kind: 'summarize' };
+
+      const finished = await waitForJob(Job.Id, { isCancelled });
+      if (!finished || isCancelled()) return;
+
+      const summarized =
+        finished.Status === 'completed' ? toSummarizedDescription(finished.Result) : null;
+      if (!summarized) {
+        throw new Error(finished.Error || finished.Message || 'Summarize job failed');
+      }
+
       setDescription(summarized);
     } catch {
+      if (isCancelled()) return;
       setUndoDescription(null);
       setErrorMsg('Failed to generate notes automatically. You can still enter them manually.');
     } finally {
-      setIsSummarizingNotes(false);
+      if (!isCancelled()) {
+        pendingJobRef.current = null;
+        setIsSummarizingNotes(false);
+      }
     }
   };
 
@@ -675,31 +818,59 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   };
 
   const runExtractMetadata = async () => {
-    if (!linkUrl.trim()) return;
+    if (!linkUrl.trim() || isAutopopulating || isSummarizingNotes) return;
 
     if (!isValidUrl(linkUrl)) {
       setErrorMsg('Please enter a valid URL.');
       return;
     }
 
-    try {
-      const extractedWebName = getSiteName(linkUrl.trim());
-      setWebsiteName(extractedWebName || '');
-    } catch (_) {
-      setWebsiteName('');
-    }
-
+    const isCancelled = startJobRun();
     setIsAutopopulating(true);
     setErrorMsg(null);
+    setWarningMsg(null);
     try {
-      const data = await itemsApi.extractMetadata(linkUrl.trim(), { listId });
-      if (data) {
-        applyExtractedMetadata(data);
+      const intent = item?.Id ? 'update-item' : 'draft-populate';
+      const { Job } = await jobsApi.startItemEnrich({
+        intent,
+        listId,
+        url: linkUrl.trim(),
+        itemId: item?.Id,
+        writeBack: intent === 'update-item',
+      });
+
+      if (isCancelled()) return;
+      pendingJobRef.current = {
+        jobId: Job.Id,
+        kind: 'enrich',
+        intent,
+        url: linkUrl.trim(),
+      };
+
+      const finished = await waitForJob(Job.Id, { isCancelled });
+      if (!finished || isCancelled()) return;
+
+      const data = finished.Status === 'completed' ? toExtractMetadataResult(finished.Result) : null;
+      if (!data) {
+        throw new Error(finished.Error || finished.Message || 'Enrich job failed');
+      }
+
+      applyExtractedMetadata(data);
+      if (canShowAi && data.Diagnostics?.AiPopulate === 'failed') {
+        setWarningMsg('Product details were found, but AI summarization has failed.');
+      }
+      if (intent === 'update-item') {
+        onItemEnriched?.();
       }
     } catch (err) {
+      if (isCancelled()) return;
+      setWarningMsg(null);
       setErrorMsg('Failed to fetch product details automatically. You can still enter them manually.');
     } finally {
-      setIsAutopopulating(false);
+      if (!isCancelled()) {
+        pendingJobRef.current = null;
+        setIsAutopopulating(false);
+      }
     }
   };
 
@@ -713,8 +884,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setName(data.Title || '');
     setPrice(data.Price !== null && data.Price !== undefined ? data.Price.toString() : '');
     setDescription(data.Description || '');
-    if (data.WebsiteName?.trim()) {
-      setWebsiteName(data.WebsiteName.trim());
+    const resolvedWebsiteName =
+      data.WebsiteName?.trim() || getSiteName(linkUrl.trim()) || '';
+    if (resolvedWebsiteName) {
+      setWebsiteName(resolvedWebsiteName);
     }
 
     const resolvedCategory = data.Category?.trim() || 'uncategorized';
@@ -840,8 +1013,18 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       return;
     }
 
+    const incompatibleRelated = relatedItemIds.find((relatedId) => {
+      const related = wishlistItems.find((i) => i.Id === relatedId);
+      return !related || !canLinkItemsByAudience(linkingContext, related);
+    });
+    if (incompatibleRelated) {
+      setErrorMsg(LINK_AUDIENCE_MISMATCH_MESSAGE);
+      return;
+    }
+
     setIsLoading(true);
     setErrorMsg(null);
+    setWarningMsg(null);
 
     try {
       const metadataPayload = buildDescriptionPayload({ isOwner, isFavorite });
@@ -852,6 +1035,9 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       let createdItem: Item | null = null;
       const previousLinkedIds = item
         ? resolveEditorLinkedItemIds(item.Id, wishlistItems)
+        : [];
+      const previousRelatedIds = item
+        ? resolveEditorRelatedItemIds(item.Id, wishlistItems)
         : [];
 
       if (item) {
@@ -917,6 +1103,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         );
       }
 
+      const hadRelated = previousRelatedIds.length > 0;
+      if (relatedItemIds.length > 0 || hadRelated) {
+        await syncBidirectionalItemRelated(savedItemId, relatedItemIds);
+      }
+
       // Reset all states
       setName('');
       setDescription('');
@@ -932,6 +1123,9 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setIsFavorite(false);
       setCustomFields([]);
       setShowExtraFields(false);
+      setPhotoEntries([]);
+      initialPhotosSnapshotRef.current = '[]';
+      setPhotoError(null);
       onSuccess();
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to add item.');
@@ -1065,7 +1259,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     }
   };
 
-  const isScrapeButtonPulsing = isValidUrl(linkUrl) && !hasScraped && !isAutopopulating;
+  const isScrapeButtonPulsing = isValidUrl(linkUrl) && !hasScraped && !isAutopopulating && !isSummarizingNotes;
 
   const [varName, setVarName] = useState('');
   const [varQty, setVarQty] = useState<number | ''>(1);
@@ -1127,6 +1321,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       isOwner={isOwner}
       isLoading={isLoading}
       errorMsg={errorMsg}
+      warningMsg={warningMsg}
       handleSubmit={handleSubmit}
       linkUrl={linkUrl}
       setLinkUrl={setLinkUrl}
@@ -1176,10 +1371,14 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setVariations={setVariations}
       linkedItemIds={linkedItemIds}
       resolvedLinkedCount={resolvedLinkedCount}
+      relatedItemIds={relatedItemIds}
+      resolvedRelatedCount={resolvedRelatedCount}
       wishlistItems={wishlistItems}
       itemId={item?.Id}
       isLinkingModeActive={isLinkingModeActive}
       setIsLinkingModeActive={setIsLinkingModeActive}
+      isRelatingModeActive={isRelatingModeActive}
+      setIsRelatingModeActive={setIsRelatingModeActive}
       getFriendlyCategoryLabel={getFriendlyCategoryLabel}
       showFieldDefinitions={showFieldDefinitions}
       varName={varName}
@@ -1201,6 +1400,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       canUndoSummarize={undoDescription !== null}
       onSummarizeNotes={handleSummarizeNotes}
       onUndoSummarize={handleUndoSummarize}
+      showPhotoGallery={user?.Policy?.CanUploadImages !== false}
+      photoEntries={photoEntries}
+      onPhotoEntriesChange={setPhotoEntries}
+      photoError={photoError}
+      onPhotoError={setPhotoError}
     />
   );
 };

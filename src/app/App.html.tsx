@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
 import { AppShell, AppNavigation } from 'app/layout';
-import { Login, Register, Dashboard, WishlistDetail, Settings, Setup, FriendsPage, InviteAcceptPage, Onboarding } from 'app/pages';
+import { Login, Register, Dashboard, WishlistDetail, Settings, Setup, FriendsPage, InviteAcceptPage, Onboarding, ChangePassword } from 'app/pages';
 import { Button } from 'shared/ui';
 import { ProtectedRoute, PublicRoute } from 'app/routes/protected-route.component';
 import { LegacyProfileRedirect } from 'app/routes/legacy-profile-redirect.component';
@@ -69,6 +69,14 @@ export const AppContentTemplate: React.FC<AppContentTemplateProps> = ({
         element={
           <ProtectedRoute allowOnboarding>
             <Onboarding />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/change-password"
+        element={
+          <ProtectedRoute allowPasswordChange>
+            <ChangePassword />
           </ProtectedRoute>
         }
       />

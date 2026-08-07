@@ -1,32 +1,15 @@
 import { apiClient } from 'core/api/client';
 import type { BackgroundJobView } from '../interfaces/background-job.interface';
-import type { ImportPreviewResult } from '../interfaces/import-preview-result.interface';
 import type { ImportFileFormat } from 'features/items/interfaces/import-file-format.interface';
 import type { ImportContentEncoding } from 'features/items/utils/read-import-file.util';
+import type { ItemEnrichPayload } from '../interfaces/item-enrich-payload.interface';
+import type { ItemEnrichJobResult } from '../interfaces/item-enrich-job-result.interface';
+import type { ItemSummarizePayload } from '../interfaces/item-summarize-payload.interface';
+import type { ItemSummarizeJobResult } from '../interfaces/item-summarize-job-result.interface';
 import { normalizeJobsPayload } from '../utils/normalize-jobs-payload.util';
+import { unwrapJobEnvelope } from '../utils/unwrap-job-envelope.util';
 
 export const jobsApi = {
-  previewWishlistImport: (payload: {
-    listId?: string | null;
-    fileName: string;
-    format?: ImportFileFormat | null;
-    content: string;
-    contentEncoding: ImportContentEncoding;
-    allowAi: boolean;
-  }) =>
-    apiClient.post<ImportPreviewResult>(
-      '/api/jobs/wishlist-import/preview',
-      {
-        ListId: payload.listId,
-        FileName: payload.fileName,
-        Format: payload.format,
-        Content: payload.content,
-        ContentEncoding: payload.contentEncoding,
-        AllowAi: payload.allowAi,
-      },
-      'Jobs'
-    ),
-
   startWishlistImport: (payload: {
     mode: 'create-list' | 'existing-list';
     listId?: string | null;
@@ -52,6 +35,44 @@ export const jobsApi = {
         AllowAi: payload.allowAi,
       },
       'Jobs'
+    ),
+
+  startItemEnrich: async (payload: ItemEnrichPayload): Promise<ItemEnrichJobResult> =>
+    unwrapJobEnvelope<ItemEnrichJobResult>(
+      await apiClient.post<unknown>(
+        '/api/jobs/item-enrich',
+        {
+          Intent: payload.intent,
+          ListId: payload.listId,
+          Url: payload.url,
+          ItemId: payload.itemId,
+          WriteBack: payload.writeBack,
+        },
+        'Jobs'
+      )
+    ),
+
+  startItemSummarize: async (payload: ItemSummarizePayload): Promise<ItemSummarizeJobResult> =>
+    unwrapJobEnvelope<ItemSummarizeJobResult>(
+      await apiClient.post<unknown>(
+        '/api/jobs/item-summarize',
+        {
+          ListId: payload.listId,
+          ItemId: payload.itemId,
+          WriteBack: payload.writeBack,
+          Name: payload.name,
+          Text: payload.text,
+          LinkUrl: payload.linkUrl,
+          WebsiteName: payload.websiteName,
+          Price: payload.price,
+          Category: payload.category,
+          Priority: payload.priority,
+          CustomFields: payload.customFields,
+          Variations: payload.variations,
+          DesiredQuantity: payload.desiredQuantity,
+        },
+        'Jobs'
+      )
     ),
 
   getJob: (jobId: string) => apiClient.get<BackgroundJobView>(`/api/jobs/${jobId}`),

@@ -3,6 +3,7 @@ import { Priority } from 'features/wishlists';
 import { FieldDefinition } from './field-definition.interface';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import type { CustomFieldRow } from '../utils/add-item-custom-fields.util';
+import type { ItemPhotoGalleryEntry } from '../components/photo-gallery/interfaces/item-photo-gallery-props.interface';
 
 export interface AddItemFormTemplateProps {
   name: string;
@@ -19,6 +20,7 @@ export interface AddItemFormTemplateProps {
   isOwner: boolean;
   isLoading: boolean;
   errorMsg: string | null;
+  warningMsg: string | null;
   handleSubmit: (e: React.SyntheticEvent) => void;
   showNewPriorityForm?: boolean;
   setShowNewPriorityForm?: (val: boolean) => void;
@@ -77,10 +79,14 @@ export interface AddItemFormTemplateProps {
   setVariations: React.Dispatch<React.SetStateAction<{ name: string; quantity: number }[]>>;
   linkedItemIds: string[];
   resolvedLinkedCount: number;
+  relatedItemIds: string[];
+  resolvedRelatedCount: number;
   wishlistItems?: any[];
   itemId?: string;
   isLinkingModeActive: boolean;
   setIsLinkingModeActive: React.Dispatch<React.SetStateAction<boolean>>;
+  isRelatingModeActive: boolean;
+  setIsRelatingModeActive: React.Dispatch<React.SetStateAction<boolean>>;
   getFriendlyCategoryLabel: (id: string) => string;
   showFieldDefinitions: boolean;
   varName: string;
@@ -102,4 +108,9 @@ export interface AddItemFormTemplateProps {
   canUndoSummarize: boolean;
   onSummarizeNotes: () => void;
   onUndoSummarize: () => void;
+  showPhotoGallery: boolean;
+  photoEntries: ItemPhotoGalleryEntry[];
+  onPhotoEntriesChange: (photos: ItemPhotoGalleryEntry[]) => void;
+  photoError: string | null;
+  onPhotoError: (message: string | null) => void;
 }

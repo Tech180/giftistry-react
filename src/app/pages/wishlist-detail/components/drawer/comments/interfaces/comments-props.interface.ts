@@ -18,5 +18,6 @@ export interface CommentsProps {
   ownerDisplayName?: string;
   isOwner: boolean;
   isExpired?: boolean;
+  isArchived?: boolean;
   handleItemTaggedClick: (itemId: string) => void;
 }

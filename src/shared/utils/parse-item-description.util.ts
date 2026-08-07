@@ -86,6 +86,7 @@ export function serializeItemDescription(
       quantity: variation.Quantity,
     })),
     linkedItemIds: normalized.LinkedItemIds,
+    relatedItemIds: normalized.RelatedItemIds,
     otherUsersCanSee: normalized.OtherUsersCanSee,
     multiCount: normalized.MultiCount,
     isFavorite: normalized.IsFavorite,

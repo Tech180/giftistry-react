@@ -1,4 +1,4 @@
-import type { ExtractMetadataResult } from '../api/items.api';
+import type { ExtractMetadataResult } from '../interfaces/extract-metadata-result.interface';
 import { formatPredefinedKeyToLabel, toStoragePredefinedKey } from 'shared/utils/item-custom-fields.util';
 
 export type CustomFieldRow = {
@@ -275,7 +275,9 @@ export function rowsFromItemMetadataAi(
     Price: null,
     Description: null,
     Category: null,
+    CategoryAlternatives: [],
     ImageUrl: null,
+    WebsiteName: null,
     CustomFields: {
       Predefined: Object.fromEntries(
         Object.entries(predefined).filter(([, v]) => v != null && String(v).trim())

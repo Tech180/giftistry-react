@@ -63,14 +63,15 @@ describe('mapJobToTimeline', () => {
     );
 
     expect(view.steps.find((s) => s.id === 'grabInfo')?.tone).toBe('active');
-    expect(view.steps.find((s) => s.id === 'grabInfo')?.label).toBe('Grab info 1/4');
+    expect(view.steps.find((s) => s.id === 'grabInfo')?.label).toBe('Grab info');
+    expect(view.steps.find((s) => s.id === 'grabInfo')?.metric).toBe('1/4');
     expect(view.streams).toHaveLength(2);
     expect(view.streams[0].label).toBe('Widget A');
-    expect(view.streamsCaption).toMatch(/Streams 2\//);
+    expect(view.streamsCaption).toBe('Streams 2/2');
     expect(view.percent).toBe(25);
   });
 
-  test('uses ItemsSummary for grab label when overall progress is cumulative', () => {
+  test('uses ItemsSummary for grab metric when overall progress is cumulative', () => {
     const view = mapJobToTimeline(
       job({
         Phase: 'grabbing_info',
@@ -90,11 +91,12 @@ describe('mapJobToTimeline', () => {
       { mode: 'existing-list' }
     );
 
-    expect(view.steps.find((s) => s.id === 'grabInfo')?.label).toBe('Grab info 2/8');
+    expect(view.steps.find((s) => s.id === 'grabInfo')?.label).toBe('Grab info');
+    expect(view.steps.find((s) => s.id === 'grabInfo')?.metric).toBe('2/8');
     expect(view.percent).toBe(60);
   });
 
-  test('counts failed grabs as finished on the timeline label', () => {
+  test('counts failed grabs as finished on the timeline metric', () => {
     const view = mapJobToTimeline(
       job({
         Phase: 'grabbing_info',
@@ -114,7 +116,8 @@ describe('mapJobToTimeline', () => {
       { mode: 'existing-list' }
     );
 
-    expect(view.steps.find((s) => s.id === 'grabInfo')?.label).toBe('Grab info 34/121');
+    expect(view.steps.find((s) => s.id === 'grabInfo')?.label).toBe('Grab info');
+    expect(view.steps.find((s) => s.id === 'grabInfo')?.metric).toBe('34/121');
   });
 
   test('keeps grabInfo active when suspended mid-grab', () => {
@@ -141,7 +144,8 @@ describe('mapJobToTimeline', () => {
 
     expect(view.steps.find((s) => s.id === 'grabInfo')?.tone).toBe('active');
     expect(view.steps.find((s) => s.id === 'found')?.tone).toBe('done');
-    expect(view.steps.find((s) => s.id === 'grabInfo')?.label).toMatch(/Grab info 2\/5/);
+    expect(view.steps.find((s) => s.id === 'grabInfo')?.label).toBe('Grab info');
+    expect(view.steps.find((s) => s.id === 'grabInfo')?.metric).toBe('2/5');
   });
 
   test('marks active step error on failure', () => {
@@ -171,5 +175,67 @@ describe('mapJobToTimeline', () => {
     );
     expect(view.steps.every((s) => s.tone === 'done')).toBe(true);
     expect(view.percent).toBe(100);
+  });
+
+  test('puts ProgressRate tok/s on the found step metric', () => {
+    const view = mapJobToTimeline(
+      job({
+        Phase: 'parsing',
+        Message: 'Asking AI…',
+        ProgressRate: { Value: 32, Unit: 'tok/s' },
+      }),
+      { mode: 'create-list' }
+    );
+    expect(view.steps.find((s) => s.id === 'found')?.label).toBe('Asking AI…');
+    expect(view.steps.find((s) => s.id === 'found')?.metric).toBe('32 tok/s');
+    expect(view.steps.find((s) => s.id === 'found')?.tone).toBe('active');
+  });
+
+  test('puts ProgressRate items/s on the grab step metric', () => {
+    const view = mapJobToTimeline(
+      job({
+        Phase: 'grabbing_info',
+        GrabInfo: true,
+        Message: 'Grabbing info 3/12…',
+        ProgressDone: 3,
+        ProgressTotal: 12,
+        ProgressRate: { Value: 1.4, Unit: 'items/s' },
+        ItemsSummary: {
+          Total: 12,
+          Pending: 7,
+          Running: 2,
+          Done: 3,
+          Failed: 0,
+          Skipped: 0,
+        },
+      }),
+      { mode: 'create-list' }
+    );
+    expect(view.steps.find((s) => s.id === 'grabInfo')?.label).toBe('Grab info');
+    expect(view.steps.find((s) => s.id === 'grabInfo')?.metric).toBe('3/12 · 1.4 items/s');
+  });
+
+  test('maps ActiveStreams Detail and ProgressRate into lane caption', () => {
+    const view = mapJobToTimeline(
+      job({
+        Phase: 'grabbing_info',
+        GrabInfo: true,
+        Message: 'Grabbing info 1/2…',
+        ActiveStreams: [
+          {
+            Id: 's1',
+            ItemId: 'a',
+            Label: 'Helix',
+            Status: 'running',
+            Phase: 'categorizing',
+            Detail: 'Categorizing…',
+            ProgressRate: { Value: 32, Unit: 'tok/s' },
+          },
+        ],
+      }),
+      { mode: 'create-list' }
+    );
+    expect(view.streams[0]?.detail).toBe('Categorizing… · 32 tok/s');
+    expect(view.streams[0]?.caption).toBe('Helix · Categorizing… · 32 tok/s');
   });
 });

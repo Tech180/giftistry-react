@@ -1,10 +1,16 @@
 import React from 'react';
 import { useAuth } from 'app/providers/auth-context';
+import { postAuthPath } from 'features/auth';
 import { ProtectedRouteTemplate } from './protected-route.html';
 
-export const ProtectedRoute: React.FC<{ children: React.ReactNode; allowOnboarding?: boolean }> = ({
+export const ProtectedRoute: React.FC<{
+  children: React.ReactNode;
+  allowOnboarding?: boolean;
+  allowPasswordChange?: boolean;
+}> = ({
   children,
   allowOnboarding = false,
+  allowPasswordChange = false,
 }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
 
@@ -21,6 +27,34 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode; allowOnboardi
     );
   }
 
+  if (allowPasswordChange) {
+    if (!isAuthenticated) {
+      return (
+        <ProtectedRouteTemplate
+          isAuthenticated={false}
+          isLoading={false}
+          redirectTo="/login"
+          allowAuthenticated={false}
+        >
+          {children}
+        </ProtectedRouteTemplate>
+      );
+    }
+    if (!user?.ForcePasswordChange) {
+      return (
+        <ProtectedRouteTemplate
+          isAuthenticated
+          isLoading={false}
+          redirectTo={postAuthPath(user)}
+          allowAuthenticated
+        >
+          {children}
+        </ProtectedRouteTemplate>
+      );
+    }
+    return <>{children}</>;
+  }
+
   if (allowOnboarding) {
     if (!isAuthenticated) {
       return (
@@ -28,6 +62,18 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode; allowOnboardi
           isAuthenticated={false}
           isLoading={false}
           redirectTo="/login"
+          allowAuthenticated={false}
+        >
+          {children}
+        </ProtectedRouteTemplate>
+      );
+    }
+    if (user?.ForcePasswordChange) {
+      return (
+        <ProtectedRouteTemplate
+          isAuthenticated
+          isLoading={false}
+          redirectTo="/change-password"
           allowAuthenticated={false}
         >
           {children}
@@ -47,6 +93,19 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode; allowOnboardi
       );
     }
     return <>{children}</>;
+  }
+
+  if (isAuthenticated && user?.ForcePasswordChange) {
+    return (
+      <ProtectedRouteTemplate
+        isAuthenticated
+        isLoading={false}
+        redirectTo="/change-password"
+        allowAuthenticated={false}
+      >
+        {children}
+      </ProtectedRouteTemplate>
+    );
   }
 
   if (isAuthenticated && user && user.IsOnboarded === false) {
@@ -76,7 +135,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode; allowOnboardi
 
 export const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
-  const redirectTo = user?.IsOnboarded === false ? '/welcome' : '/dashboard';
+  const redirectTo = postAuthPath(user);
 
   return (
     <ProtectedRouteTemplate

@@ -39,6 +39,10 @@
   box-shadow: 10px 0 20px var(--shadow-color);
 }
 
+.mini-drawer.edge-offset.position-left{
+  left: calc(100% + var(--mini-drawer-edge-offset, 4.875rem));
+}
+
 .mini-drawer-label{
   font-size: 0.65rem;
   font-weight: var(--font-weight-bold);
@@ -55,49 +59,56 @@
   max-height: calc(100vh - 11.25rem);
 }
 
-/* In-panel strip when parent is a full-screen mobile sheet */
-@media (max-width: 48rem) {
-  .mini-drawer.inline-on-mobile{
-    position: relative;
-    top: auto;
-    right: auto;
-    left: auto;
-    width: 100%;
-    min-width: 0;
-    max-height: none;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: none;
-    border-bottom: 1px solid var(--border);
-    border-radius: 0;
-    box-shadow: none;
-    flex-shrink: 0;
-  }
+/* Vertical rail integrated into a sheet sidebar (right of left drawer / left of right drawer) */
+.mini-drawer.inline-on-mobile{
+  position: relative;
+  top: auto;
+  right: auto;
+  left: auto;
+  width: auto;
+  min-width: 4.875rem;
+  max-height: none;
+  height: auto;
+  align-self: stretch;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: auto;
+  /* Room for remove (X) badges that hang outside the squares */
+  padding: var(--spacing-base) var(--spacing-sm);
+  overflow: visible;
+}
 
-  .mini-drawer.inline-on-mobile.position-right,
-  .mini-drawer.inline-on-mobile.position-left{
-    right: auto;
-    left: auto;
-    border-radius: 0;
-    box-shadow: none;
-    border-right: none;
-    border-left: none;
-  }
+.mini-drawer.inline-on-mobile.position-left{
+  border-left: 1px solid var(--border);
+  border-right: none;
+  border-radius: 0;
+  box-shadow: none;
+}
 
-  .mini-drawer.inline-on-mobile .mini-drawer-label{
-    margin-bottom: 0;
-    flex-shrink: 0;
-  }
+.mini-drawer.inline-on-mobile.position-right{
+  border-right: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0;
+  box-shadow: none;
+}
 
-  .mini-drawer.inline-on-mobile .mini-drawer-squares{
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-content: center;
-    max-height: none;
-    flex: 1;
-    min-width: 0;
-  }
+.mini-drawer.inline-on-mobile .mini-drawer-label{
+  margin-bottom: var(--spacing-xs);
+}
+
+.mini-drawer.inline-on-mobile .mini-drawer-squares{
+  flex-direction: column;
+  flex-wrap: wrap-reverse;
+  align-content: flex-start;
+  max-height: none;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Keep X badges inside the scrollport so they are not clipped */
+  padding: 0.375rem;
+  margin: -0.125rem;
+  box-sizing: border-box;
 }

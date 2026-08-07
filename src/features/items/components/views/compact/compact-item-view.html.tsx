@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Link2, Link as LinkIcon, Pencil, Trash2 } from 'lucide-react';
+import { Star, Link2, Link as LinkIcon, Pencil, Trash2, Layers2 } from 'lucide-react';
 import { useAuth } from 'app/providers/auth-context';
 import { Button, EnterPanel } from 'shared/ui';
 import { ItemViewProps } from '../../../interfaces/item-view-props.interface';
@@ -12,6 +12,7 @@ import {
   SharingAvatars,
   TaggingOverlay,
   TaggingSelect,
+  QuantityBadge,
 } from '../../item-presentation';
 import { buildItemCardModifierClasses, getPrimaryClaimForBadge, getClaimedGrayOutClass, getUserClaimedHighlightClass, shouldShowClaimBadge } from '../shared/item-card-modifiers.util';
 import { hasPriorityValue } from '../../../utils/item-priority.util';
@@ -51,15 +52,19 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     predefinedDisplayEntries,
     userDefinedEntries,
     metadataBadgeEmoji,
+    metadata,
     getSiteName,
     audienceLabel,
     isPrivate,
     linkedItems,
+    relatedItems,
     isLinkingContext,
+    isRelatingContext,
   } = props;
 
   const { user } = useAuth();
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
+  const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
   const primaryClaim = getPrimaryClaimForBadge(item.Claims);
   const primaryLink = item.Links[0];
   const primaryPrice = primaryLink?.ExtractedPrice;
@@ -81,7 +86,8 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     isFullyClaimed,
     primaryClaim != null,
     claimedByCurrentUser,
-    styles
+    styles,
+    props.isArchived
   );
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
@@ -163,6 +169,13 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
               aria-label="Linked to other items"
             />
           )}
+          {isRelatedToItems && (
+            <Layers2
+              size={14}
+              className={styles['linked-icon']}
+              aria-label="Related to other items"
+            />
+          )}
         </div>
 
         <div className={styles['v-compact-main']}>
@@ -215,7 +228,10 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
         </div>
 
         <div className={styles['v-compact-price']}>
-          <span>{primaryPrice != null ? `$${primaryPrice}` : '—'}</span>
+          <div className={styles['v-compact-price-row']}>
+            <QuantityBadge item={item} metadata={metadata} />
+            <span>{primaryPrice != null ? `$${primaryPrice}` : '—'}</span>
+          </div>
         </div>
 
         <div className={styles['v-compact-claim-badge']}>
@@ -230,75 +246,77 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
             />
           )}
         </div>
+        </div>
 
-        <div className={styles['v-compact-actions']}>
-          {!isOwner && (
-            claimedByCurrentUser ? (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleUnclaim();
-                }}
-                disabled={claimLoading}
-                className={styles['v-compact-action-btn']}
-              >
-                Unclaim
-              </button>
-            ) : isFullyClaimed ? (
-              <button
-                type="button"
-                className={styles['v-compact-action-btn']}
-                disabled
-              >
-                Claimed
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowClaimForm(true);
-                }}
-                className={styles['v-compact-action-btn']}
-              >
-                Claim
-              </button>
-            )
-          )}
-          {canCollaborate && (
-            <>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit?.();
-                }}
-                className={styles['v-compact-action-btn']}
-                title="Edit Item"
-                aria-label="Edit item"
-              >
-                <Pencil size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDeleteConfirm(true);
-                }}
-                className={styles['v-compact-action-btn']}
-                title="Delete Item"
-                aria-label="Delete item"
-              >
-                <Trash2 size={14} />
-              </button>
-            </>
-          )}
-        </div>
-        </div>
+        {(canCollaborate || !isOwner) && !props.isArchived && (
+          <div className={styles['v-compact-actions']}>
+            {!isOwner && (
+              claimedByCurrentUser ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUnclaim();
+                  }}
+                  disabled={claimLoading}
+                  className={styles['v-compact-action-btn']}
+                >
+                  Unclaim
+                </button>
+              ) : isFullyClaimed ? (
+                <button
+                  type="button"
+                  className={styles['v-compact-action-btn']}
+                  disabled
+                >
+                  Claimed
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowClaimForm(true);
+                  }}
+                  className={styles['v-compact-action-btn']}
+                >
+                  Claim
+                </button>
+              )
+            )}
+            {canCollaborate && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit?.();
+                  }}
+                  className={styles['v-compact-action-btn']}
+                  title="Edit Item"
+                  aria-label="Edit item"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteConfirm(true);
+                  }}
+                  className={`${styles['v-compact-action-btn']} ${styles['v-compact-action-btn-danger']}`}
+                  title="Delete Item"
+                  aria-label="Delete item"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
-      {showClaimForm && (
+      {showClaimForm && !props.isArchived && (
         <EnterPanel animation="dropdown" className={styles['confirm-extension']}>
           <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
           <div className={styles['confirm-buttons']}>
@@ -312,7 +330,7 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
         </EnterPanel>
       )}
 
-      {showDeleteConfirm && (
+      {showDeleteConfirm && !props.isArchived && (
         <EnterPanel animation="dropdown" className={styles['confirm-extension']}>
           <span>Delete this item?</span>
           <div className={styles['confirm-buttons']}>

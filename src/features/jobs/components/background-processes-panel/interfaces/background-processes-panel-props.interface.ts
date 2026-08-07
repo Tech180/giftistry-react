@@ -1,4 +1,4 @@
-import type { BackgroundJobView } from '../../interfaces/background-job.interface';
+import type { BackgroundJobView } from '../../../interfaces/background-job.interface';
 
 export interface BackgroundProcessesPanelProps {
   jobs: BackgroundJobView[];

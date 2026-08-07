@@ -1,7 +1,7 @@
 import React, { useId } from 'react';
 import { CollapsibleStrip, Button, Badge } from 'shared/ui';
 import { AiSparklesIcon } from 'shared/ui/badge/icons/ai-badge-icons';
-import { JobImportTimeline } from 'features/jobs';
+import { Timeline } from 'features/jobs';
 import { ImportDropzone } from '../import-dropzone/import-dropzone.component';
 import type { ImportStripTemplateProps } from './interfaces/import-strip-template-props.interface';
 import styles from './import-strip.module.css';
@@ -23,7 +23,6 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
   timelineSteps,
   timelineStreams,
   streamsCaption,
-  createPercent,
   createLabel,
   isBusy,
   canConfirm,
@@ -43,9 +42,7 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
   const showProgress = phase === 'creating' || phase === 'success' || phase === 'enriching';
   const showTimeline = timelineSteps.length > 0;
   const showActions =
-    phase === 'ready' ||
-    phase === 'success' ||
-    (phase === 'error' && Boolean(fileName));
+    phase === 'ready' || phase === 'success' || (phase === 'error' && Boolean(fileName));
   const readyHasError = Boolean(errorMessage);
   const showHeaderMeta =
     Boolean(fileName) &&
@@ -121,30 +118,12 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
 
         {showProgress || showTimeline ? (
           <div className={styles.progressBlock}>
-            {showProgress ? (
-              <>
-                <div
-                  className={styles.progressTrack}
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={createPercent}
-                  aria-label="Import progress"
-                >
-                  <div
-                    className={styles.progressFill}
-                    style={{ width: `${Math.max(0, Math.min(100, createPercent))}%` }}
-                  />
-                </div>
-                <div className={styles.progressStatus}>
-                  <p className={styles.progressLabel}>{createLabel}</p>
-                  <p className={styles.percent}>{createPercent}%</p>
-                </div>
-              </>
+            {showProgress && createLabel ? (
+              <p className={styles.progressLabel}>{createLabel}</p>
             ) : null}
 
             {showTimeline ? (
-              <JobImportTimeline
+              <Timeline
                 steps={timelineSteps}
                 streams={timelineStreams}
                 streamsCaption={streamsCaption}

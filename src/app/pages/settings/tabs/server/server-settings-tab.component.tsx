@@ -24,7 +24,7 @@ import {
 } from './utils/ai-prompt-settings.util';
 
 export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast }) => {
-  const { user, checkSystemStatus } = useAuth();
+  const { checkSystemStatus } = useAuth();
   const [dbType, setDbType] = useState<'local' | 'remote'>('local');
   const [dbUrl, setDbUrl] = useState('');
   const [publicAppUrl, setPublicAppUrl] = useState('');
@@ -41,6 +41,9 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [aiCompletionTimeoutMs, setAiCompletionTimeoutMs] = useState(600000);
   const [scrapeFetchTimeoutMs, setScrapeFetchTimeoutMs] = useState(8000);
   const [scrapePlaywrightTimeoutMs, setScrapePlaywrightTimeoutMs] = useState(25000);
+  const [grabInfoConcurrency, setGrabInfoConcurrency] = useState(3);
+  const [grabInfoConcurrencyUnlimited, setGrabInfoConcurrencyUnlimited] = useState(false);
+  const [grabInfoActiveStreamLimit, setGrabInfoActiveStreamLimit] = useState(16);
   const [aiFastProvider, setAiFastProvider] = useState<AiSlotProvider>('openrouter');
   const [aiFastEndpoint, setAiFastEndpoint] = useState('');
   const [aiFastApiKey, setAiFastApiKey] = useState('');
@@ -68,6 +71,8 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletingServer, setIsDeletingServer] = useState(false);
+  const [allowSetup, setAllowSetup] = useState(true);
+  const [isSavingAllowSetup, setIsSavingAllowSetup] = useState(false);
 
   const [openrouterModels, setOpenrouterModels] = useState<Array<{ id: string; name: string; company: string; displayName: string }>>([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
@@ -137,6 +142,7 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     setDbType(s.DbType);
     setDbUrl(s.DbUrl || '');
     setPublicAppUrl(s.PublicAppUrl || '');
+    setAllowSetup(s.AllowSetup !== false);
     setOauthEnabled(!!s.OAuthEnabled);
     setOauthIssuerUrl(s.OAuthIssuerUrl || '');
     setOauthClientId(s.OAuthClientId || '');
@@ -161,6 +167,13 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     );
     setScrapePlaywrightTimeoutMs(
       Number.isFinite(s.ScrapePlaywrightTimeoutMs) ? Number(s.ScrapePlaywrightTimeoutMs) : 25000
+    );
+    setGrabInfoConcurrency(
+      Number.isFinite(s.GrabInfoConcurrency) ? Number(s.GrabInfoConcurrency) : 3
+    );
+    setGrabInfoConcurrencyUnlimited(s.GrabInfoConcurrencyUnlimited === true);
+    setGrabInfoActiveStreamLimit(
+      Number.isFinite(s.GrabInfoActiveStreamLimit) ? Number(s.GrabInfoActiveStreamLimit) : 16
     );
 
     const fastProvider = normalizeAiSlotProvider(s.AiFastProvider);
@@ -445,11 +458,8 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     };
   }, []);
 
-  const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSaving(true);
-
-    const payload = {
+  const buildSettingsPayload = (overrides: { AllowSetup?: boolean } = {}) => {
+    const payload: Record<string, unknown> = {
       DbType: dbType,
       DbUrl: dbType === 'remote' ? dbUrl : '',
       PublicAppUrl: publicAppUrl.trim(),
@@ -472,6 +482,9 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       AiCompletionTimeoutMs: aiCompletionTimeoutMs,
       ScrapeFetchTimeoutMs: scrapeFetchTimeoutMs,
       ScrapePlaywrightTimeoutMs: scrapePlaywrightTimeoutMs,
+      GrabInfoConcurrency: grabInfoConcurrency,
+      GrabInfoConcurrencyUnlimited: grabInfoConcurrencyUnlimited,
+      GrabInfoActiveStreamLimit: grabInfoActiveStreamLimit,
       AiFastProvider: aiEnabled ? aiFastProvider : 'openrouter',
       AiFastEndpoint: aiEnabled ? aiFastEndpoint : '',
       AiFastApiKey: aiEnabled ? aiFastApiKey : '',
@@ -485,10 +498,18 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       AiPopulatePrompt: aiEnabled ? aiPopulatePrompt : '',
       AiCategoryPrompt: aiEnabled ? aiCategoryPrompt : '',
       AiImportPrompt: aiEnabled ? aiImportPrompt : '',
+      AllowSetup: overrides.AllowSetup ?? allowSetup,
     };
 
+    return payload;
+  };
+
+  const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSaving(true);
+
     try {
-      await apiClient.post('/api/system/settings', payload, 'System');
+      await apiClient.post('/api/system/settings', buildSettingsPayload(), 'System');
       showToast('Server configuration saved and verified successfully!', 'success');
       await checkSystemStatus();
 
@@ -500,6 +521,32 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       showToast(err.message || 'Verification failed. Settings not saved.', 'error');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleAllowSetupChange = async (enabled: boolean) => {
+    if (
+      enabled &&
+      !window.confirm(
+        'Allow first-run setup? The setup wizard will be available when this instance has no users. Only enable this when you intend to re-run setup.'
+      )
+    ) {
+      return;
+    }
+
+    setIsSavingAllowSetup(true);
+    try {
+      await apiClient.post('/api/system/settings', buildSettingsPayload({ AllowSetup: enabled }), 'System');
+      setAllowSetup(enabled);
+      showToast(
+        enabled ? 'First-run setup enabled' : 'First-run setup sealed',
+        'success'
+      );
+      await checkSystemStatus();
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to update setup availability', 'error');
+    } finally {
+      setIsSavingAllowSetup(false);
     }
   };
 
@@ -599,6 +646,12 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       setScrapeFetchTimeoutMs={setScrapeFetchTimeoutMs}
       scrapePlaywrightTimeoutMs={scrapePlaywrightTimeoutMs}
       setScrapePlaywrightTimeoutMs={setScrapePlaywrightTimeoutMs}
+      grabInfoConcurrency={grabInfoConcurrency}
+      setGrabInfoConcurrency={setGrabInfoConcurrency}
+      grabInfoConcurrencyUnlimited={grabInfoConcurrencyUnlimited}
+      setGrabInfoConcurrencyUnlimited={setGrabInfoConcurrencyUnlimited}
+      grabInfoActiveStreamLimit={grabInfoActiveStreamLimit}
+      setGrabInfoActiveStreamLimit={setGrabInfoActiveStreamLimit}
       aiFastProvider={aiFastProvider}
       setAiFastProvider={setAiFastProvider}
       aiFastEndpoint={aiFastEndpoint}
@@ -655,7 +708,9 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       isLoading={isLoading}
       isSaving={isSaving}
       handleSave={handleSave}
-      isServerOwner={!!user?.IsOwner}
+      allowSetup={allowSetup}
+      onAllowSetupChange={(enabled) => { void handleAllowSetupChange(enabled); }}
+      isSavingAllowSetup={isSavingAllowSetup}
       onDeleteServer={handleDeleteServer}
       isDeletingServer={isDeletingServer}
     />

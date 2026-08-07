@@ -10,8 +10,14 @@
   background: var(--surface);
 }
 
+/* Stay above card claim gray-out overlays (.claimed-gray-out::before uses z-index: 2). */
 .user-avatar-box-claim {
   border-color: var(--success-border);
+  position: relative;
+  z-index: 3;
+  /* Opaque base so grayed content doesn’t read through the box. */
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .user-avatar-box-owner {

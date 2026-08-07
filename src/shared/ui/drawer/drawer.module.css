@@ -49,6 +49,23 @@
   height: 100%;
 }
 
+.drawer-sheet-content{
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: visible;
+}
+
+.drawer-sheet-main{
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
 .drawer-header{
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid var(--border);
@@ -210,6 +227,7 @@
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     box-sizing: border-box;
+    overflow: visible;
   }
 
   .drawer-wrapper.sheet.left,

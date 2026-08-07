@@ -23,7 +23,8 @@ function AppContent() {
   const isAuthPage =
     location.pathname === '/login' ||
     location.pathname === '/register' ||
-    location.pathname === '/welcome';
+    location.pathname === '/welcome' ||
+    location.pathname === '/change-password';
 
   if (isLoading || systemStatus === 'loading') {
     return <AppLoadingTemplate />;

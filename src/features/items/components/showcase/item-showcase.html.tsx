@@ -1,18 +1,19 @@
 import React from 'react';
-import { Star, Link2, Edit2, Trash2, Tag, ExternalLink } from 'lucide-react';
+import { Star, Link2, Edit2, Trash2, Tag, Layers2 } from 'lucide-react';
 import { Button, Card } from 'shared/ui';
-import { LinksWidget, FundingWidget, AiReviewsPanel, ClaimPrompt } from '../item-presentation';
-import { ItemShowcaseTemplateProps } from '../../interfaces/item-showcase-template-props.interface';
+// Future: AI item reviews — re-enable AiReviewsPanel when shipping the feature.
+// import { LinksWidget, FundingWidget, AiReviewsPanel, ClaimPrompt } from '../item-presentation';
+import { LinksWidget, FundingWidget, ClaimPrompt, QuantityBadge } from '../item-presentation';
+import type { ItemShowcaseTemplateProps } from '../../interfaces/item-showcase-template-props.interface';
+import { getItemPrimaryImageUrl } from '../../utils/item-primary-image.util';
 import styles from './item-showcase.module.css';
 
 export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   item,
-  priorityLabel,
   isOwner,
   canCollaborate,
-  isExpired,
+  isArchived = false,
   allowGroupFunds,
-  wishlistItems,
   claimedByCurrentUser,
   claimAmount,
   setClaimAmount,
@@ -28,7 +29,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   selectedVariation,
   setSelectedVariation,
   claimQty,
-  setClaimQty,
+  onClaimQtyInputChange,
   showDependencyModal,
   setShowDependencyModal,
   displayDescription,
@@ -43,68 +44,289 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   totalExtractedPrice,
   totalClaimedAmount,
   isMultiCount,
-  totalClaimedQty,
-  desiredQtyVal,
   isFullyClaimed,
   progressPercent,
   onClose,
   onEdit,
   getSiteName,
-  reviews,
-  reviewsLoading,
-  reviewsError,
-  aiEnabled,
-  canShowAi,
   audienceLabel,
   isPrivate,
-  linkedItems,
   variant,
-  CategoryIcon,
-  categoryLabel,
+  CategoryIcon: _CategoryIcon,
+  displayCategory,
+  bestPriceDisplay,
+  statusLabel: _statusLabel,
+  quantityProgressMetric,
+  hasNumericPriority,
+  priorityDisplay,
+  isLinkedToItems,
+  isRelatedToItems,
+  showGroupFunding,
+  showQuantityProgress,
+  showVariationsProgress,
+  showHeroMeta,
+  showSuggestionBadge,
+  showHiddenSuggestionBadge,
+  suggestionLabel,
+  variationProgress,
+  variationOptions,
+  linkedRelationItems,
+  relatedRelationItems,
+  maxContributionAmount,
 }) => {
-  const isLinkedToItems = linkedItems.length > 0;
+  const primaryImageUrl = getItemPrimaryImageUrl(item);
+
+  const claimForm = (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleClaim();
+      }}
+      className={styles['claim-form']}
+    >
+      <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
+      {isMultiCount && variationOptions.length > 0 && (
+        <div className={styles['form-group']}>
+          <label className={styles['form-label']}>Choose Variation</label>
+          <select
+            value={selectedVariation}
+            onChange={(e) => setSelectedVariation(e.target.value)}
+            className={styles['variation-select']}
+          >
+            {variationOptions.map((option) => (
+              <option key={option.name} value={option.name} disabled={option.disabled}>
+                {option.optionLabel}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {isMultiCount && (
+        <div className={styles['form-group']}>
+          <label className={styles['form-label']}>Quantity to Claim</label>
+          <input
+            type="number"
+            min="1"
+            value={claimQty}
+            onChange={(e) => onClaimQtyInputChange(e.target.value)}
+            className={styles['qty-input']}
+            required
+          />
+        </div>
+      )}
+      {!isMultiCount && allowGroupFunds && (
+        <div className={styles['form-group']}>
+          <label className={styles['form-label']}>Amount to Contribute</label>
+          <input
+            type="number"
+            step="0.01"
+            max={maxContributionAmount}
+            value={claimAmount}
+            onChange={(e) => setClaimAmount(e.target.value)}
+            placeholder="Enter contribution amount"
+            required
+          />
+        </div>
+      )}
+      <div className={styles['form-actions']}>
+        <Button variant="primary" size="sm" type="submit" isLoading={claimLoading}>
+          Confirm
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => setShowClaimForm(false)}>
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+
+  const ownerActions = (
+    <div className={styles['owner-actions']}>
+      <Button variant="secondary" className={styles['owner-btn']} onClick={onEdit}>
+        <Edit2 size={12} className={styles['action-icon']} /> Edit
+      </Button>
+      {showDeleteConfirm ? (
+        <div className={styles['delete-confirm-widget']}>
+          <span className={styles['confirm-prompt']}>Delete?</span>
+          <div className={styles['confirm-buttons']}>
+            <Button variant="primary" size="sm" onClick={handleDelete} isLoading={deleteLoading}>
+              Yes
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
+              No
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button
+          variant="secondary"
+          className={`${styles['owner-btn']} ${styles['delete-btn']}`}
+          onClick={() => setShowDeleteConfirm(true)}
+        >
+          <Trash2 size={12} className={styles['action-icon']} /> Delete
+        </Button>
+      )}
+    </div>
+  );
+
+  const guestActions = isArchived ? null : !isOwner ? (
+    <>
+      {claimedByCurrentUser ? (
+        <Button
+          variant="secondary"
+          className={styles['claim-button']}
+          onClick={handleUnclaim}
+          isLoading={claimLoading}
+        >
+          Unclaim Item
+        </Button>
+      ) : isFullyClaimed ? (
+        <Button variant="secondary" className={styles['claim-button']} disabled>
+          Already Claimed
+        </Button>
+      ) : (
+        <div className={styles['claim-widget']}>
+          {showClaimForm ? (
+            claimForm
+          ) : (
+            <Button
+              variant="primary"
+              className={styles['claim-button']}
+              onClick={() => setShowClaimForm(true)}
+            >
+              Claim Item
+            </Button>
+          )}
+        </div>
+      )}
+      {canCollaborate && ownerActions}
+    </>
+  ) : (
+    ownerActions
+  );
+
+  const dependencyModal = showDependencyModal ? (
+    <div className={styles['modal-overlay']}>
+      <Card className={styles['dependency-modal']} glass={true}>
+        <h3 className={styles['modal-title']}>🔗 Connected Gift Items</h3>
+        <p className={styles['modal-text']}>
+          This gift is linked to other items in the wishlist. Would you like to claim them all at once?
+        </p>
+        <div className={styles['linked-items-preview-list']}>
+          {linkedRelationItems.map((linkedItem) => (
+            <div key={linkedItem.id} className={styles['linked-item-preview-row']}>
+              <span className={styles['linked-item-name']}>{linkedItem.name}</span>
+              <span
+                className={
+                  linkedItem.statusLabel === 'Claimed'
+                    ? styles['linked-item-status-claimed']
+                    : styles['linked-item-status-available']
+                }
+              >
+                {linkedItem.statusLabel === 'Claimed' ? 'Already Claimed' : 'Available'}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className={styles['modal-actions']}>
+          <Button variant="primary" onClick={handleBulkClaim} isLoading={claimLoading}>
+            Claim All Unclaimed
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => handleClaim(undefined, true)}
+            isLoading={claimLoading}
+          >
+            Claim Selected Only
+          </Button>
+          <Button variant="ghost" onClick={() => setShowDependencyModal(false)}>
+            Cancel
+          </Button>
+        </div>
+      </Card>
+    </div>
+  ) : null;
 
   if (variant === 'inline') {
     return (
-      <div className={`${styles['showcase-inline']} ${isPrivate ? styles['private-item'] : ''}`}>
-        {/* Detail Hero Header */}
+      <div className={`${styles['showcase-inline']} ${isPrivate ? styles['private-item'] : ''} ${isArchived ? styles['archived-item'] : ''}`}>
+        {primaryImageUrl && (
+          <div className={styles['detail-photo']}>
+            <img src={primaryImageUrl} alt="" className={styles['detail-photo-img']} />
+          </div>
+        )}
         <div className={styles['detail-hero']}>
-          <span className={styles['category-badge']}>
-            {CategoryIcon && <CategoryIcon size={12} style={{ marginRight: '4px' }} />}
-            {categoryLabel || item.Category || 'General'}
-          </span>
-          <h2 className={styles['detail-title']}>{item.Name}</h2>
-          <span className={styles['detail-price']}>
-            {totalExtractedPrice > 0 ? `$${totalExtractedPrice.toFixed(2)}` : '—'}
-          </span>
+          <h2 className={styles['detail-title']}>
+            {isLinkedToItems && (
+              <Link2 size={16} className={styles['linked-item-icon']} aria-hidden="true" />
+            )}
+            {isRelatedToItems && (
+              <Layers2 size={16} className={styles['linked-item-icon']} aria-label="Related to other items" />
+            )}
+            {item.Name}
+          </h2>
+          <div className={styles['detail-price-row']}>
+            <QuantityBadge item={item} metadata={metadata} />
+            <span className={styles['detail-price']}>{bestPriceDisplay}</span>
+          </div>
+          {showHeroMeta && (
+            <div className={styles['detail-hero-meta']}>
+              {showSuggestionBadge && (
+                <span className={styles['status-badge']}>{suggestionLabel}</span>
+              )}
+              {showHiddenSuggestionBadge && (
+                <span className={styles['status-badge']}>Hidden suggestion</span>
+              )}
+              {audienceLabel && (
+                <span
+                  className={`${styles['audience-badge']} ${isPrivate ? styles['private-audience-badge'] : ''}`}
+                >
+                  {audienceLabel}
+                </span>
+              )}
+              {localIsFavorite && (
+                <span className={styles['detail-star-icon']} title="Favorite">
+                  <Star size={14} fill="currentColor" aria-hidden />
+                  Favorite
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Inspector Body */}
         <div className={styles['inspector-body']}>
-          {/* Notes & Description */}
-          {displayDescription ? (
+          {(hasNumericPriority || audienceLabel) && (
             <div className={styles['detail-section']}>
-              <span className={styles['section-label']}>Notes & Description</span>
+              <span className={styles['section-label']}>Properties</span>
+              <div className={styles['property-grid']}>
+                {hasNumericPriority && priorityDisplay != null && (
+                  <div className={styles['prop-card']}>
+                    <div className={styles['prop-label']}>Priority</div>
+                    <div className={styles['prop-value']}>
+                      {priorityDisplay}
+                      <span className={styles['prop-value-hint']}> (1 is highest)</span>
+                    </div>
+                  </div>
+                )}
+                {audienceLabel && (
+                  <div className={styles['prop-card']}>
+                    <div className={styles['prop-label']}>Visibility</div>
+                    <div className={styles['prop-value']}>{audienceLabel}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className={styles['detail-section']}>
+            <span className={styles['section-label']}>Notes & Description</span>
+            {displayDescription ? (
               <p className={styles['detail-text']}>{displayDescription}</p>
-            </div>
-          ) : (
-            <div className={styles['detail-section']}>
-              <span className={styles['section-label']}>Notes & Description</span>
+            ) : (
               <p className={styles['description-box-empty']}>No description provided for this item.</p>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* AI Reviews Section */}
-          {canShowAi && aiEnabled && item.Links && item.Links.length > 0 && (
-            <AiReviewsPanel
-              reviews={reviews}
-              reviewsLoading={reviewsLoading}
-              reviewsError={reviewsError}
-            />
-          )}
-
-          {/* Custom metadata fields */}
-          {predefinedDisplayEntries.length > 0 ? (
+          {predefinedDisplayEntries.length > 0 && (
             <div className={styles['detail-section']}>
               <span className={styles['section-label']}>Details / Sizing</span>
               <div className={styles['meta-badges']}>
@@ -116,335 +338,128 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                 ))}
               </div>
             </div>
-          ) : null}
+          )}
 
-          {userDefinedEntries.map((field, idx) => (
-            <div key={idx} className={styles['detail-section']}>
+          {userDefinedEntries.map((field) => (
+            <div key={field.name} className={styles['detail-section']}>
               <span className={styles['section-label']}>{field.name}</span>
               <p className={styles['detail-text']}>{field.value}</p>
             </div>
           ))}
 
-          {/* Variations progress */}
-          {isMultiCount && metadata?.Variations && metadata.Variations.length > 0 && (
+          {showGroupFunding && (
             <div className={styles['detail-section']}>
-              <span className={styles['section-label']}>Variations Progress</span>
+              <FundingWidget
+                totalExtractedPrice={totalExtractedPrice}
+                totalClaimedAmount={totalClaimedAmount}
+                label="Group funding"
+              />
+            </div>
+          )}
+
+          {showVariationsProgress && (
+            <div className={styles['detail-section']}>
+              <span className={styles['section-label']}>Variations</span>
               <div className={styles['variations-progress-list']}>
-                {metadata.Variations.map((v: any, idx: number) => {
-                  const claimed = item.Claims.filter(c => c.Selection === v.Name).reduce((sum: number, c: any) => sum + (c.Quantity || 1), 0);
-                  const percent = Math.min(100, Math.round((claimed / v.Quantity) * 100));
-                  return (
-                    <div key={idx} className={styles['variation-progress-card']}>
-                      <div className={styles['variation-progress-header']}>
-                        <span className={styles['variation-name']}>{v.Name}</span>
-                        <span className={styles['variation-qty']}>{claimed} / {v.Quantity} Claimed</span>
-                      </div>
-                      <div className={styles['progress-bar-bg-mini']}>
-                        <div className={styles['progress-bar-fill-mini']} style={{ width: `${percent}%` }} />
-                      </div>
+                {variationProgress.map((variation) => (
+                  <div key={variation.name} className={styles['variation-progress-card']}>
+                    <div className={styles['variation-progress-header']}>
+                      <span className={styles['variation-name']}>{variation.name}</span>
+                      <span className={styles['variation-qty']}>{variation.qtyLabel}</span>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Properties Grid: Priority & Status */}
-          <div className={styles['detail-section']}>
-            <span className={styles['section-label']}>Properties</span>
-            <div className={styles['property-grid']}>
-              <div className={styles['prop-card']}>
-                <div className={styles['prop-label']}>Priority</div>
-                <div className={styles['prop-value']}>{priorityLabel || 'None'}</div>
-              </div>
-              <div className={styles['prop-card']}>
-                <div className={styles['prop-label']}>Status</div>
-                <div
-                  className={styles['prop-value']}
-                  style={{ color: isFullyClaimed ? 'var(--success)' : 'inherit' }}
-                >
-                  {isFullyClaimed ? 'Claimed' : 'Available'}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Inspector Footer */}
-        <div className={styles['inspector-footer']} style={{ flexDirection: 'column', gap: '8px' }}>
-          {item.Links && item.Links[0] && (
-            <a
-              href={item.Links[0].Url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles['buy-button']}
-            >
-              <span>Buy at {getSiteName(item.Links[0].Url, item.Links[0].RetailerName)}</span>
-              <ExternalLink size={14} style={{ color: 'var(--text-muted)' }} />
-            </a>
-          )}
-
-          {/* Action Buttons Row */}
-          <div className={styles['action-btn-row']}>
-            {!isOwner ? (
-              <>
-                {claimedByCurrentUser ? (
-                  <Button
-                    variant="secondary"
-                    className={styles['claim-button']}
-                    onClick={handleUnclaim}
-                    isLoading={claimLoading}
-                  >
-                    Unclaim Item
-                  </Button>
-                ) : isFullyClaimed ? (
-                  <Button
-                    variant="secondary"
-                    className={styles['claim-button']}
-                    disabled={true}
-                  >
-                    Already Claimed
-                  </Button>
-                ) : (
-                  <div className={styles['claim-widget']}>
-                    {showClaimForm ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          handleClaim();
-                        }}
-                        className={styles['claim-form']}
-                      >
-                        <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
-                        {isMultiCount && metadata?.Variations && metadata.Variations.length > 0 && (
-                          <div className={styles['form-group']}>
-                            <label className={styles['form-label']}>Choose Variation</label>
-                            <select
-                              value={selectedVariation}
-                              onChange={(e) => setSelectedVariation(e.target.value)}
-                              className={styles['variation-select']}
-                            >
-                              {metadata.Variations.map((v: any, idx: number) => {
-                                const claimed = item.Claims.filter(c => c.Selection === v.Name).reduce((sum: number, c: any) => sum + (c.Quantity || 1), 0);
-                                const remaining = Math.max(0, v.Quantity - claimed);
-                                return (
-                                  <option key={idx} value={v.Name} disabled={remaining <= 0}>
-                                    {v.Name} ({remaining} remaining)
-                                  </option>
-                                );
-                              })}
-                            </select>
-                          </div>
-                        )}
-
-                        {isMultiCount && (
-                          <div className={styles['form-group']}>
-                            <label className={styles['form-label']}>Quantity to Claim</label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={claimQty}
-                              onChange={(e) => setClaimQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                              style={{ width: '80px' }}
-                              className={styles['qty-input']}
-                              required
-                            />
-                          </div>
-                        )}
-
-                        {!isMultiCount && allowGroupFunds && (
-                          <div className={styles['form-group']}>
-                            <label className={styles['form-label']}>Amount to Contribute</label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              max={totalExtractedPrice - totalClaimedAmount}
-                              value={claimAmount}
-                              onChange={(e) => setClaimAmount(e.target.value)}
-                              placeholder="Enter contribution amount"
-                              required
-                            />
-                          </div>
-                        )}
-                        <div className={styles['form-actions']}>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            type="submit"
-                            isLoading={claimLoading}
-                          >
-                            Confirm
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShowClaimForm(false)}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </form>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        className={styles['claim-button']}
-                        onClick={() => setShowClaimForm(true)}
-                      >
-                        Claim Item
-                      </Button>
-                    )}
-                  </div>
-                )}
-                {canCollaborate && (
-                  <div className={styles['owner-actions']}>
-                    <Button variant="secondary" className={styles['owner-btn']} onClick={onEdit}>
-                      <Edit2 size={12} style={{ marginRight: '4px' }} /> Edit
-                    </Button>
-                    {showDeleteConfirm ? (
-                      <div className={styles['delete-confirm-widget']}>
-                        <span className={styles['confirm-prompt']}>Delete?</span>
-                        <div className={styles['confirm-buttons']}>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={handleDelete}
-                            isLoading={deleteLoading}
-                          >
-                            Yes
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShowDeleteConfirm(false)}
-                          >
-                            No
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <Button
-                        variant="secondary"
-                        className={`${styles['owner-btn']} ${styles['delete-btn']}`}
-                        onClick={() => setShowDeleteConfirm(true)}
-                      >
-                        <Trash2 size={12} style={{ marginRight: '4px' }} /> Delete
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className={styles['owner-actions']}>
-                <Button variant="secondary" className={styles['owner-btn']} onClick={onEdit}>
-                  <Edit2 size={12} style={{ marginRight: '4px' }} /> Edit
-                </Button>
-                {showDeleteConfirm ? (
-                  <div className={styles['delete-confirm-widget']}>
-                    <span className={styles['confirm-prompt']}>Delete?</span>
-                    <div className={styles['confirm-buttons']}>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={handleDelete}
-                        isLoading={deleteLoading}
-                      >
-                        Yes
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowDeleteConfirm(false)}
-                      >
-                        No
-                      </Button>
+                    <div className={styles['progress-bar-bg-mini']}>
+                      <div
+                        className={styles['progress-bar-fill-mini']}
+                        style={{ width: `${variation.percent}%` }}
+                      />
                     </div>
-                  </div>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    className={`${styles['owner-btn']} ${styles['delete-btn']}`}
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    <Trash2 size={12} style={{ marginRight: '4px' }} /> Delete
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {showDependencyModal && (
-          <div className={styles['modal-overlay']}>
-            <Card className={styles['dependency-modal']} glass={true}>
-              <h3 className={styles['modal-title']}>🔗 Connected Gift Items</h3>
-              <p className={styles['modal-text']}>
-                This gift is linked to other items in the wishlist. Would you like to claim them all at once?
-              </p>
-              <div className={styles['linked-items-preview-list']}>
-                {linkedItems.map((linkedItem) => (
-                  <div key={linkedItem.Id} className={styles['linked-item-preview-row']}>
-                    <span className={styles['linked-item-name']}>{linkedItem.Name}</span>
-                    <span className={linkedItem.IsClaimed ? styles['linked-item-status-claimed'] : styles['linked-item-status-available']}>
-                      {linkedItem.IsClaimed ? 'Already Claimed' : 'Available'}
-                    </span>
                   </div>
                 ))}
               </div>
-              <div className={styles['modal-actions']}>
-                <Button
-                  variant="primary"
-                  onClick={handleBulkClaim}
-                  isLoading={claimLoading}
-                >
-                  Claim All Unclaimed
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => handleClaim(undefined, true)}
-                  isLoading={claimLoading}
-                >
-                  Claim Selected Only
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowDependencyModal(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </Card>
-          </div>
-        )}
+            </div>
+          )}
+
+          {item.Links.length > 0 && (
+            <div className={styles['detail-section']}>
+              <span className={styles['section-label']}>Purchase links</span>
+              <LinksWidget links={item.Links} getSiteName={getSiteName} />
+            </div>
+          )}
+
+          {isLinkedToItems && (
+            <div className={styles['detail-section']}>
+              <span className={styles['section-label']}>Linked items</span>
+              <ul className={styles['relation-list']}>
+                {linkedRelationItems.map((linked) => (
+                  <li key={linked.id} className={styles['relation-list-item']}>
+                    <span>{linked.name}</span>
+                    <span className={styles['relation-list-status']}>{linked.statusLabel}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {isRelatedToItems && (
+            <div className={styles['detail-section']}>
+              <span className={styles['section-label']}>Related items</span>
+              <ul className={styles['relation-list']}>
+                {relatedRelationItems.map((related) => (
+                  <li key={related.id} className={styles['relation-list-item']}>
+                    <span>{related.name}</span>
+                    <span className={styles['relation-list-status']}>{related.statusLabel}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div className={styles['inspector-footer']}>
+          <div className={styles['action-btn-row']}>{guestActions}</div>
+        </div>
+
+        {dependencyModal}
       </div>
     );
   }
 
   return (
-    <Card className={`${styles['showcase-card']} ${isPrivate ? styles['private-item'] : ''}`} padding="none" glass={true}>
+    <Card className={`${styles['showcase-card']} ${isPrivate ? styles['private-item'] : ''} ${isArchived ? styles['archived-item'] : ''}`} padding="none" glass={true}>
+      {primaryImageUrl && (
+        <div className={styles['detail-photo']}>
+          <img src={primaryImageUrl} alt="" className={styles['detail-photo-img']} />
+        </div>
+      )}
       <div className={styles['showcase-header']}>
         <div className={styles['showcase-title-area']}>
           <div className={styles['showcase-meta-line']}>
             <span className={styles['showcase-category']}>
-              <Tag size={12} style={{ marginRight: '4px' }} />
-              {item.Category || 'General'}
+              <Tag size={12} className={styles['action-icon']} />
+              {displayCategory}
             </span>
           </div>
           <h3 className={styles['showcase-title']}>
             {isLinkedToItems && (
               <Link2 size={16} className={styles['linked-item-icon']} aria-hidden="true" />
             )}
+            {isRelatedToItems && (
+              <Layers2 size={16} className={styles['linked-item-icon']} aria-label="Related to other items" />
+            )}
             {item.Name}
           </h3>
-          {(item.IsHiddenIdea && !item.IsSuggestion) && (
-            <span className={styles['status-badge']}>Collaborator Suggestion (Hidden from list owner)</span>
-          )}
-          {item.IsSuggestion && (
+          {showHiddenSuggestionBadge && (
             <span className={styles['status-badge']}>
-              Suggestion by {item.SuggestedByUsername || 'Collaborator'}
+              Collaborator Suggestion (Hidden from list owner)
             </span>
           )}
+          {showSuggestionBadge && (
+            <span className={styles['status-badge']}>{suggestionLabel}</span>
+          )}
           {audienceLabel && (
-            <span className={`${styles['audience-badge']} ${isPrivate ? styles['private-audience-badge'] : ''}`}>
+            <span
+              className={`${styles['audience-badge']} ${isPrivate ? styles['private-audience-badge'] : ''}`}
+            >
               {audienceLabel}
             </span>
           )}
@@ -455,7 +470,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
               <Star size={18} fill="currentColor" />
             </span>
           )}
-          <button onClick={onClose} className={styles['close-btn']} title="Close Preview">
+          <button type="button" onClick={onClose} className={styles['close-btn']} title="Close Preview">
             &times;
           </button>
         </div>
@@ -463,7 +478,6 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
 
       <div className={styles['showcase-body']}>
         <div className={styles['showcase-grid']}>
-          {/* Left Column: Info & Description */}
           <div className={styles['info-col']}>
             {displayDescription ? (
               <div className={styles['description-box']}>
@@ -476,17 +490,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
               </div>
             )}
 
-            {/* AI Reviews Section */}
-            {canShowAi && aiEnabled && item.Links && item.Links.length > 0 && (
-              <AiReviewsPanel
-                reviews={reviews}
-                reviewsLoading={reviewsLoading}
-                reviewsError={reviewsError}
-              />
-            )}
-
-            {/* Custom metadata fields */}
-            {predefinedDisplayEntries.length > 0 ? (
+            {predefinedDisplayEntries.length > 0 && (
               <div className={styles['meta-section']}>
                 <h4 className={styles['section-title']}>Details / Sizing</h4>
                 <div className={styles['meta-badges']}>
@@ -498,62 +502,59 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                   ))}
                 </div>
               </div>
-            ) : null}
+            )}
 
-            {userDefinedEntries.map((field, idx) => (
-              <div key={idx} className={styles['description-box']}>
+            {userDefinedEntries.map((field) => (
+              <div key={field.name} className={styles['description-box']}>
                 <h4 className={styles['section-title']}>{field.name}</h4>
                 <p className={styles['description-text']}>{field.value}</p>
               </div>
             ))}
 
-            {/* Variations progress */}
-            {isMultiCount && metadata?.Variations && metadata.Variations.length > 0 && (
+            {showVariationsProgress && (
               <div className={styles['variations-section']}>
                 <h4 className={styles['section-title']}>Variations Progress</h4>
                 <div className={styles['variations-progress-list']}>
-                  {metadata.Variations.map((v: any, idx: number) => {
-                    const claimed = item.Claims.filter(c => c.Selection === v.Name).reduce((sum: number, c: any) => sum + (c.Quantity || 1), 0);
-                    const percent = Math.min(100, Math.round((claimed / v.Quantity) * 100));
-                    return (
-                      <div key={idx} className={styles['variation-progress-card']}>
-                        <div className={styles['variation-progress-header']}>
-                          <span className={styles['variation-name']}>{v.Name}</span>
-                          <span className={styles['variation-qty']}>{claimed} / {v.Quantity} Claimed</span>
-                        </div>
-                        <div className={styles['progress-bar-bg-mini']}>
-                          <div className={styles['progress-bar-fill-mini']} style={{ width: `${percent}%` }} />
-                        </div>
+                  {variationProgress.map((variation) => (
+                    <div key={variation.name} className={styles['variation-progress-card']}>
+                      <div className={styles['variation-progress-header']}>
+                        <span className={styles['variation-name']}>{variation.name}</span>
+                        <span className={styles['variation-qty']}>{variation.qtyLabel}</span>
                       </div>
-                    );
-                  })}
+                      <div className={styles['progress-bar-bg-mini']}>
+                        <div
+                          className={styles['progress-bar-fill-mini']}
+                          style={{ width: `${variation.percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Right Column: Pricing, Links, and Funding */}
           <div className={styles['action-col']}>
             <div className={styles['price-container']}>
-              <span className={styles['price-label']}>Best Price</span>
-              <span className={styles['price-value']}>
-                {totalExtractedPrice > 0 ? `$${totalExtractedPrice}` : '—'}
-              </span>
+              <span className={styles['price-label']}>Price</span>
+              <span className={styles['price-value']}>{bestPriceDisplay}</span>
             </div>
 
-            {/* Progress Bar for Group Funding / Multi-Count Items */}
-            {isMultiCount ? (
+            {showQuantityProgress ? (
               <div className={styles['funding-section']}>
                 <div className={styles['funding-header']}>
                   <span>Quantities Claimed</span>
-                  <span>{progressPercent}% ({totalClaimedQty} / {desiredQtyVal})</span>
+                  <span>{quantityProgressMetric}</span>
                 </div>
                 <div className={styles['progress-bar-bg']}>
-                  <div className={styles['progress-bar-fill']} style={{ width: `${progressPercent}%` }} />
+                  <div
+                    className={styles['progress-bar-fill']}
+                    style={{ width: `${progressPercent}%` }}
+                  />
                 </div>
               </div>
             ) : (
-              allowGroupFunds && totalExtractedPrice > 0 && (
+              showGroupFunding && (
                 <FundingWidget
                   totalExtractedPrice={totalExtractedPrice}
                   totalClaimedAmount={totalClaimedAmount}
@@ -562,244 +563,17 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
               )
             )}
 
-            {/* Purchase Links */}
             <div className={styles['links-section']}>
               <h4 className={styles['section-title']}>Purchase Links</h4>
               <LinksWidget links={item.Links} getSiteName={getSiteName} />
             </div>
 
-            {/* Action Buttons */}
-            <div className={styles['actions-area']}>
-              {!isOwner ? (
-                <>
-                  {claimedByCurrentUser ? (
-                    <Button
-                      variant="secondary"
-                      className={styles['claim-button']}
-                      onClick={handleUnclaim}
-                      isLoading={claimLoading}
-                    >
-                      Unclaim Item
-                    </Button>
-                  ) : isFullyClaimed ? (
-                    <Button
-                      variant="secondary"
-                      className={styles['claim-button']}
-                      disabled={true}
-                    >
-                      Already Claimed
-                    </Button>
-                  ) : (
-                    <div className={styles['claim-widget']}>
-                    {showClaimForm ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          handleClaim();
-                        }}
-                        className={styles['claim-form']}
-                      >
-                        <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
-                        {isMultiCount && metadata?.Variations && metadata.Variations.length > 0 && (
-                          <div className={styles['form-group']}>
-                            <label className={styles['form-label']}>Choose Variation</label>
-                            <select
-                              value={selectedVariation}
-                              onChange={(e) => setSelectedVariation(e.target.value)}
-                              className={styles['variation-select']}
-                            >
-                              {metadata.Variations.map((v: any, idx: number) => {
-                                const claimed = item.Claims.filter(c => c.Selection === v.Name).reduce((sum: number, c: any) => sum + (c.Quantity || 1), 0);
-                                const remaining = Math.max(0, v.Quantity - claimed);
-                                return (
-                                  <option key={idx} value={v.Name} disabled={remaining <= 0}>
-                                    {v.Name} ({remaining} remaining)
-                                  </option>
-                                );
-                              })}
-                            </select>
-                          </div>
-                        )}
-
-                        {isMultiCount && (
-                          <div className={styles['form-group']}>
-                            <label className={styles['form-label']}>Quantity to Claim</label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={claimQty}
-                              onChange={(e) => setClaimQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                              style={{ width: '80px' }}
-                              className={styles['qty-input']}
-                              required
-                            />
-                          </div>
-                        )}
-
-                        {!isMultiCount && allowGroupFunds && (
-                          <div className={styles['form-group']}>
-                            <label className={styles['form-label']}>Amount to Contribute</label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              max={totalExtractedPrice - totalClaimedAmount}
-                              value={claimAmount}
-                              onChange={(e) => setClaimAmount(e.target.value)}
-                              placeholder="Enter contribution amount"
-                              required
-                            />
-                          </div>
-                        )}
-                        <div className={styles['form-actions']}>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            type="submit"
-                            isLoading={claimLoading}
-                          >
-                            Confirm
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setShowClaimForm(false)}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </form>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        className={styles['claim-button']}
-                        onClick={() => setShowClaimForm(true)}
-                      >
-                        Claim Item
-                      </Button>
-                    )}
-                  </div>
-                )}
-                  {canCollaborate && (
-                    <div className={styles['owner-actions']}>
-                      <Button variant="secondary" className={styles['owner-btn']} onClick={onEdit}>
-                        <Edit2 size={12} style={{ marginRight: '4px' }} /> Edit
-                      </Button>
-                      {showDeleteConfirm ? (
-                        <div className={styles['delete-confirm-widget']}>
-                          <span className={styles['confirm-prompt']}>Delete?</span>
-                          <div className={styles['confirm-buttons']}>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={handleDelete}
-                              isLoading={deleteLoading}
-                            >
-                              Yes
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setShowDeleteConfirm(false)}
-                            >
-                              No
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="secondary"
-                          className={`${styles['owner-btn']} ${styles['delete-btn']}`}
-                          onClick={() => setShowDeleteConfirm(true)}
-                        >
-                          <Trash2 size={12} style={{ marginRight: '4px' }} /> Delete
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className={styles['owner-actions']}>
-                  <Button variant="secondary" className={styles['owner-btn']} onClick={onEdit}>
-                    <Edit2 size={12} style={{ marginRight: '4px' }} /> Edit
-                  </Button>
-                  {showDeleteConfirm ? (
-                    <div className={styles['delete-confirm-widget']}>
-                      <span className={styles['confirm-prompt']}>Delete?</span>
-                      <div className={styles['confirm-buttons']}>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={handleDelete}
-                          isLoading={deleteLoading}
-                        >
-                          Yes
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowDeleteConfirm(false)}
-                        >
-                          No
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      className={`${styles['owner-btn']} ${styles['delete-btn']}`}
-                      onClick={() => setShowDeleteConfirm(true)}
-                    >
-                      <Trash2 size={12} style={{ marginRight: '4px' }} /> Delete
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
+            <div className={styles['actions-area']}>{guestActions}</div>
           </div>
         </div>
       </div>
-      {showDependencyModal && (
-        <div className={styles['modal-overlay']}>
-          <Card className={styles['dependency-modal']} glass={true}>
-            <h3 className={styles['modal-title']}>🔗 Connected Gift Items</h3>
-            <p className={styles['modal-text']}>
-              This gift is linked to other items in the wishlist. Would you like to claim them all at once?
-            </p>
-            <div className={styles['linked-items-preview-list']}>
-              {linkedItems.map((linkedItem) => (
-                <div key={linkedItem.Id} className={styles['linked-item-preview-row']}>
-                  <span className={styles['linked-item-name']}>{linkedItem.Name}</span>
-                  <span className={linkedItem.IsClaimed ? styles['linked-item-status-claimed'] : styles['linked-item-status-available']}>
-                    {linkedItem.IsClaimed ? 'Already Claimed' : 'Available'}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className={styles['modal-actions']}>
-              <Button
-                variant="primary"
-                onClick={handleBulkClaim}
-                isLoading={claimLoading}
-              >
-                Claim All Unclaimed
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleClaim(undefined, true)}
-                isLoading={claimLoading}
-              >
-                Claim Selected Only
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setShowDependencyModal(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
+
+      {dependencyModal}
     </Card>
   );
 };

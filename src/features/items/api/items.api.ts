@@ -1,4 +1,4 @@
-import { apiClient, ApiError } from 'core/api/client';
+import { apiClient } from 'core/api/client';
 import { ItemLink } from '../interfaces/item-link.interface';
 import { Claim } from '../interfaces/item-claim.interface';
 import { Item } from '../interfaces/item.interface';
@@ -10,47 +10,11 @@ import type {
   UnclaimItemResult,
 } from '../interfaces/claim-mutation-result.interface';
 
-export interface ExtractMetadataCustomFields {
-  Predefined: Record<string, string>;
-  UserDefined: Record<string, string>;
-}
-
-function toStringFieldMap(raw: unknown): Record<string, string> {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
-  const result: Record<string, string> = {};
-  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-    if (typeof value === 'string' && value.trim()) {
-      result[key] = value.trim();
-    }
-  }
-  return result;
-}
-
-function normalizeExtractCustomFields(raw: unknown): ExtractMetadataCustomFields {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-    return { Predefined: {}, UserDefined: {} };
-  }
-
-  const source = raw as Record<string, unknown>;
-  const predefined = source.Predefined ?? {};
-  const userDefined = source.UserDefined ?? {};
-
-  return {
-    Predefined: toStringFieldMap(predefined),
-    UserDefined: toStringFieldMap(userDefined),
-  };
-}
-
-export interface ExtractMetadataResult {
-  Title: string;
-  Price: number | null;
-  Description: string | null;
-  Category: string | null;
-  CategoryAlternatives: string[];
-  ImageUrl: string | null;
-  WebsiteName: string | null;
-  CustomFields: ExtractMetadataCustomFields;
-}
+export type {
+  ExtractMetadataCustomFields,
+  ExtractMetadataDiagnostics,
+  ExtractMetadataResult,
+} from '../interfaces/extract-metadata-result.interface';
 
 export const itemsApi = {
   listItems: (listId: string) =>
@@ -88,51 +52,6 @@ export const itemsApi = {
       'Items'
     ),
 
-  extractMetadata: async (
-    url: string,
-    options?: { listId?: string }
-  ): Promise<ExtractMetadataResult> => {
-    const result = await apiClient.post<{
-      Title?: string;
-      Price?: number | null;
-      Description?: string | null;
-      Category?: string | null;
-      CategoryAlternatives?: string[] | null;
-      ImageUrl?: string | null;
-      WebsiteName?: string | null;
-      CustomFields?: {
-        Predefined?: Record<string, string>;
-        UserDefined?: Record<string, string>;
-      };
-      Diagnostics?: {
-        Source?: string;
-        Confidence?: number;
-        FieldsFound?: string[];
-        Blocked?: boolean;
-        ValidationReason?: string;
-      };
-      Message?: string;
-    }>(`/api/items/extract-metadata`, {
-      Url: url,
-      ListId: options?.listId,
-    }, 'Items');
-
-    if (result.Message && !result.Title) {
-      throw new ApiError(result.Message, 422, 'SCRAPE_FAILED');
-    }
-
-    return {
-      Title: result.Title ?? '',
-      Price: result.Price ?? null,
-      Description: result.Description ?? null,
-      Category: result.Category ?? null,
-      CategoryAlternatives: result.CategoryAlternatives ?? [],
-      ImageUrl: result.ImageUrl ?? null,
-      WebsiteName: result.WebsiteName ?? null,
-      CustomFields: normalizeExtractCustomFields(result.CustomFields),
-    };
-  },
-
   addItemLink: (itemId: string, url: string) =>
     apiClient.post<ItemLink>(
       `/api/items/${itemId}/links`,
@@ -143,6 +62,13 @@ export const itemsApi = {
   syncItemLinks: (itemId: string, targetItemIds: string[]) =>
     apiClient.post<void>(
       `/api/items/${itemId}/links/sync`,
+      { TargetItemIds: targetItemIds },
+      'Items'
+    ),
+
+  syncItemRelated: (itemId: string, targetItemIds: string[]) =>
+    apiClient.post<void>(
+      `/api/items/${itemId}/related/sync`,
       { TargetItemIds: targetItemIds },
       'Items'
     ),
@@ -205,51 +131,11 @@ export const itemsApi = {
   deleteItem: (itemId: string) =>
     apiClient.delete<void>(`/api/items/${itemId}`),
 
+  // Future: AI item reviews — keep client; frontend does not call until the feature ships.
   getItemReviews: (itemId: string) =>
     apiClient.get<{ Summary: string; Pros: string[]; Cons: string[]; Reviews: string[] } | null>(`/api/items/${itemId}/reviews`),
 
   getFieldDefinitions: (category: string) =>
     apiClient.get<FieldDefinition[]>(`/api/items/field-definitions?category=${category}`),
-
-  summarizeDescription: async (payload: {
-    listId: string;
-    name: string;
-    text?: string;
-    linkUrl?: string;
-    websiteName?: string;
-    price?: number | null;
-    category?: string;
-    priority?: number | null;
-    customFields?: {
-      Predefined?: Record<string, string | null>;
-      UserDefined?: Record<string, string>;
-    };
-    variations?: { Name: string; Quantity: number }[];
-    desiredQuantity?: number;
-  }) => {
-    const result = await apiClient.post<{ Description?: string; Message?: string }>(
-      '/api/items/summarize-description',
-      {
-        ListId: payload.listId,
-        Name: payload.name,
-        Text: payload.text,
-        LinkUrl: payload.linkUrl,
-        WebsiteName: payload.websiteName,
-        Price: payload.price,
-        Category: payload.category,
-        Priority: payload.priority,
-        CustomFields: payload.customFields,
-        Variations: payload.variations,
-        DesiredQuantity: payload.desiredQuantity,
-      },
-      'Items'
-    );
-
-    if (result.Message && !result.Description) {
-      throw new ApiError(result.Message, 422, 'SUMMARIZE_FAILED');
-    }
-
-    return result.Description ?? '';
-  },
 };
 export type { ItemLink, Claim, Item, FieldDefinition };

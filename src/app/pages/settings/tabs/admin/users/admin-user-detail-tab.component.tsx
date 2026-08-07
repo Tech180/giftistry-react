@@ -70,9 +70,10 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
   }, [userId]);
 
   const isSelf = currentUser?.Id === userId;
+  const isOwnerReadOnly = !!user?.IsOwner && !currentUser?.IsOwner;
 
   const saveProfile = async () => {
-    if (!userId || !isSelf) return;
+    if (!userId || !isSelf || isOwnerReadOnly) return;
     try {
       await adminApi.updateUser(userId, {
         username: profileForm.username,
@@ -89,7 +90,7 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
   };
 
   const savePolicy = async () => {
-    if (!userId) return;
+    if (!userId || isOwnerReadOnly) return;
     try {
       await adminApi.updateUserPolicy(userId, { ...policyFlags, policy });
       showToast('Permissions updated', 'success');
@@ -100,7 +101,7 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
   };
 
   const handleResetPassword = async () => {
-    if (!userId || !newPassword) return;
+    if (!userId || !newPassword || isOwnerReadOnly) return;
     try {
       await adminApi.resetPassword(userId, newPassword, true);
       showToast('Password reset', 'success');
@@ -111,7 +112,7 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
   };
 
   const handleUnlock = async () => {
-    if (!userId) return;
+    if (!userId || isOwnerReadOnly) return;
     try {
       await adminApi.unlockUser(userId);
       showToast('Account unlocked', 'success');
@@ -122,7 +123,7 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
   };
 
   const handleRevokeSessions = async () => {
-    if (!userId) return;
+    if (!userId || isOwnerReadOnly) return;
     try {
       await adminApi.revokeSessions(userId);
       showToast('Sessions revoked', 'success');
@@ -132,7 +133,7 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
   };
 
   const handleDelete = async () => {
-    if (!userId || !user) return;
+    if (!userId || !user || isOwnerReadOnly) return;
     if (!window.confirm(`Delete user @${user.Username}? This cannot be undone.`)) return;
     try {
       await adminApi.deleteUser(userId);
@@ -143,7 +144,7 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
     }
   };
 
-  const canDeleteAccount = !!user && !isSelf && !user.IsOwner;
+  const canDeleteAccount = !!user && !isSelf && !user.IsOwner && !isOwnerReadOnly;
   const canTransferOwnership =
     !!user &&
     !!currentUser?.IsOwner &&
@@ -179,6 +180,7 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
   };
 
   const handlePolicyChange = (key: keyof GiftistryUserPolicy, value: boolean | number) => {
+    if (isOwnerReadOnly) return;
     setPolicy((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -193,11 +195,21 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
       policy={policy}
       newPassword={newPassword}
       isSelf={isSelf}
+      isOwnerReadOnly={isOwnerReadOnly}
       onTabChange={setActiveTab}
-      onProfileFormChange={(updates) => setProfileForm((prev) => ({ ...prev, ...updates }))}
-      onPolicyFlagsChange={(updates) => setPolicyFlags((prev) => ({ ...prev, ...updates }))}
+      onProfileFormChange={(updates) => {
+        if (isOwnerReadOnly) return;
+        setProfileForm((prev) => ({ ...prev, ...updates }));
+      }}
+      onPolicyFlagsChange={(updates) => {
+        if (isOwnerReadOnly) return;
+        setPolicyFlags((prev) => ({ ...prev, ...updates }));
+      }}
       onPolicyChange={handlePolicyChange}
-      onNewPasswordChange={setNewPassword}
+      onNewPasswordChange={(value) => {
+        if (isOwnerReadOnly) return;
+        setNewPassword(value);
+      }}
       onSaveProfile={saveProfile}
       onSavePolicy={savePolicy}
       onResetPassword={handleResetPassword}

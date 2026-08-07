@@ -5,6 +5,7 @@ import { useToast } from 'app/providers/toast-context';
 import { authApi } from '../../api/auth.api';
 import { LoginFormTemplate } from './login-form.html';
 import { ApiUser } from '../../interfaces/api-user.interface';
+import { postAuthPath } from '../../utils/post-auth-path.util';
 import { camelcaseKeys } from 'shared/utils/api-case.util';
 
 export const LoginForm: React.FC = () => {
@@ -82,7 +83,7 @@ export const LoginForm: React.FC = () => {
       .then(async () => {
         setSearchParams({}, { replace: true });
         const me = await authApi.getMe();
-        navigate(me?.User?.IsOnboarded === false ? '/welcome' : '/dashboard', { replace: true });
+        navigate(postAuthPath(me?.User), { replace: true });
       })
       .catch(() => {
         setLocalError('OAuth sign-in failed. Please try again.');
@@ -156,7 +157,7 @@ export const LoginForm: React.FC = () => {
           saveAccountToSwitcher(res.User);
         }
         showToast('Login successful!');
-        navigate(res?.User?.IsOnboarded === false ? '/welcome' : '/dashboard');
+        navigate(postAuthPath(res?.User));
       }
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'Invalid credentials.');
@@ -183,7 +184,7 @@ export const LoginForm: React.FC = () => {
       if (res && res.User) {
         saveAccountToSwitcher(res.User);
         showToast('Authentication successful!');
-        window.location.href = res.User.IsOnboarded === false ? '/welcome' : '/dashboard';
+        window.location.href = postAuthPath(res.User);
       }
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'Invalid verification code.');
@@ -218,7 +219,7 @@ export const LoginForm: React.FC = () => {
         if (verifyRes && verifyRes.User) {
           saveAccountToSwitcher(verifyRes.User);
           showToast('Passkey verified successfully!');
-          window.location.href = verifyRes.User.IsOnboarded === false ? '/welcome' : '/dashboard';
+          window.location.href = postAuthPath(verifyRes.User);
         }
       }
     } catch (err) {
@@ -287,7 +288,7 @@ export const LoginForm: React.FC = () => {
         if (verifyRes && verifyRes.User) {
           saveAccountToSwitcher(verifyRes.User);
           showToast('Passkey verified successfully!');
-          window.location.href = verifyRes.User.IsOnboarded === false ? '/welcome' : '/dashboard';
+          window.location.href = postAuthPath(verifyRes.User);
         }
       }
     } catch (err) {

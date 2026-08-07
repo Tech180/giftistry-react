@@ -1,4 +1,5 @@
 import React from 'react';
+import { Save } from 'lucide-react';
 import { EnterPanel, Button, Switch } from 'shared/ui';
 import type { SitePolicy } from 'features/admin';
 import { DEFAULT_USER_POLICY } from 'features/admin';
@@ -39,8 +40,21 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
   return (
     <EnterPanel animation="fade" className={styles['tab-pane']}>
       <div className={styles['page-header']}>
-        <h1 className={styles['page-title']}>Site Policy</h1>
-        <p className={styles['page-subtitle']}>Global rules, registration limits, and security defaults.</p>
+        <div className={styles['page-header-main']}>
+          <h1 className={styles['page-title']}>Site Policy</h1>
+          <p className={styles['page-subtitle']}>Global rules, registration limits, and security defaults.</p>
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          iconOnly
+          onClick={onSave}
+          disabled={isSaving}
+          isLoading={isSaving}
+          leftIcon={<Save size={16} />}
+          aria-label={isSaving ? 'Saving site policy' : 'Save site policy'}
+          title={isSaving ? 'Saving site policy' : 'Save site policy'}
+        />
       </div>
 
       <h2 className={styles['section-title']}>Registration & access</h2>
@@ -159,12 +173,6 @@ export const AdminSitePolicyTabTemplate: React.FC<AdminSitePolicyTabTemplateProp
           </SettingItem>
         ))}
       </SettingGroup>
-
-      <div className={styles['actions-row']}>
-        <Button variant="primary" onClick={onSave} disabled={isSaving}>
-          {isSaving ? 'Saving...' : 'Save site policy'}
-        </Button>
-      </div>
     </EnterPanel>
   );
 };

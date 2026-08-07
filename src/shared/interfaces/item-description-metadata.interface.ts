@@ -16,8 +16,11 @@ export interface ItemDescriptionMetadata {
   DesiredQuantity?: number;
   Variations?: ItemDescriptionVariation[];
   LinkedItemIds?: string[];
+  RelatedItemIds?: string[];
   OtherUsersCanSee?: boolean;
   MultiCount?: boolean;
+  /** Ordered photo data URLs for create/update. Omit on edit when unchanged. */
+  Photos?: Array<{ DataUrl: string }> | null;
 }
 
 export interface ParsedItemDescription {

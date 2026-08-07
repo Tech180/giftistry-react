@@ -5,13 +5,16 @@ export * from './interfaces/item-actions.interface';
 export * from './hooks/use-item-controller';
 export * from './api/items.api';
 export * from './interfaces/item.interface';
+export * from './interfaces/item-photo.interface';
 export * from './interfaces/item-link.interface';
 export * from './interfaces/item-claim.interface';
 export * from './interfaces/category-meta.interface';
 export * from './components/showcase/item-showcase.component';
 export * from './interfaces/item-audience-user.interface';
 export { AudiencePicker } from './components/audience-picker';
+export { ItemPhotoGallery } from './components/photo-gallery/item-photo-gallery.component';
 export { getCategoryMeta } from './components/card/category-icons';
+export { getItemPrimaryImageUrl } from './utils/item-primary-image.util';
 export type { ItemViewMode } from './types/item-view-mode.type';
 export {
   ITEM_VIEW_MODE_STORAGE_KEY,
@@ -25,6 +28,8 @@ export {
   getItemsContainerClass,
 } from './utils/item-view-mode.util';
 export { ItemCardRouter } from './components/views/item-card-router.component';
+export { ItemCardSkeleton } from './components/skeleton/item-card-skeleton.component';
+export type { ItemCardSkeletonProps } from './components/skeleton/interfaces/item-card-skeleton-props.interface';
 export { ImportStrip } from './components/import/import-strip/import-strip.component';
 export type { ImportStripHandle } from './components/import/import-strip/interfaces/import-strip-handle.interface';
 export { ImportDropzone } from './components/import/import-dropzone/import-dropzone.component';

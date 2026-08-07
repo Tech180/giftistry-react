@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AdminRoute } from 'app/routes/admin-route.component';
+import { OwnerRoute } from 'app/routes/owner-route.component';
 import { AdminOverviewTab } from './tabs/admin/overview/admin-overview-tab.component';
 import { AdminUsersTab } from './tabs/admin/users/admin-users-tab.component';
 import { AdminUserDetailTab } from './tabs/admin/users/admin-user-detail-tab.component';
@@ -21,6 +22,10 @@ function withAdmin(children: React.ReactNode) {
   return <AdminRoute>{children}</AdminRoute>;
 }
 
+function withOwner(children: React.ReactNode) {
+  return <OwnerRoute>{children}</OwnerRoute>;
+}
+
 function processesRailScopeForPath(pathname: string): BackgroundJobsScope | null {
   if (pathname === '/settings/account' || pathname === '/settings/account/') {
     return 'mine';
@@ -36,6 +41,7 @@ export default function Settings() {
   const { user } = useAuth();
   const location = useLocation();
   const isAdmin = !!user?.IsAdmin;
+  const isOwner = !!user?.IsOwner;
   const processesRailScope = processesRailScopeForPath(location.pathname);
 
   const routes = (
@@ -52,7 +58,7 @@ export default function Settings() {
       <Route path="admin/site" element={withAdmin(<AdminSitePolicyTab showToast={showToast} />)} />
       <Route path="admin/moderation" element={withAdmin(<AdminModerationTab showToast={showToast} />)} />
       <Route path="admin/audit" element={withAdmin(<AdminAuditTab showToast={showToast} />)} />
-      <Route path="admin/server" element={withAdmin(<ServerSettingsTab showToast={showToast} />)} />
+      <Route path="admin/server" element={withOwner(<ServerSettingsTab showToast={showToast} />)} />
       <Route path="*" element={<Navigate to="/settings/account" replace />} />
     </Routes>
   );
@@ -62,6 +68,7 @@ export default function Settings() {
       routes={routes}
       toasts={[]}
       isAdmin={isAdmin}
+      isOwner={isOwner}
       processesRailScope={processesRailScope}
       onProcessesError={(message) => showToast(message, 'error')}
     />

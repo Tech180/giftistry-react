@@ -8,6 +8,8 @@ export interface MiniDrawerProps {
   isActive: boolean;
   position: 'left' | 'right';
   label?: string;
-  /** When true, render as an in-panel strip under 48rem (full-screen sheet parents). */
+  /** When true, render as an in-panel strip inside a sheet sidebar. */
   inlineOnMobile?: boolean;
+  /** Extra offset beyond 100% for stacked floating left rails (e.g. "4.875rem"). */
+  edgeOffset?: string;
 }

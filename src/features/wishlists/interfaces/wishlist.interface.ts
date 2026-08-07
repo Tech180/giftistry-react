@@ -13,6 +13,7 @@ export interface Wishlist {
   RevealSuggestions?: boolean;
   AiEnabled?: boolean;
   WebSearchEnabled?: boolean;
+  ManualJobBackground?: boolean;
   OwnerFirstName?: string;
   OwnerAvatar?: string | null;
   Role?: 'owner' | 'collaborator' | 'viewer';

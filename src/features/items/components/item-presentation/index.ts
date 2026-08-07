@@ -10,4 +10,5 @@ export { LinksWidget } from './links-widget/links-widget.html';
 export { FundingWidget } from './funding-widget/funding-widget.html';
 export { AiReviewsPanel } from './ai-reviews-panel/ai-reviews-panel.html';
 export { TaggingOverlay, TaggingSelect } from './tagging-controls/tagging-controls.html';
-export { ActionButtons } from './action-buttons/action-buttons.html';
+export { ActionButtons } from './action-buttons/action-buttons.component';
+export { QuantityBadge } from './quantity-badge/quantity-badge.html';

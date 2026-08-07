@@ -83,4 +83,63 @@ describe('useWishlistJob', () => {
     expect(result.current.job?.Phase).toBe('grabbing_info');
     expect(result.current.isActive).toBe(true);
   });
+
+  test('accumulates enriching item ids across concurrent jobs', async () => {
+    vi.mocked(jobsApi.getActiveForList).mockResolvedValue({
+      Id: 'job-import',
+      Kind: 'wishlist-import',
+      ListId: 'list-1',
+      UserId: 'u',
+      Status: 'running',
+      Phase: 'grabbing_info',
+      ProgressDone: 1,
+      ProgressTotal: 2,
+      Message: 'Grabbing',
+      Error: null,
+      ActiveStreams: [
+        { Id: 's1', ItemId: 'item-1', Label: 'One', Status: 'running' },
+        { Id: 's2', ItemId: 'item-2', Label: 'Two', Status: 'done' },
+      ],
+    });
+
+    const { result } = renderHook(() => useWishlistJob('list-1'));
+
+    await waitFor(() => {
+      expect([...result.current.enrichingItemIds]).toEqual(['item-1']);
+    });
+
+    const socket = MockWebSocket.instances[0];
+    const enrichJob = {
+      Id: 'job-enrich',
+      Kind: 'item-enrich',
+      ListId: 'list-1',
+      UserId: 'u',
+      Status: 'running',
+      Phase: 'grabbing_info',
+      ProgressDone: 0,
+      ProgressTotal: 1,
+      Message: 'Enriching',
+      Error: null,
+      ActiveStreams: [{ Id: 's3', ItemId: 'item-9', Label: 'Nine', Status: 'pending' }],
+    };
+
+    act(() => {
+      socket.onmessage?.({ data: JSON.stringify({ Type: 'job.progress', Job: enrichJob }) });
+    });
+
+    // The import job's streams must survive an unrelated job's WS frame.
+    expect([...result.current.enrichingItemIds].sort()).toEqual(['item-1', 'item-9']);
+
+    act(() => {
+      socket.onmessage?.({
+        data: JSON.stringify({
+          Type: 'job.completed',
+          Job: { ...enrichJob, Status: 'completed', ActiveStreams: [] },
+        }),
+      });
+    });
+
+    expect([...result.current.enrichingItemIds]).toEqual(['item-1']);
+    expect(result.current.isActive).toBe(true);
+  });
 });

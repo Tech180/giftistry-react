@@ -1,15 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './wishlist-detail.module.css';
-import { Plus, Eye, ArrowLeft, ChevronDown, Info, X, MessageSquare } from 'lucide-react';
+import { Plus, Eye, ArrowLeft, ChevronDown, X, MessageSquare, Wand2 } from 'lucide-react';
 import { SharePanel } from 'features/wishlists';
-import { ItemCard, ItemShowcase } from 'features/items';
+import { ItemCard, ItemCardSkeleton, ItemShowcase, getCategoryMeta } from 'features/items';
 import { CommentSection } from 'features/comments';
-import {
-  ITEM_VIEW_MODES,
-  ITEM_VIEW_MODE_LABELS,
-} from 'features/items/constants/item-view-mode.constants';
-import { ITEM_VIEW_MODE_ICONS } from 'features/items/constants/item-view-mode-icons';
 import {
   getItemsContainerClass,
   getLayoutClass,
@@ -17,11 +12,12 @@ import {
 import { Button, Modal, Card, LoadingState, ErrorState, EnterPanel } from 'shared/ui';
 import { WishlistDetailTemplateProps } from './interfaces/wishlist-detail-template-props.interface';
 import { AddItem } from './components/drawer/add-item/add-item.component';
+import { AddItemWidget } from './components/add-item-widget/add-item-widget.component';
 import { Comments } from './components/drawer/comments/comments.component';
 import { Header } from './components/header/header.component';
+import { ListViewControls } from './components/list-view-controls/list-view-controls.component';
 import { ImportStrip } from 'features/items';
 import { JobProgressBox } from 'features/jobs';
-
 
 export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   isWishlistLoading,
@@ -32,22 +28,35 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   isOwner,
   canCollaborate,
   isExpired,
+  isArchived,
   isAddOpen,
   setIsAddOpen,
   openAddDrawer,
+  isAutoAddOpen,
+  openAutoAdd,
+  closeAutoAdd,
+  onAutoAddStarted,
+  enrichingItemIds,
   editingItem,
   setEditingItem,
   openItemEditor,
   setEditingItemDraft,
   linkedItemIds,
   setLinkedItemIds,
+  relatedItemIds,
+  setRelatedItemIds,
   linkableItems,
   resolvedLinkedItems,
+  resolvedRelatedItems,
   isLinkingModeActive,
   setIsLinkingModeActive,
+  isRelatingModeActive,
+  setIsRelatingModeActive,
+  doesAddSidebarOverlayList,
   handleLinkingAudienceChange,
   isItemLinkCompatible,
   handleLinkItemToggle,
+  handleRelateItemToggle,
   loadData: _loadData,
   reloadListContent,
   onItemsChange: _onItemsChange,
@@ -55,14 +64,17 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   confirmAction,
   setConfirmAction,
   isDeactivating,
+  isActivating,
   isDeleting,
   handleDeactivateConfirm,
+  handleActivateConfirm,
   handleDeleteConfirm,
   saveTitle,
   saveDate,
   toggleRevealSuggestions,
   toggleAiEnabled,
   toggleWebSearchEnabled,
+  toggleManualJobBackground,
   canUseWebSearchOnList = false,
   formatDate,
   isCommentsOpen,
@@ -121,35 +133,143 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
     );
   }
 
+  const addItemWidget =
+    canCollaborate && !isExpired && !isArchived ? (
+      <AddItemWidget
+        listId={wishlist.Id}
+        isInputMode={isAutoAddOpen}
+        onEnterInputMode={openAutoAdd}
+        onExitInputMode={closeAutoAdd}
+        onManual={openAddDrawer}
+        onStarted={onAutoAddStarted}
+      />
+    ) : null;
+
+  const emptyStateCard = (
+    <Card className={styles['empty-items-card']} padding="lg">
+      <p>This wishlist is currently empty.</p>
+      {canCollaborate && !isArchived && !isExpired && (
+        <div className={styles['empty-items-actions']}>
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={<Wand2 size={14} />}
+            onClick={openAutoAdd}
+          >
+            Auto Add from Link
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<Plus size={14} />}
+            onClick={openAddDrawer}
+          >
+            Add Manually
+          </Button>
+        </div>
+      )}
+    </Card>
+  );
+
+  const renderItemCard = (item: typeof items[number], priorityLabel: string) =>
+    enrichingItemIds.has(item.Id) ? (
+      <ItemCardSkeleton viewMode={viewMode} />
+    ) : (
+      <ItemCard
+        item={item}
+        priorityLabel={priorityLabel}
+        isOwner={isOwner}
+        isExpired={isExpired}
+        isArchived={isArchived}
+        canCollaborate={canCollaborate && !isArchived}
+        allowGroupFunds={wishlist.AllowGroupFunds}
+        itemActions={itemActions}
+        onEdit={isArchived ? undefined : () => openItemEditor(item)}
+        aiEnabled={wishlist.AiEnabled}
+        isTaggingModeActive={
+          (isAddOpen || !!editingItem)
+            ? ((isLinkingModeActive || isRelatingModeActive) &&
+                (!editingItem || item.Id !== editingItem.Id) &&
+                isItemLinkCompatible(item))
+            : (isTaggingModeActive || isReplyTaggingModeActive)
+        }
+        isTaggedSelection={
+          (isAddOpen || !!editingItem)
+            ? (
+                (isLinkingModeActive && linkedItemIds.includes(item.Id)) ||
+                (isRelatingModeActive && relatedItemIds.includes(item.Id))
+              )
+            : (isReplyTaggingModeActive ? replyTaggedItemIds : taggedItemIds).includes(item.Id)
+        }
+        onSelectTag={() => {
+          if (isAddOpen || !!editingItem) {
+            if (editingItem && item.Id === editingItem.Id) return;
+            if (isRelatingModeActive) {
+              handleRelateItemToggle(item.Id);
+            } else {
+              handleLinkItemToggle(item.Id);
+            }
+          } else if (isReplyTaggingModeActive) {
+            handleSelectReplyTag(item.Id);
+          } else {
+            handleSelectTag(item.Id);
+          }
+        }}
+        viewMode={viewMode}
+        isSelected={selectedItemId === item.Id}
+        onSelect={() => setSelectedItemId(item.Id)}
+        wishlistItems={displayItems}
+        isLinkingContext={(isAddOpen || !!editingItem) && isLinkingModeActive}
+        isRelatingContext={(isAddOpen || !!editingItem) && isRelatingModeActive}
+      />
+    );
+
+  const isItemFormSessionActive = isAddOpen || !!editingItem;
+  const isAssociationModeActive = isLinkingModeActive || isRelatingModeActive;
+  const collapseDrawerWhileLinking = isAssociationModeActive && doesAddSidebarOverlayList;
+  const isItemDrawerVisible = isItemFormSessionActive && !collapseDrawerWhileLinking;
+
   return (
     <div className={styles['app-layout']}>
       {/* LEFT SIDEBAR: Add Item form */}
       <AddItem
-        isOpen={isAddOpen || !!editingItem}
+        isOpen={isItemFormSessionActive}
         editingItem={editingItem}
         items={items}
         linkableItems={linkableItems}
         resolvedLinkedItems={resolvedLinkedItems}
+        resolvedRelatedItems={resolvedRelatedItems}
         linkedItemIds={linkedItemIds}
         setLinkedItemIds={setLinkedItemIds}
+        relatedItemIds={relatedItemIds}
+        setRelatedItemIds={setRelatedItemIds}
         isLinkingModeActive={isLinkingModeActive}
         setIsLinkingModeActive={setIsLinkingModeActive}
+        isRelatingModeActive={isRelatingModeActive}
+        setIsRelatingModeActive={setIsRelatingModeActive}
+        collapseDrawerWhileLinking={collapseDrawerWhileLinking}
         handleLinkingAudienceChange={handleLinkingAudienceChange}
         isOwner={isOwner}
         listId={wishlist.Id}
         listAiEnabled={!!wishlist.AiEnabled}
+        listManualJobBackground={wishlist.ManualJobBackground !== false}
         canUseWebSearchOnList={canUseWebSearchOnList}
         onClose={() => {
           setIsAddOpen(false);
           setEditingItem(null);
           setEditingItemDraft(null);
+          setIsLinkingModeActive(false);
+          setIsRelatingModeActive(false);
         }}
         onSuccess={() => {
           setIsAddOpen(false);
           setEditingItem(null);
           setEditingItemDraft(null);
+          setIsLinkingModeActive(false);
+          setIsRelatingModeActive(false);
           void reloadListContent();
         }}
+        onAutoEnrichStarted={onAutoAddStarted}
         setEditingItemDraft={setEditingItemDraft}
         loadData={reloadListContent}
         listShares={listShares}
@@ -158,7 +278,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
 
       <EnterPanel
         animation="fade"
-        className={`${styles.container} ${(isAddOpen || !!editingItem) ? styles['add-open'] : ''} ${viewMode !== 'grid' && isCommentsOpen ? styles['comments-open'] : ''}`}
+        className={`${styles.container} ${isItemDrawerVisible ? styles['add-open'] : ''} ${viewMode !== 'grid' && isCommentsOpen ? styles['comments-open'] : ''}`}
       >
         <Header
           wishlist={wishlist}
@@ -166,11 +286,14 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           priorities={priorities}
           isOwner={isOwner}
           isExpired={isExpired}
+          isArchived={isArchived}
           isDeactivating={isDeactivating}
+          isActivating={isActivating}
           isDeleting={isDeleting}
           confirmAction={confirmAction}
           setConfirmAction={setConfirmAction}
           handleDeactivateConfirm={handleDeactivateConfirm}
+          handleActivateConfirm={handleActivateConfirm}
           handleDeleteConfirm={handleDeleteConfirm}
           saveTitle={saveTitle}
           saveDate={saveDate}
@@ -178,15 +301,16 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           toggleRevealSuggestions={toggleRevealSuggestions}
           toggleAiEnabled={toggleAiEnabled || (() => {})}
           toggleWebSearchEnabled={toggleWebSearchEnabled || (() => {})}
+          toggleManualJobBackground={toggleManualJobBackground || (() => {})}
           isCommentsOpen={isCommentsOpen}
           setIsCommentsOpen={setIsCommentsOpen}
           setIsShareOpen={setIsShareOpen}
-          canImport={canCollaborate && !isExpired}
+          canImport={canCollaborate && !isExpired && !isArchived}
           isImportOpen={isImportOpen}
           onImportToggle={() => setIsImportOpen(!isImportOpen)}
         />
 
-        {wishlist?.Id && canCollaborate && !isExpired ? (
+        {wishlist?.Id && canCollaborate && !isExpired && !isArchived ? (
           <ImportStrip
             ref={importStripRef}
             mode="existing-list"
@@ -200,6 +324,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         ) : null}
 
         {activeJob &&
+        activeJob.Kind === 'wishlist-import' &&
         (activeJob.Status === 'queued' ||
           activeJob.Status === 'running' ||
           activeJob.Status === 'failed' ||
@@ -216,48 +341,13 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           <div className={`${styles.workspace} ${(selectedItemId !== null || isCommentsOpen) ? styles['inspector-open'] : ''}`}>
             {/* Left: Grid Column */}
             <div className={styles['grid-column']}>
-              <div className={styles['column-header']}>
-                <h3 className={styles['column-title']}>Gift Ideas</h3>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <div className={styles['view-switcher']} role="tablist" aria-label="Item view mode">
-                    {ITEM_VIEW_MODES.map((mode) => {
-                      const Icon = ITEM_VIEW_MODE_ICONS[mode];
-                      return (
-                        <button
-                          key={mode}
-                          type="button"
-                          role="tab"
-                          aria-selected={viewMode === mode}
-                          className={`${styles['view-btn']} ${viewMode === mode ? styles['view-btn-active'] : ''}`}
-                          onClick={() => handleSetViewMode(mode)}
-                          title={`${ITEM_VIEW_MODE_LABELS[mode]} View`}
-                          aria-label={`${ITEM_VIEW_MODE_LABELS[mode]} View`}
-                        >
-                          <Icon size={16} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search ideas..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={styles['search-input']}
-                  />
-                  {canCollaborate && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={openAddDrawer}
-                      title="Add Item"
-                      style={{ padding: '0.375rem', width: '34px', height: '34px' }}
-                    >
-                      <Plus size={18} />
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <ListViewControls
+                viewMode={viewMode}
+                handleSetViewMode={handleSetViewMode}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                addItemWidget={addItemWidget}
+              />
 
               <div className={styles['grid-items-scroll']}>
               {isLoading ? (
@@ -280,7 +370,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                               <button
                                 type="button"
                                 id={`group-${group.categoryKey}`}
-                                className={styles['section-divider']}
+                                className={styles['priority-group-title']}
                                 aria-expanded={!isCollapsed}
                                 aria-controls={`group-items-${group.categoryKey}`}
                                 onClick={() => toggleGroupCollapsed(group.categoryKey)}
@@ -290,7 +380,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                                   className={`${styles['group-chevron']} ${isCollapsed ? styles['group-chevron-collapsed'] : ''}`}
                                   aria-hidden="true"
                                 />
-                                <span>{group.label} Priority</span>
+                                <span className={styles['group-label']}>{group.label}</span>
+                                <span className={styles['group-count']}>{group.items.length}</span>
                               </button>
                               {!isCollapsed && (
                                 <div
@@ -299,42 +390,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                                 >
                                   {group.items.map((item) => (
                                     <div key={item.Id} id={`item-card-${item.Id}`}>
-                                      <ItemCard
-                                        item={item}
-                                        priorityLabel={group.label}
-                                        isOwner={isOwner}
-                                        isExpired={isExpired}
-                                        canCollaborate={canCollaborate}
-                                        allowGroupFunds={wishlist.AllowGroupFunds}
-                                        itemActions={itemActions}
-                                        onEdit={() => openItemEditor(item)}
-                                        aiEnabled={wishlist.AiEnabled}
-                                        isTaggingModeActive={
-                                          (isAddOpen || !!editingItem)
-                                            ? (isLinkingModeActive && (!editingItem || item.Id !== editingItem.Id) && isItemLinkCompatible(item))
-                                            : (isTaggingModeActive || isReplyTaggingModeActive)
-                                        }
-                                        isTaggedSelection={
-                                          (isAddOpen || !!editingItem)
-                                            ? (isLinkingModeActive && linkedItemIds.includes(item.Id))
-                                            : (isReplyTaggingModeActive ? replyTaggedItemIds : taggedItemIds).includes(item.Id)
-                                        }
-                                        onSelectTag={() => {
-                                          if (isAddOpen || !!editingItem) {
-                                            if (editingItem && item.Id === editingItem.Id) return;
-                                            handleLinkItemToggle(item.Id);
-                                          } else if (isReplyTaggingModeActive) {
-                                            handleSelectReplyTag(item.Id);
-                                          } else {
-                                            handleSelectTag(item.Id);
-                                          }
-                                        }}
-                                        viewMode={viewMode}
-                                        isSelected={selectedItemId === item.Id}
-                                        onSelect={() => setSelectedItemId(item.Id)}
-                                        wishlistItems={displayItems}
-                                        isLinkingContext={isAddOpen || !!editingItem}
-                                      />
+                                      {renderItemCard(item, group.label)}
                                     </div>
                                   ))}
                                 </div>
@@ -352,19 +408,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                       </Card>
                     )
                   ) : (
-                    <Card className={styles['empty-items-card']} padding="lg">
-                      <p>This wishlist is currently empty.</p>
-                      {canCollaborate && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          leftIcon={<Plus size={14} />}
-                          onClick={openAddDrawer}
-                        >
-                          Add the First Item
-                        </Button>
-                      )}
-                    </Card>
+                    emptyStateCard
                   )}
                 </>
               )}
@@ -378,9 +422,16 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                 {selectedItem && (
                   <div className={`${styles['inspector-view']} ${styles['active']}`}>
                     <div className={styles['inspector-header']}>
-                      <span className={styles['inspector-title']}>
-                        <Info size={16} /> Item Details
-                      </span>
+                      {(() => {
+                        const categoryMeta = getCategoryMeta(selectedItem.Category);
+                        const CategoryIcon = categoryMeta.icon;
+                        return (
+                          <span className={styles['inspector-title']}>
+                            <CategoryIcon size={16} aria-hidden />
+                            {categoryMeta.label}
+                          </span>
+                        );
+                      })()}
                       <button className={styles['close-btn']} onClick={() => setSelectedItemId(null)}>
                         <X size={16} />
                       </button>
@@ -392,7 +443,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                         priorityLabel={selectedItemPriorityLabel}
                         isOwner={isOwner}
                         isExpired={isExpired}
-                        canCollaborate={canCollaborate}
+                        isArchived={isArchived}
+                        canCollaborate={canCollaborate && !isArchived}
                         allowGroupFunds={wishlist.AllowGroupFunds}
                         itemActions={itemActions}
                         onEdit={() => openItemEditor(selectedItem)}
@@ -428,6 +480,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                         }
                         isOwner={isOwner}
                         isExpired={isExpired}
+                        isArchived={isArchived}
                         items={displayItems}
                         onItemTaggedClick={handleItemTaggedClick}
                         isTaggingModeActive={isTaggingModeActive}
@@ -450,48 +503,13 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           /* Fallback Content Layout */
           <div className={styles['content-layout']}>
             <div className={styles['items-column']}>
-              <div className={styles['column-header']}>
-                <h3 className={styles['column-title']}>Gift Ideas</h3>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <div className={styles['view-switcher']} role="tablist" aria-label="Item view mode">
-                    {ITEM_VIEW_MODES.map((mode) => {
-                      const Icon = ITEM_VIEW_MODE_ICONS[mode];
-                      return (
-                        <button
-                          key={mode}
-                          type="button"
-                          role="tab"
-                          aria-selected={viewMode === mode}
-                          className={`${styles['view-btn']} ${viewMode === mode ? styles['view-btn-active'] : ''}`}
-                          onClick={() => handleSetViewMode(mode)}
-                          title={`${ITEM_VIEW_MODE_LABELS[mode]} View`}
-                          aria-label={`${ITEM_VIEW_MODE_LABELS[mode]} View`}
-                        >
-                          <Icon size={16} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search ideas..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={styles['search-input']}
-                  />
-                  {canCollaborate && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={openAddDrawer}
-                      title="Add Item"
-                      style={{ padding: '0.375rem', width: '34px', height: '34px' }}
-                    >
-                      <Plus size={18} />
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <ListViewControls
+                viewMode={viewMode}
+                handleSetViewMode={handleSetViewMode}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                addItemWidget={addItemWidget}
+              />
 
               {isLoading ? (
                 <div className={styles['items-loading']}>
@@ -520,7 +538,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                             priorityLabel={selectedItemPriorityLabel}
                             isOwner={isOwner}
                             isExpired={isExpired}
-                            canCollaborate={canCollaborate}
+                            isArchived={isArchived}
+                            canCollaborate={canCollaborate && !isArchived}
                             allowGroupFunds={wishlist.AllowGroupFunds}
                             itemActions={itemActions}
                             onEdit={() => openItemEditor(selectedItem)}
@@ -572,42 +591,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                                 >
                                   {group.items.map((item) => (
                                     <div key={item.Id} id={`item-card-${item.Id}`}>
-                                      <ItemCard
-                                        item={item}
-                                        priorityLabel={group.label}
-                                        isOwner={isOwner}
-                                        isExpired={isExpired}
-                                        canCollaborate={canCollaborate}
-                                        allowGroupFunds={wishlist.AllowGroupFunds}
-                                        itemActions={itemActions}
-                                        onEdit={() => openItemEditor(item)}
-                                        aiEnabled={wishlist.AiEnabled}
-                                        isTaggingModeActive={
-                                          (isAddOpen || !!editingItem)
-                                            ? (isLinkingModeActive && (!editingItem || item.Id !== editingItem.Id) && isItemLinkCompatible(item))
-                                            : (isTaggingModeActive || isReplyTaggingModeActive)
-                                        }
-                                        isTaggedSelection={
-                                          (isAddOpen || !!editingItem)
-                                            ? (isLinkingModeActive && linkedItemIds.includes(item.Id))
-                                            : (isReplyTaggingModeActive ? replyTaggedItemIds : taggedItemIds).includes(item.Id)
-                                        }
-                                        onSelectTag={() => {
-                                          if (isAddOpen || !!editingItem) {
-                                            if (editingItem && item.Id === editingItem.Id) return;
-                                            handleLinkItemToggle(item.Id);
-                                          } else if (isReplyTaggingModeActive) {
-                                            handleSelectReplyTag(item.Id);
-                                          } else {
-                                            handleSelectTag(item.Id);
-                                          }
-                                        }}
-                                        viewMode={viewMode}
-                                        isSelected={selectedItemId === item.Id}
-                                        onSelect={() => setSelectedItemId(item.Id)}
-                                        wishlistItems={displayItems}
-                                        isLinkingContext={isAddOpen || !!editingItem}
-                                      />
+                                      {renderItemCard(item, group.label)}
                                     </div>
                                   ))}
                                 </div>
@@ -625,19 +609,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                       </Card>
                     )
                   ) : (
-                    <Card className={styles['empty-items-card']} padding="lg">
-                      <p>This wishlist is currently empty.</p>
-                      {canCollaborate && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          leftIcon={<Plus size={14} />}
-                          onClick={openAddDrawer}
-                        >
-                          Add the First Item
-                        </Button>
-                      )}
-                    </Card>
+                    emptyStateCard
                   )}
                 </>
               )}
@@ -670,8 +642,26 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           }
           isOwner={isOwner}
           isExpired={isExpired}
+          isArchived={isArchived}
           handleItemTaggedClick={handleItemTaggedClick}
         />
+      )}
+
+      {isItemFormSessionActive && isAssociationModeActive && (
+        <div className={styles['link-apply-bar']} data-testid="link-apply-bar">
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            className={styles['link-apply-btn']}
+            onClick={() => {
+              setIsLinkingModeActive(false);
+              setIsRelatingModeActive(false);
+            }}
+          >
+            Apply
+          </Button>
+        </div>
       )}
 
       <Modal

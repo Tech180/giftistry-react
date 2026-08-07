@@ -13,6 +13,8 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
   miniDrawer,
   variant = 'default',
   mobilePresentation = 'rail',
+  integrateMiniInSheet = false,
+  position,
   showScrim = false,
   footer,
   titleIcon,
@@ -23,6 +25,47 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
 }) => {
   const isOverlay = variant === 'overlay';
   const isSheet = mobilePresentation === 'sheet';
+
+  const header = (
+    <div className={isOverlay ? styles['drawer-header-overlay'] : styles['drawer-header']}>
+      <h4 className={isOverlay ? styles['drawer-title-overlay'] : styles['drawer-title']}>
+        {titleIcon && <span className={styles['drawer-title-icon']}>{titleIcon}</span>}
+        {title}
+        {titleExtra}
+      </h4>
+      <div className={styles['drawer-header-actions']}>
+        {headerExtra}
+        {isOverlay ? (
+          <IconButton
+            icon={<X size={20} />}
+            ariaLabel="Close sidebar"
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+          />
+        ) : (
+          <button onClick={onClose} className={styles['drawer-close']} aria-label="Close">
+            &times;
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  const bodyAndFooter = (
+    <>
+      <div className={isOverlay ? styles['drawer-body-overlay'] : styles['drawer-body']}>
+        {children}
+      </div>
+      {footer && <div className={styles['drawer-footer']}>{footer}</div>}
+    </>
+  );
+
+  const mainColumn = integrateMiniInSheet ? (
+    <div className={styles['drawer-sheet-main']}>{bodyAndFooter}</div>
+  ) : (
+    bodyAndFooter
+  );
 
   return (
     <>
@@ -40,37 +83,17 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
         data-testid="drawer-panel"
         aria-hidden={!isOpen}
       >
-        {!isSheet && miniDrawer}
+        {!integrateMiniInSheet && miniDrawer}
         <div className={styles['drawer-panel']}>
-          <div className={isOverlay ? styles['drawer-header-overlay'] : styles['drawer-header']}>
-            <h4 className={isOverlay ? styles['drawer-title-overlay'] : styles['drawer-title']}>
-              {titleIcon && <span className={styles['drawer-title-icon']}>{titleIcon}</span>}
-              {title}
-              {titleExtra}
-            </h4>
-            <div className={styles['drawer-header-actions']}>
-              {headerExtra}
-              {isOverlay ? (
-                <IconButton
-                  icon={<X size={20} />}
-                  ariaLabel="Close sidebar"
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClose}
-                />
-              ) : (
-                <button onClick={onClose} className={styles['drawer-close']} aria-label="Close">
-                  &times;
-                </button>
-              )}
+          {header}
+          {integrateMiniInSheet ? (
+            <div className={styles['drawer-sheet-content']} data-testid="drawer-sheet-content">
+              {position === 'right' && miniDrawer}
+              {mainColumn}
+              {position === 'left' && miniDrawer}
             </div>
-          </div>
-          {isSheet && miniDrawer}
-          <div className={isOverlay ? styles['drawer-body-overlay'] : styles['drawer-body']}>
-            {children}
-          </div>
-          {footer && (
-            <div className={styles['drawer-footer']}>{footer}</div>
+          ) : (
+            mainColumn
           )}
         </div>
       </div>

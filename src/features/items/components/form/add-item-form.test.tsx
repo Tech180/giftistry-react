@@ -8,11 +8,15 @@ vi.mock('react-router-dom', () => ({
 }));
 
 vi.mock('app/providers/auth-context', () => ({
-  useAuth: () => ({ user: { Id: 'test-user-id' } }),
+  useAuth: () => ({
+    user: { Id: 'test-user-id' },
+  }),
 }));
 
 import { AddItemForm } from './add-item-form.component';
 import { itemsApi } from '../../api/items.api';
+import { jobsApi } from 'features/jobs/api/jobs.api';
+import type { BackgroundJobView } from 'features/jobs/interfaces/background-job.interface';
 import { Item } from '../../interfaces/item.interface';
 import { ADD_ITEM_FORM_ID } from './add-item-form.html';
 
@@ -21,8 +25,15 @@ vi.mock('../../api/items.api', () => ({
     getFieldDefinitions: vi.fn(),
     addItem: vi.fn(),
     updateItem: vi.fn(),
-    summarizeDescription: vi.fn(),
-    extractMetadata: vi.fn(),
+  },
+}));
+
+vi.mock('features/jobs/api/jobs.api', () => ({
+  jobsApi: {
+    startItemEnrich: vi.fn(),
+    startItemSummarize: vi.fn(),
+    getJob: vi.fn(),
+    cancelJob: vi.fn(),
   },
 }));
 
@@ -40,8 +51,12 @@ const baseFormProps = {
   existingCategories: [],
   linkedItemIds: [] as string[],
   resolvedLinkedCount: 0,
+  relatedItemIds: [] as string[],
+  resolvedRelatedCount: 0,
   isLinkingModeActive: false,
   setIsLinkingModeActive: vi.fn(),
+  isRelatingModeActive: false,
+  setIsRelatingModeActive: vi.fn(),
   isOpen: true,
 };
 
@@ -68,6 +83,36 @@ const mockEditItem: Item = {
   Claims: [],
   IsClaimed: false,
 };
+
+const queuedJob = (kind: string): BackgroundJobView => ({
+  Id: 'job-1',
+  Kind: kind,
+  ListId: 'test-list-id',
+  UserId: 'test-user-id',
+  Status: 'queued',
+  Phase: 'queued',
+  ProgressDone: 0,
+  ProgressTotal: 1,
+  Message: '',
+  Error: null,
+});
+
+const finishedJob = (kind: string, result: Record<string, unknown>): BackgroundJobView => ({
+  ...queuedJob(kind),
+  Status: 'completed',
+  Phase: 'completed',
+  Result: result,
+});
+
+function mockEnrichJob(result: Record<string, unknown>) {
+  vi.mocked(jobsApi.startItemEnrich).mockResolvedValue({ Job: queuedJob('item-enrich') });
+  vi.mocked(jobsApi.getJob).mockResolvedValue(finishedJob('item-enrich', result));
+}
+
+function mockSummarizeJob(description: string) {
+  vi.mocked(jobsApi.startItemSummarize).mockResolvedValue({ Job: queuedJob('item-summarize') });
+  vi.mocked(jobsApi.getJob).mockResolvedValue(finishedJob('item-summarize', { Description: description }));
+}
 
 describe('AddItemForm - Dynamic Fields & Dependencies', () => {
   beforeEach(() => {
@@ -115,8 +160,12 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
         existingCategories={[]}
         linkedItemIds={[]}
         resolvedLinkedCount={0}
+        relatedItemIds={[]}
+        resolvedRelatedCount={0}
         isLinkingModeActive={false}
         setIsLinkingModeActive={() => {}}
+        isRelatingModeActive={false}
+        setIsRelatingModeActive={() => {}}
       />
     );
 
@@ -175,7 +224,8 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
         [],
         'https://target.com/new-product',
         149.99,
-        'Target'
+        'Target',
+        null
       );
     });
   });
@@ -185,7 +235,7 @@ describe('AddItemForm - AI Summarize', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue([]);
-    vi.mocked(itemsApi.summarizeDescription).mockResolvedValue('AI generated notes.');
+    mockSummarizeJob('AI generated notes.');
   });
 
   test('hides summarize controls when AI is unavailable', async () => {
@@ -251,9 +301,10 @@ describe('AddItemForm - AI Summarize', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Summarize$/i }));
 
     await waitFor(() => {
-      expect(itemsApi.summarizeDescription).toHaveBeenCalledWith(
+      expect(jobsApi.startItemSummarize).toHaveBeenCalledWith(
         expect.objectContaining({
           listId: 'test-list-id',
+          writeBack: false,
           name: 'Cool Tee',
           text: 'Original notes',
           customFields: expect.objectContaining({
@@ -282,13 +333,14 @@ describe('AddItemForm - Auto populate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue([]);
-    vi.mocked(itemsApi.extractMetadata).mockResolvedValue({
+    mockEnrichJob({
       Title: 'Cool Hoodie',
       Price: 59.99,
       Description: 'Soft fleece',
       Category: 'clothing',
       CategoryAlternatives: [],
       ImageUrl: null,
+      WebsiteName: null,
       CustomFields: {
         Predefined: { ShirtSize: 'L', Color: 'Black' },
         UserDefined: { Brand: 'Acme', Material: 'Cotton' },
@@ -311,7 +363,7 @@ describe('AddItemForm - Auto populate', () => {
     fireEvent.click(screen.getByTitle('Auto-fill details from link'));
 
     await waitFor(() => {
-      expect(itemsApi.extractMetadata).toHaveBeenCalled();
+      expect(jobsApi.startItemEnrich).toHaveBeenCalled();
     });
 
     fireEvent.click(screen.getByText('Custom Fields'));
@@ -343,7 +395,7 @@ describe('AddItemForm - Auto populate', () => {
     });
   });
 
-  test('sends listId when scraping metadata', async () => {
+  test('starts a draft-populate enrich job for the pasted link', async () => {
     render(
       <AddItemForm
         {...baseFormProps}
@@ -359,9 +411,53 @@ describe('AddItemForm - Auto populate', () => {
     fireEvent.click(screen.getByTitle('Auto-fill details from link'));
 
     await waitFor(() => {
-      expect(itemsApi.extractMetadata).toHaveBeenCalledWith('https://shop.example/hoodie', {
+      expect(jobsApi.startItemEnrich).toHaveBeenCalledWith({
+        intent: 'draft-populate',
         listId: 'test-list-id',
+        url: 'https://shop.example/hoodie',
+        itemId: undefined,
+        writeBack: false,
       });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Cool Hoodie')).toBeInTheDocument();
+    });
+  });
+
+  test('starts an update-item enrich job and notifies the parent when editing', async () => {
+    const onItemEnriched = vi.fn();
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={mockEditItem}
+        onItemEnriched={onItemEnriched}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Paste product URL...')).toHaveValue(
+        'https://amazon.com/old-product'
+      );
+    });
+
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(jobsApi.startItemEnrich).toHaveBeenCalledWith({
+        intent: 'update-item',
+        listId: 'test-list-id',
+        url: 'https://amazon.com/old-product',
+        itemId: 'item-1',
+        writeBack: true,
+      });
+    });
+
+    await waitFor(() => {
+      expect(onItemEnriched).toHaveBeenCalled();
     });
   });
 
@@ -410,13 +506,14 @@ describe('AddItemForm - Auto populate', () => {
   });
 
   test('shows AI-assigned category as read-only when populated', async () => {
-    vi.mocked(itemsApi.extractMetadata).mockResolvedValue({
+    mockEnrichJob({
       Title: 'Cool Hoodie',
       Price: 59.99,
       Description: 'Soft fleece',
       Category: 'clothing',
       CategoryAlternatives: ['apparel_accessories', 'health_wellness'],
       ImageUrl: null,
+      WebsiteName: null,
       CustomFields: { Predefined: {}, UserDefined: {} },
     });
 
@@ -443,13 +540,14 @@ describe('AddItemForm - Auto populate', () => {
   });
 
   test('applies CustomFields predefined and user-defined rows', async () => {
-    vi.mocked(itemsApi.extractMetadata).mockResolvedValue({
+    mockEnrichJob({
       Title: 'Cool Hoodie',
       Price: 59.99,
       Description: 'Soft fleece',
       Category: 'clothing',
       CategoryAlternatives: [],
       ImageUrl: null,
+      WebsiteName: null,
       CustomFields: {
         Predefined: { Color: 'Black', ShirtSize: 'L' },
         UserDefined: { Brand: 'Acme' },
@@ -493,7 +591,7 @@ describe('AddItemForm - Auto populate', () => {
     fireEvent.click(screen.getByTitle('Auto-fill details from link'));
 
     await waitFor(() => {
-      expect(itemsApi.extractMetadata).toHaveBeenCalled();
+      expect(jobsApi.startItemEnrich).toHaveBeenCalled();
     });
 
     fireEvent.click(screen.getByText('Custom Fields'));
@@ -507,5 +605,635 @@ describe('AddItemForm - Auto populate', () => {
     expect(screen.queryByPlaceholderText('32x30')).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText('Medium')).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText('Matte Black')).not.toBeInTheDocument();
+  });
+
+  test('shows warning when AI populate failed but scrape succeeded', async () => {
+    mockEnrichJob({
+      Title: 'Dyson V11 Torque Drive Cordless Vacuum Cleaner, Blue',
+      Price: 599,
+      Description: null,
+      Category: 'home',
+      CategoryAlternatives: [],
+      ImageUrl: null,
+      WebsiteName: 'Amazon',
+      CustomFields: { Predefined: {}, UserDefined: {} },
+      Diagnostics: { AiPopulate: 'failed' },
+    });
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/dyson' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          /Product details were found, but AI summarization has failed/i
+        )
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.getByDisplayValue('Dyson V11 Torque Drive Cordless Vacuum Cleaner, Blue')
+    ).toBeInTheDocument();
+  });
+
+  test('does not show AI warning when populate succeeded', async () => {
+    mockEnrichJob({
+      Title: 'Dyson V11 Cordless Vacuum Cleaner',
+      Price: 599,
+      Description: null,
+      Category: 'home',
+      CategoryAlternatives: [],
+      ImageUrl: null,
+      WebsiteName: null,
+      CustomFields: { Predefined: {}, UserDefined: {} },
+      Diagnostics: { AiPopulate: 'succeeded' },
+    });
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/dyson' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByDisplayValue('Dyson V11 Cordless Vacuum Cleaner')
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.queryByText(/AI summarization has failed/i)
+    ).not.toBeInTheDocument();
+  });
+
+  test('shows hard extract error instead of AI warning when the enrich job fails', async () => {
+    vi.mocked(jobsApi.startItemEnrich).mockRejectedValue(new Error('network'));
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/dyson' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Failed to fetch product details automatically/i)
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.queryByText(/AI summarization has failed/i)
+    ).not.toBeInTheDocument();
+  });
+
+  test('clears AI warning when sidebar closes', async () => {
+    mockEnrichJob({
+      Title: 'Messy Title',
+      Price: 10,
+      Description: null,
+      Category: 'home',
+      CategoryAlternatives: [],
+      ImageUrl: null,
+      WebsiteName: null,
+      CustomFields: { Predefined: {}, UserDefined: {} },
+      Diagnostics: { AiPopulate: 'failed' },
+    });
+
+    const { rerender } = render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+        isOpen={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/item' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/AI summarization has failed/i)
+      ).toBeInTheDocument();
+    });
+
+    rerender(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+        isOpen={false}
+      />
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText(/AI summarization has failed/i)
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  test('clears AI warning when rescanning succeeds', async () => {
+    vi.mocked(jobsApi.startItemEnrich).mockResolvedValue({ Job: queuedJob('item-enrich') });
+    vi.mocked(jobsApi.getJob)
+      .mockResolvedValueOnce(
+        finishedJob('item-enrich', {
+          Title: 'Messy Title',
+          Price: 10,
+          Description: null,
+          Category: 'home',
+          CategoryAlternatives: [],
+          ImageUrl: null,
+          WebsiteName: null,
+          CustomFields: { Predefined: {}, UserDefined: {} },
+          Diagnostics: { AiPopulate: 'failed' },
+        })
+      )
+      .mockResolvedValueOnce(
+        finishedJob('item-enrich', {
+          Title: 'Clean Title',
+          Price: 10,
+          Description: null,
+          Category: 'home',
+          CategoryAlternatives: [],
+          ImageUrl: null,
+          WebsiteName: null,
+          CustomFields: { Predefined: {}, UserDefined: {} },
+          Diagnostics: { AiPopulate: 'succeeded' },
+        })
+      );
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/item' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/AI summarization has failed/i)
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Clean Title')).toBeInTheDocument();
+    });
+    expect(
+      screen.queryByText(/AI summarization has failed/i)
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('AddItemForm - Metadata hydration on edit', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue([]);
+    vi.mocked(itemsApi.updateItem).mockResolvedValue(mockEditItem);
+  });
+
+  test('loads custom fields from item.Metadata when Description is plain text', async () => {
+    const itemWithMetadata: Item = {
+      ...mockEditItem,
+      Name: 'mosanana Oval Cat Eye Sunglasses',
+      Description: 'Gift notes about the sunglasses',
+      Metadata: {
+        Text: null,
+        CustomFields: {
+          Predefined: { Color: 'Black', ModelNumber: 'MS52372' },
+          UserDefined: { Brand: 'mosanana' },
+        },
+      },
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={itemWithMetadata}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Gift notes about the sunglasses')).toBeInTheDocument();
+      expect(screen.getByText('Color')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Black')).toBeInTheDocument();
+      expect(screen.getByText('Model Number')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('MS52372')).toBeInTheDocument();
+      expect(screen.getByText('Brand')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('mosanana')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByDisplayValue('Gift notes about the sunglasses'), {
+      target: { value: 'Gift notes about the sunglasses (updated)' },
+    });
+
+    fireEvent.submit(document.getElementById(ADD_ITEM_FORM_ID)!);
+
+    await waitFor(() => {
+      expect(itemsApi.updateItem).toHaveBeenCalledWith(
+        'item-1',
+        'mosanana Oval Cat Eye Sunglasses',
+        null,
+        null,
+        null,
+        null,
+        [],
+        'https://amazon.com/old-product',
+        99.99,
+        'Amazon',
+        expect.objectContaining({
+          Text: 'Gift notes about the sunglasses (updated)',
+          CustomFields: expect.objectContaining({
+            Predefined: expect.objectContaining({
+              Color: 'Black',
+              modelNumber: 'MS52372',
+            }),
+            UserDefined: expect.objectContaining({
+              Brand: 'mosanana',
+            }),
+          }),
+        })
+      );
+    });
+  });
+});
+
+describe('AddItemForm - mutual AI button disable', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue([]);
+  });
+
+  test('does not replace website name until the enrich job finishes', async () => {
+    let releaseEnrich: () => void = () => {};
+    vi.mocked(jobsApi.getJob).mockResolvedValue(
+      finishedJob('item-enrich', {
+        Title: 'Cool Product',
+        Price: 10,
+        Description: null,
+        Category: null,
+        CategoryAlternatives: [],
+        ImageUrl: null,
+        WebsiteName: 'Amazon',
+        CustomFields: { Predefined: {}, UserDefined: {} },
+      })
+    );
+    vi.mocked(jobsApi.startItemEnrich).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          releaseEnrich = () => resolve({ Job: queuedJob('item-enrich') });
+        })
+    );
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://www.amazon.com/dp/123' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Amazon, Target'), {
+      target: { value: 'My Custom Shop' },
+    });
+
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(screen.getByTitle('Auto-fill details from link')).toBeDisabled();
+    });
+    expect(screen.getByPlaceholderText('Amazon, Target')).toHaveValue('My Custom Shop');
+
+    releaseEnrich();
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Amazon, Target')).toHaveValue('Amazon');
+    });
+  });
+
+  test('disables summarize while populate is running', async () => {
+    let releaseEnrich: () => void = () => {};
+    vi.mocked(jobsApi.getJob).mockResolvedValue(
+      finishedJob('item-enrich', {
+        Title: 'Cool Hoodie',
+        Price: 59.99,
+        Description: 'Soft fleece',
+        Category: 'clothing',
+        CategoryAlternatives: [],
+        ImageUrl: null,
+        WebsiteName: null,
+        CustomFields: { Predefined: {}, UserDefined: {} },
+      })
+    );
+    vi.mocked(jobsApi.startItemEnrich).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          releaseEnrich = () => resolve({ Job: queuedJob('item-enrich') });
+        })
+    );
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('e.g. Sony WH-1000XM5'), {
+      target: { value: 'Cool Tee' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/hoodie' },
+    });
+
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(screen.getByTitle('Auto-fill details from link')).toBeDisabled();
+      expect(screen.getByRole('button', { name: /^Summarize$/i })).toBeDisabled();
+    });
+
+    releaseEnrich();
+
+    await waitFor(() => {
+      expect(screen.getByTitle('Auto-fill details from link')).not.toBeDisabled();
+      expect(screen.getByRole('button', { name: /^Summarize$/i })).not.toBeDisabled();
+    });
+  });
+
+  test('disables magic-link while summarize is running', async () => {
+    let releaseSummarize: () => void = () => {};
+    vi.mocked(jobsApi.getJob).mockResolvedValue(
+      finishedJob('item-summarize', { Description: 'AI generated notes.' })
+    );
+    vi.mocked(jobsApi.startItemSummarize).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          releaseSummarize = () => resolve({ Job: queuedJob('item-summarize') });
+        })
+    );
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('e.g. Sony WH-1000XM5'), {
+      target: { value: 'Cool Tee' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/hoodie' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /^Summarize$/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /^Summarize$/i })).toBeDisabled();
+      expect(screen.getByTitle('Auto-fill details from link')).toBeDisabled();
+    });
+
+    releaseSummarize();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /^Summarize$/i })).not.toBeDisabled();
+      expect(screen.getByTitle('Auto-fill details from link')).not.toBeDisabled();
+    });
+  });
+});
+
+describe('AddItemForm - abandon pending job on close', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue([]);
+    vi.mocked(jobsApi.cancelJob).mockResolvedValue(queuedJob('item-enrich'));
+    vi.mocked(jobsApi.startItemEnrich).mockResolvedValue({ Job: queuedJob('item-enrich') });
+  });
+
+  test('background close promotes draft-populate to create-from-url', async () => {
+    const onAutoEnrichStarted = vi.fn();
+    let releaseGetJob: (job: BackgroundJobView) => void = () => {};
+    vi.mocked(jobsApi.getJob).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          releaseGetJob = resolve;
+        })
+    );
+
+    const { rerender } = render(
+      <AddItemForm
+        {...baseFormProps}
+        isOpen={true}
+        canShowAi={true}
+        listAiEnabled={true}
+        listManualJobBackground={true}
+        onAutoEnrichStarted={onAutoEnrichStarted}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/hoodie' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(jobsApi.startItemEnrich).toHaveBeenCalledWith(
+        expect.objectContaining({ intent: 'draft-populate' })
+      );
+    });
+
+    rerender(
+      <AddItemForm
+        {...baseFormProps}
+        isOpen={false}
+        canShowAi={true}
+        listAiEnabled={true}
+        listManualJobBackground={true}
+        onAutoEnrichStarted={onAutoEnrichStarted}
+      />
+    );
+
+    await waitFor(() => {
+      expect(jobsApi.cancelJob).toHaveBeenCalledWith('job-1');
+      expect(jobsApi.startItemEnrich).toHaveBeenCalledWith({
+        intent: 'create-from-url',
+        listId: 'test-list-id',
+        url: 'https://shop.example/hoodie',
+        writeBack: true,
+      });
+      expect(onAutoEnrichStarted).toHaveBeenCalled();
+    });
+
+    releaseGetJob(finishedJob('item-enrich', { Title: 'ignored' }));
+  });
+
+  test('background close promotes under StrictMode', async () => {
+    const onAutoEnrichStarted = vi.fn();
+    let releaseGetJob: (job: BackgroundJobView) => void = () => {};
+    vi.mocked(jobsApi.getJob).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          releaseGetJob = resolve;
+        })
+    );
+
+    const formProps = {
+      ...baseFormProps,
+      canShowAi: true,
+      listAiEnabled: true,
+      listManualJobBackground: true,
+      onAutoEnrichStarted,
+    };
+
+    const { rerender } = render(
+      <React.StrictMode>
+        <AddItemForm {...formProps} isOpen={true} />
+      </React.StrictMode>
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/hoodie' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(jobsApi.startItemEnrich).toHaveBeenCalledWith(
+        expect.objectContaining({ intent: 'draft-populate' })
+      );
+    });
+
+    rerender(
+      <React.StrictMode>
+        <AddItemForm {...formProps} isOpen={false} />
+      </React.StrictMode>
+    );
+
+    await waitFor(() => {
+      expect(jobsApi.cancelJob).toHaveBeenCalledWith('job-1');
+      expect(jobsApi.startItemEnrich).toHaveBeenCalledWith({
+        intent: 'create-from-url',
+        listId: 'test-list-id',
+        url: 'https://shop.example/hoodie',
+        writeBack: true,
+      });
+      expect(onAutoEnrichStarted).toHaveBeenCalled();
+    });
+
+    releaseGetJob(finishedJob('item-enrich', { Title: 'ignored' }));
+  });
+
+  test('foreground close cancels the pending job without promoting', async () => {
+    vi.mocked(jobsApi.getJob).mockImplementation(() => new Promise(() => {}));
+
+    const { rerender } = render(
+      <AddItemForm
+        {...baseFormProps}
+        isOpen={true}
+        canShowAi={true}
+        listAiEnabled={true}
+        listManualJobBackground={false}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/hoodie' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(jobsApi.startItemEnrich).toHaveBeenCalled();
+    });
+
+    rerender(
+      <AddItemForm
+        {...baseFormProps}
+        isOpen={false}
+        canShowAi={true}
+        listAiEnabled={true}
+        listManualJobBackground={false}
+      />
+    );
+
+    await waitFor(() => {
+      expect(jobsApi.cancelJob).toHaveBeenCalledWith('job-1');
+    });
+    expect(jobsApi.startItemEnrich).toHaveBeenCalledTimes(1);
+  });
+
+  test('background close leaves update-item running', async () => {
+    vi.mocked(jobsApi.getJob).mockImplementation(() => new Promise(() => {}));
+
+    const { rerender } = render(
+      <AddItemForm
+        {...baseFormProps}
+        item={mockEditItem}
+        isOpen={true}
+        canShowAi={true}
+        listAiEnabled={true}
+        listManualJobBackground={true}
+      />
+    );
+
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(jobsApi.startItemEnrich).toHaveBeenCalledWith(
+        expect.objectContaining({ intent: 'update-item' })
+      );
+    });
+
+    rerender(
+      <AddItemForm
+        {...baseFormProps}
+        item={mockEditItem}
+        isOpen={false}
+        canShowAi={true}
+        listAiEnabled={true}
+        listManualJobBackground={true}
+      />
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(jobsApi.cancelJob).not.toHaveBeenCalled();
+    expect(jobsApi.startItemEnrich).toHaveBeenCalledTimes(1);
   });
 });

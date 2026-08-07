@@ -8,11 +8,14 @@ export interface HeaderTemplateProps {
   priorities: Priority[];
   isOwner: boolean;
   isExpired: boolean;
+  isArchived: boolean;
   isDeactivating: boolean;
+  isActivating: boolean;
   isDeleting: boolean;
-  confirmAction: 'deactivate' | 'delete' | null;
-  setConfirmAction: (val: 'deactivate' | 'delete' | null) => void;
+  confirmAction: 'deactivate' | 'activate' | 'delete' | null;
+  setConfirmAction: (val: 'deactivate' | 'activate' | 'delete' | null) => void;
   handleDeactivateConfirm: () => void;
+  handleActivateConfirm: () => void;
   handleDeleteConfirm: () => void;
   saveTitle: (val: string) => Promise<void>;
   saveDate: (val: string) => Promise<void>;
@@ -20,6 +23,7 @@ export interface HeaderTemplateProps {
   toggleRevealSuggestions: () => void;
   toggleAiEnabled: () => void;
   toggleWebSearchEnabled: () => void;
+  toggleManualJobBackground: () => void;
   canShowAi: boolean;
   canShowWebSearch: boolean;
   isCommentsOpen: boolean;
@@ -39,5 +43,10 @@ export interface HeaderTemplateProps {
   isExportDropdownOpen: boolean;
   setIsExportDropdownOpen: (val: boolean) => void;
   exportRef: React.RefObject<HTMLDivElement | null>;
+  isListSettingsOpen: boolean;
+  setIsListSettingsOpen: (val: boolean) => void;
+  listSettingsRef: React.RefObject<HTMLDivElement | null>;
   exportContext: WishlistExportContext;
+  showListSettings: boolean;
+  showOwnerBadgeRegion: boolean;
 }

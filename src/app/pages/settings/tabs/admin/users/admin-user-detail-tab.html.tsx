@@ -32,6 +32,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
   policy,
   newPassword,
   isSelf,
+  isOwnerReadOnly,
   onTabChange,
   onProfileFormChange,
   onPolicyFlagsChange,
@@ -54,6 +55,11 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
 
   const joinedLabel = user.CreatedAt ? getJoinedDate(user.CreatedAt) : 'Unknown';
   const joinedDisplay = joinedLabel.startsWith('Joined ') ? joinedLabel.slice(7) : joinedLabel;
+  const fieldsDisabled = isOwnerReadOnly || !isSelf;
+  const switchesDisabled = isOwnerReadOnly;
+  const paneClass = isOwnerReadOnly
+    ? `${styles['detail-pane-active']} ${styles['detail-pane-readonly']}`
+    : styles['detail-pane-active'];
 
   return (
     <EnterPanel animation="fade" className={styles['tab-pane']}>
@@ -67,6 +73,9 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
         <div className={styles['page-header-main']}>
           <h1 className={styles['page-title']}>@{user.Username}</h1>
           <p className={`${styles['page-subtitle']} ${styles['text-muted']}`}>{user.Email}</p>
+          {isOwnerReadOnly && (
+            <p className={styles['owner-view-only-banner']}>Server owner — view only</p>
+          )}
         </div>
         <div className={styles['joined-badge']}>
           <div className={styles['joined-badge-header']}>
@@ -98,7 +107,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
       </div>
 
       {activeTab === 'profile' && (
-        <div className={activeTab === 'profile' ? styles['detail-pane-active'] : styles['detail-pane']}>
+        <div className={paneClass}>
           <div className={styles['profile-layout']}>
             <div className={styles['profile-fields']}>
               <div className={styles['form-field']}>
@@ -106,7 +115,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
                 <input
                   className={styles['form-input']}
                   value={profileForm.username}
-                  disabled={!isSelf}
+                  disabled={fieldsDisabled}
                   onChange={(e) => onProfileFormChange({ username: e.target.value })}
                 />
               </div>
@@ -116,7 +125,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
                   className={styles['form-input']}
                   type="email"
                   value={profileForm.email}
-                  disabled={!isSelf}
+                  disabled={fieldsDisabled}
                   onChange={(e) => onProfileFormChange({ email: e.target.value })}
                 />
               </div>
@@ -126,7 +135,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
                   <input
                     className={styles['form-input']}
                     value={profileForm.firstName}
-                    disabled={!isSelf}
+                    disabled={fieldsDisabled}
                     onChange={(e) => onProfileFormChange({ firstName: e.target.value })}
                   />
                 </div>
@@ -135,7 +144,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
                   <input
                     className={styles['form-input']}
                     value={profileForm.lastName}
-                    disabled={!isSelf}
+                    disabled={fieldsDisabled}
                     onChange={(e) => onProfileFormChange({ lastName: e.target.value })}
                   />
                 </div>
@@ -147,36 +156,40 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
                 <textarea
                   className={`${styles['form-input']} ${styles['profile-bio-textarea']}`}
                   value={profileForm.bio}
-                  disabled={!isSelf}
+                  disabled={fieldsDisabled}
                   onChange={(e) => onProfileFormChange({ bio: e.target.value })}
                 />
               </div>
             </div>
           </div>
-          <div className={`${styles['actions-row']} ${styles['actions-row-split']}`}>
-            <div>
-              {canDeleteAccount && (
-                <Button variant="danger" onClick={onDelete}>Delete account</Button>
-              )}
+          {!isOwnerReadOnly && (
+            <div className={`${styles['actions-row']} ${styles['actions-row-split']}`}>
+              <div>
+                {canDeleteAccount && (
+                  <Button variant="danger" onClick={onDelete}>Delete account</Button>
+                )}
+              </div>
+              <div className={styles['actions-row-group']}>
+                {canTransferOwnership && (
+                  <Button
+                    variant="secondary"
+                    onClick={onTransferOwnership}
+                    isLoading={isTransferringOwnership}
+                  >
+                    Transfer ownership
+                  </Button>
+                )}
+                {isSelf && (
+                  <Button variant="primary" onClick={onSaveProfile}>Save profile</Button>
+                )}
+              </div>
             </div>
-            <div className={styles['actions-row-group']}>
-              {canTransferOwnership && (
-                <Button
-                  variant="secondary"
-                  onClick={onTransferOwnership}
-                  isLoading={isTransferringOwnership}
-                >
-                  Transfer ownership
-                </Button>
-              )}
-              <Button variant="primary" onClick={onSaveProfile}>Save profile</Button>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
       {activeTab === 'permissions' && (
-        <div className={styles['detail-pane-active']}>
+        <div className={paneClass}>
           <SettingGroup>
             <SettingItem
               title="Administrator access"
@@ -189,7 +202,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
             >
               <Switch
                 checked={policyFlags.isAdmin}
-                disabled={isSelf}
+                disabled={isSelf || switchesDisabled}
                 onChange={(checked) => onPolicyFlagsChange({ isAdmin: checked })}
                 aria-label="Administrator access"
               />
@@ -200,7 +213,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
             >
               <Switch
                 checked={policyFlags.isDisabled}
-                disabled={isSelf}
+                disabled={isSelf || switchesDisabled}
                 onChange={(checked) => onPolicyFlagsChange({ isDisabled: checked })}
                 aria-label="Disable account"
               />
@@ -211,6 +224,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
             >
               <Switch
                 checked={policyFlags.isHidden}
+                disabled={switchesDisabled}
                 onChange={(checked) => onPolicyFlagsChange({ isHidden: checked })}
                 aria-label="Hidden from friend search"
               />
@@ -221,6 +235,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
             >
               <Switch
                 checked={policyFlags.forcePasswordChange}
+                disabled={switchesDisabled}
                 onChange={(checked) => onPolicyFlagsChange({ forcePasswordChange: checked })}
                 aria-label="Require password change"
               />
@@ -235,6 +250,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
             >
               <Switch
                 checked={policy.CanCreateWishlists}
+                disabled={switchesDisabled}
                 onChange={(checked) => onPolicyChange('CanCreateWishlists', checked)}
                 aria-label="Can create wishlists"
               />
@@ -249,6 +265,7 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
                 type="number"
                 min={0}
                 value={policy.MaxActiveWishlists}
+                disabled={switchesDisabled}
                 onChange={(e) => onPolicyChange('MaxActiveWishlists', Number(e.target.value))}
               />
             </SettingItem>
@@ -256,29 +273,36 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
               <SettingItem key={key} title={title} description={description}>
                 <Switch
                   checked={!!policy[key]}
+                  disabled={switchesDisabled}
                   onChange={(checked) => onPolicyChange(key, checked)}
                   aria-label={title}
                 />
               </SettingItem>
             ))}
           </SettingGroup>
-          <div className={styles['actions-row']}>
-            <Button variant="primary" onClick={onSavePolicy}>Update permissions</Button>
-          </div>
+          {!isOwnerReadOnly && (
+            <div className={styles['actions-row']}>
+              <Button variant="primary" onClick={onSavePolicy}>Update permissions</Button>
+            </div>
+          )}
         </div>
       )}
 
       {activeTab === 'security' && (
-        <div className={styles['detail-pane-active']}>
+        <div className={paneClass}>
           <SettingGroup>
             <SettingItem
               title="Authentication status"
               description={`2FA: ${user.TwoFactorEnabled ? 'Enabled' : 'Disabled'} · Passkeys: ${user.PasskeyCount ?? 0} · Failed logins: ${user.FailedLoginCount ?? 0}`}
             >
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <Button variant="secondary" size="sm" onClick={onRevokeSessions}>Revoke sessions</Button>
-                <Button variant="secondary" size="sm" onClick={onUnlock}>Unlock</Button>
-              </div>
+              {!isOwnerReadOnly ? (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <Button variant="secondary" size="sm" onClick={onRevokeSessions}>Revoke sessions</Button>
+                  <Button variant="secondary" size="sm" onClick={onUnlock}>Unlock</Button>
+                </div>
+              ) : (
+                <span className={styles['text-muted']}>View only</span>
+              )}
             </SettingItem>
           </SettingGroup>
 
@@ -292,13 +316,16 @@ export const AdminUserDetailTabTemplate: React.FC<AdminUserDetailTabTemplateProp
               onChange={(e) => onNewPasswordChange(e.target.value)}
               minLength={6}
               placeholder="Leave blank to generate"
+              disabled={isOwnerReadOnly}
             />
           </div>
-          <div className={styles['actions-row']}>
-            <Button variant="primary" onClick={onResetPassword} disabled={!newPassword}>
-              Reset password
-            </Button>
-          </div>
+          {!isOwnerReadOnly && (
+            <div className={styles['actions-row']}>
+              <Button variant="primary" onClick={onResetPassword} disabled={!newPassword}>
+                Reset password
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

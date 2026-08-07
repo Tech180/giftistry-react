@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Link2 } from 'lucide-react';
+import { Star, Link2, Layers2 } from 'lucide-react';
 import { Button, EnterPanel } from 'shared/ui';
 import { ItemViewProps } from '../../../interfaces/item-view-props.interface';
 import {
@@ -7,8 +7,10 @@ import {
   ClaimBadge,
   TaggingOverlay,
   TaggingSelect,
+  QuantityBadge,
 } from '../../item-presentation';
 import { buildItemCardModifierClasses, getPrimaryClaimForBadge, getClaimedGrayOutClass, getUserClaimedHighlightClass, shouldShowClaimBadge } from '../shared/item-card-modifiers.util';
+import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import styles from './grid-item-view.module.css';
 
 export const GridItemView: React.FC<ItemViewProps> = (props) => {
@@ -34,13 +36,18 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
     audienceLabel,
     isPrivate,
     linkedItems,
+    relatedItems,
     isLinkingContext,
+    isRelatingContext,
     allowGroupFunds,
+    metadata,
   } = props;
 
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
+  const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
   const primaryClaim = getPrimaryClaimForBadge(item.Claims);
   const primaryPrice = item.Links[0]?.ExtractedPrice;
+  const primaryImageUrl = getItemPrimaryImageUrl(item);
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -58,7 +65,8 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
     isFullyClaimed,
     primaryClaim != null,
     claimedByCurrentUser,
-    styles
+    styles,
+    props.isArchived
   );
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
@@ -67,7 +75,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
 
   return (
     <div
-      className={`${styles['gift-card']} ${modifierClass} ${isSelected ? styles['is-selected'] : ''}`}
+      className={`${styles['gift-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass} ${isSelected ? styles['is-selected'] : ''}`}
       onClick={onSelect}
       role="button"
       tabIndex={0}
@@ -127,7 +135,15 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
       </div>
 
       <div className={styles['card-visual']}>
-        <CategoryIcon size={40} className={styles['card-icon']} />
+        {primaryImageUrl ? (
+          <img
+            src={primaryImageUrl}
+            alt=""
+            className={styles['card-photo']}
+          />
+        ) : (
+          <CategoryIcon size={40} className={styles['card-icon']} />
+        )}
       </div>
 
       <div className={styles['card-content']}>
@@ -135,11 +151,17 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
           {isLinkedToItems && (
             <Link2 size={12} className={styles['linked-icon']} aria-hidden="true" />
           )}
+          {isRelatedToItems && (
+            <Layers2 size={12} className={styles['linked-icon']} aria-label="Related to other items" />
+          )}
           {item.Name}
         </h4>
-        <span className={styles['card-price']}>
-          {primaryPrice != null ? `$${primaryPrice}` : '—'}
-        </span>
+        <div className={styles['card-price-row']}>
+          <QuantityBadge item={item} metadata={metadata} />
+          <span className={styles['card-price']}>
+            {primaryPrice != null ? `$${primaryPrice}` : '—'}
+          </span>
+        </div>
       </div>
     </div>
   );

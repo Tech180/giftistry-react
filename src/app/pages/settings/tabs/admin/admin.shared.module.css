@@ -300,6 +300,44 @@
   box-shadow: none;
 }
 
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-input-password {
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.password-toggle:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface-hover) 80%, transparent);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid rgba(var(--primary-rgb), 0.35);
+  outline-offset: 1px;
+}
+
 .form-row-inline {
   display: flex;
   gap: var(--spacing-md);
@@ -499,6 +537,18 @@
 .detail-pane-active {
   display: block;
   animation: fadeIn 0.2s ease;
+}
+
+.detail-pane-readonly {
+  opacity: 0.72;
+  filter: grayscale(0.15);
+}
+
+.owner-view-only-banner {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-muted);
 }
 
 @keyframes fadeIn {

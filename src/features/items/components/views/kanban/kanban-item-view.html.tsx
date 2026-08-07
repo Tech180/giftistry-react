@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link2 } from 'lucide-react';
+import { Link2, Layers2 } from 'lucide-react';
 import { Button, EnterPanel } from 'shared/ui';
 import { ItemViewProps } from '../../../interfaces/item-view-props.interface';
 import {
@@ -10,8 +10,10 @@ import {
   ActionButtons,
   TaggingOverlay,
   TaggingSelect,
+  QuantityBadge,
 } from '../../item-presentation';
 import { buildItemCardModifierClasses, getPrimaryClaimForBadge, getClaimedGrayOutClass, getUserClaimedHighlightClass, shouldShowClaimBadge } from '../shared/item-card-modifiers.util';
+import { resolveItemQuantitySummary } from '../../../utils/resolve-item-quantity.util';
 import styles from './kanban-item-view.module.css';
 
 export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
@@ -42,12 +44,17 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
     audienceLabel,
     isPrivate,
     linkedItems,
+    relatedItems,
     isLinkingContext,
+    isRelatingContext,
+    metadata,
   } = props;
 
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
+  const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
   const primaryClaim = getPrimaryClaimForBadge(item.Claims);
   const primaryPrice = item.Links[0]?.ExtractedPrice;
+  const showQuantity = resolveItemQuantitySummary(item, metadata).shouldDisplay;
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -64,7 +71,8 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
     isFullyClaimed,
     primaryClaim != null,
     claimedByCurrentUser,
-    styles
+    styles,
+    props.isArchived
   );
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
@@ -91,6 +99,9 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
           {isLinkedToItems && (
             <Link2 size={12} className={styles['linked-icon']} aria-hidden="true" />
           )}
+          {isRelatedToItems && (
+            <Layers2 size={12} className={styles['linked-icon']} aria-label="Related to other items" />
+          )}
           {item.Name}
         </h4>
       </div>
@@ -112,8 +123,9 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
 
       <div className={styles['v-kanban-meta']}>
         <span>{item.Links.length} link{item.Links.length !== 1 ? 's' : ''}</span>
-        {(primaryPrice != null || showClaimBadge) && (
+        {(primaryPrice != null || showClaimBadge || showQuantity) && (
           <div className={styles['v-kanban-price-row']}>
+            <QuantityBadge item={item} metadata={metadata} />
             {primaryPrice != null && (
               <span className={styles['v-kanban-price']}>${primaryPrice}</span>
             )}
@@ -145,6 +157,7 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
           <ActionButtons
             isOwner={isOwner}
             canCollaborate={canCollaborate}
+            isArchived={props.isArchived}
             claimedByCurrentUser={claimedByCurrentUser}
             isFullyClaimed={isFullyClaimed}
             claimLoading={claimLoading}

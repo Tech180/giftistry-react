@@ -28,6 +28,7 @@ export interface AdminUserDetailTabTemplateProps {
   policy: GiftistryUserPolicy;
   newPassword: string;
   isSelf: boolean;
+  isOwnerReadOnly: boolean;
   onTabChange: (tab: AdminUserDetailTabKey) => void;
   onProfileFormChange: (updates: Partial<AdminUserProfileFormState>) => void;
   onPolicyFlagsChange: (updates: Partial<AdminUserPolicyFlagsState>) => void;

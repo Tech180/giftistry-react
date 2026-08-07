@@ -2,6 +2,7 @@ import { ItemLink } from './item-link.interface';
 import { Claim } from './item-claim.interface';
 import { ItemAudienceUser } from './item-audience-user.interface';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
+import type { ItemPhoto } from './item-photo.interface';
 
 export interface Item {
   Id: string;
@@ -22,6 +23,7 @@ export interface Item {
   Links: ItemLink[];
   Claims: Claim[];
   IsClaimed: boolean;
+  Photos?: ItemPhoto[];
   Metadata?: ItemDescriptionMetadata | null;
   IsFullyClaimed?: boolean;
   IsMultiCount?: boolean;

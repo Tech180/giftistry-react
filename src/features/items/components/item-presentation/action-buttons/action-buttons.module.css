@@ -9,7 +9,72 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   width: fit-content;
   margin-inline: auto;
+}
+
+.actions-stack-split {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  width: fit-content;
+  margin-inline: auto;
+}
+
+@media (max-width: 900px) {
+  .actions-stack-split {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-inline: 0;
+    gap: var(--spacing-sm);
+  }
+}
+
+/* Mobile: demo-like claim row — primary flexes, icon is fixed square. */
+@media (max-width: 48rem) {
+  .actions-row,
+  .actions-stack,
+  .actions-stack-split {
+    width: 100%;
+    margin-inline: 0;
+    gap: var(--spacing-sm);
+  }
+
+  .actions-stack-split {
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+
+  .actions-row {
+    flex-wrap: nowrap;
+  }
+
+  .claim-action-btn {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 2.75rem;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .claim-icon-btn {
+    flex: 0 0 2.75rem;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    height: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  .actions-stack-split .claim-icon-btn {
+    background-color: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+    box-shadow: var(--shadow-sm, var(--shadow));
+  }
 }

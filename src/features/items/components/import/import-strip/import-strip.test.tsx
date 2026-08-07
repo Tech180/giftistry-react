@@ -11,9 +11,9 @@ vi.mock('features/jobs', async () => {
   return {
     ...actual,
     jobsApi: {
-      previewWishlistImport: vi.fn(),
       startWishlistImport: vi.fn(),
       getJob: vi.fn(),
+      cancelJob: vi.fn(),
     },
   };
 });
@@ -74,16 +74,9 @@ describe('ImportStrip', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     canShowAiRef.current = true;
-    vi.mocked(jobsApi.previewWishlistImport).mockResolvedValue({
-      Items: [{ Name: 'Widget' }],
-      Warnings: [],
-      SourceFormat: 'json',
-      ParseMode: 'deterministic',
-      SuggestedWishlistTitle: 'Gifts',
-    });
   });
 
-  test('uploads a file and waits for create without starting a job yet', async () => {
+  test('reaches Ready after local file read without starting import', async () => {
     const { container } = renderStrip();
     await selectFile(container);
 
@@ -131,7 +124,10 @@ describe('ImportStrip', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /grab info/i })).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole('button', { name: /grab info/i }));
+    expect(screen.getByRole('button', { name: /grab info/i })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
     fireEvent.change(screen.getByLabelText(/wishlist title/i), {
       target: { value: 'Holiday' },
     });
@@ -222,6 +218,7 @@ describe('ImportStrip', () => {
     await waitFor(() => {
       expect(screen.getByText('Ready')).toBeInTheDocument();
     });
+    fireEvent.click(screen.getByRole('button', { name: /grab info/i }));
     fireEvent.change(screen.getByLabelText(/wishlist title/i), {
       target: { value: 'Holiday' },
     });

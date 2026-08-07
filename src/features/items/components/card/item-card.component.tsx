@@ -15,11 +15,14 @@ import {
 } from 'shared/utils/item-custom-fields.util';
 import { formatAudienceLabel, getItemSharedWithUserIds, isPrivateItem } from '../../utils/item-audience.util';
 import { resolveLinkedItems } from '../../utils/item-links-sync.util';
+import { resolveRelatedItems } from '../../utils/item-related-sync.util';
+import { resolveItemQuantitySummary } from '../../utils/resolve-item-quantity.util';
 
 export const ItemCard: React.FC<ItemCardProps> = ({
   item,
   isOwner,
   isExpired,
+  isArchived = false,
   canCollaborate,
   allowGroupFunds,
   itemActions,
@@ -33,6 +36,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   onSelect,
   wishlistItems = [],
   isLinkingContext = false,
+  isRelatingContext = false,
   aiEnabled,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -179,12 +183,24 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       ? item.TotalClaimedAmount
       : item.Claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
 
+  const { text: displayDescription, metadata } = useMemo(
+    () => parseItemDescription(item.Description, item.Metadata),
+    [item.Description, item.Metadata]
+  );
+
+  const quantitySummary = useMemo(
+    () => resolveItemQuantitySummary(item, metadata),
+    [item, metadata]
+  );
+
   const isFullyClaimed =
     item.IsFullyClaimed != null
       ? item.IsFullyClaimed
-      : allowGroupFunds && totalExtractedPrice > 0
-        ? totalClaimedAmount >= totalExtractedPrice
-        : item.IsClaimed;
+      : quantitySummary.isMultiCount
+        ? quantitySummary.claimedQuantity >= quantitySummary.desiredQuantity
+        : allowGroupFunds && totalExtractedPrice > 0
+          ? totalClaimedAmount >= totalExtractedPrice
+          : item.IsClaimed;
 
   const [isPinned, setIsPinned] = useState(() => {
     try {
@@ -202,11 +218,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       localStorage.setItem(`pinned_${item.Id}`, String(newValue));
     } catch (_) { }
   };
-
-  const { text: displayDescription, metadata } = useMemo(
-    () => parseItemDescription(item.Description, item.Metadata),
-    [item.Description, item.Metadata]
-  );
 
   const userDefinedEntries = useMemo(
     () => getUserDefinedEntries(metadata),
@@ -239,11 +250,17 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     [item, wishlistItems]
   );
 
+  const relatedItems = useMemo(
+    () => resolveRelatedItems(item, wishlistItems),
+    [item, wishlistItems]
+  );
+
   return (
     <ItemCardRouter
       item={item}
       isOwner={isOwner}
       isExpired={isExpired}
+      isArchived={isArchived}
       canCollaborate={canCollaborate}
       allowGroupFunds={allowGroupFunds}
       isFullyClaimed={isFullyClaimed}
@@ -297,7 +314,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       audienceLabel={audienceLabel}
       isPrivate={isPrivate}
       linkedItems={linkedItems}
+      relatedItems={relatedItems}
       isLinkingContext={isLinkingContext}
+      isRelatingContext={isRelatingContext}
       aiEnabled={aiEnabled}
       canShowAi={canShowAi}
     />

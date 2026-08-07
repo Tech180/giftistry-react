@@ -1,5 +1,5 @@
 import styles from './wishlist-detail.module.css';
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef, type SetStateAction } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Download, MessageSquare, Settings, Share2, Upload } from 'lucide-react';
 import { wishlistsApi, Wishlist, Priority } from 'features/wishlists';
@@ -21,13 +21,20 @@ import { useAuth } from 'app/providers/auth-context';
 import { useToast } from 'app/providers/toast-context';
 import { useRegisterPageActions } from 'app/providers/mobile-page-actions-context';
 import type { FloatingAction } from 'shared/ui';
-import { useWishlistJob, formatImportJobSummary, claimImportJobTerminalToast } from 'features/jobs';
+import {
+  useWishlistJob,
+  formatJobTerminalSummary,
+  claimImportJobTerminalToast,
+  type ItemEnrichJobResult,
+} from 'features/jobs';
 import { WishlistDetailTemplate } from './wishlist-detail.html';
 import { ListSettingsPanel } from './components/list-settings-panel/list-settings-panel.component';
 import { getFriendlyCategoryLabel, normalizeCategoryLabel } from 'features/items/utils/category-label.util';
 import { canLinkItemsByAudience, linkingContextFromItem, LinkingAudienceContext } from 'features/items/utils/item-audience.util';
 import { resolveEditorLinkedItemIds } from 'features/items/utils/item-links-sync.util';
+import { resolveEditorRelatedItemIds } from 'features/items/utils/item-related-sync.util';
 import { isWishlistExpired } from 'features/wishlists/utils/is-wishlist-expired.util';
+import { isWishlistArchived } from 'features/wishlists/utils/is-wishlist-archived.util';
 import { formatWishlistExpirationDate } from 'shared/utils/format-date.util';
 import {
   exportToCsv,
@@ -46,6 +53,8 @@ export default function WishlistDetail() {
     job: activeJob,
     isActive: isJobActive,
     cancel: cancelJob,
+    refresh: refreshJob,
+    enrichingItemIds,
   } = useWishlistJob(listId);
 
   const [wishlist, setWishlist] = useState<Wishlist | null>(null);
@@ -59,6 +68,7 @@ export default function WishlistDetail() {
   const { items, itemGroups, isLoading: isItemsLoading, fetchItems, itemActions } = useItemController();
 
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isAutoAddOpen, setIsAutoAddOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const importStripRef = useRef<ImportStripHandle>(null);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
@@ -70,13 +80,21 @@ export default function WishlistDetail() {
   const [replyTaggedItemIds, setReplyTaggedItemIds] = useState<string[]>([]);
   const [isLinkingModeActive, setIsLinkingModeActive] = useState(false);
   const [linkedItemIds, setLinkedItemIds] = useState<string[]>([]);
+  const [isRelatingModeActive, setIsRelatingModeActive] = useState(false);
+  const [relatedItemIds, setRelatedItemIds] = useState<string[]>([]);
   const [linkingAudienceContext, setLinkingAudienceContext] = useState<LinkingAudienceContext>({
     mode: 'everyone',
     sharedWithUserIds: [],
   });
+  /** Below 75rem the add drawer overlays the list instead of shifting layout. */
+  const [doesAddSidebarOverlayList, setDoesAddSidebarOverlayList] = useState(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return true;
+    return !window.matchMedia('(min-width: 75rem)').matches;
+  });
   const [isDeactivating, setIsDeactivating] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<'deactivate' | 'delete' | null>(null);
+  const [confirmAction, setConfirmAction] = useState<'deactivate' | 'activate' | 'delete' | null>(null);
 
   const [viewMode, setViewMode] = useState<ItemViewMode>(() =>
     normalizeStoredViewMode(localStorage.getItem(ITEM_VIEW_MODE_STORAGE_KEY))
@@ -107,6 +125,31 @@ export default function WishlistDetail() {
       setIsCommentsOpen(false);
     }
   }, [isAddOpen, editingItem, viewMode]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+
+    const mediaQuery = window.matchMedia('(min-width: 75rem)');
+    const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
+      setDoesAddSidebarOverlayList(!event.matches);
+    };
+
+    handleChange(mediaQuery);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    } else {
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
 
   const handleSetViewMode = (mode: ItemViewMode) => {
     setSelectedItemId(null);
@@ -206,8 +249,9 @@ export default function WishlistDetail() {
       activeJob.Status === 'failed' ||
       activeJob.Status === 'cancelled'
     ) {
+      const summary = formatJobTerminalSummary(activeJob);
+      if (!summary) return;
       if (!claimImportJobTerminalToast(activeJob.Id, activeJob.Status)) return;
-      const summary = formatImportJobSummary(activeJob);
       showToast(summary.message, summary.tone);
     }
   }, [activeJob, isJobActive, loadData, softReloadItems, showToast]);
@@ -225,6 +269,7 @@ export default function WishlistDetail() {
 
   useEffect(() => {
     setLinkedItemIds((prev) => prev.filter((id) => items.some((item) => item.Id === id)));
+    setRelatedItemIds((prev) => prev.filter((id) => items.some((item) => item.Id === id)));
   }, [items]);
 
   useEffect(() => {
@@ -237,9 +282,27 @@ export default function WishlistDetail() {
   useEffect(() => {
     if (!isAddOpen && !editingItem) {
       setLinkedItemIds([]);
+      setRelatedItemIds([]);
       setIsLinkingModeActive(false);
+      setIsRelatingModeActive(false);
     }
   }, [isAddOpen, editingItem]);
+
+  const setIsLinkingModeActiveExclusive = useCallback((value: SetStateAction<boolean>) => {
+    setIsLinkingModeActive((prev) => {
+      const next = typeof value === 'function' ? value(prev) : value;
+      if (next) setIsRelatingModeActive(false);
+      return next;
+    });
+  }, []);
+
+  const setIsRelatingModeActiveExclusive = useCallback((value: SetStateAction<boolean>) => {
+    setIsRelatingModeActive((prev) => {
+      const next = typeof value === 'function' ? value(prev) : value;
+      if (next) setIsLinkingModeActive(false);
+      return next;
+    });
+  }, []);
 
   const isOwner = useMemo(() => {
     return !!(wishlist && user && wishlist.UserId === user.Id);
@@ -250,6 +313,7 @@ export default function WishlistDetail() {
   }, [isOwner, wishlist?.Role]);
 
   const isExpired = useMemo(() => isWishlistExpired(wishlist?.ExpiresAt), [wishlist]);
+  const isArchived = useMemo(() => isWishlistArchived(wishlist?.IsActive), [wishlist]);
 
   const canUseWebSearchOnList = useMemo(
     () => Boolean(canShowWebSearch && wishlist?.AiEnabled && wishlist?.WebSearchEnabled),
@@ -271,7 +335,8 @@ export default function WishlistDetail() {
         wishlist.Category,
         wishlist.RevealSuggestions,
         wishlist.AiEnabled,
-        wishlist.WebSearchEnabled
+        wishlist.WebSearchEnabled,
+        wishlist.ManualJobBackground !== false
       );
       setWishlist(updated);
     } catch (err) {
@@ -307,7 +372,8 @@ export default function WishlistDetail() {
         wishlist.Category,
         wishlist.RevealSuggestions,
         wishlist.AiEnabled,
-        wishlist.WebSearchEnabled
+        wishlist.WebSearchEnabled,
+        wishlist.ManualJobBackground !== false
       );
       setWishlist(updated);
     } catch (err) {
@@ -327,7 +393,8 @@ export default function WishlistDetail() {
         wishlist.Category,
         !wishlist.RevealSuggestions,
         wishlist.AiEnabled,
-        wishlist.WebSearchEnabled
+        wishlist.WebSearchEnabled,
+        wishlist.ManualJobBackground !== false
       );
       setWishlist(updated);
     } catch (err) {
@@ -346,7 +413,8 @@ export default function WishlistDetail() {
         wishlist.Category,
         wishlist.RevealSuggestions,
         !wishlist.AiEnabled,
-        wishlist.WebSearchEnabled
+        wishlist.WebSearchEnabled,
+        wishlist.ManualJobBackground !== false
       );
       setWishlist(updated);
     } catch (err) {
@@ -365,11 +433,32 @@ export default function WishlistDetail() {
         wishlist.Category,
         wishlist.RevealSuggestions,
         wishlist.AiEnabled,
-        !wishlist.WebSearchEnabled
+        !wishlist.WebSearchEnabled,
+        wishlist.ManualJobBackground !== false
       );
       setWishlist(updated);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to toggle web search');
+    }
+  };
+
+  const toggleManualJobBackground = async () => {
+    if (!wishlist) return;
+    try {
+      const updated = await wishlistsApi.updateWishlist(
+        wishlist.Id,
+        wishlist.Title,
+        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
+        wishlist.AllowGroupFunds,
+        wishlist.Category,
+        wishlist.RevealSuggestions,
+        wishlist.AiEnabled,
+        wishlist.WebSearchEnabled,
+        wishlist.ManualJobBackground === false
+      );
+      setWishlist(updated);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to toggle background enrich');
     }
   };
 
@@ -385,7 +474,7 @@ export default function WishlistDetail() {
 
     const actions: FloatingAction[] = [];
 
-    if (canCollaborate && !isExpired) {
+    if (canCollaborate && !isExpired && !isArchived) {
       actions.push({
         id: 'import',
         label: 'Import',
@@ -460,11 +549,12 @@ export default function WishlistDetail() {
           label: 'Settings',
           icon: <Settings size={18} aria-hidden />,
           panelWidth: 260,
-          panelHeight: canShowAi && canShowWebSearch ? 176 : 132,
+          panelHeight: canShowAi ? (canShowWebSearch ? 220 : 176) : 132,
           panelContent: (
             <ListSettingsPanel
               aiEnabled={!!wishlist.AiEnabled}
               webSearchEnabled={!!wishlist.WebSearchEnabled}
+              manualJobBackground={wishlist.ManualJobBackground !== false}
               canShowAi={canShowAi}
               canShowWebSearch={canShowWebSearch}
               onToggleAi={() => {
@@ -472,6 +562,9 @@ export default function WishlistDetail() {
               }}
               onToggleWebSearch={() => {
                 void toggleWebSearchEnabled();
+              }}
+              onToggleManualJobBackground={() => {
+                void toggleManualJobBackground();
               }}
             />
           ),
@@ -488,6 +581,7 @@ export default function WishlistDetail() {
     isOwner,
     canCollaborate,
     isExpired,
+    isArchived,
     canShowAi,
     canShowWebSearch,
   ]);
@@ -506,6 +600,21 @@ export default function WishlistDetail() {
       alert(err instanceof Error ? err.message : 'Deactivation failed.');
     } finally {
       setIsDeactivating(false);
+    }
+  };
+
+  const handleActivateConfirm = async () => {
+    if (!wishlist) return;
+
+    setIsActivating(true);
+    setConfirmAction(null);
+    try {
+      await wishlistsApi.activateWishlist(wishlist.Id);
+      setWishlist((prev) => (prev ? { ...prev, IsActive: true } : prev));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Reactivation failed.');
+    } finally {
+      setIsActivating(false);
     }
   };
 
@@ -532,9 +641,16 @@ export default function WishlistDetail() {
     setIsAddOpen(false);
     setEditingItemDraft(null);
     setIsLinkingModeActive(false);
+    setIsRelatingModeActive(false);
     setLinkingAudienceContext(sourceContext);
     setLinkedItemIds(
       resolveEditorLinkedItemIds(sourceItem.Id, items).filter((id) => {
+        const target = items.find((i) => i.Id === id);
+        return target && canLinkItemsByAudience(sourceContext, target);
+      })
+    );
+    setRelatedItemIds(
+      resolveEditorRelatedItemIds(sourceItem.Id, items).filter((id) => {
         const target = items.find((i) => i.Id === id);
         return target && canLinkItemsByAudience(sourceContext, target);
       })
@@ -546,10 +662,38 @@ export default function WishlistDetail() {
     setEditingItem(null);
     setEditingItemDraft(null);
     setLinkedItemIds([]);
+    setRelatedItemIds([]);
     setIsLinkingModeActive(false);
+    setIsRelatingModeActive(false);
     setLinkingAudienceContext({ mode: 'everyone', sharedWithUserIds: [] });
+    setIsAutoAddOpen(false);
     setIsAddOpen(true);
   };
+
+  const openAutoAdd = useCallback(() => {
+    setIsAddOpen(false);
+    setEditingItem(null);
+    setEditingItemDraft(null);
+    setIsAutoAddOpen(true);
+  }, []);
+
+  const closeAutoAdd = useCallback(() => {
+    setIsAutoAddOpen(false);
+  }, []);
+
+  const handleAutoAddStarted = useCallback(
+    async (result: ItemEnrichJobResult) => {
+      setIsAutoAddOpen(false);
+      showToast(
+        result.Item?.Name
+          ? `Fetching details for ${result.Item.Name}...`
+          : 'Fetching product details in the background...',
+        'info'
+      );
+      await Promise.all([softReloadItems(), refreshJob()]);
+    },
+    [refreshJob, showToast, softReloadItems]
+  );
 
   const handleLinkingAudienceChange = useCallback((context: LinkingAudienceContext) => {
     setLinkingAudienceContext(context);
@@ -566,9 +710,30 @@ export default function WishlistDetail() {
       if (!target || !canLinkItemsByAudience(linkingAudienceContext, target)) {
         return;
       }
-      setLinkedItemIds((prev) =>
-        prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
-      );
+      setLinkedItemIds((prev) => {
+        if (prev.includes(itemId)) {
+          return prev.filter((id) => id !== itemId);
+        }
+        setRelatedItemIds((relatedPrev) => relatedPrev.filter((id) => id !== itemId));
+        return [...prev, itemId];
+      });
+    },
+    [items, linkingAudienceContext]
+  );
+
+  const handleRelateItemToggle = useCallback(
+    (itemId: string) => {
+      const target = items.find((i) => i.Id === itemId);
+      if (!target || !canLinkItemsByAudience(linkingAudienceContext, target)) {
+        return;
+      }
+      setRelatedItemIds((prev) => {
+        if (prev.includes(itemId)) {
+          return prev.filter((id) => id !== itemId);
+        }
+        setLinkedItemIds((linkedPrev) => linkedPrev.filter((id) => id !== itemId));
+        return [...prev, itemId];
+      });
     },
     [items, linkingAudienceContext]
   );
@@ -583,6 +748,12 @@ export default function WishlistDetail() {
         return target && canLinkItemsByAudience(linkingAudienceContext, target);
       })
     );
+    setRelatedItemIds((prev) =>
+      prev.filter((id) => {
+        const target = items.find((i) => i.Id === id);
+        return target && canLinkItemsByAudience(linkingAudienceContext, target);
+      })
+    );
   }, [linkingAudienceContext, isAddOpen, editingItem, items]);
 
   const resolvedLinkedItems = useMemo(
@@ -591,6 +762,14 @@ export default function WishlistDetail() {
         .map((id) => items.find((i) => i.Id === id))
         .filter((item): item is Item => !!item),
     [linkedItemIds, items]
+  );
+
+  const resolvedRelatedItems = useMemo(
+    () =>
+      relatedItemIds
+        .map((id) => items.find((i) => i.Id === id))
+        .filter((item): item is Item => !!item),
+    [relatedItemIds, items]
   );
 
   const displayItems = useMemo(() => {
@@ -622,17 +801,55 @@ export default function WishlistDetail() {
       );
     };
 
+    type ItemGroup = { categoryKey: string; label: string; items: Item[] };
+
+    const splitEnrichingUncategorized = (groups: ItemGroup[]): ItemGroup[] =>
+      groups.flatMap((group) => {
+        if (group.categoryKey !== 'uncategorized') return [group];
+        const enriching = group.items.filter((item) => enrichingItemIds.has(item.Id));
+        const settled = group.items.filter((item) => !enrichingItemIds.has(item.Id));
+        const next: ItemGroup[] = [];
+        if (enriching.length > 0) {
+          next.push({ categoryKey: 'processing', label: 'Processing', items: enriching });
+        }
+        if (settled.length > 0) {
+          next.push({
+            categoryKey: 'uncategorized',
+            label: 'General Items',
+            items: settled,
+          });
+        }
+        return next;
+      });
+
+    const sortGroups = (groups: ItemGroup[]) =>
+      [...groups]
+        .filter((group) => group.items.length > 0)
+        .sort((a, b) => {
+          const aTail = a.categoryKey === 'uncategorized' || a.categoryKey === 'processing';
+          const bTail = b.categoryKey === 'uncategorized' || b.categoryKey === 'processing';
+          if (aTail && !bTail) return 1;
+          if (!aTail && bTail) return -1;
+          if (a.categoryKey === 'processing' && b.categoryKey === 'uncategorized') return -1;
+          if (a.categoryKey === 'uncategorized' && b.categoryKey === 'processing') return 1;
+          return a.label.localeCompare(b.label);
+        });
+
     if (itemGroups && itemGroups.length > 0) {
-      return itemGroups
-        .map((group) => ({
-          categoryKey: group.CategoryKey,
-          label: group.CategoryLabel,
-          items: group.Items.filter((item) => {
-            const inVisible = visibleItems.some((visible) => visible.Id === item.Id);
-            return inVisible && matchesQuery(item);
-          }),
-        }))
-        .filter((group) => group.items.length > 0);
+      return sortGroups(
+        splitEnrichingUncategorized(
+          itemGroups
+            .map((group) => ({
+              categoryKey: group.CategoryKey,
+              label: group.CategoryLabel,
+              items: group.Items.filter((item) => {
+                const inVisible = visibleItems.some((visible) => visible.Id === item.Id);
+                return inVisible && matchesQuery(item);
+              }),
+            }))
+            .filter((group) => group.items.length > 0)
+        )
+      );
     }
 
     const filtered = visibleItems.filter(matchesQuery);
@@ -659,16 +876,17 @@ export default function WishlistDetail() {
       groups[cat].items.push(item);
     }
 
-    // Sort groups: named categories first (alphabetically), uncategorized last
-    return Object.entries(groups)
-      .map(([key, val]) => ({ categoryKey: key, label: val.label, items: val.items }))
-      .filter((g) => g.items.length > 0)
-      .sort((a, b) => {
-        if (a.categoryKey === 'uncategorized') return 1;
-        if (b.categoryKey === 'uncategorized') return -1;
-        return a.label.localeCompare(b.label);
-      });
-  }, [visibleItems, searchQuery, itemGroups]);
+    // Sort groups: named categories first (alphabetically), processing then General Items last
+    return sortGroups(
+      splitEnrichingUncategorized(
+        Object.entries(groups).map(([key, val]) => ({
+          categoryKey: key,
+          label: val.label,
+          items: val.items,
+        }))
+      )
+    );
+  }, [visibleItems, searchQuery, itemGroups, enrichingItemIds]);
 
   const selectedItem = useMemo(() => {
     return visibleItems.find((i) => i.Id === selectedItemId);
@@ -698,22 +916,37 @@ export default function WishlistDetail() {
       isOwner={isOwner}
       canCollaborate={canCollaborate}
       isExpired={isExpired}
+      isArchived={isArchived}
       isAddOpen={isAddOpen}
       setIsAddOpen={setIsAddOpen}
       openAddDrawer={openAddDrawer}
+      isAutoAddOpen={isAutoAddOpen}
+      openAutoAdd={openAutoAdd}
+      closeAutoAdd={closeAutoAdd}
+      onAutoAddStarted={(result) => {
+        void handleAutoAddStarted(result);
+      }}
+      enrichingItemIds={enrichingItemIds}
       editingItem={editingItem}
       setEditingItem={setEditingItem}
       openItemEditor={openItemEditor}
       setEditingItemDraft={setEditingItemDraft}
       linkedItemIds={linkedItemIds}
       setLinkedItemIds={setLinkedItemIds}
+      relatedItemIds={relatedItemIds}
+      setRelatedItemIds={setRelatedItemIds}
       linkableItems={items}
       resolvedLinkedItems={resolvedLinkedItems}
+      resolvedRelatedItems={resolvedRelatedItems}
       isLinkingModeActive={isLinkingModeActive}
-      setIsLinkingModeActive={setIsLinkingModeActive}
+      setIsLinkingModeActive={setIsLinkingModeActiveExclusive}
+      isRelatingModeActive={isRelatingModeActive}
+      setIsRelatingModeActive={setIsRelatingModeActiveExclusive}
+      doesAddSidebarOverlayList={doesAddSidebarOverlayList}
       handleLinkingAudienceChange={handleLinkingAudienceChange}
       isItemLinkCompatible={isItemLinkCompatible}
       handleLinkItemToggle={handleLinkItemToggle}
+      handleRelateItemToggle={handleRelateItemToggle}
       loadData={loadData}
       reloadListContent={reloadListContent}
       onItemsChange={softReloadItems}
@@ -721,14 +954,17 @@ export default function WishlistDetail() {
       confirmAction={confirmAction}
       setConfirmAction={setConfirmAction}
       isDeactivating={isDeactivating}
+      isActivating={isActivating}
       isDeleting={isDeleting}
       handleDeactivateConfirm={handleDeactivateConfirm}
+      handleActivateConfirm={handleActivateConfirm}
       handleDeleteConfirm={handleDeleteConfirm}
       saveTitle={saveTitle}
       saveDate={saveDate}
       toggleRevealSuggestions={toggleRevealSuggestions}
       toggleAiEnabled={toggleAiEnabled}
       toggleWebSearchEnabled={toggleWebSearchEnabled}
+      toggleManualJobBackground={toggleManualJobBackground}
       canUseWebSearchOnList={canUseWebSearchOnList}
       formatDate={formatWishlistExpirationDate}
       isCommentsOpen={isCommentsOpen}

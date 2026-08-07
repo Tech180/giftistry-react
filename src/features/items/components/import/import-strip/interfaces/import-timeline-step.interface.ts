@@ -11,6 +11,8 @@ export type ImportTimelineStepId =
 export interface ImportTimelineStep {
   id: ImportTimelineStepId;
   label: string;
+  /** Rate, counts, or elapsed shown under the step label (mono). */
+  metric?: string | null;
   tone: ImportTimelineTone;
 }
 

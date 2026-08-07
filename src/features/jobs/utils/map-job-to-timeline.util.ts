@@ -1,34 +1,20 @@
 import type { BackgroundJobView } from '../interfaces/background-job.interface';
 import type {
+  JobTimelineView,
+  TimelineStreamLane,
+} from '../interfaces/job-timeline-view.interface';
+import type {
   ImportTimelineStep,
   ImportTimelineStepId,
-  ImportTimelineTone,
 } from 'features/items/components/import/import-strip/interfaces/import-timeline-step.interface';
-
-export interface TimelineStreamLane {
-  id: string;
-  label: string;
-  tone: ImportTimelineTone;
-}
-
-export interface JobTimelineView {
-  steps: ImportTimelineStep[];
-  streams: TimelineStreamLane[];
-  streamsCaption: string | null;
-  percent: number;
-  label: string;
-}
+import { IMPORT_TIMELINE_STEP_ORDER } from '../constants/job.constants';
+import { formatProgressRate } from './format-progress-rate.util';
+import {
+  formatStreamLaneCaption,
+  formatStreamLaneDetail,
+} from './format-stream-lane-caption.util';
 
 type ImportMode = 'create-list' | 'existing-list';
-
-const STEP_ORDER: ImportTimelineStepId[] = [
-  'upload',
-  'found',
-  'created',
-  'finalized',
-  'grabInfo',
-  'savedDetails',
-];
 
 function progressPercent(done: number, total: number): number {
   if (total <= 0) return done > 0 ? 100 : 0;
@@ -60,9 +46,9 @@ function applyTones(
   activeId: ImportTimelineStepId | null,
   options: { failed?: boolean; complete?: boolean }
 ): ImportTimelineStep[] {
-  const activeIndex = activeId ? STEP_ORDER.indexOf(activeId) : -1;
+  const activeIndex = activeId ? IMPORT_TIMELINE_STEP_ORDER.indexOf(activeId) : -1;
   return steps.map((step) => {
-    const index = STEP_ORDER.indexOf(step.id);
+    const index = IMPORT_TIMELINE_STEP_ORDER.indexOf(step.id);
     if (options.complete) {
       return { ...step, tone: 'done' as const };
     }
@@ -225,11 +211,14 @@ export function mapJobToTimeline(
   }
 
   if (job.Phase === 'parsing' || job.Phase === 'queued') {
+    const baseLabel = job.Message?.trim() ? job.Message : 'Finding items…';
+    const rateMetric = formatProgressRate(job.ProgressRate) || null;
     steps = steps.map((step) =>
       step.id === 'found'
         ? {
             ...step,
-            label: job.Message?.includes('Found') ? job.Message : 'Finding items…',
+            label: baseLabel,
+            metric: rateMetric,
           }
         : step
     );
@@ -242,10 +231,8 @@ export function mapJobToTimeline(
       step.id === 'finalized'
         ? {
             ...step,
-            label:
-              total > 0
-                ? `Adding items ${done}/${total}`
-                : 'Finalized item selection',
+            label: total > 0 ? 'Adding items' : 'Finalized item selection',
+            metric: total > 0 ? `${done}/${total}` : null,
           }
         : step
     );
@@ -259,34 +246,45 @@ export function mapJobToTimeline(
     const finished = summary
       ? summary.Done + summary.Failed
       : job.ProgressDone;
+    const grabRate =
+      job.ProgressRate?.Unit === 'items/s' ? job.ProgressRate : null;
+    const countPart = eligible > 0 ? `${finished}/${eligible}` : '';
+    const ratePart = formatProgressRate(grabRate);
+    const metricParts = [countPart, ratePart].filter(Boolean);
     steps = steps.map((step) =>
       step.id === 'grabInfo'
         ? {
             ...step,
-            label: eligible > 0 ? `Grab info ${finished}/${eligible}` : 'Grab info',
+            label: 'Grab info',
+            metric: metricParts.length > 0 ? metricParts.join(' · ') : null,
           }
         : step
     );
   }
 
-  const streams: TimelineStreamLane[] = (job.ActiveStreams ?? []).map((stream) => ({
-    id: stream.Id,
-    label: stream.Label,
-    tone: stream.Status === 'running' ? 'active' : stream.Status === 'failed' ? 'error' : 'pending',
-  }));
+  const streams: TimelineStreamLane[] = (job.ActiveStreams ?? []).map((stream) => {
+    const detail = formatStreamLaneDetail(stream.Detail, stream.ProgressRate);
+    return {
+      id: stream.Id,
+      label: stream.Label,
+      tone:
+        stream.Status === 'running'
+          ? 'active'
+          : stream.Status === 'failed'
+            ? 'error'
+            : 'pending',
+      detail: detail || null,
+      caption: formatStreamLaneCaption(stream.Label, stream.Detail, stream.ProgressRate),
+    };
+  });
 
   const running = job.ItemsSummary?.Running ?? streams.length;
-  const linkedEligible =
-    (job.ItemsSummary?.Pending ?? 0) +
-    (job.ItemsSummary?.Running ?? 0) +
-    (job.ItemsSummary?.Done ?? 0) +
-    (job.ItemsSummary?.Failed ?? 0);
-  const streamSlots = Math.max(streams.length, running, Math.min(3, linkedEligible || 3));
+  const activeCount = Math.max(streams.length, running);
   const showStreamCaption =
     (job.Phase === 'grabbing_info' || (isSuspended && activeId === 'grabInfo')) &&
     (streams.length > 0 || running > 0);
   const caption = showStreamCaption
-    ? `Streams ${Math.max(streams.length, running)}/${streamSlots}`
+    ? `Streams ${activeCount}/${Math.max(activeCount, 1)}`
     : null;
 
   return {

@@ -129,9 +129,8 @@ export function formatApiErrorMessage(
       if (messages.length > 0) return messages.join(' ');
     }
 
-    const obj = raw as { Message?: unknown; message?: unknown; summary?: unknown };
+    const obj = raw as { Message?: unknown; summary?: unknown };
     if (typeof obj.Message === 'string') return formatApiErrorMessage(obj.Message, fallback);
-    if (typeof obj.message === 'string') return formatApiErrorMessage(obj.message, fallback);
     if (typeof obj.summary === 'string') return obj.summary;
   }
 

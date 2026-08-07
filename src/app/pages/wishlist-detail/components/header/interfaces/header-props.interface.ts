@@ -8,11 +8,14 @@ export interface HeaderProps {
   priorities: Priority[];
   isOwner: boolean;
   isExpired: boolean;
+  isArchived: boolean;
   isDeactivating: boolean;
+  isActivating: boolean;
   isDeleting: boolean;
-  confirmAction: 'deactivate' | 'delete' | null;
-  setConfirmAction: (val: 'deactivate' | 'delete' | null) => void;
+  confirmAction: 'deactivate' | 'activate' | 'delete' | null;
+  setConfirmAction: (val: 'deactivate' | 'activate' | 'delete' | null) => void;
   handleDeactivateConfirm: () => void;
+  handleActivateConfirm: () => void;
   handleDeleteConfirm: () => void;
   saveTitle: (val: string) => Promise<void>;
   saveDate: (val: string) => Promise<void>;
@@ -20,6 +23,7 @@ export interface HeaderProps {
   toggleRevealSuggestions: () => void;
   toggleAiEnabled: () => void;
   toggleWebSearchEnabled: () => void;
+  toggleManualJobBackground: () => void;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsShareOpen: (open: boolean) => void;

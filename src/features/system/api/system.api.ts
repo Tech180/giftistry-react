@@ -47,20 +47,16 @@ interface SystemModelApiRow {
   Name?: string;
   Company?: string;
   DisplayName?: string;
-  id?: string;
-  name?: string;
-  company?: string;
-  displayName?: string;
 }
 
 function normalizeSystemModel(row: SystemModelApiRow): SystemModelOption | null {
-  const id = (row.Id ?? row.id ?? '').trim();
+  const id = (row.Id ?? '').trim();
   if (!id) return null;
   return {
     id,
-    name: (row.Name ?? row.name ?? id).trim() || id,
-    company: (row.Company ?? row.company ?? 'Other').trim() || 'Other',
-    displayName: (row.DisplayName ?? row.displayName ?? id).trim() || id,
+    name: (row.Name ?? id).trim() || id,
+    company: (row.Company ?? 'Other').trim() || 'Other',
+    displayName: (row.DisplayName ?? id).trim() || id,
   };
 }
 

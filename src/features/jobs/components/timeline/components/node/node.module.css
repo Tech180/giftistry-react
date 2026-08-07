@@ -1,0 +1,90 @@
+.node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 0 0 0.375rem var(--background, var(--surface));
+  transition:
+    border-color var(--transition-fast, 0.2s ease),
+    background-color var(--transition-fast, 0.2s ease);
+}
+
+.inner {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background-color var(--transition-fast, 0.2s ease);
+}
+
+.check {
+  display: none;
+  width: 1rem;
+  height: 1rem;
+  color: var(--success);
+}
+
+.node--pending {
+  color: var(--text-muted);
+}
+
+.node--active {
+  border-color: var(--primary);
+  animation: pulse-ring 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.node--active .inner {
+  background: var(--primary);
+}
+
+.node--done {
+  border-color: color-mix(in srgb, var(--success) 55%, var(--border));
+}
+
+.node--done .inner {
+  display: none;
+}
+
+.node--done .check {
+  display: block;
+}
+
+.node--error {
+  border-color: var(--error);
+}
+
+.node--error .inner {
+  background: var(--error);
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow:
+      0 0 0 0.375rem var(--background, var(--surface)),
+      0 0 0 0.375rem rgba(var(--primary-rgb), 0.35);
+  }
+
+  70% {
+    box-shadow:
+      0 0 0 0.375rem var(--background, var(--surface)),
+      0 0 0 0.75rem rgba(var(--primary-rgb), 0);
+  }
+
+  100% {
+    box-shadow:
+      0 0 0 0.375rem var(--background, var(--surface)),
+      0 0 0 0.375rem rgba(var(--primary-rgb), 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node--active {
+    animation: none;
+  }
+}

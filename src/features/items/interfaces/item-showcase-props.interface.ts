@@ -6,6 +6,7 @@ export interface ItemShowcaseProps {
   priorityLabel?: string;
   isOwner: boolean;
   isExpired: boolean;
+  isArchived?: boolean;
   canCollaborate: boolean;
   allowGroupFunds: boolean;
   itemActions: ItemActions;

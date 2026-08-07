@@ -66,8 +66,8 @@ export const WishlistCardTemplate: React.FC<WishlistCardTemplateProps> = ({
                     alt={wishlist.OwnerUsername || wishlist.OwnerFirstName}
                     initials={(wishlist.OwnerFirstName[0] || wishlist.OwnerUsername?.[0] || 'U').toUpperCase()}
                     className={styles['owner-avatar']}
-                    imageClassName={styles['sidebar-avatar-img']}
-                    initialsClassName={styles['sidebar-avatar-initials']}
+                    imageClassName={styles['owner-avatar-img']}
+                    initialsClassName={styles['owner-avatar-initials']}
                   />
                 </UserPreviewCard>
               </div>

@@ -221,10 +221,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Effective product access (server + policy + user preference). Used to gate AI UI in the app.
   const canShowAi = useMemo(() => capabilities?.CanUseAi ?? false, [capabilities]);
-  const canShowAiSettings = useMemo(() => capabilities?.CanUseAi ?? false, [capabilities]);
   const canShowWebSearch = useMemo(() => capabilities?.CanUseWebSearch ?? false, [capabilities]);
-  const canShowWebSearchSettings = useMemo(() => capabilities?.CanUseWebSearch ?? false, [capabilities]);
+
+  // Settings visibility must NOT follow the preference-backed capability: after opt-out,
+  // /me typically returns CanUseAi/CanUseWebSearch false, which would unmount the toggles.
+  // Gate on server flags + policy (eligibility), so users can turn AI back on.
+  const canShowAiSettings = useMemo(() => {
+    if (!globalAiEnabled) return false;
+    if (user?.Policy?.CanUseAiFeatures === false) return false;
+    if (user?.Policy?.CanUseAiFeatures === true) return true;
+    // Policy missing from payload: keep section if preference field or capability is known.
+    return capabilities?.CanUseAi === true || typeof user?.AiEnabled === 'boolean';
+  }, [globalAiEnabled, user?.Policy?.CanUseAiFeatures, user?.AiEnabled, capabilities?.CanUseAi]);
+
+  const canShowWebSearchSettings = useMemo(() => {
+    if (!globalWebSearchEnabled || !globalAiEnabled) return false;
+    if (user?.Policy?.CanUseAiFeatures === false) return false;
+    return (
+      capabilities?.CanUseWebSearch === true ||
+      typeof user?.WebSearchEnabled === 'boolean' ||
+      user?.Policy?.CanUseAiFeatures === true
+    );
+  }, [
+    globalWebSearchEnabled,
+    globalAiEnabled,
+    user?.Policy?.CanUseAiFeatures,
+    user?.WebSearchEnabled,
+    capabilities?.CanUseWebSearch,
+  ]);
 
   // Inactivity Logic
   const resetInactivityTimer = () => {

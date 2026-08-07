@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, ScrollText } from 'lucide-react';
+import { Download, RefreshCw, ScrollText } from 'lucide-react';
 import { EnterPanel, Button } from 'shared/ui';
 import { AdminSearchInput, SensitiveGate } from '../components';
 import { getAuditActionClass } from '../utils/audit.util';
@@ -40,12 +40,24 @@ export const AdminAuditTabTemplate: React.FC<AdminAuditTabTemplateProps> = ({
             placeholder="Filter by event type, actor, or IP..."
           />
           <div style={{ display: 'flex', gap: 8 }}>
-            <Button variant="secondary" onClick={onExport} leftIcon={<Download size={14} />}>
-              Export
-            </Button>
-            <Button variant="secondary" onClick={onRefresh}>
-              Refresh
-            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              iconOnly
+              onClick={onExport}
+              leftIcon={<Download size={16} />}
+              aria-label="Export audit log"
+              title="Export"
+            />
+            <Button
+              variant="secondary"
+              size="sm"
+              iconOnly
+              onClick={onRefresh}
+              leftIcon={<RefreshCw size={16} />}
+              aria-label="Refresh audit log"
+              title="Refresh"
+            />
           </div>
         </div>
 

@@ -18,7 +18,7 @@ const baseJob: BackgroundJobView = {
 };
 
 describe('JobProgressBox', () => {
-  test('renders timeline, percent-only meta during grab, and cancel action', () => {
+  test('renders timeline, message, streams, and cancel action', () => {
     const onCancel = vi.fn();
     render(
       <JobProgressBox
@@ -40,16 +40,18 @@ describe('JobProgressBox', () => {
       .getAllByRole('listitem')
       .find((item) => /Grab info/i.test(item.textContent || ''));
     expect(grabStep).toBeTruthy();
-    expect(within(grabStep!).getByLabelText(/active grab streams/i)).toHaveTextContent('Gadget');
-    expect(screen.getByText('50%')).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: /active grab streams/i })).toHaveTextContent(
+      'Gadget'
+    );
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.queryByText('50%')).not.toBeInTheDocument();
     expect(screen.queryByText(/2\/4 · 50%/)).not.toBeInTheDocument();
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '50');
 
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onCancel).toHaveBeenCalled();
   });
 
-  test('shows done/total meta outside grab phase', () => {
+  test('shows job message outside grab phase without percent meta', () => {
     render(
       <JobProgressBox
         job={{
@@ -65,7 +67,9 @@ describe('JobProgressBox', () => {
       />
     );
 
-    expect(screen.getByText(/2\/4 · 50%/)).toBeInTheDocument();
+    expect(screen.getByText('Adding items…')).toBeInTheDocument();
+    expect(screen.queryByText(/2\/4 · 50%/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
   test('hides cancel when job is terminal', () => {

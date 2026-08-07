@@ -29,6 +29,7 @@ export const wishlistsApi = {
     revealSuggestions?: boolean,
     aiEnabled?: boolean,
     webSearchEnabled?: boolean,
+    manualJobBackground?: boolean,
   ) =>
     apiClient.post<Wishlist>(
       '/api/wishlists',
@@ -40,12 +41,16 @@ export const wishlistsApi = {
         RevealSuggestions: revealSuggestions,
         AiEnabled: aiEnabled,
         WebSearchEnabled: webSearchEnabled,
+        ManualJobBackground: manualJobBackground,
       },
       'Lists'
     ),
 
   deactivateWishlist: (listId: string) =>
     apiClient.put<Record<string, never>>(`/api/wishlists/${listId}/deactivate`, {}),
+
+  activateWishlist: (listId: string) =>
+    apiClient.put<Record<string, never>>(`/api/wishlists/${listId}/activate`, {}),
 
   deleteWishlist: (listId: string) =>
     apiClient.delete<Record<string, never>>(`/api/wishlists/${listId}`),
@@ -59,6 +64,7 @@ export const wishlistsApi = {
     revealSuggestions?: boolean,
     aiEnabled?: boolean,
     webSearchEnabled?: boolean,
+    manualJobBackground?: boolean,
   ) =>
     apiClient.put<Wishlist>(
       `/api/wishlists/${listId}`,
@@ -70,6 +76,7 @@ export const wishlistsApi = {
         RevealSuggestions: revealSuggestions,
         AiEnabled: aiEnabled,
         WebSearchEnabled: webSearchEnabled,
+        ManualJobBackground: manualJobBackground,
       },
       'Lists'
     ),

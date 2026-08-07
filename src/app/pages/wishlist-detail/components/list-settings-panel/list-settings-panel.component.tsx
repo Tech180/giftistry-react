@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { Search } from 'lucide-react';
+import { Layers, Search } from 'lucide-react';
 import { Switch } from 'shared/ui';
 import { AiDisabledIcon, AiSparklesIcon } from 'shared/ui/badge/icons/ai-badge-icons';
 import styles from './list-settings-panel.module.css';
@@ -7,19 +7,23 @@ import styles from './list-settings-panel.module.css';
 export interface ListSettingsPanelProps {
   aiEnabled: boolean;
   webSearchEnabled: boolean;
+  manualJobBackground: boolean;
   canShowAi: boolean;
   canShowWebSearch: boolean;
   onToggleAi: () => void;
   onToggleWebSearch: () => void;
+  onToggleManualJobBackground: () => void;
 }
 
 export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
   aiEnabled,
   webSearchEnabled,
+  manualJobBackground,
   canShowAi,
   canShowWebSearch,
   onToggleAi,
   onToggleWebSearch,
+  onToggleManualJobBackground,
 }) => {
   const aiGradientId = `list-settings-ai-${useId().replace(/:/g, '')}`;
 
@@ -33,8 +37,8 @@ export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
           aria-pressed={aiEnabled}
           aria-label={
             aiEnabled
-              ? 'AI reviews enabled for this list. Click to disable.'
-              : 'AI reviews disabled for this list. Click to enable.'
+              ? 'AI enabled for this list. Click to disable.'
+              : 'AI disabled for this list. Click to enable.'
           }
         >
           <span
@@ -59,7 +63,7 @@ export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
             )}
           </span>
           <span className={styles.rowText}>
-            <span className={styles.rowLabel}>AI reviews</span>
+            <span className={styles.rowLabel}>AI</span>
             <span className={styles.rowMeta}>{aiEnabled ? 'On' : 'Off'}</span>
           </span>
           <span
@@ -71,7 +75,7 @@ export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
               size="sm"
               checked={aiEnabled}
               onChange={() => onToggleAi()}
-              aria-label={aiEnabled ? 'Disable AI reviews' : 'Enable AI reviews'}
+              aria-label={aiEnabled ? 'Disable AI' : 'Enable AI'}
             />
           </span>
         </button>
@@ -108,6 +112,44 @@ export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
               checked={webSearchEnabled}
               onChange={() => onToggleWebSearch()}
               aria-label={webSearchEnabled ? 'Disable web search' : 'Enable web search'}
+            />
+          </span>
+        </button>
+      ) : null}
+
+      {canShowAi ? (
+        <button
+          type="button"
+          className={[styles.row, manualJobBackground ? styles.rowActive : '']
+            .filter(Boolean)
+            .join(' ')}
+          onClick={onToggleManualJobBackground}
+          aria-pressed={manualJobBackground}
+          aria-label={
+            manualJobBackground
+              ? 'Background enrich enabled for this list. Click to disable.'
+              : 'Background enrich disabled for this list. Click to enable.'
+          }
+        >
+          <span className={styles.rowIcon} aria-hidden>
+            <Layers size={16} />
+          </span>
+          <span className={styles.rowText}>
+            <span className={styles.rowLabel}>Background enrich</span>
+            <span className={styles.rowMeta}>{manualJobBackground ? 'On' : 'Off'}</span>
+          </span>
+          <span
+            className={styles.switchSlot}
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            <Switch
+              size="sm"
+              checked={manualJobBackground}
+              onChange={() => onToggleManualJobBackground()}
+              aria-label={
+                manualJobBackground ? 'Disable background enrich' : 'Enable background enrich'
+              }
             />
           </span>
         </button>

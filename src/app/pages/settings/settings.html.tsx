@@ -9,12 +9,13 @@ export const SettingsTemplate: React.FC<SettingsTemplateProps> = ({
   routes,
   toasts,
   isAdmin,
+  isOwner,
   processesRailScope,
   onProcessesError,
 }) => {
   return (
     <div className={styles['app-body']}>
-      <SettingsSidebar isAdmin={isAdmin} />
+      <SettingsSidebar isAdmin={isAdmin} isOwner={isOwner} />
 
       <main className={styles['main-wrapper']}>
         <div className={styles['route-content']}>{routes}</div>

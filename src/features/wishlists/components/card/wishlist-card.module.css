@@ -163,20 +163,32 @@
 }
 
 .owner-avatar {
-  width: var(--spacing-base);
-  height: var(--spacing-base);
+  width: 1.375rem;
+  height: 1.375rem;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
+  border: 2px solid var(--border);
+  background: var(--surface-hover);
 }
 
-.sidebar-avatar-img {
+.sidebar-avatar-img,
+.owner-avatar-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.owner-avatar-initials {
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--primary-text);
+  user-select: none;
 }
 
 .meta {

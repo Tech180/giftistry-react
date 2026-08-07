@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link2, Link as LinkIcon } from 'lucide-react';
+import { Link2, Link as LinkIcon, Layers2 } from 'lucide-react';
 import { Button, EnterPanel } from 'shared/ui';
 import { ItemViewProps } from '../../../interfaces/item-view-props.interface';
 import {
@@ -11,8 +11,11 @@ import {
   ActionButtons,
   TaggingOverlay,
   TaggingSelect,
+  QuantityBadge,
 } from '../../item-presentation';
 import { buildItemCardModifierClasses, getPrimaryClaimForBadge, getClaimedGrayOutClass, getUserClaimedHighlightClass, shouldShowClaimBadge } from '../shared/item-card-modifiers.util';
+import { resolveItemQuantitySummary } from '../../../utils/resolve-item-quantity.util';
+import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import styles from './feed-item-view.module.css';
 
 export const FeedItemView: React.FC<ItemViewProps> = (props) => {
@@ -44,17 +47,23 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
     predefinedDisplayEntries,
     userDefinedEntries,
     metadataBadgeEmoji,
+    metadata,
     getSiteName,
     audienceLabel,
     isPrivate,
     linkedItems,
+    relatedItems,
     isLinkingContext,
+    isRelatingContext,
   } = props;
 
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
+  const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
   const primaryClaim = getPrimaryClaimForBadge(item.Claims);
   const primaryLink = item.Links[0];
   const primaryPrice = primaryLink?.ExtractedPrice;
+  const primaryImageUrl = getItemPrimaryImageUrl(item);
+  const showQuantity = resolveItemQuantitySummary(item, metadata).shouldDisplay;
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -71,7 +80,8 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
     isFullyClaimed,
     primaryClaim != null,
     claimedByCurrentUser,
-    styles
+    styles,
+    props.isArchived
   );
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
@@ -87,6 +97,12 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
           onSelectTag={onSelectTag}
         />
 
+        {primaryImageUrl && (
+          <div className={styles['v-feed-photo']}>
+            <img src={primaryImageUrl} alt="" className={styles['v-feed-photo-img']} />
+          </div>
+        )}
+
         <header className={styles['v-feed-header']}>
           <div className={styles['v-feed-title-wrap']}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -100,6 +116,9 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
               <h3 className={styles['v-feed-title']}>
                 {isLinkedToItems && (
                   <Link2 size={16} className={styles['linked-icon']} aria-hidden="true" />
+                )}
+                {isRelatedToItems && (
+                  <Layers2 size={16} className={styles['linked-icon']} aria-label="Related to other items" />
                 )}
                 {item.Name}
               </h3>
@@ -124,8 +143,9 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
                 {getSiteName(primaryLink.Url, primaryLink.RetailerName)}
               </a>
             )}
-            {(primaryPrice != null || showClaimBadge) && (
+            {(primaryPrice != null || showClaimBadge || showQuantity) && (
               <div className={styles['v-feed-price-row']}>
+                <QuantityBadge item={item} metadata={metadata} />
                 {primaryPrice != null && (
                   <span className={styles['v-feed-price']}>${primaryPrice}</span>
                 )}
@@ -175,6 +195,7 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
             <ActionButtons
               isOwner={isOwner}
               canCollaborate={canCollaborate}
+              isArchived={props.isArchived}
               claimedByCurrentUser={claimedByCurrentUser}
               isFullyClaimed={isFullyClaimed}
               claimLoading={claimLoading}

@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import {
   Link, Globe, DollarSign, Star, Plus, Trash2, Pin,
   Wand2, ChevronDown, Gift, AlertTriangle, Check, Undo2, Pencil, Sparkles, Search,
+  Layers2,
 } from 'lucide-react';
 import { Button, Chip, Switch, AiStatusBadge } from 'shared/ui';
 import { AddItemFormTemplateProps } from '../../interfaces/add-item-form-template-props.interface';
 import { AudiencePicker } from '../audience-picker';
+import { ItemPhotoGallery } from '../photo-gallery/item-photo-gallery.component';
 import styles from './add-item-form.module.css';
 
 export const ADD_ITEM_FORM_ID = 'add-item-form';
@@ -22,6 +24,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   isOwner,
   isLoading,
   errorMsg,
+  warningMsg,
   handleSubmit,
   linkUrl,
   setLinkUrl,
@@ -68,8 +71,12 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   setVariations,
   linkedItemIds,
   resolvedLinkedCount,
+  relatedItemIds,
+  resolvedRelatedCount,
   isLinkingModeActive,
   setIsLinkingModeActive,
+  isRelatingModeActive,
+  setIsRelatingModeActive,
   wishlistItems = [],
   itemId,
   getFriendlyCategoryLabel,
@@ -91,8 +98,13 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   onSummarizeNotes,
   onUndoSummarize,
   canShowAi = false,
+  showPhotoGallery,
+  photoEntries,
+  onPhotoEntriesChange,
+  photoError,
+  onPhotoError,
 }) => {
-  const hasLinkedItems = wishlistItems.filter((i) => i.Id !== itemId).length > 0;
+  const hasPeerItems = wishlistItems.filter((i) => i.Id !== itemId).length > 0;
   const [linkCopied, setLinkCopied] = useState(false);
   const [editingNameFieldId, setEditingNameFieldId] = useState<string | null>(null);
 
@@ -117,9 +129,28 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   return (
     <form id={ADD_ITEM_FORM_ID} onSubmit={handleSubmit} className={styles.form}>
       {errorMsg && (
-        <div className={`${styles.alert} animate-slide-up`}>
+        <div className={`${styles.alert} animate-slide-up`} role="alert">
           <span>{errorMsg}</span>
         </div>
+      )}
+      {warningMsg && (
+        <div className={`${styles['alert-warning']} animate-slide-up`} role="status">
+          <AlertTriangle size={16} className={styles['alert-warning-icon']} aria-hidden />
+          <span>{warningMsg}</span>
+        </div>
+      )}
+
+      {showPhotoGallery && (
+        <>
+          <ItemPhotoGallery
+            photos={photoEntries}
+            onChange={onPhotoEntriesChange}
+            disabled={isLoading}
+            errorMsg={photoError}
+            onError={onPhotoError}
+          />
+          <div className={styles.divider} />
+        </>
       )}
 
       {/* Section 1: Core details */}
@@ -159,7 +190,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             <button
               type="button"
               onClick={handleScrapeClick}
-              disabled={isAutopopulating || !linkUrl.trim()}
+              disabled={isAutopopulating || isSummarizingNotes || !linkUrl.trim()}
               className={`${styles['input-action']} ${isScrapeButtonPulsing ? styles['input-action-pulse'] : ''}`}
               title="Auto-fill details from link"
               aria-label="Auto-fill details from link"
@@ -388,7 +419,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                     size="sm"
                     iconOnly
                     onClick={onUndoSummarize}
-                    disabled={isSummarizingNotes || isLoading}
+                    disabled={isSummarizingNotes || isAutopopulating || isLoading}
                     aria-label="Undo summarize"
                     title="Undo summarize"
                     leftIcon={<Undo2 size={14} />}
@@ -398,7 +429,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                   enabled
                   label="Summarize"
                   onToggle={onSummarizeNotes}
-                  disabled={isSummarizingNotes || isLoading}
+                  disabled={isSummarizingNotes || isAutopopulating || isLoading}
                 />
               </div>
             )}
@@ -572,22 +603,46 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           </div>
         )}
 
-        {hasLinkedItems && (
+        {hasPeerItems && (
           <div className={styles['form-group']}>
             <label className={styles.label}>Linked Items</label>
             <div className={styles['linked-row']}>
               <p className={styles['linked-hint']}>
-                Link this item to other gifts with the same visibility (Everyone, Only Me, or the same specific people).
+                These gifts go together. People who claim one can claim the rest at the same time.
               </p>
               <button
                 type="button"
-                onClick={() => setIsLinkingModeActive((prev) => !prev)}
+                onClick={() => setIsLinkingModeActive(true)}
                 className={`${styles['dependency-btn']} ${isLinkingModeActive ? styles['dependency-active'] : ''}`}
-                title={isLinkingModeActive ? 'Finish Selecting Items' : 'Select Items from Wishlist'}
+                title="Select linked items from wishlist"
+                aria-pressed={isLinkingModeActive}
               >
                 <Link size={16} />
                 {resolvedLinkedCount > 0 && (
                   <span className={styles['dependency-badge']}>{resolvedLinkedCount}</span>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {hasPeerItems && (
+          <div className={styles['form-group']}>
+            <label className={styles.label}>Related Items</label>
+            <div className={styles['linked-row']}>
+              <p className={styles['linked-hint']}>
+                These gifts go well together, but people claim each one on their own.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsRelatingModeActive(true)}
+                className={`${styles['dependency-btn']} ${isRelatingModeActive ? styles['dependency-active'] : ''}`}
+                title="Select related items from wishlist"
+                aria-pressed={isRelatingModeActive}
+              >
+                <Layers2 size={16} />
+                {resolvedRelatedCount > 0 && (
+                  <span className={styles['dependency-badge']}>{resolvedRelatedCount}</span>
                 )}
               </button>
             </div>

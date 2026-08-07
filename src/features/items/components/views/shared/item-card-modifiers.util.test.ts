@@ -91,6 +91,10 @@ describe('item-card-modifiers.util', () => {
     it('returns empty string when item is not claimed', () => {
       expect(getClaimedGrayOutClass(false, false, false, sharedStyles)).toBe('');
     });
+
+    it('returns gray-out class when list is archived', () => {
+      expect(getClaimedGrayOutClass(false, false, true, sharedStyles, true)).toBe('claimed-gray-out');
+    });
   });
 
   describe('getUserClaimedHighlightClass', () => {

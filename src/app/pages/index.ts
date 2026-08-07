@@ -7,3 +7,4 @@ export { Setup } from './setup/setup.component';
 export { default as FriendsPage } from './friends/friends-page.component';
 export { default as InviteAcceptPage } from './invite-accept/invite-accept-page.component';
 export { default as Onboarding } from './onboarding/onboarding.component';
+export { default as ChangePassword } from './change-password/change-password.component';

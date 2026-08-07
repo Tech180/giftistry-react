@@ -7,7 +7,7 @@ import { SecurityTabProps } from './interfaces/security-tab-props.interface';
 import { camelcaseKeys } from 'shared/utils/api-case.util';
 
 export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, requireStrongPasswords } = useAuth();
   
   // Password state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -46,13 +46,22 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
     fetchPasskeys();
   }, []);
 
-  const handleUpdatePassword = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleUpdatePassword = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!currentPassword || !newPassword || !confirmPassword) {
       showToast('Please fill in all password fields.', 'error');
       return;
     }
-    if (newPassword.length < 6) {
+    if (requireStrongPasswords) {
+      if (newPassword.length < 8) {
+        showToast('New password must be at least 8 characters long.', 'error');
+        return;
+      }
+      if (!/[A-Za-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+        showToast('Password must include at least one letter and one number.', 'error');
+        return;
+      }
+    } else if (newPassword.length < 6) {
       showToast('New password must be at least 6 characters long.', 'error');
       return;
     }
@@ -60,16 +69,24 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({ showToast }) => {
       showToast('New password and confirmation do not match.', 'error');
       return;
     }
+    if (currentPassword === newPassword) {
+      showToast('New password must be different from the current password.', 'error');
+      return;
+    }
 
     setIsLoading(true);
-    // Simulate password update since it's progressive profiling / secure local flow
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await authApi.changePassword(currentPassword, newPassword);
+      await refreshUser();
       showToast('Password updated successfully!', 'success');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    }, 1200);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to update password.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSetup2FA = async (): Promise<boolean> => {

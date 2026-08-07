@@ -49,6 +49,12 @@ export interface ServerSettingsTabTemplateProps {
   setScrapeFetchTimeoutMs: (val: number) => void;
   scrapePlaywrightTimeoutMs: number;
   setScrapePlaywrightTimeoutMs: (val: number) => void;
+  grabInfoConcurrency: number;
+  setGrabInfoConcurrency: (val: number) => void;
+  grabInfoConcurrencyUnlimited: boolean;
+  setGrabInfoConcurrencyUnlimited: (val: boolean) => void;
+  grabInfoActiveStreamLimit: number;
+  setGrabInfoActiveStreamLimit: (val: number) => void;
   aiFastProvider: AiSlotProvider;
   setAiFastProvider: (val: AiSlotProvider) => void;
   aiFastEndpoint: string;
@@ -105,7 +111,9 @@ export interface ServerSettingsTabTemplateProps {
   isLoading: boolean;
   isSaving: boolean;
   handleSave: (e: React.SubmitEvent<HTMLFormElement>) => void;
-  isServerOwner: boolean;
+  allowSetup: boolean;
+  onAllowSetupChange: (enabled: boolean) => void;
+  isSavingAllowSetup: boolean;
   onDeleteServer: () => void;
   isDeletingServer: boolean;
 }

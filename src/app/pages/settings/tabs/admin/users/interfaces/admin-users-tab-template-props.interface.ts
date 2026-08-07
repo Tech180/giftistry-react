@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AdminUser } from 'features/admin';
+import type { AdminUserListItem } from 'features/admin';
 
 export interface CreateUserFormState {
   username: string;
@@ -12,17 +12,20 @@ export interface CreateUserFormState {
 }
 
 export interface AdminUsersTabTemplateProps {
-  users: AdminUser[];
+  users: AdminUserListItem[];
   search: string;
   page: number;
   total: number;
   isLoading: boolean;
   showCreate: boolean;
   createForm: CreateUserFormState;
+  showCreatePassword: boolean;
+  currentUserIsOwner: boolean;
   onSearchChange: (value: string) => void;
   onOpenCreate: () => void;
   onCloseCreate: () => void;
   onCreateFormChange: (updates: Partial<CreateUserFormState>) => void;
+  onToggleCreatePassword: () => void;
   onCreateSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
   onPageChange: (page: number) => void;
 }

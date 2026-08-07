@@ -9,6 +9,7 @@ export interface CommentSectionTemplateProps {
   isOwner: boolean;
   listOwnerId?: string;
   isAuthenticated: boolean;
+  canPostComments: boolean;
   currentUserId: string | undefined;
   participants: ListParticipant[];
   comments: Comment[];

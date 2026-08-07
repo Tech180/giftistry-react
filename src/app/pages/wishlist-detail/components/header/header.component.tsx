@@ -8,12 +8,14 @@ export const Header: React.FC<HeaderProps> = (props) => {
   const { canShowAi, canShowWebSearch, user } = useAuth();
 
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
+  const [isListSettingsOpen, setIsListSettingsOpen] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState(wishlist.Title);
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [tempDate, setTempDate] = useState('');
 
   const exportRef = useRef<HTMLDivElement>(null);
+  const listSettingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setTempTitle(wishlist.Title);
@@ -26,8 +28,12 @@ export const Header: React.FC<HeaderProps> = (props) => {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (exportRef.current && !exportRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (exportRef.current && !exportRef.current.contains(target)) {
         setIsExportDropdownOpen(false);
+      }
+      if (listSettingsRef.current && !listSettingsRef.current.contains(target)) {
+        setIsListSettingsOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -60,6 +66,13 @@ export const Header: React.FC<HeaderProps> = (props) => {
     currentUserId: user?.Id,
   };
 
+  const showListSettings = isOwner && (canShowAi || canShowWebSearch);
+  const showOwnerBadgeRegion =
+    showListSettings ||
+    (canShowAi && !isOwner && wishlist.AiEnabled) ||
+    (canShowWebSearch && !isOwner && wishlist.WebSearchEnabled) ||
+    !isOwner;
+
   return (
     <HeaderTemplate
       {...props}
@@ -77,11 +90,16 @@ export const Header: React.FC<HeaderProps> = (props) => {
       tempDate={tempDate}
       setTempDate={setTempDate}
       exportRef={exportRef}
+      isListSettingsOpen={isListSettingsOpen}
+      setIsListSettingsOpen={setIsListSettingsOpen}
+      listSettingsRef={listSettingsRef}
       canShowAi={canShowAi}
       canShowWebSearch={canShowWebSearch}
       canImport={props.canImport}
       isImportOpen={props.isImportOpen}
       onImportToggle={props.onImportToggle}
+      showListSettings={showListSettings}
+      showOwnerBadgeRegion={showOwnerBadgeRegion}
     />
   );
 };

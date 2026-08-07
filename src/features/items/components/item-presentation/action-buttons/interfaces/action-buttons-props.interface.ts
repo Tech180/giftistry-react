@@ -1,6 +1,7 @@
 export interface ActionButtonsProps {
   isOwner: boolean;
   canCollaborate: boolean;
+  isArchived?: boolean;
   claimedByCurrentUser: boolean;
   isFullyClaimed: boolean;
   claimLoading: boolean;
@@ -13,4 +14,6 @@ export interface ActionButtonsProps {
   onDeleteConfirm: () => void;
   onDeleteCancel: () => void;
   compact?: boolean;
+  /** Stack on desktop; edit left / delete right on mobile. */
+  splitOnMobile?: boolean;
 }

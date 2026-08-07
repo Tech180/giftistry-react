@@ -30,8 +30,22 @@ export interface AdminUser {
   Policy: GiftistryUserPolicy;
 }
 
+/** Fields returned by GET /api/admin/users (list), not full AdminUser. */
+export interface AdminUserListItem {
+  Id: string;
+  Username: string;
+  Email: string | null;
+  IsOwner: boolean;
+  IsAdmin: boolean;
+  IsDisabled: boolean;
+  LockedUntil: string | null;
+  ActiveListsCount: number;
+  LastLoginAt: string | null;
+  LastOnline: string | null;
+}
+
 export interface AdminUserListResponse {
-  Users: AdminUser[];
+  Users: AdminUserListItem[];
   Page: number;
   Total: number;
 }

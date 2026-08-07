@@ -26,8 +26,12 @@ export function getClaimedGrayOutClass(
   isFullyClaimed: boolean,
   hasVisibleClaim: boolean,
   claimedByCurrentUser: boolean,
-  sharedStyles: Record<string, string>
+  sharedStyles: Record<string, string>,
+  isArchived = false
 ): string {
+  if (isArchived) {
+    return sharedStyles['claimed-gray-out'] ?? '';
+  }
   if (claimedByCurrentUser) {
     return '';
   }

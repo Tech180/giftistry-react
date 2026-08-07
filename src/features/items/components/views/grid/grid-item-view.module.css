@@ -36,12 +36,30 @@
   background: var(--surface-hover);
 }
 
-.gift-card.is-claimed {
-  opacity: 0.5;
+.claimed-gray-out {
+  position: relative;
+  isolation: isolate;
 }
 
-.gift-card.is-claimed:hover {
-  opacity: 0.8;
+.claimed-gray-out::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--surface) 20%, var(--text-muted));
+  opacity: 0.48;
+  pointer-events: none;
+  z-index: 2;
+  border-radius: inherit;
+}
+
+/* “Claimed” / status badges stay fully visible above the wash. */
+.claimed-gray-out .card-badges-tl,
+.claimed-gray-out .card-badges-tr {
+  z-index: 3;
+}
+
+.user-claimed-highlight {
+  background: color-mix(in srgb, var(--success) 20%, var(--surface));
 }
 
 .card-visual {
@@ -52,6 +70,14 @@
   justify-content: center;
   position: relative;
   border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.card-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .card-icon {
@@ -175,11 +201,30 @@
   overflow: hidden;
 }
 
+.linked-icon {
+  display: inline-block;
+  vertical-align: -0.125em;
+  margin-inline-end: 0.4em;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
 .card-price {
   font-size: 12px;
   font-weight: 500;
   color: var(--text-muted);
   margin-top: auto;
+}
+
+.card-price-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.card-price-row .card-price {
+  margin-top: 0;
 }
 
 /* Tagging mode support */

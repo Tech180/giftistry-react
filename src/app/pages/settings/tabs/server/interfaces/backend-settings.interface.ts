@@ -19,6 +19,7 @@ export interface BackendSettings {
   SmtpSecure: boolean;
   SmtpFrom: string;
   PublicAppUrl?: string;
+  AllowSetup?: boolean;
   OAuthEnabled?: boolean;
   OAuthIssuerUrl?: string;
   OAuthClientId?: string;
@@ -46,6 +47,9 @@ export interface BackendSettings {
   AiCompletionTimeoutMs?: number;
   ScrapeFetchTimeoutMs?: number;
   ScrapePlaywrightTimeoutMs?: number;
+  GrabInfoConcurrency?: number;
+  GrabInfoConcurrencyUnlimited?: boolean;
+  GrabInfoActiveStreamLimit?: number;
   AiDefaultPrompts?: AiDefaultPromptsView;
 }
 

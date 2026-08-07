@@ -11,6 +11,9 @@ export interface DrawerTemplateProps {
   miniDrawer?: React.ReactNode;
   variant?: DrawerVariant;
   mobilePresentation?: DrawerMobilePresentation;
+  /** When true, mount mini drawer inline in the sheet content row (mobile ≤48rem). */
+  integrateMiniInSheet?: boolean;
+  position: 'left' | 'right';
   showScrim?: boolean;
   footer?: React.ReactNode;
   titleIcon?: React.ReactNode;

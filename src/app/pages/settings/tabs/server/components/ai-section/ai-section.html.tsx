@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Eye, EyeOff, Sparkles, Search, Gauge, CheckCircle2, AlertCircle, RefreshCw, Loader2, RotateCcw } from 'lucide-react';
 import { Switch, Button } from 'shared/ui';
 import { AiSectionProps, type AiModelSlot } from '../../interfaces/ai-section-props.interface';
@@ -14,7 +14,11 @@ import {
   extractPopulateBodyFromCombined,
   getPopulateHubReadOnlyStartIndex,
 } from '../../utils/populate-hub-prompt.util';
-import { PromptCodeEditor } from './components/prompt-code-editor/prompt-code-editor.component';
+import {
+  PromptCodeEditor,
+  type PromptCodeEditorHandle,
+} from './components/prompt-code-editor/prompt-code-editor.component';
+import { PromptTokensList } from './components/prompt-tokens-list/prompt-tokens-list.component';
 import styles from './ai-section.module.css';
 
 const PROMPT_PLACEHOLDER =
@@ -37,19 +41,27 @@ const PROMPT_ITEMS: Array<{
     label: 'Populate',
     description:
       'Auto-fill item fields from a product URL. One combined prompt (Populate + Description + Category) is sent to AI.',
-    tokens: ['{url}', '{websiteName}', '{pageContext}', '{itemName}'],
+    tokens: ['{url}', '{websiteName}', '{pageContext}', '{searchContext}', '{itemName}'],
   },
   {
     id: 'description',
     label: 'Description',
     description: 'AI Summarize notes in the add-item form. Also linked when auto-filling from a URL.',
-    tokens: ['{itemName}', '{category}', '{url}', '{price}', '{websiteName}', '{existingNotes}', '{itemContext}'],
+    tokens: [
+      '{itemName}',
+      '{category}',
+      '{url}',
+      '{price}',
+      '{websiteName}',
+      '{existingNotes}',
+      '{itemContext}',
+    ],
   },
   {
     id: 'category',
     label: 'Category',
     description: 'Classify items into tailored categories when auto-filling from a URL.',
-    tokens: ['{url}', '{websiteName}', '{pageContext}', '{itemName}'],
+    tokens: ['{url}', '{websiteName}', '{pageContext}', '{itemName}', '{existingCategories}'],
   },
   {
     id: 'import',
@@ -129,6 +141,7 @@ export const AiSectionTemplate: React.FC<AiSectionProps> = ({
 }) => {
   const [connectionSlot, setConnectionSlot] = useState<AiModelSlot>('fast');
   const [promptType, setPromptType] = useState<PromptType>('review');
+  const promptEditorRef = useRef<PromptCodeEditorHandle>(null);
 
   const isFastSlot = connectionSlot === 'fast';
   const activeProvider: AiSlotProvider = isFastSlot ? aiFastProvider : aiIntelligentProvider;
@@ -228,25 +241,29 @@ export const AiSectionTemplate: React.FC<AiSectionProps> = ({
     [populateHubPrompt]
   );
 
+  const sidebarTokens = useMemo(() => {
+    if (promptType === 'populate') {
+      return populateHubTokens;
+    }
+    return activePrompt.tokens;
+  }, [activePrompt.tokens, populateHubTokens, promptType]);
+
   const handlePopulateHubChange = (combined: string) => {
     setAiPopulatePrompt(extractPopulateBodyFromCombined(combined));
   };
 
-  const renderPromptHelp = (tokens: string[]) => (
-    <span className={styles['help-text']}>
-      Dynamic tokens are highlighted in the editor. Available for this prompt:{' '}
-      {tokens.map((token, index) => (
-        <React.Fragment key={token}>
-          <code className={styles['help-token']}>{token}</code>
-          {index < tokens.length - 1 ? ', ' : '.'}
-        </React.Fragment>
-      ))}
-    </span>
-  );
+  const handleInsertToken = (token: string) => {
+    promptEditorRef.current?.insertAtCursor(token);
+  };
 
   const renderPopulateHub = () => (
     <>
+      <p className={styles['prompt-linked-hint']}>
+        One combined prompt is sent to AI on auto-fill. Edit the Populate section here; edit
+        Description and Category in the sidebar (they update in this snippet automatically).
+      </p>
       <PromptCodeEditor
+        ref={promptEditorRef}
         value={populateHubPrompt}
         onChange={handlePopulateHubChange}
         placeholder={PROMPT_PLACEHOLDER}
@@ -255,12 +272,6 @@ export const AiSectionTemplate: React.FC<AiSectionProps> = ({
         showSectionDividers
         aria-label="Populate AI prompt bundle editor"
       />
-      {renderPromptHelp(populateHubTokens)}
-
-      <p className={styles['prompt-linked-hint']}>
-        One combined prompt is sent to AI on auto-fill. Edit the Populate section here; edit
-        Description and Category in the sidebar (they update in this snippet automatically).
-      </p>
     </>
   );
 
@@ -674,67 +685,71 @@ export const AiSectionTemplate: React.FC<AiSectionProps> = ({
                   <div className={styles['prompt-category-label']}>Item</div>
 
                   <div className={styles['prompt-layout']}>
-                    <nav className={styles['prompt-subnav']} aria-label="Item prompt types">
-                      <button
-                        type="button"
-                        className={`${styles['prompt-subnav-item']} ${
-                          promptType === 'review' ? styles['prompt-subnav-item-active'] : ''
-                        }`}
-                        aria-current={promptType === 'review' ? 'page' : undefined}
-                        onClick={() => setPromptType('review')}
-                      >
-                        {getPromptItem('review').label}
-                      </button>
-
-                      <button
-                        type="button"
-                        className={`${styles['prompt-subnav-item']} ${
-                          promptType === 'import' ? styles['prompt-subnav-item-active'] : ''
-                        }`}
-                        aria-current={promptType === 'import' ? 'page' : undefined}
-                        onClick={() => setPromptType('import')}
-                      >
-                        {getPromptItem('import').label}
-                      </button>
-
-                      <div
-                        className={`${styles['prompt-subnav-group']} ${
-                          isPopulateGroupActive ? styles['prompt-subnav-group-active'] : ''
-                        }`}
-                        role="group"
-                        aria-label="Populate prompts"
-                      >
+                    <aside className={styles['prompt-sidebar']}>
+                      <nav className={styles['prompt-subnav']} aria-label="Item prompt types">
                         <button
                           type="button"
-                          className={`${styles['prompt-subnav-item']} ${styles['prompt-subnav-parent']} ${
-                            promptType === 'populate' ? styles['prompt-subnav-item-active'] : ''
+                          className={`${styles['prompt-subnav-item']} ${
+                            promptType === 'review' ? styles['prompt-subnav-item-active'] : ''
                           }`}
-                          aria-current={promptType === 'populate' ? 'page' : undefined}
-                          onClick={() => setPromptType('populate')}
+                          aria-current={promptType === 'review' ? 'page' : undefined}
+                          onClick={() => setPromptType('review')}
                         >
-                          {populatePromptItem.label}
+                          {getPromptItem('review').label}
                         </button>
 
-                        <div className={styles['prompt-subnav-nested']}>
-                          {POPULATE_GROUP_CHILDREN.map((childId) => {
-                            const child = getPromptItem(childId);
-                            return (
-                              <button
-                                key={child.id}
-                                type="button"
-                                className={`${styles['prompt-subnav-item']} ${styles['prompt-subnav-nested-item']} ${
-                                  promptType === child.id ? styles['prompt-subnav-item-active'] : ''
-                                }`}
-                                aria-current={promptType === child.id ? 'page' : undefined}
-                                onClick={() => setPromptType(child.id)}
-                              >
-                                {child.label}
-                              </button>
-                            );
-                          })}
+                        <button
+                          type="button"
+                          className={`${styles['prompt-subnav-item']} ${
+                            promptType === 'import' ? styles['prompt-subnav-item-active'] : ''
+                          }`}
+                          aria-current={promptType === 'import' ? 'page' : undefined}
+                          onClick={() => setPromptType('import')}
+                        >
+                          {getPromptItem('import').label}
+                        </button>
+
+                        <div
+                          className={`${styles['prompt-subnav-group']} ${
+                            isPopulateGroupActive ? styles['prompt-subnav-group-active'] : ''
+                          }`}
+                          role="group"
+                          aria-label="Populate prompts"
+                        >
+                          <button
+                            type="button"
+                            className={`${styles['prompt-subnav-item']} ${styles['prompt-subnav-parent']} ${
+                              promptType === 'populate' ? styles['prompt-subnav-item-active'] : ''
+                            }`}
+                            aria-current={promptType === 'populate' ? 'page' : undefined}
+                            onClick={() => setPromptType('populate')}
+                          >
+                            {populatePromptItem.label}
+                          </button>
+
+                          <div className={styles['prompt-subnav-nested']}>
+                            {POPULATE_GROUP_CHILDREN.map((childId) => {
+                              const child = getPromptItem(childId);
+                              return (
+                                <button
+                                  key={child.id}
+                                  type="button"
+                                  className={`${styles['prompt-subnav-item']} ${styles['prompt-subnav-nested-item']} ${
+                                    promptType === child.id ? styles['prompt-subnav-item-active'] : ''
+                                  }`}
+                                  aria-current={promptType === child.id ? 'page' : undefined}
+                                  onClick={() => setPromptType(child.id)}
+                                >
+                                  {child.label}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    </nav>
+                      </nav>
+
+                      <PromptTokensList tokens={sidebarTokens} onInsertToken={handleInsertToken} />
+                    </aside>
 
                     <div className={styles['prompt-panel']}>
                       {promptType === 'populate' ? (
@@ -774,13 +789,13 @@ export const AiSectionTemplate: React.FC<AiSectionProps> = ({
                             />
                           </div>
                           <PromptCodeEditor
+                            ref={promptEditorRef}
                             value={promptValue}
                             onChange={setPromptValue}
                             placeholder={PROMPT_PLACEHOLDER}
                             knownTokens={activePrompt.tokens}
                             aria-label={`${activePrompt.label} AI prompt editor`}
                           />
-                          {renderPromptHelp(activePrompt.tokens)}
                         </>
                       )}
                     </div>

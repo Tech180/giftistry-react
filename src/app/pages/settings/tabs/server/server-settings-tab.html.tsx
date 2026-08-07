@@ -1,5 +1,5 @@
 import React from 'react';
-import { EnterPanel, Button } from 'shared/ui';
+import { EnterPanel, Button, Switch } from 'shared/ui';
 import { Save } from 'lucide-react';
 import { ServerSettingsTabTemplateProps } from './interfaces/server-settings-tab-template-props.interface';
 import styles from './server-settings-tab.module.css';
@@ -59,6 +59,12 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   setScrapeFetchTimeoutMs,
   scrapePlaywrightTimeoutMs,
   setScrapePlaywrightTimeoutMs,
+  grabInfoConcurrency,
+  setGrabInfoConcurrency,
+  grabInfoConcurrencyUnlimited,
+  setGrabInfoConcurrencyUnlimited,
+  grabInfoActiveStreamLimit,
+  setGrabInfoActiveStreamLimit,
   aiFastProvider,
   setAiFastProvider,
   aiFastEndpoint,
@@ -110,7 +116,9 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   intelligentConnectionStatus,
   intelligentConnectionMessage,
   onTestAiConnection,
-  isServerOwner,
+  allowSetup,
+  onAllowSetupChange,
+  isSavingAllowSetup,
   onDeleteServer,
   isDeletingServer,
 }) => {
@@ -135,12 +143,13 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
               type="submit"
               variant="primary"
               size="sm"
-              iconOnly
               isLoading={isSaving}
               leftIcon={<Save size={16} />}
               aria-label={isSaving ? 'Saving changes' : 'Save changes'}
               title={isSaving ? 'Saving changes' : 'Save changes'}
-            />
+            >
+              Save
+            </Button>
           </div>
         </div>
 
@@ -154,7 +163,7 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
                   Used for transactional emails, CORS, and WebAuthn. No trailing slash.
                 </span>
               </div>
-              <div className={`${dbStyles['setting-action']} ${dbStyles['input-wrapper']}`} style={{ flex: 1, maxWidth: '24rem' }}>
+              <div className={`${dbStyles['setting-action']} ${dbStyles['setting-action-wide']} ${dbStyles['input-wrapper']}`}>
                 <div className={dbStyles['input-box']}>
                   <input
                     type="url"
@@ -178,10 +187,10 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
                 <span className={dbStyles['setting-desc']}>Shows an SSO button on the login page.</span>
               </div>
               <div className={dbStyles['setting-action']}>
-                <input
-                  type="checkbox"
+                <Switch
                   checked={oauthEnabled}
-                  onChange={(e) => setOauthEnabled(e.target.checked)}
+                  onChange={setOauthEnabled}
+                  aria-label="Enable OAuth login"
                 />
               </div>
             </div>
@@ -191,7 +200,7 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
                   <div className={dbStyles['setting-info']}>
                     <span className={dbStyles['setting-label']}>Issuer URL</span>
                   </div>
-                  <div className={`${dbStyles['setting-action']} ${dbStyles['input-wrapper']}`} style={{ flex: 1, maxWidth: '24rem' }}>
+                  <div className={`${dbStyles['setting-action']} ${dbStyles['setting-action-wide']} ${dbStyles['input-wrapper']}`}>
                     <div className={dbStyles['input-box']}>
                       <input
                         className={dbStyles['input-field']}
@@ -206,7 +215,7 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
                   <div className={dbStyles['setting-info']}>
                     <span className={dbStyles['setting-label']}>Client ID</span>
                   </div>
-                  <div className={`${dbStyles['setting-action']} ${dbStyles['input-wrapper']}`} style={{ flex: 1, maxWidth: '24rem' }}>
+                  <div className={`${dbStyles['setting-action']} ${dbStyles['setting-action-wide']} ${dbStyles['input-wrapper']}`}>
                     <div className={dbStyles['input-box']}>
                       <input
                         className={dbStyles['input-field']}
@@ -221,7 +230,7 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
                     <span className={dbStyles['setting-label']}>Client secret</span>
                     <span className={dbStyles['setting-desc']}>Or set OAUTH_CLIENT_SECRET in the environment.</span>
                   </div>
-                  <div className={`${dbStyles['setting-action']} ${dbStyles['input-wrapper']}`} style={{ flex: 1, maxWidth: '24rem' }}>
+                  <div className={`${dbStyles['setting-action']} ${dbStyles['setting-action-wide']} ${dbStyles['input-wrapper']}`}>
                     <div className={dbStyles['input-box']}>
                       <input
                         type="password"
@@ -236,7 +245,7 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
                   <div className={dbStyles['setting-info']}>
                     <span className={dbStyles['setting-label']}>Button text</span>
                   </div>
-                  <div className={`${dbStyles['setting-action']} ${dbStyles['input-wrapper']}`} style={{ flex: 1, maxWidth: '24rem' }}>
+                  <div className={`${dbStyles['setting-action']} ${dbStyles['setting-action-wide']} ${dbStyles['input-wrapper']}`}>
                     <div className={dbStyles['input-box']}>
                       <input
                         className={dbStyles['input-field']}
@@ -251,10 +260,10 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
                     <span className={dbStyles['setting-label']}>Auto-register new SSO users</span>
                   </div>
                   <div className={dbStyles['setting-action']}>
-                    <input
-                      type="checkbox"
+                    <Switch
                       checked={oauthAutoRegister}
-                      onChange={(e) => setOauthAutoRegister(e.target.checked)}
+                      onChange={setOauthAutoRegister}
+                      aria-label="Auto-register new SSO users"
                     />
                   </div>
                 </div>
@@ -296,6 +305,12 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
           setScrapeFetchTimeoutMs={setScrapeFetchTimeoutMs}
           scrapePlaywrightTimeoutMs={scrapePlaywrightTimeoutMs}
           setScrapePlaywrightTimeoutMs={setScrapePlaywrightTimeoutMs}
+          grabInfoConcurrency={grabInfoConcurrency}
+          setGrabInfoConcurrency={setGrabInfoConcurrency}
+          grabInfoConcurrencyUnlimited={grabInfoConcurrencyUnlimited}
+          setGrabInfoConcurrencyUnlimited={setGrabInfoConcurrencyUnlimited}
+          grabInfoActiveStreamLimit={grabInfoActiveStreamLimit}
+          setGrabInfoActiveStreamLimit={setGrabInfoActiveStreamLimit}
         />
 
         {/* AI Integration Section */}
@@ -362,17 +377,51 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
         />
       </form>
 
-      {isServerOwner && (
-        <section className={styles['danger-zone']}>
-            <h2 className={styles['danger-zone-title']}>Delete server</h2>
-            <p className={styles['danger-zone-desc']}>
-              Permanently delete this Giftistry instance and all user data.
-            </p>
-            <Button variant="danger" size="sm" onClick={onDeleteServer} isLoading={isDeletingServer}>
-              Delete server
-            </Button>
-          </section>
-      )}
+      <section className={styles['danger-zone']}>
+        <h2 className={styles['danger-zone-title']}>Danger zone</h2>
+        <p className={styles['danger-zone-desc']}>
+          Controls that can reopen first-run setup or permanently erase this instance.
+        </p>
+
+        <div className={styles['danger-zone-list']}>
+          <div className={styles['danger-zone-row']}>
+            <div className={styles['danger-zone-info']}>
+              <span className={styles['danger-zone-label']}>Allow first-run setup</span>
+              <span className={styles['danger-zone-hint']}>
+                When enabled, the setup wizard is available if this instance has no users (for
+                example after Delete server). After a successful setup it seals again automatically.
+              </span>
+            </div>
+            <div className={styles['danger-zone-action']}>
+              <Switch
+                checked={allowSetup}
+                onChange={onAllowSetupChange}
+                disabled={isSavingAllowSetup}
+                aria-label="Allow first-run setup"
+              />
+            </div>
+          </div>
+
+          <div className={styles['danger-zone-row']}>
+            <div className={styles['danger-zone-info']}>
+              <span className={styles['danger-zone-label']}>Delete server</span>
+              <span className={styles['danger-zone-hint']}>
+                Permanently delete this Giftistry instance and all user data.
+              </span>
+            </div>
+            <div className={styles['danger-zone-action']}>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={onDeleteServer}
+                isLoading={isDeletingServer}
+              >
+                Delete server
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
     </EnterPanel>
   );
 };
