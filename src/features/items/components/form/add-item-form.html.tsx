@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
   Link, Globe, DollarSign, Star, Plus, Trash2, Pin,
-  Wand2, ChevronDown, Gift, AlertTriangle, Check, Undo2, Pencil, Sparkles, Search,
-  Layers2,
+  Wand2, ChevronDown, AlertTriangle, Check, Undo2, Pencil, Sparkles, Search,
+  Layers2, Infinity,
 } from 'lucide-react';
 import { Button, Chip, Switch, AiStatusBadge } from 'shared/ui';
 import { AddItemFormTemplateProps } from '../../interfaces/add-item-form-template-props.interface';
@@ -43,6 +43,9 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   handleAddCustomField,
   handleRemoveCustomField,
   handleUpdateCustomField,
+  editingCustomFieldNameId,
+  onStartEditCustomFieldName,
+  onFinishEditCustomFieldName,
   hasIncompleteCustomFields,
   showExtraFields,
   setShowExtraFields,
@@ -103,17 +106,13 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   onPhotoEntriesChange,
   photoError,
   onPhotoError,
+  readOnly = false,
 }) => {
   const hasPeerItems = wishlistItems.filter((i) => i.Id !== itemId).length > 0;
   const [linkCopied, setLinkCopied] = useState(false);
-  const [editingNameFieldId, setEditingNameFieldId] = useState<string | null>(null);
 
   const isEditingCustomFieldName = (field: { id: string; name: string }) =>
-    !field.name.trim() || editingNameFieldId === field.id;
-
-  const finishEditingCustomFieldName = () => {
-    setEditingNameFieldId(null);
-  };
+    !field.name.trim() || editingCustomFieldNameId === field.id;
 
   const handleCopyLink = async () => {
     if (!linkUrl.trim()) return;
@@ -128,6 +127,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
 
   return (
     <form id={ADD_ITEM_FORM_ID} onSubmit={handleSubmit} className={styles.form}>
+      <fieldset disabled={readOnly} className={styles['form-fieldset']}>
       {errorMsg && (
         <div className={`${styles.alert} animate-slide-up`} role="alert">
           <span>{errorMsg}</span>
@@ -145,7 +145,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           <ItemPhotoGallery
             photos={photoEntries}
             onChange={onPhotoEntriesChange}
-            disabled={isLoading}
+            disabled={isLoading || readOnly}
             errorMsg={photoError}
             onError={onPhotoError}
           />
@@ -397,14 +397,21 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           <label className={styles.label}>
             Priority <span className={styles['label-hint']}>(1 is highest)</span>
           </label>
-          <input
-            type="number"
-            className={`${styles.input} ${styles['input-narrow']}`}
-            min="1"
-            placeholder="1-5"
-            value={priorityWeight}
-            onChange={(e) => setPriorityWeight(e.target.value)}
-          />
+          <div className={styles['priority-input-wrap']}>
+            <input
+              type="number"
+              className={`${styles.input} ${styles['input-narrow']}`}
+              min="1"
+              aria-label="Priority weight"
+              value={priorityWeight}
+              onChange={(e) => setPriorityWeight(e.target.value)}
+            />
+            {!priorityWeight && (
+              <span className={styles['priority-placeholder']} aria-hidden="true">
+                1–<Infinity size={14} />
+              </span>
+            )}
+          </div>
         </div>
 
         <div className={styles['form-group']}>
@@ -507,13 +514,13 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                             className={`${styles.input} ${styles['custom-field-name-input']}`}
                             placeholder="Field name"
                             value={field.name}
-                            autoFocus={editingNameFieldId === field.id || !field.name.trim()}
+                            autoFocus={editingCustomFieldNameId === field.id || !field.name.trim()}
                             onChange={(e) => handleUpdateCustomField(field.id, 'name', e.target.value)}
-                            onBlur={finishEditingCustomFieldName}
+                            onBlur={onFinishEditCustomFieldName}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 e.preventDefault();
-                                finishEditingCustomFieldName();
+                                onFinishEditCustomFieldName();
                               }
                             }}
                           />
@@ -527,7 +534,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                             <button
                               type="button"
                               className={styles['custom-field-edit-btn']}
-                              onClick={() => setEditingNameFieldId(field.id)}
+                              onClick={() => onStartEditCustomFieldName(field.id)}
                               title="Edit field name"
                               aria-label={`Edit ${field.name} field name`}
                             >
@@ -537,8 +544,8 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                           <button
                             type="button"
                             onClick={() => {
-                              if (editingNameFieldId === field.id) {
-                                finishEditingCustomFieldName();
+                              if (editingCustomFieldNameId === field.id) {
+                                onFinishEditCustomFieldName();
                               }
                               handleRemoveCustomField(field.id);
                             }}
@@ -603,7 +610,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           </div>
         )}
 
-        {hasPeerItems && (
+        {hasPeerItems && !readOnly && (
           <div className={styles['form-group']}>
             <label className={styles.label}>Linked Items</label>
             <div className={styles['linked-row']}>
@@ -626,7 +633,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           </div>
         )}
 
-        {hasPeerItems && (
+        {hasPeerItems && !readOnly && (
           <div className={styles['form-group']}>
             <label className={styles.label}>Related Items</label>
             <div className={styles['linked-row']}>
@@ -660,48 +667,54 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           onChange={setSharedWithUserIds}
           visibilityMode={visibilityMode}
           onVisibilityModeChange={onVisibilityModeChange}
-          disabled={isLoading}
+          disabled={isLoading || readOnly}
         />
 
         {!isOwner && (
           <>
             <div className={styles['switch-row']}>
-              <span className={styles['switch-label']}>
-                <span className={styles['switch-icon']}><Gift size={14} /></span>
-                Suggest as Surprise
-              </span>
+              <label htmlFor="visible-to-list-owner" className={styles['switch-label']}>
+                Visible to list owner
+              </label>
               <Switch
-                checked={isHiddenIdea}
-                onChange={setIsHiddenIdea}
+                id="visible-to-list-owner"
+                checked={!isHiddenIdea}
+                onChange={(visible) => setIsHiddenIdea(!visible)}
                 size="sm"
-                aria-label="Suggest as surprise idea"
+                aria-label="Visible to list owner"
               />
             </div>
 
             <div className={styles['switch-row']}>
-              <span className={styles['switch-label']}>Visible to Other Collaborators</span>
+              <label htmlFor="visible-to-other-collaborators" className={styles['switch-label']}>
+                Visible to Other Collaborators
+              </label>
               <Switch
+                id="visible-to-other-collaborators"
                 checked={otherUsersCanSee}
                 onChange={setOtherUsersCanSee}
                 size="sm"
-                aria-label="Visible to other collaborators"
+                aria-label="Visible to Other Collaborators"
               />
             </div>
 
             {!isEdit && (
               <div className={styles['switch-row']}>
-                <span className={styles['switch-label']}>Claim this Item Immediately</span>
+                <label htmlFor="claim-this-item-immediately" className={styles['switch-label']}>
+                  Claim this Item Immediately
+                </label>
                 <Switch
+                  id="claim-this-item-immediately"
                   checked={claimOnCreate}
                   onChange={setClaimOnCreate}
                   size="sm"
-                  aria-label="Claim this item immediately"
                 />
               </div>
             )}
           </>
         )}
       </div>
+      </fieldset>
     </form>
   );
 };

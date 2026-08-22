@@ -1,6 +1,7 @@
 import React from 'react';
 import { Eye, Globe, Lock } from 'lucide-react';
 import { hasPriorityValue } from '../../../utils/item-priority.util';
+import { PriorityDisplay } from '../priority-display/priority-display.html';
 import { BadgesProps } from './interfaces/badges-props.interface';
 import styles from './badges.module.css';
 
@@ -20,17 +21,7 @@ export const Badges: React.FC<BadgesProps> = ({
   isPrivate,
   showPriority = true,
 }) => (
-  <>
-    {showPriority && hasPriorityValue(item.Priority) && (
-      <span className={`${styles.badge} ${styles['badge-priority']}`}>
-        Priority {item.Priority}
-      </span>
-    )}
-    {item.IsSuggestion && (
-      <span className={`${styles.badge} ${styles['badge-suggestion']}`}>
-        Suggestion by {item.SuggestedByUsername || 'Collaborator'}
-      </span>
-    )}
+  <div className={styles.root}>
     {audienceLabel && (
       <>
         <span className={`${styles.badge} ${styles['badge-meta']} ${isPrivate ? styles['badge-private'] : ''}`}>
@@ -42,5 +33,12 @@ export const Badges: React.FC<BadgesProps> = ({
         )}
       </>
     )}
-  </>
+    {showPriority && hasPriorityValue(item.Priority) && (
+      <PriorityDisplay
+        priority={item.Priority}
+        variant="badge"
+        className={styles['priority-end']}
+      />
+    )}
+  </div>
 );

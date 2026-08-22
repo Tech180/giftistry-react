@@ -68,6 +68,25 @@ describe('add-item-custom-fields.util', () => {
     expect(values).toEqual({ PreferredColor: 'Black' });
   });
 
+  test('applyExtractedToDynamicValues maps matching UserDefined keys onto field definitions', () => {
+    const values = applyExtractedToDynamicValues(
+      {
+        Title: 'Ryzen 5 5600X',
+        Price: null,
+        Description: null,
+        Category: 'tech',
+        ImageUrl: null,
+        CustomFields: {
+          Predefined: {},
+          UserDefined: { Cores: '6', Threads: '12', Brand: 'AMD' },
+        },
+      },
+      ['Cores', 'Threads', 'Socket']
+    );
+
+    expect(values).toEqual({ Cores: '6', Threads: '12' });
+  });
+
   test('leftoverExtractedRows skips fields absorbed by definitions', () => {
     const rows = leftoverExtractedRows(lttExtract, ['ShirtSize'], {
       ShirtSize: 'Shirt Size',

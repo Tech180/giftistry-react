@@ -25,6 +25,7 @@ export interface CommentSectionTemplateProps {
   setIsOwnerVisible: (val: boolean) => void;
   isRollover: boolean;
   setIsRollover: (val: boolean) => void;
+  autoRollover?: boolean;
   isSubmitLoading: boolean;
   handleSubmit: (e: React.SyntheticEvent) => void;
   formatDate: (dateStr?: string) => string;

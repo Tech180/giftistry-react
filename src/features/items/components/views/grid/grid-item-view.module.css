@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  cursor: pointer;
+  cursor: default;
   position: relative;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   animation: cardStaggerIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
@@ -23,7 +23,11 @@
   }
 }
 
-.gift-card:hover {
+.gift-card.is-selectable {
+  cursor: pointer;
+}
+
+.gift-card.is-selectable:hover {
   border-color: var(--border-strong, var(--text-muted));
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
@@ -34,6 +38,15 @@
   border-color: var(--primary);
   box-shadow: 0 0 0 1px var(--primary), 0 0 12px rgba(var(--primary-rgb, 99, 102, 241), 0.3);
   background: var(--surface-hover);
+}
+
+.gift-card.is-suggestion {
+  border-color: var(--warning, #eab308);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--warning, #eab308) 45%, transparent);
+}
+
+.gift-card.is-selectable.is-suggestion:hover {
+  border-color: var(--warning, #eab308);
 }
 
 .claimed-gray-out {
@@ -87,7 +100,7 @@
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.gift-card:hover .card-icon {
+.gift-card.is-selectable:hover .card-icon {
   transform: scale(1.1);
   color: var(--text);
 }
@@ -111,6 +124,10 @@
   top: 8px;
   right: 8px;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
 .badge {
@@ -140,12 +157,6 @@
   border-color: color-mix(in srgb, var(--error, #ef4444) 20%, transparent);
 }
 
-.badge-suggestion {
-  background: color-mix(in srgb, var(--info, #3b82f6) 10%, var(--surface));
-  color: var(--info, #3b82f6);
-  border-color: color-mix(in srgb, var(--info, #3b82f6) 20%, transparent);
-}
-
 .star-btn {
   background: var(--surface-hover);
   backdrop-filter: blur(4px);
@@ -159,6 +170,27 @@
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.view-btn {
+  background: var(--surface-hover);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 4px);
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-btn:hover {
+  background: var(--surface);
+  color: var(--primary);
+  border-color: var(--border-strong, var(--text-muted));
 }
 
 .star-btn:hover {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { X, LayoutGrid, ListVideo } from 'lucide-react';
+import { X, LayoutGrid } from 'lucide-react';
 import { BrandMark } from 'shared/ui/brand-mark/brand-mark.component';
 import { IconButton } from 'shared/ui/icon-button/icon-button.component';
 import { ProfileSheet } from './components/profile-sheet/profile-sheet.component';
@@ -72,7 +72,6 @@ export const MobileDrawerTemplate: React.FC<MobileDrawerTemplateProps> = ({
 
       <div className={styles['drawer-content']}>
         <div className={`${styles['stagger-item']} ${styles['delay-1']}`}>
-          <span className={styles['drawer-section-title']}>Navigation</span>
           <div className={styles['nav-island']}>
             <Link
               to="/dashboard"
@@ -82,16 +81,6 @@ export const MobileDrawerTemplate: React.FC<MobileDrawerTemplateProps> = ({
               <div className={styles['drawer-link-left']}>
                 <LayoutGrid size={18} className={styles['drawer-icon']} />
                 <span>Dashboard</span>
-              </div>
-            </Link>
-            <Link
-              to="/dashboard"
-              className={styles['drawer-link']}
-              onClick={onClose}
-            >
-              <div className={styles['drawer-link-left']}>
-                <ListVideo size={18} className={styles['drawer-icon']} />
-                <span>My Wishlists</span>
               </div>
             </Link>
           </div>

@@ -116,6 +116,10 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   intelligentConnectionStatus,
   intelligentConnectionMessage,
   onTestAiConnection,
+  aiEnabledPackIds,
+  onEnabledPackIdsChange,
+  aiCustomPacks,
+  onCustomPacksChange,
   allowSetup,
   onAllowSetupChange,
   isSavingAllowSetup,
@@ -374,6 +378,10 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
           intelligentConnectionStatus={intelligentConnectionStatus}
           intelligentConnectionMessage={intelligentConnectionMessage}
           onTestAiConnection={onTestAiConnection}
+          aiEnabledPackIds={aiEnabledPackIds}
+          onEnabledPackIdsChange={onEnabledPackIdsChange}
+          aiCustomPacks={aiCustomPacks}
+          onCustomPacksChange={onCustomPacksChange}
         />
       </form>
 

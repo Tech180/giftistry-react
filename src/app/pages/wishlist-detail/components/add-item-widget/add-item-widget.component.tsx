@@ -9,6 +9,7 @@ const MOBILE_MENU_QUERY = '(max-width: 48rem)';
 export const AddItemWidget: React.FC<AddItemWidgetProps> = ({
   listId,
   isInputMode,
+  canAutoAdd,
   onEnterInputMode,
   onExitInputMode,
   onManual,
@@ -93,6 +94,7 @@ export const AddItemWidget: React.FC<AddItemWidgetProps> = ({
   };
 
   const handleEnterInputMode = () => {
+    if (!canAutoAdd) return;
     setIsMenuOpen(false);
     onEnterInputMode();
   };
@@ -104,7 +106,7 @@ export const AddItemWidget: React.FC<AddItemWidgetProps> = ({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (!canAutoAdd || isSubmitting) return;
 
     const trimmed = url.trim();
     if (!trimmed || !isValidUrl(trimmed)) {
@@ -134,8 +136,9 @@ export const AddItemWidget: React.FC<AddItemWidgetProps> = ({
 
   return (
     <AddItemWidgetTemplate
-      isInputMode={isInputMode}
+      isInputMode={isInputMode && canAutoAdd}
       isMenuOpen={isMenuOpen}
+      canAutoAdd={canAutoAdd}
       url={url}
       setUrl={(value) => {
         setUrl(value);

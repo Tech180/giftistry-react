@@ -9,6 +9,7 @@ const BUSY_HINT = 'Fetching details and generating item magic...';
 export const AddItemWidgetTemplate: React.FC<AddItemWidgetTemplateProps> = ({
   isInputMode,
   isMenuOpen,
+  canAutoAdd,
   url,
   setUrl,
   errorMsg,
@@ -26,6 +27,7 @@ export const AddItemWidgetTemplate: React.FC<AddItemWidgetTemplateProps> = ({
     className={styles.widget}
     data-add-item-widget
     data-input-mode={isInputMode ? 'true' : 'false'}
+    data-auto-add={canAutoAdd ? 'true' : 'false'}
     data-menu-open={isMenuOpen ? 'true' : 'false'}
     tabIndex={isInputMode ? -1 : 0}
     aria-label="Add item options"
@@ -46,19 +48,21 @@ export const AddItemWidgetTemplate: React.FC<AddItemWidgetTemplateProps> = ({
           <Plus size={18} aria-hidden="true" />
         </button>
         <div className={styles['drawer-actions']}>
-          <button
-            type="button"
-            className={styles['drawer-action-btn']}
-            aria-label="Auto"
-            tabIndex={isMenuOpen || !isInputMode ? 0 : -1}
-            onClick={(event) => {
-              event.stopPropagation();
-              onEnterInputMode();
-            }}
-          >
-            <Wand2 size={14} aria-hidden="true" />
-            <span className={styles['drawer-action-text']}>Auto</span>
-          </button>
+          {canAutoAdd ? (
+            <button
+              type="button"
+              className={styles['drawer-action-btn']}
+              aria-label="Auto"
+              tabIndex={isMenuOpen || !isInputMode ? 0 : -1}
+              onClick={(event) => {
+                event.stopPropagation();
+                onEnterInputMode();
+              }}
+            >
+              <Wand2 size={14} aria-hidden="true" />
+              <span className={styles['drawer-action-text']}>Auto</span>
+            </button>
+          ) : null}
           <button
             type="button"
             className={styles['drawer-action-btn']}
@@ -75,46 +79,48 @@ export const AddItemWidgetTemplate: React.FC<AddItemWidgetTemplateProps> = ({
         </div>
       </div>
 
-      <form
-        className={styles['drawer-form-layer']}
-        onSubmit={handleSubmit}
-        aria-label="Auto add item from link"
-        noValidate
-      >
-        <input
-          ref={urlInputRef}
-          type="url"
-          className={styles['url-input']}
-          placeholder="Paste product URL..."
-          value={url}
-          onChange={(event) => setUrl(event.target.value)}
-          disabled={isSubmitting}
-          autoComplete="off"
-        />
-        <button
-          type="submit"
-          className={`${styles['form-btn']} ${styles['submit-btn']}`}
-          disabled={isSubmitting || !url.trim()}
-          title="Auto-add from link"
-          aria-label="Auto-add from link"
+      {canAutoAdd ? (
+        <form
+          className={styles['drawer-form-layer']}
+          onSubmit={handleSubmit}
+          aria-label="Auto add item from link"
+          noValidate
         >
-          {isSubmitting ? (
-            <LoaderCircle size={14} className={styles['spin-icon']} aria-hidden="true" />
-          ) : (
-            <Wand2 size={14} aria-hidden="true" />
-          )}
-        </button>
-        <button
-          type="button"
-          className={`${styles['form-btn']} ${styles['cancel-btn']}`}
-          onClick={onExitInputMode}
-          disabled={isSubmitting}
-          title="Close auto add"
-          aria-label="Close auto add"
-        >
-          <X size={14} aria-hidden="true" />
-        </button>
-      </form>
+          <input
+            ref={urlInputRef}
+            type="url"
+            className={styles['url-input']}
+            placeholder="Paste product URL..."
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            disabled={isSubmitting}
+            autoComplete="off"
+          />
+          <button
+            type="submit"
+            className={`${styles['form-btn']} ${styles['submit-btn']}`}
+            disabled={isSubmitting || !url.trim()}
+            title="Auto-add from link"
+            aria-label="Auto-add from link"
+          >
+            {isSubmitting ? (
+              <LoaderCircle size={14} className={styles['spin-icon']} aria-hidden="true" />
+            ) : (
+              <Wand2 size={14} aria-hidden="true" />
+            )}
+          </button>
+          <button
+            type="button"
+            className={`${styles['form-btn']} ${styles['cancel-btn']}`}
+            onClick={onExitInputMode}
+            disabled={isSubmitting}
+            title="Close auto add"
+            aria-label="Close auto add"
+          >
+            <X size={14} aria-hidden="true" />
+          </button>
+        </form>
+      ) : null}
     </div>
 
     <div className={styles['drawer-popover']} aria-live="polite">

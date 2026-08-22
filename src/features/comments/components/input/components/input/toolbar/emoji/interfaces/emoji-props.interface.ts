@@ -8,4 +8,5 @@ export interface EmojiProps {
   popoverRef: React.RefObject<HTMLDivElement | null>;
   editorHandle?: React.RefObject<CommentEditorHandle | null>;
   onEmojiSelect?: (emoji: string) => void;
+  buttonClassName?: string;
 }

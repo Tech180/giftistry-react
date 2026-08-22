@@ -176,7 +176,8 @@ export function useItemController() {
     linkUrl?: string | null,
     price?: number | null,
     websiteName?: string | null,
-    metadata?: ItemDescriptionMetadata | null
+    metadata?: ItemDescriptionMetadata | null,
+    isHiddenIdea?: boolean
   ) => {
     setError(null);
     try {
@@ -191,7 +192,8 @@ export function useItemController() {
         linkUrl,
         price,
         websiteName,
-        metadata
+        metadata,
+        isHiddenIdea
       );
       replaceItem(updated);
       return updated;

@@ -41,6 +41,11 @@ import {
 } from '../../utils/add-item-custom-fields.util';
 import { jobsApi, waitForJob } from 'features/jobs';
 import { toExtractMetadataResult, toSummarizedDescription } from '../../utils/ai-job-result.util';
+import { formatAiHelperFailure } from '../../utils/format-ai-helper-failure.util';
+import {
+  ENRICH_FAILURE_FALLBACK,
+  SUMMARIZE_FAILURE_FALLBACK,
+} from '../../constants/ai-helper-failure.constants';
 import { abandonPendingManualJob } from '../../utils/abandon-pending-manual-job.util';
 import type { PendingManualJob } from '../../interfaces/pending-manual-job.interface';
 import type { ExtractMetadataResult } from '../../interfaces/extract-metadata-result.interface';
@@ -76,12 +81,13 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   listAiEnabled = false,
   listManualJobBackground = true,
   canUseWebSearchOnList = false,
+  readOnly = false,
 }) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [priorityWeight, setPriorityWeight] = useState('');
-  const [isHiddenIdea, setIsHiddenIdea] = useState(false);
+  const [isHiddenIdea, setIsHiddenIdea] = useState(!isOwner);
   const [otherUsersCanSee, setOtherUsersCanSee] = useState(true);
   const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
   const [visibilityMode, setVisibilityMode] = useState<'everyone' | 'restricted' | 'private'>('everyone');
@@ -108,6 +114,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const [variations, setVariations] = useState<{ name: string; quantity: number }[]>([]);
 
   const [customFields, setCustomFields] = useState<CustomFieldRow[]>([]);
+  const [editingCustomFieldNameId, setEditingCustomFieldNameId] = useState<string | null>(null);
   const [showExtraFields, setShowExtraFields] = useState(false);
   const [photoEntries, setPhotoEntries] = useState<ItemPhotoGalleryEntry[]>([]);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -230,6 +237,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       visibilityMode,
       sharedWithUserIds: comparableSharedWith,
       otherUsersCanSee,
+      isHiddenIdea,
       linkedItemIds: [...linkedItemIds].sort(),
       relatedItemIds: [...relatedItemIds].sort(),
       photos: photoEntries.map((p) => p.dataUrl),
@@ -250,6 +258,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     visibilityMode,
     sharedWithUserIds,
     otherUsersCanSee,
+    isHiddenIdea,
     linkedItemIds,
     relatedItemIds,
     photoEntries,
@@ -293,8 +302,12 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   }, [loadedItemId, item?.Id]);
 
   useEffect(() => {
+    if (readOnly) {
+      onDirtyChange?.(false);
+      return;
+    }
     onDirtyChange?.(!item || isEditDirty);
-  }, [item, isEditDirty, onDirtyChange]);
+  }, [item, isEditDirty, onDirtyChange, readOnly]);
 
   const mapCategoryForDefinitions = (cat: string): string => {
     const c = cat.toLowerCase();
@@ -395,6 +408,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
   const resetOptionalFields = () => {
     setCustomFields([]);
+    setEditingCustomFieldNameId(null);
     setDynamicValues({});
     setShowExtraFields(false);
     setDesiredQuantity(1);
@@ -602,7 +616,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setName('');
       setDescription('');
       setPriorityWeight('');
-      setIsHiddenIdea(false);
+      setIsHiddenIdea(!isOwner);
       setSharedWithUserIds([]);
       setVisibilityMode('everyone');
       setLinkUrl('');
@@ -625,7 +639,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setName('');
       setDescription('');
       setPriorityWeight('');
-      setIsHiddenIdea(false);
+      setIsHiddenIdea(!isOwner);
       setSharedWithUserIds([]);
       setVisibilityMode('everyone');
       setLinkUrl('');
@@ -799,10 +813,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       }
 
       setDescription(summarized);
-    } catch {
+    } catch (err) {
       if (isCancelled()) return;
       setUndoDescription(null);
-      setErrorMsg('Failed to generate notes automatically. You can still enter them manually.');
+      setErrorMsg(formatAiHelperFailure(err, SUMMARIZE_FAILURE_FALLBACK));
     } finally {
       if (!isCancelled()) {
         pendingJobRef.current = null;
@@ -865,7 +879,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     } catch (err) {
       if (isCancelled()) return;
       setWarningMsg(null);
-      setErrorMsg('Failed to fetch product details automatically. You can still enter them manually.');
+      setErrorMsg(formatAiHelperFailure(err, ENRICH_FAILURE_FALLBACK));
     } finally {
       if (!isCancelled()) {
         pendingJobRef.current = null;
@@ -918,18 +932,23 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   };
 
   const handleAddCustomField = () => {
-    setCustomFields((prev) => [
-      ...prev,
-      createCustomFieldRow({ name: '', value: '', bucket: 'userDefined' }),
-    ]);
+    const row = createCustomFieldRow({ name: '', value: '', bucket: 'userDefined' });
+    setCustomFields((prev) => [...prev, row]);
+    setEditingCustomFieldNameId(row.id);
   };
 
   const handleRemoveCustomField = (id: string) => {
-    setCustomFields(prev => prev.filter(f => f.id !== id));
+    setCustomFields((prev) => prev.filter((field) => field.id !== id));
+    setEditingCustomFieldNameId((current) => (current === id ? null : current));
   };
 
   const handleUpdateCustomField = (id: string, key: 'name' | 'value', value: string) => {
-    setCustomFields(prev => prev.map(f => f.id === id ? { ...f, [key]: value } : f));
+    if (key === 'name') {
+      setEditingCustomFieldNameId(id);
+    }
+    setCustomFields((prev) =>
+      prev.map((field) => (field.id === id ? { ...field, [key]: value } : field))
+    );
   };
 
   const hasIncompleteCustomFields = useMemo(
@@ -956,6 +975,9 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+    if (readOnly) {
+      return;
+    }
     if (item && !isEditDirty) {
       return;
     }
@@ -1052,7 +1074,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           linkUrl.trim() || null,
           price.trim() ? parseFloat(price) : null,
           websiteName.trim() || null,
-          metadataPayload
+          metadataPayload,
+          isOwner ? false : isHiddenIdea
         );
         savedItemId = item.Id;
       } else {
@@ -1112,7 +1135,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setName('');
       setDescription('');
       setPriorityWeight('');
-      setIsHiddenIdea(false);
+      setIsHiddenIdea(!isOwner);
       setSharedWithUserIds([]);
       setLinkUrl('');
       setWebsiteName('');
@@ -1122,6 +1145,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setPrice('');
       setIsFavorite(false);
       setCustomFields([]);
+      setEditingCustomFieldNameId(null);
       setShowExtraFields(false);
       setPhotoEntries([]);
       initialPhotosSnapshotRef.current = '[]';
@@ -1341,6 +1365,9 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       handleAddCustomField={handleAddCustomField}
       handleRemoveCustomField={handleRemoveCustomField}
       handleUpdateCustomField={handleUpdateCustomField}
+      editingCustomFieldNameId={editingCustomFieldNameId}
+      onStartEditCustomFieldName={setEditingCustomFieldNameId}
+      onFinishEditCustomFieldName={() => setEditingCustomFieldNameId(null)}
       hasIncompleteCustomFields={hasIncompleteCustomFields}
       showExtraFields={showExtraFields}
       setShowExtraFields={setShowExtraFields}
@@ -1405,6 +1432,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       onPhotoEntriesChange={setPhotoEntries}
       photoError={photoError}
       onPhotoError={setPhotoError}
+      readOnly={readOnly}
     />
   );
 };

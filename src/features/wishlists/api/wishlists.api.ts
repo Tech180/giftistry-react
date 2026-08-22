@@ -30,6 +30,7 @@ export const wishlistsApi = {
     aiEnabled?: boolean,
     webSearchEnabled?: boolean,
     manualJobBackground?: boolean,
+    autoRollover?: boolean,
   ) =>
     apiClient.post<Wishlist>(
       '/api/wishlists',
@@ -42,6 +43,7 @@ export const wishlistsApi = {
         AiEnabled: aiEnabled,
         WebSearchEnabled: webSearchEnabled,
         ManualJobBackground: manualJobBackground,
+        AutoRollover: autoRollover,
       },
       'Lists'
     ),
@@ -50,7 +52,7 @@ export const wishlistsApi = {
     apiClient.put<Record<string, never>>(`/api/wishlists/${listId}/deactivate`, {}),
 
   activateWishlist: (listId: string) =>
-    apiClient.put<Record<string, never>>(`/api/wishlists/${listId}/activate`, {}),
+    apiClient.put<Wishlist>(`/api/wishlists/${listId}/activate`, {}),
 
   deleteWishlist: (listId: string) =>
     apiClient.delete<Record<string, never>>(`/api/wishlists/${listId}`),
@@ -65,6 +67,7 @@ export const wishlistsApi = {
     aiEnabled?: boolean,
     webSearchEnabled?: boolean,
     manualJobBackground?: boolean,
+    autoRollover?: boolean,
   ) =>
     apiClient.put<Wishlist>(
       `/api/wishlists/${listId}`,
@@ -77,14 +80,8 @@ export const wishlistsApi = {
         AiEnabled: aiEnabled,
         WebSearchEnabled: webSearchEnabled,
         ManualJobBackground: manualJobBackground,
+        AutoRollover: autoRollover,
       },
-      'Lists'
-    ),
-
-  shareWishlist: (listId: string, email: string, role: 'viewer' | 'collaborator') =>
-    apiClient.post<ListShare>(
-      `/api/wishlists/${listId}/shares`,
-      { Email: email, Role: role },
       'Lists'
     ),
 
@@ -122,7 +119,9 @@ export const wishlistsApi = {
     ),
 
   listLinkInvites: (listId: string) =>
-    apiClient.get<unknown[]>(`/api/wishlists/${listId}/link-invites`),
+    apiClient.get<Array<{ Token?: string | null; RevokedAt?: string | null; ExpiresAt?: string | null }>>(
+      `/api/wishlists/${listId}/link-invites`
+    ),
 
   revokeLinkInvite: (listId: string, inviteId: string) =>
     apiClient.delete<Record<string, never>>(`/api/wishlists/${listId}/link-invites/${inviteId}`),

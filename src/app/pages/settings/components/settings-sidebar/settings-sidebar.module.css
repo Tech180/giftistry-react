@@ -1,9 +1,27 @@
 .wrapper{
+  position: relative;
   width: 15rem;
   flex-shrink: 0;
   z-index: 10;
   height: 100%;
+  overflow: visible;
+  transition: width var(--transition-normal);
+}
+
+.wrapper.collapsed {
+  width: 0;
+}
+
+.panel{
+  width: 15rem;
+  height: 100%;
+  overflow-x: hidden;
   overflow-y: auto;
+}
+
+.panel-collapsed {
+  visibility: hidden;
+  overflow: hidden;
 }
 
 .sidebar{
@@ -28,4 +46,60 @@
 
 .system-group{
   margin-top: var(--spacing-md);
+}
+
+.edge-toggle{
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  margin-left: -1px;
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background-color: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-50%);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.edge-toggle:hover {
+  background-color: var(--surface-hover);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.edge-toggle:focus-visible {
+  outline: none;
+  color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-focus, 0 0 0 2px color-mix(in srgb, var(--primary) 40%, transparent));
+}
+
+.edge-toggle-collapsed {
+  margin-left: 0;
+  border-left: 1px solid var(--border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrapper {
+    transition: none;
+  }
+
+  .edge-toggle {
+    transition: none;
+  }
 }

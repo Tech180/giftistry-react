@@ -3,7 +3,7 @@ import { Star, Link2, Edit2, Trash2, Tag, Layers2 } from 'lucide-react';
 import { Button, Card } from 'shared/ui';
 // Future: AI item reviews — re-enable AiReviewsPanel when shipping the feature.
 // import { LinksWidget, FundingWidget, AiReviewsPanel, ClaimPrompt } from '../item-presentation';
-import { LinksWidget, FundingWidget, ClaimPrompt, QuantityBadge } from '../item-presentation';
+import { LinksWidget, FundingWidget, ClaimPrompt, ClaimForm, QuantityBadge, PriorityDisplay } from '../item-presentation';
 import type { ItemShowcaseTemplateProps } from '../../interfaces/item-showcase-template-props.interface';
 import { getItemPrimaryImageUrl } from '../../utils/item-primary-image.util';
 import styles from './item-showcase.module.css';
@@ -12,9 +12,17 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   item,
   isOwner,
   canCollaborate,
+  isPublicGuest = false,
+  canEditItem,
   isArchived = false,
+  isExpired = false,
   allowGroupFunds,
   claimedByCurrentUser,
+  canAdjustClaim,
+  itemActions,
+  claimUserId,
+  claimActorName,
+  onBeforeClaimSubmit,
   claimAmount,
   setClaimAmount,
   anonymous,
@@ -26,10 +34,6 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   setShowDeleteConfirm,
   deleteLoading,
   localIsFavorite,
-  selectedVariation,
-  setSelectedVariation,
-  claimQty,
-  onClaimQtyInputChange,
   showDependencyModal,
   setShowDependencyModal,
   displayDescription,
@@ -43,7 +47,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   handleDelete,
   totalExtractedPrice,
   totalClaimedAmount,
-  isMultiCount,
+  isMultiCount: _isMultiCount,
   isFullyClaimed,
   progressPercent,
   onClose,
@@ -69,12 +73,26 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   showHiddenSuggestionBadge,
   suggestionLabel,
   variationProgress,
-  variationOptions,
   linkedRelationItems,
   relatedRelationItems,
   maxContributionAmount,
 }) => {
   const primaryImageUrl = getItemPrimaryImageUrl(item);
+
+  const quantityClaimForm = (
+    <ClaimForm
+      item={item}
+      metadata={metadata}
+      userId={claimUserId}
+      claimedByName={claimActorName}
+      itemActions={itemActions}
+      anonymous={anonymous}
+      onAnonymousChange={setAnonymous}
+      onSubmitted={() => setShowClaimForm(false)}
+      onCancel={() => setShowClaimForm(false)}
+      onBeforeSubmit={onBeforeClaimSubmit}
+    />
+  );
 
   const claimForm = (
     <form
@@ -85,39 +103,13 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
       className={styles['claim-form']}
     >
       <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
-      {isMultiCount && variationOptions.length > 0 && (
+      {allowGroupFunds && (
         <div className={styles['form-group']}>
-          <label className={styles['form-label']}>Choose Variation</label>
-          <select
-            value={selectedVariation}
-            onChange={(e) => setSelectedVariation(e.target.value)}
-            className={styles['variation-select']}
-          >
-            {variationOptions.map((option) => (
-              <option key={option.name} value={option.name} disabled={option.disabled}>
-                {option.optionLabel}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-      {isMultiCount && (
-        <div className={styles['form-group']}>
-          <label className={styles['form-label']}>Quantity to Claim</label>
+          <label className={styles['form-label']} htmlFor="showcase-claim-amount">
+            Amount to Contribute
+          </label>
           <input
-            type="number"
-            min="1"
-            value={claimQty}
-            onChange={(e) => onClaimQtyInputChange(e.target.value)}
-            className={styles['qty-input']}
-            required
-          />
-        </div>
-      )}
-      {!isMultiCount && allowGroupFunds && (
-        <div className={styles['form-group']}>
-          <label className={styles['form-label']}>Amount to Contribute</label>
-          <input
+            id="showcase-claim-amount"
             type="number"
             step="0.01"
             max={maxContributionAmount}
@@ -139,7 +131,8 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
     </form>
   );
 
-  const ownerActions = (
+  const ownerActions =
+    isArchived || isExpired || !onEdit ? null : (
     <div className={styles['owner-actions']}>
       <Button variant="secondary" className={styles['owner-btn']} onClick={onEdit}>
         <Edit2 size={12} className={styles['action-icon']} /> Edit
@@ -168,9 +161,42 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
     </div>
   );
 
-  const guestActions = isArchived ? null : !isOwner ? (
+  const guestActions =
+    isArchived || isExpired || isPublicGuest ? null : !isOwner ? (
     <>
-      {claimedByCurrentUser ? (
+      {canAdjustClaim ? (
+        isFullyClaimed && !claimedByCurrentUser ? (
+          <Button variant="secondary" className={styles['claim-button']} disabled>
+            Already Claimed
+          </Button>
+        ) : (
+          <div className={styles['claim-widget']}>
+            {showClaimForm ? (
+              quantityClaimForm
+            ) : (
+              <div className={styles['claim-footer-actions']}>
+                {claimedByCurrentUser && (
+                  <Button
+                    variant="ghost"
+                    className={`${styles['claim-button']} ${styles['unclaim-all-btn']}`}
+                    onClick={handleUnclaim}
+                    isLoading={claimLoading}
+                  >
+                    Unclaim All
+                  </Button>
+                )}
+                <Button
+                  variant={claimedByCurrentUser ? 'secondary' : 'primary'}
+                  className={styles['claim-button']}
+                  onClick={() => setShowClaimForm(true)}
+                >
+                  {claimedByCurrentUser ? 'Update Claim' : 'Claim Item'}
+                </Button>
+              </div>
+            )}
+          </div>
+        )
+      ) : claimedByCurrentUser ? (
         <Button
           variant="secondary"
           className={styles['claim-button']}
@@ -198,7 +224,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
           )}
         </div>
       )}
-      {canCollaborate && ownerActions}
+      {(canEditItem ?? canCollaborate) && ownerActions}
     </>
   ) : (
     ownerActions
@@ -248,7 +274,9 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
 
   if (variant === 'inline') {
     return (
-      <div className={`${styles['showcase-inline']} ${isPrivate ? styles['private-item'] : ''} ${isArchived ? styles['archived-item'] : ''}`}>
+      <div
+        className={`${styles['showcase-inline']} ${isPrivate ? styles['private-item'] : ''} ${isArchived ? styles['archived-item'] : ''}`}
+      >
         {primaryImageUrl && (
           <div className={styles['detail-photo']}>
             <img src={primaryImageUrl} alt="" className={styles['detail-photo-img']} />
@@ -265,7 +293,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
             {item.Name}
           </h2>
           <div className={styles['detail-price-row']}>
-            <QuantityBadge item={item} metadata={metadata} />
+            <QuantityBadge item={item} metadata={metadata} isOwner={isOwner} />
             <span className={styles['detail-price']}>{bestPriceDisplay}</span>
           </div>
           {showHeroMeta && (
@@ -300,11 +328,12 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
               <div className={styles['property-grid']}>
                 {hasNumericPriority && priorityDisplay != null && (
                   <div className={styles['prop-card']}>
-                    <div className={styles['prop-label']}>Priority</div>
-                    <div className={styles['prop-value']}>
-                      {priorityDisplay}
-                      <span className={styles['prop-value-hint']}> (1 is highest)</span>
-                    </div>
+                    <PriorityDisplay
+                      priority={priorityDisplay}
+                      variant="stacked"
+                      showHint
+                      className={styles['prop-card-priority']}
+                    />
                   </div>
                 )}
                 {audienceLabel && (

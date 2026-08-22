@@ -22,14 +22,17 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
   isOwner,
   isExpired,
   isArchived,
+  autoRollover,
   handleItemTaggedClick,
+  collapseDrawerWhileTagging = false,
 }) => {
   const drawerTaggingActive = isTaggingModeActive || isReplyTaggingModeActive;
   const drawerTaggedIds = isReplyTaggingModeActive ? replyTaggedItemIds : taggedItemIds;
+  const isDrawerOpen = isOpen && !collapseDrawerWhileTagging;
 
   return (
     <Drawer
-      isOpen={isOpen}
+      isOpen={isDrawerOpen}
       position="right"
       title="Comments"
       onClose={onClose}
@@ -61,6 +64,7 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
         isOwner={isOwner}
         isExpired={isExpired}
         isArchived={isArchived}
+        autoRollover={autoRollover}
         items={items}
         onItemTaggedClick={handleItemTaggedClick}
         isTaggingModeActive={isTaggingModeActive}

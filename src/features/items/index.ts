@@ -33,5 +33,6 @@ export type { ItemCardSkeletonProps } from './components/skeleton/interfaces/ite
 export { ImportStrip } from './components/import/import-strip/import-strip.component';
 export type { ImportStripHandle } from './components/import/import-strip/interfaces/import-strip-handle.interface';
 export { ImportDropzone } from './components/import/import-dropzone/import-dropzone.component';
+export { ImportMenuPanel } from './components/import/import-menu-panel/import-menu-panel.component';
 export type { WishlistImportExtension } from './constants/wishlist-import.constants';
 export { getWishlistImportFormatOptions } from './constants/wishlist-import.constants';

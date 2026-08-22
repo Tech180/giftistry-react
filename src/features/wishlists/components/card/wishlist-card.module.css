@@ -53,16 +53,6 @@
   box-shadow: var(--shadow);
 }
 
-.archived {
-  opacity: 0.7;
-  filter: grayscale(100%);
-}
-
-.archived:hover {
-  opacity: 0.95;
-  filter: grayscale(0%);
-}
-
 .link-wrapper {
   text-decoration: none;
   color: inherit;
@@ -129,7 +119,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
 }
 

@@ -216,6 +216,118 @@ describe('FloatingActionMenu', () => {
     expect(screen.queryByRole('button', { name: /dropzone stub/i })).toBeNull();
   });
 
+  test('renders share panel with hidePanelHeader and 320x380 sizing', () => {
+    const { container } = render(
+      <FloatingActionMenu
+        actions={[
+          {
+            id: 'share',
+            label: 'Share',
+            icon: <span>S</span>,
+            panelWidth: 320,
+            panelHeight: 380,
+            hidePanelHeader: true,
+            panelContent: () => <div>Share FAB panel</div>,
+          },
+        ]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /page actions/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^share$/i }));
+
+    const dock = container.querySelector('[class*="statePanel"]') as HTMLElement | null;
+    expect(dock).not.toBeNull();
+    expect(dock!.style.width).toBe('320px');
+    expect(dock!.style.height).toBe('380px');
+    expect(screen.getByText('Share FAB panel')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /go back/i })).toBeNull();
+  });
+
+  test('hides the default panel header when hidePanelHeader is set', () => {
+    render(
+      <FloatingActionMenu
+        actions={[
+          {
+            id: 'import',
+            label: 'Import',
+            icon: <span>I</span>,
+            hidePanelHeader: true,
+            panelContent: () => <div>Custom chrome</div>,
+          },
+        ]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /page actions/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^import$/i }));
+
+    expect(screen.getByText('Custom chrome')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /go back/i })).toBeNull();
+  });
+
+  test('setPanelSize updates the open panel width and height', () => {
+    const { container } = render(
+      <FloatingActionMenu
+        actions={[
+          {
+            id: 'import',
+            label: 'Import',
+            icon: <span>I</span>,
+            panelWidth: 288,
+            panelHeight: 268,
+            panelContent: ({ setPanelSize }) => (
+              <button type="button" onClick={() => setPanelSize(320, 400)}>
+                Expand panel
+              </button>
+            ),
+          },
+        ]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /page actions/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^import$/i }));
+
+    const dock = container.querySelector('[class*="statePanel"]') as HTMLElement | null;
+    expect(dock).not.toBeNull();
+    expect(dock!.style.width).toBe('288px');
+    expect(dock!.style.height).toBe('268px');
+
+    fireEvent.click(screen.getByRole('button', { name: /expand panel/i }));
+    expect(dock!.style.width).toBe('320px');
+    expect(dock!.style.height).toBe('400px');
+  });
+
+  test('Escape is consumed when the panel escape handler returns true', () => {
+    render(
+      <FloatingActionMenu
+        actions={[
+          {
+            id: 'import',
+            label: 'Import',
+            icon: <span>I</span>,
+            panelContent: ({ setPanelEscapeHandler, closeMenu }) => {
+              setPanelEscapeHandler(() => {
+                closeMenu();
+                return true;
+              });
+              return <div>Custom panel</div>;
+            },
+          },
+        ]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /page actions/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^import$/i }));
+    expect(screen.getByText('Custom panel')).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByText('Custom panel')).toBeNull();
+    expect(screen.queryByRole('menu', { name: /page actions/i })).toBeNull();
+  });
+
   test('closes when viewport becomes desktop width', () => {
     render(
       <FloatingActionMenu

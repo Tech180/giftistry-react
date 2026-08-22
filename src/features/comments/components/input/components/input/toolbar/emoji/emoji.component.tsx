@@ -12,6 +12,7 @@ export const EmojiPickerButton: React.FC<EmojiProps> = ({
   popoverRef,
   editorHandle,
   onEmojiSelect: onEmojiSelectProp,
+  buttonClassName,
 }) => {
   const { appearance } = useTheme();
   const effectiveTheme = appearance === 'system'
@@ -42,6 +43,7 @@ export const EmojiPickerButton: React.FC<EmojiProps> = ({
       setSearchQuery={setSearchQuery}
       effectiveTheme={effectiveTheme}
       onEmojiSelect={handleEmojiSelect}
+      buttonClassName={buttonClassName}
     />
   );
 };

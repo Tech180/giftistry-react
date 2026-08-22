@@ -1,6 +1,6 @@
 {
   "name": "giftistry-react",
-  "version": "0.0.16",
+  "version": "0.0.19",
   "private": true,
   "dependencies": {
     "@simplewebauthn/browser": "^13.3.0",
@@ -31,8 +31,8 @@
     "vitest": "^3.2.4"
   },
   "scripts": {
-    "dev": "vite",
-    "start": "vite",
+    "dev": "vite --host",
+    "start": "vite --host",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
@@ -42,7 +42,7 @@
     "audit:css-modules": "bun run scripts/audit-css-module-refs.ts",
     "audit": "bun run audit:colors && bun run audit:css && bun run audit:css-modules",
     "lint": "eslint src",
-    "dev:all": "concurrently \"bun run dev\" \"cd ../giftistry-bun && bun run dev\""
+    "dev:all": "bun run scripts/dev-all.ts"
   },
   "browserslist": {
     "production": [

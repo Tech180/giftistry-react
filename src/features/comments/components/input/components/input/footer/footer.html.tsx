@@ -10,6 +10,7 @@ export const FooterTemplate: React.FC<FooterTemplateProps> = ({
   setIsOwnerVisible,
   isRollover,
   setIsRollover,
+  autoRollover = false,
   items,
   isTaggingModeActive,
   setIsTaggingModeActive,
@@ -23,19 +24,21 @@ export const FooterTemplate: React.FC<FooterTemplateProps> = ({
         />
       )}
 
-      <label className={styles['rock-toggle-wrapper']} title="Toggle Rollover">
-        <input
-          type="checkbox"
-          checked={isRollover}
-          onChange={(e) => setIsRollover(e.target.checked)}
-        />
-        <div className={styles['rock-toggle-track']}>
-          <div className={styles['rock-tumbler']}>
-            <div className={styles['rock-texture']} />
+      {autoRollover ? (
+        <label className={styles['rock-toggle-wrapper']} title="Toggle Rollover">
+          <input
+            type="checkbox"
+            checked={isRollover}
+            onChange={(e) => setIsRollover(e.target.checked)}
+          />
+          <div className={styles['rock-toggle-track']}>
+            <div className={styles['rock-tumbler']}>
+              <div className={styles['rock-texture']} />
+            </div>
           </div>
-        </div>
-        <span className={styles['rock-toggle-label']}>Rollover</span>
-      </label>
+          <span className={styles['rock-toggle-label']}>Rollover</span>
+        </label>
+      ) : null}
     </div>
 
     {!isOwner && (

@@ -6,6 +6,7 @@ export interface FooterProps {
   setIsOwnerVisible: (visible: boolean) => void;
   isRollover: boolean;
   setIsRollover: (rollover: boolean) => void;
+  autoRollover?: boolean;
   items: Item[];
   isTaggingModeActive: boolean;
   setIsTaggingModeActive: (active: boolean) => void;

@@ -18,6 +18,7 @@ export const ReactionPickerTemplate: React.FC<ReactionPickerTemplateProps> = ({
         anchorRef={emojiAnchorRef}
         popoverRef={emojiPopoverRef}
         onEmojiSelect={onEmojiSelect}
+        buttonClassName={`${styles['reaction-trigger']} ${showEmojiPicker ? styles['reaction-trigger-active'] : ''}`}
       />
     </div>
   );

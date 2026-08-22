@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { wishlistsApi } from 'features/wishlists/api/wishlists.api';
 import { LinkTabProps } from './interfaces/link.interface';
+import type { LinkInvite } from './interfaces/link-invite.interface';
 import { LinkTabTemplate } from './link.html';
 
-export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner }) => {
-  const [activeInvite, setActiveInvite] = useState<any | null>(null);
+export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner, variant = 'classic' }) => {
+  const [activeInvite, setActiveInvite] = useState<LinkInvite | null>(null);
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -12,7 +13,6 @@ export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner }) => {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Setup form states
   const [role, setRole] = useState<'viewer' | 'collaborator'>('viewer');
   const [hasExpiration, setHasExpiration] = useState(false);
   const [expDate, setExpDate] = useState('');
@@ -25,12 +25,13 @@ export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner }) => {
     setErrorMsg(null);
     try {
       const invites = await wishlistsApi.listLinkInvites(listId);
-      const active = invites.find((invite: any) => {
+      const active = invites.find((invite) => {
         if (invite.RevokedAt) return false;
         if (invite.ExpiresAt && new Date(invite.ExpiresAt) < new Date()) return false;
         return true;
-      });
-      setActiveInvite(active || null);
+      }) as LinkInvite | undefined;
+      setActiveInvite(active ?? null);
+      setGeneratedToken(active?.Token ?? null);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to check active link invites.');
     } finally {
@@ -39,7 +40,7 @@ export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner }) => {
   };
 
   useEffect(() => {
-    loadLinkInvites();
+    void loadLinkInvites();
   }, [listId]);
 
   const handleGenerate = async () => {
@@ -62,7 +63,7 @@ export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner }) => {
         hasPassword && password ? password : null
       );
       setGeneratedToken(result.Token);
-      setActiveInvite(result.Invite);
+      setActiveInvite(result.Invite as LinkInvite);
       setSuccessMsg('Share link generated successfully!');
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to generate link.');
@@ -104,8 +105,21 @@ export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner }) => {
     setGeneratedToken(null);
   };
 
+  const handleToggleLink = async (enabled: boolean) => {
+    if (enabled) {
+      if (!activeInvite) {
+        await handleGenerate();
+      }
+      return;
+    }
+    if (activeInvite) {
+      await handleRevoke();
+    }
+  };
+
   return (
     <LinkTabTemplate
+      variant={variant}
       isOwner={isOwner}
       isLoading={isLoading}
       isGenerating={isGenerating}
@@ -130,6 +144,7 @@ export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner }) => {
       handleCopy={handleCopy}
       handleRevoke={handleRevoke}
       handleSettings={handleSettings}
+      handleToggleLink={handleToggleLink}
     />
   );
 };

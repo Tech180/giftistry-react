@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { Layers, Search } from 'lucide-react';
+import { Layers, RefreshCw, Search } from 'lucide-react';
 import { Switch } from 'shared/ui';
 import { AiDisabledIcon, AiSparklesIcon } from 'shared/ui/badge/icons/ai-badge-icons';
 import styles from './list-settings-panel.module.css';
@@ -8,27 +8,63 @@ export interface ListSettingsPanelProps {
   aiEnabled: boolean;
   webSearchEnabled: boolean;
   manualJobBackground: boolean;
+  autoRollover: boolean;
   canShowAi: boolean;
   canShowWebSearch: boolean;
   onToggleAi: () => void;
   onToggleWebSearch: () => void;
   onToggleManualJobBackground: () => void;
+  onToggleAutoRollover: () => void;
 }
 
 export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
   aiEnabled,
   webSearchEnabled,
   manualJobBackground,
+  autoRollover,
   canShowAi,
   canShowWebSearch,
   onToggleAi,
   onToggleWebSearch,
   onToggleManualJobBackground,
+  onToggleAutoRollover,
 }) => {
   const aiGradientId = `list-settings-ai-${useId().replace(/:/g, '')}`;
 
   return (
     <div className={styles.root} role="group" aria-label="List settings">
+      <button
+        type="button"
+        className={[styles.row, autoRollover ? styles.rowActive : ''].filter(Boolean).join(' ')}
+        onClick={onToggleAutoRollover}
+        aria-pressed={autoRollover}
+        aria-label={
+          autoRollover
+            ? 'Auto rollover enabled for this list. Click to disable.'
+            : 'Auto rollover disabled for this list. Click to enable.'
+        }
+      >
+        <span className={styles.rowIcon} aria-hidden>
+          <RefreshCw size={16} />
+        </span>
+        <span className={styles.rowText}>
+          <span className={styles.rowLabel}>Rollover</span>
+          <span className={styles.rowMeta}>{autoRollover ? 'On' : 'Off'}</span>
+        </span>
+        <span
+          className={styles.switchSlot}
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+        >
+          <Switch
+            size="sm"
+            checked={autoRollover}
+            onChange={() => onToggleAutoRollover()}
+            aria-label={autoRollover ? 'Disable rollover' : 'Enable rollover'}
+          />
+        </span>
+      </button>
+
       {canShowAi ? (
         <button
           type="button"

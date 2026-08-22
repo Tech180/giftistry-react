@@ -7,8 +7,6 @@ export interface CreateListFormTemplateProps {
   setExpiresAt: (val: string) => void;
   allowGroupFunds: boolean;
   setAllowGroupFunds: (val: boolean) => void;
-  revealSuggestions: boolean;
-  setRevealSuggestions: (val: boolean) => void;
   isLoading: boolean;
   errorMsg: string | null;
   handleSubmit: (e: React.SyntheticEvent) => void;
@@ -20,6 +18,8 @@ export interface CreateListFormTemplateProps {
   setAiEnabled: (val: boolean) => void;
   webSearchEnabled: boolean;
   setWebSearchEnabled: (val: boolean) => void;
+  autoRollover: boolean;
+  setAutoRollover: (val: boolean) => void;
   globalAiEnabled: boolean;
   globalWebSearchEnabled: boolean;
   onCancel?: () => void;

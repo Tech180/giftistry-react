@@ -1,3 +1,29 @@
 .reaction-picker-wrapper {
   display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.reaction-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  min-width: 1.875rem;
+  min-height: 1.875rem;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  opacity: 0.8;
+}
+
+.reaction-trigger:hover,
+.reaction-trigger-active {
+  color: var(--primary);
+  background: var(--primary-light);
+  opacity: 1;
 }

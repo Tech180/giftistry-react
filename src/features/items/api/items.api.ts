@@ -109,7 +109,8 @@ export const itemsApi = {
     linkUrl?: string | null,
     price?: number | null,
     websiteName?: string | null,
-    metadata?: ItemDescriptionMetadata | null
+    metadata?: ItemDescriptionMetadata | null,
+    isHiddenIdea?: boolean
   ) =>
     apiClient.put<Item>(
       `/api/items/${itemId}`,
@@ -124,6 +125,7 @@ export const itemsApi = {
         Price: price,
         WebsiteName: websiteName,
         Metadata: metadata,
+        ...(isHiddenIdea !== undefined ? { IsHiddenIdea: isHiddenIdea } : {}),
       },
       'Items'
     ),

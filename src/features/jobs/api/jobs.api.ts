@@ -20,6 +20,7 @@ export const jobsApi = {
     contentEncoding: ImportContentEncoding;
     grabInfo: boolean;
     allowAi: boolean;
+    optimizeCategories?: boolean;
   }) =>
     apiClient.post<BackgroundJobView>(
       '/api/jobs/wishlist-import',
@@ -33,6 +34,7 @@ export const jobsApi = {
         ContentEncoding: payload.contentEncoding,
         GrabInfo: payload.grabInfo,
         AllowAi: payload.allowAi,
+        OptimizeCategories: payload.optimizeCategories,
       },
       'Jobs'
     ),

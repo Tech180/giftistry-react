@@ -19,6 +19,8 @@ export const FloatingActionMenuTemplate: React.FC<FloatingActionMenuTemplateProp
   toolbarHeight,
   panelHeight,
   panelWidth,
+  hidePanelHeader,
+  panelHelpers,
   setDockState,
   onActionClick,
   onChildClick,
@@ -41,7 +43,7 @@ export const FloatingActionMenuTemplate: React.FC<FloatingActionMenuTemplateProp
     expandedAction?.panelContent == null
       ? null
       : typeof expandedAction.panelContent === 'function'
-        ? expandedAction.panelContent({ closeMenu: () => setDockState('closed') })
+        ? expandedAction.panelContent(panelHelpers)
         : expandedAction.panelContent;
 
   return (
@@ -87,7 +89,9 @@ export const FloatingActionMenuTemplate: React.FC<FloatingActionMenuTemplateProp
           >
             {actions.map((action, idx) => {
               const opensPanel = actionOpensPanel(action);
-              const needsDivider = opensPanel && idx > 0;
+              const needsDivider = opensPanel && idx > 0 && !action.hideToolbarDivider;
+              const toolbarTone =
+                action.toolbarTone ?? (opensPanel ? 'primary' : 'default');
 
               return (
                 <React.Fragment key={action.id}>
@@ -97,7 +101,8 @@ export const FloatingActionMenuTemplate: React.FC<FloatingActionMenuTemplateProp
                     {...(dockState === 'toolbar' ? { role: 'menuitem' } : {})}
                     className={[
                       styles.toolBtn,
-                      opensPanel ? styles.primary : '',
+                      toolbarTone === 'primary' ? styles.primary : '',
+                      toolbarTone === 'danger' ? styles.danger : '',
                     ]
                       .filter(Boolean)
                       .join(' ')}
@@ -136,23 +141,31 @@ export const FloatingActionMenuTemplate: React.FC<FloatingActionMenuTemplateProp
 
         {/* Face 3: Expanded Panel Menu */}
         <div
-          className={[styles.dockFace, styles.facePanel].join(' ')}
+          className={[
+            styles.dockFace,
+            styles.facePanel,
+            hidePanelHeader ? styles.facePanelFlush : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           aria-hidden={dockState !== 'panel'}
         >
           {expandedAction && (
             <>
-              <div className={styles.panelHeader}>
-                <button
-                  type="button"
-                  className={styles.backBtn}
-                  aria-label="Go back"
-                  tabIndex={dockState === 'panel' ? 0 : -1}
-                  onClick={() => setDockState('toolbar')}
-                >
-                  <ChevronLeft size={18} aria-hidden />
-                </button>
-                <span>{expandedAction.label}</span>
-              </div>
+              {hidePanelHeader ? null : (
+                <div className={styles.panelHeader}>
+                  <button
+                    type="button"
+                    className={styles.backBtn}
+                    aria-label="Go back"
+                    tabIndex={dockState === 'panel' ? 0 : -1}
+                    onClick={() => setDockState('toolbar')}
+                  >
+                    <ChevronLeft size={18} aria-hidden />
+                  </button>
+                  <span>{expandedAction.label}</span>
+                </div>
+              )}
 
               {panelBody ? (
                 <div className={styles.panelContent}>{panelBody}</div>

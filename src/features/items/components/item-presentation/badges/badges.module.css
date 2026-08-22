@@ -9,6 +9,18 @@
   border: 1px solid transparent;
 }
 
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.priority-end {
+  margin-left: auto;
+}
+
 .badge-category {
   background: var(--surface-hover);
   border-color: var(--border);

@@ -4,5 +4,6 @@ import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description
 export interface QuantityBadgeProps {
   item: Item;
   metadata?: ItemDescriptionMetadata | null;
+  isOwner?: boolean;
   className?: string;
 }

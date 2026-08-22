@@ -125,17 +125,6 @@
   display: none;
 }
 
-.drawer-section-title {
-  display: block;
-  font-size: var(--font-size-2xs, 0.6875rem);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  font-weight: var(--font-weight-bold, 700);
-  padding-left: var(--spacing-sm);
-  margin-bottom: var(--spacing-xs);
-}
-
 .nav-island {
   background-color: var(--surface-glass);
   border: 1px solid var(--border);

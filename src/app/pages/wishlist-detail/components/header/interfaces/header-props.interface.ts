@@ -7,6 +7,7 @@ export interface HeaderProps {
   items: Item[];
   priorities: Priority[];
   isOwner: boolean;
+  isPublicGuest?: boolean;
   isExpired: boolean;
   isArchived: boolean;
   isDeactivating: boolean;
@@ -20,10 +21,10 @@ export interface HeaderProps {
   saveTitle: (val: string) => Promise<void>;
   saveDate: (val: string) => Promise<void>;
   formatDate: (dateStr: string | null) => string;
-  toggleRevealSuggestions: () => void;
   toggleAiEnabled: () => void;
   toggleWebSearchEnabled: () => void;
   toggleManualJobBackground: () => void;
+  toggleAutoRollover: () => void;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsShareOpen: (open: boolean) => void;

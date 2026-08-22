@@ -29,7 +29,19 @@ vi.mock('./components/add-item-widget/add-item-widget.component', () => ({
 }));
 
 vi.mock('./components/drawer/comments/comments.component', () => ({
-  Comments: () => null,
+  Comments: ({
+    isOpen,
+    collapseDrawerWhileTagging,
+  }: {
+    isOpen: boolean;
+    collapseDrawerWhileTagging?: boolean;
+  }) => (
+    <div
+      data-testid="comments"
+      data-session-open={String(isOpen)}
+      data-collapse={String(!!collapseDrawerWhileTagging)}
+    />
+  ),
 }));
 
 vi.mock('./components/header/header.component', () => ({
@@ -55,6 +67,27 @@ vi.mock('features/jobs', () => ({
   JobProgressBox: () => null,
 }));
 
+vi.mock('shared/ui', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('shared/ui')>();
+  return {
+    ...actual,
+    Modal: ({
+      isOpen,
+      title,
+      children,
+    }: {
+      isOpen: boolean;
+      title?: string;
+      children: React.ReactNode;
+    }) =>
+      isOpen ? (
+        <div data-testid="share-modal" aria-label={title}>
+          {children}
+        </div>
+      ) : null,
+  };
+});
+
 const wishlist = {
   Id: 'list-1',
   Title: 'Birthday',
@@ -76,6 +109,7 @@ const baseProps: WishlistDetailTemplateProps = {
   priorities: [],
   isOwner: true,
   canCollaborate: true,
+  canSuggest: true,
   isExpired: false,
   isArchived: false,
   isAddOpen: true,
@@ -89,6 +123,10 @@ const baseProps: WishlistDetailTemplateProps = {
   editingItem: null,
   setEditingItem: vi.fn(),
   openItemEditor: vi.fn(),
+  viewingItem: null,
+  setViewingItem: vi.fn(),
+  openItemViewer: vi.fn(),
+  shouldOpenItemViewer: false,
   setEditingItemDraft: vi.fn(),
   linkedItemIds: ['item-a'],
   setLinkedItemIds: vi.fn(),
@@ -120,12 +158,12 @@ const baseProps: WishlistDetailTemplateProps = {
   handleDeleteConfirm: vi.fn(),
   saveTitle: vi.fn(async () => undefined),
   saveDate: vi.fn(async () => undefined),
-  toggleRevealSuggestions: vi.fn(),
   formatDate: () => '',
   isCommentsOpen: false,
   setIsCommentsOpen: vi.fn(),
   isShareOpen: false,
   setIsShareOpen: vi.fn(),
+  isMobileFab: false,
   isImportOpen: false,
   setIsImportOpen: vi.fn(),
   importStripRef: { current: null },
@@ -208,6 +246,68 @@ describe('WishlistDetailTemplate link apply bar', () => {
     expect(screen.queryByTestId('link-apply-bar')).toBeNull();
   });
 
+  test('shows Apply and collapses comments overlay while tagging items', () => {
+    const setIsTaggingModeActive = vi.fn();
+
+    render(
+      <MemoryRouter>
+        <WishlistDetailTemplate
+          {...baseProps}
+          isAddOpen={false}
+          viewMode="detailed"
+          isCommentsOpen
+          isTaggingModeActive
+          doesAddSidebarOverlayList
+          setIsTaggingModeActive={setIsTaggingModeActive}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('link-apply-bar')).toBeInTheDocument();
+    expect(screen.getByTestId('comments')).toHaveAttribute('data-collapse', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    expect(setIsTaggingModeActive).toHaveBeenCalledWith(false);
+  });
+
+  test('hides tagging Apply bar when comments do not overlay the list', () => {
+    render(
+      <MemoryRouter>
+        <WishlistDetailTemplate
+          {...baseProps}
+          isAddOpen={false}
+          viewMode="detailed"
+          isCommentsOpen
+          isTaggingModeActive
+          doesAddSidebarOverlayList={false}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByTestId('link-apply-bar')).toBeNull();
+    expect(screen.getByTestId('comments')).toHaveAttribute('data-collapse', 'false');
+  });
+
+  test('viewer sees add actions while import and auto-add stay collaborator-only', () => {
+    render(
+      <MemoryRouter>
+        <WishlistDetailTemplate
+          {...baseProps}
+          wishlist={{ ...wishlist, AiEnabled: true }}
+          canShowAi
+          isOwner={false}
+          canCollaborate={false}
+          canSuggest
+          isAddOpen={false}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('button', { name: /add manually/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /import/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /auto add from link/i })).not.toBeInTheDocument();
+  });
+
   test('keeps form session props open while linking so the drawer can hide without reset', () => {
     render(
       <MemoryRouter>
@@ -221,5 +321,25 @@ describe('WishlistDetailTemplate link apply bar', () => {
     );
 
     expect(screen.getByTestId('add-item')).toHaveAttribute('data-session-open', 'true');
+  });
+
+  test('renders share modal on desktop when share is open', () => {
+    render(
+      <MemoryRouter>
+        <WishlistDetailTemplate {...baseProps} isShareOpen isMobileFab={false} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('share-modal')).toBeInTheDocument();
+  });
+
+  test('does not render share modal on mobile FAB viewport', () => {
+    render(
+      <MemoryRouter>
+        <WishlistDetailTemplate {...baseProps} isShareOpen isMobileFab />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByTestId('share-modal')).toBeNull();
   });
 });

@@ -1,3 +1,5 @@
+import type { CustomPackSettings } from '../components/ai-section/components/metadata-packs/interfaces/custom-pack-settings.interface';
+
 export interface AiDefaultPromptsView {
   Review: string;
   Description: string;
@@ -44,6 +46,8 @@ export interface BackendSettings {
   AiPopulatePrompt?: string;
   AiCategoryPrompt?: string;
   AiImportPrompt?: string;
+  AiEnabledPackIds?: string[];
+  AiCustomPacks?: CustomPackSettings[];
   AiCompletionTimeoutMs?: number;
   ScrapeFetchTimeoutMs?: number;
   ScrapePlaywrightTimeoutMs?: number;

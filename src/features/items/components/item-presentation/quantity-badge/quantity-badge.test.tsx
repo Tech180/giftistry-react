@@ -27,7 +27,7 @@ describe('QuantityBadge', () => {
     expect(screen.getByLabelText('Quantity ×3')).toBeInTheDocument();
   });
 
-  it('renders claimed/desired when claims exist', () => {
+  it('renders remaining ×N when claims exist', () => {
     render(
       <QuantityBadge
         item={{
@@ -38,6 +38,35 @@ describe('QuantityBadge', () => {
         }}
       />
     );
-    expect(screen.getByText('1/4')).toBeInTheDocument();
+    expect(screen.getByText('×3')).toBeInTheDocument();
+  });
+
+  it('hides the badge for guests when none remain', () => {
+    const { container } = render(
+      <QuantityBadge
+        item={{
+          ...baseItem,
+          DesiredQuantity: 4,
+          TotalClaimedQuantity: 4,
+          IsMultiCount: true,
+        }}
+      />
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('renders ×N for owners even when claims exist', () => {
+    render(
+      <QuantityBadge
+        isOwner
+        item={{
+          ...baseItem,
+          DesiredQuantity: 4,
+          TotalClaimedQuantity: 1,
+          IsMultiCount: true,
+        }}
+      />
+    );
+    expect(screen.getByText('×4')).toBeInTheDocument();
   });
 });

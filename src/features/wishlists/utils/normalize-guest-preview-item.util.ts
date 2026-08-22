@@ -1,0 +1,33 @@
+import type { Item } from 'features/items';
+
+export function normalizeGuestPreviewItem(raw: Partial<Item> & { Id?: string; Name?: string }): Item {
+  return {
+    Id: raw.Id ?? '',
+    ListId: raw.ListId ?? '',
+    PriorityId: raw.PriorityId ?? null,
+    SuggestedByUserId: null,
+    SuggestedByUsername: null,
+    Name: raw.Name ?? '',
+    Description: raw.Description ?? null,
+    IsHiddenIdea: false,
+    IsSuggestion: false,
+    Category: raw.Category ?? 'uncategorized',
+    CategoryKey: raw.CategoryKey,
+    CategoryLabel: raw.CategoryLabel,
+    Priority: raw.Priority ?? null,
+    CreatedAt: raw.CreatedAt,
+    SharedWith: undefined,
+    Links: raw.Links ?? [],
+    Claims: [],
+    IsClaimed: false,
+    Photos: raw.Photos ?? [],
+    Metadata: raw.Metadata ?? null,
+    IsFullyClaimed: false,
+    IsMultiCount: raw.IsMultiCount,
+    TotalClaimedAmount: 0,
+    TotalClaimedQuantity: 0,
+    DesiredQuantity: raw.DesiredQuantity ?? null,
+    RemainingQuantity: null,
+    FundingTarget: raw.FundingTarget,
+  };
+}

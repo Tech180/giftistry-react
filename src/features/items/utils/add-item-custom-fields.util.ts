@@ -159,11 +159,16 @@ export function applyExtractedToDynamicValues(
 ): Record<string, string> {
   const values: Record<string, string> = {};
 
-  for (const [key, value] of Object.entries(data.CustomFields?.Predefined ?? {})) {
-    if (typeof value !== 'string' || !value.trim()) continue;
-    const defKey = resolveDefinitionFieldKey(key, definitionFieldKeys);
-    if (defKey) values[defKey] = value.trim();
-  }
+  const applyBucket = (bucket: Record<string, string> | undefined) => {
+    for (const [key, value] of Object.entries(bucket ?? {})) {
+      if (typeof value !== 'string' || !value.trim()) continue;
+      const defKey = resolveDefinitionFieldKey(key, definitionFieldKeys);
+      if (defKey && !values[defKey]) values[defKey] = value.trim();
+    }
+  };
+
+  applyBucket(data.CustomFields?.Predefined);
+  applyBucket(data.CustomFields?.UserDefined);
 
   return values;
 }
@@ -252,7 +257,11 @@ export function rowsFromItemMetadata(
 
   for (const [name, value] of Object.entries(userDefined)) {
     if (!value.trim()) continue;
-    if (resolveDefinitionFieldKey(name, definitionFieldKeys)) continue;
+    const defKey = resolveDefinitionFieldKey(name, definitionFieldKeys);
+    if (defKey) {
+      if (!dynamicValues[defKey]) dynamicValues[defKey] = value.trim();
+      continue;
+    }
     if (isDuplicateUserDefinedName(name, absorbedDefinitionKeys, absorbedLabels)) continue;
     customFieldRows.push(
       createCustomFieldRow({

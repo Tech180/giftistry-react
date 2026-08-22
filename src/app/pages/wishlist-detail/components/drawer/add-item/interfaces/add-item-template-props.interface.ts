@@ -6,6 +6,7 @@ import type { ItemEnrichJobResult } from 'features/jobs/interfaces/item-enrich-j
 export interface AddItemTemplateProps {
   isOpen: boolean;
   editingItem: Item | null;
+  viewingItem?: Item | null;
   items: Item[];
   linkableItems: Item[];
   resolvedLinkedItems: Item[];

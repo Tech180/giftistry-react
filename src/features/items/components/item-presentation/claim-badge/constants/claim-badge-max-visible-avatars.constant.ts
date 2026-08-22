@@ -1,0 +1,1 @@
+export const CLAIM_BADGE_MAX_VISIBLE_AVATARS = 4;

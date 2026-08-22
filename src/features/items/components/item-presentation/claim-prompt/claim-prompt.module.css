@@ -4,6 +4,7 @@
   align-items: flex-start;
   gap: var(--spacing-xs);
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .claim-prompt-text {

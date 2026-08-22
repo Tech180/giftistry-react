@@ -48,6 +48,9 @@ export interface AddItemFormTemplateProps {
   handleAddCustomField: () => void;
   handleRemoveCustomField: (id: string) => void;
   handleUpdateCustomField: (id: string, key: 'name' | 'value', value: string) => void;
+  editingCustomFieldNameId: string | null;
+  onStartEditCustomFieldName: (id: string) => void;
+  onFinishEditCustomFieldName: () => void;
   hasIncompleteCustomFields: boolean;
   showExtraFields: boolean;
   setShowExtraFields: (val: boolean) => void;
@@ -113,4 +116,5 @@ export interface AddItemFormTemplateProps {
   onPhotoEntriesChange: (photos: ItemPhotoGalleryEntry[]) => void;
   photoError: string | null;
   onPhotoError: (message: string | null) => void;
+  readOnly?: boolean;
 }

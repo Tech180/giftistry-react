@@ -7,6 +7,7 @@ export interface HeaderTemplateProps {
   items: Item[];
   priorities: Priority[];
   isOwner: boolean;
+  isPublicGuest?: boolean;
   isExpired: boolean;
   isArchived: boolean;
   isDeactivating: boolean;
@@ -20,10 +21,10 @@ export interface HeaderTemplateProps {
   saveTitle: (val: string) => Promise<void>;
   saveDate: (val: string) => Promise<void>;
   formatDate: (dateStr: string | null) => string;
-  toggleRevealSuggestions: () => void;
   toggleAiEnabled: () => void;
   toggleWebSearchEnabled: () => void;
   toggleManualJobBackground: () => void;
+  toggleAutoRollover: () => void;
   canShowAi: boolean;
   canShowWebSearch: boolean;
   isCommentsOpen: boolean;

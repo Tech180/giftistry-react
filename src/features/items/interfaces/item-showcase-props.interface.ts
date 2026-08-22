@@ -8,9 +8,10 @@ export interface ItemShowcaseProps {
   isExpired: boolean;
   isArchived?: boolean;
   canCollaborate: boolean;
+  isPublicGuest?: boolean;
   allowGroupFunds: boolean;
   itemActions: ItemActions;
-  onEdit: () => void;
+  onEdit?: () => void;
   onClose: () => void;
   wishlistItems?: Item[];
   aiEnabled?: boolean;

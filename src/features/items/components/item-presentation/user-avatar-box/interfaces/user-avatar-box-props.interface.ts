@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type UserAvatarBoxVariant = 'sharing' | 'claim' | 'owner';
+export type UserAvatarBoxVariant = 'sharing' | 'claim' | 'owner' | 'suggestion';
 
 export interface UserAvatarBoxProps {
   title: string;

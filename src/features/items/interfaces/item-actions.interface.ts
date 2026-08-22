@@ -25,7 +25,8 @@ export interface ItemActions {
     linkUrl?: string | null,
     price?: number | null,
     websiteName?: string | null,
-    metadata?: ItemDescriptionMetadata | null
+    metadata?: ItemDescriptionMetadata | null,
+    isHiddenIdea?: boolean
   ) => Promise<Item>;
   addItemLink: (itemId: string, url: string) => Promise<ItemLink>;
   claimItem: (params: ClaimItemParams) => Promise<Claim | Claim[]>;

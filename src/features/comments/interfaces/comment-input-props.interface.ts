@@ -7,6 +7,7 @@ export interface CommentInputProps {
   setIsOwnerVisible: (visible: boolean) => void;
   isRollover: boolean;
   setIsRollover: (rollover: boolean) => void;
+  autoRollover?: boolean;
   content: string;
   setContent: (content: string) => void;
   commenterName: string;

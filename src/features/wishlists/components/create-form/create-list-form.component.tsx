@@ -10,11 +10,11 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess, onCan
   const [title, setTitle] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [allowGroupFunds, setAllowGroupFunds] = useState(false);
-  const [revealSuggestions, setRevealSuggestions] = useState(true);
   const [category, setCategory] = useState('generic');
   const [customCategory, setCustomCategory] = useState('');
   const [aiEnabled, setAiEnabled] = useState(canShowAi);
   const [webSearchEnabled, setWebSearchEnabled] = useState(canShowWebSearch);
+  const [autoRollover, setAutoRollover] = useState(true);
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -57,19 +57,20 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess, onCan
         expiresAt ? new Date(expiresAt).toISOString() : null,
         allowGroupFunds,
         finalCategory,
-        revealSuggestions,
+        undefined,
         aiEnabled,
         webSearchEnabled,
-        true
+        true,
+        autoRollover
       );
       setTitle('');
       setExpiresAt('');
       setAllowGroupFunds(false);
-      setRevealSuggestions(true);
       setCategory('generic');
       setCustomCategory('');
       setAiEnabled(canShowAi);
       setWebSearchEnabled(canShowWebSearch);
+      setAutoRollover(true);
       onSuccess(res);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to create wishlist.');
@@ -86,8 +87,6 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess, onCan
       setExpiresAt={setExpiresAt}
       allowGroupFunds={allowGroupFunds}
       setAllowGroupFunds={setAllowGroupFunds}
-      revealSuggestions={revealSuggestions}
-      setRevealSuggestions={setRevealSuggestions}
       isLoading={isLoading}
       errorMsg={errorMsg}
       handleSubmit={handleSubmit}
@@ -99,6 +98,8 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess, onCan
       setAiEnabled={handleAiEnabledChange}
       webSearchEnabled={webSearchEnabled}
       setWebSearchEnabled={setWebSearchEnabled}
+      autoRollover={autoRollover}
+      setAutoRollover={setAutoRollover}
       globalAiEnabled={canShowAi}
       globalWebSearchEnabled={canShowWebSearch}
       onCancel={onCancel}

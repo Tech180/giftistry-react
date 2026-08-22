@@ -1,0 +1,36 @@
+.suggestion-banner {
+  flex-shrink: 0;
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-bottom: 1px solid var(--warning-border, color-mix(in srgb, var(--warning) 35%, var(--border)));
+  background: var(--warning-bg, color-mix(in srgb, var(--warning) 8%, var(--surface)));
+  color: var(--warning);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.view-mode-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: color-mix(in srgb, var(--info, var(--primary)) 10%, var(--surface));
+  border-bottom: 1px solid color-mix(in srgb, var(--info, var(--primary)) 25%, var(--border));
+  color: var(--info, var(--primary));
+}
+
+.view-mode-banner-description {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  line-height: 1.4;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: var(--font-weight-normal);
+}

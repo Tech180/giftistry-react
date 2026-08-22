@@ -126,11 +126,7 @@ export const AppContentTemplate: React.FC<AppContentTemplateProps> = ({
       />
       <Route
         path="/invite/list/:token"
-        element={
-          <ProtectedRoute>
-            <InviteAcceptPage />
-          </ProtectedRoute>
-        }
+        element={<InviteAcceptPage />}
       />
       <Route path="/profile/*" element={<LegacyProfileRedirect />} />
       <Route

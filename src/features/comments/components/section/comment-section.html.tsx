@@ -29,6 +29,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   setIsOwnerVisible,
   isRollover,
   setIsRollover,
+  autoRollover = false,
   isSubmitLoading,
   handleSubmit,
   formatDate,
@@ -130,6 +131,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
             setIsOwnerVisible={setIsOwnerVisible}
             isRollover={isRollover}
             setIsRollover={setIsRollover}
+            autoRollover={autoRollover}
             content={content}
             setContent={setContent}
             commenterName={commenterName}

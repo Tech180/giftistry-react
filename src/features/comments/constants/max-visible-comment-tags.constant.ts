@@ -1,0 +1,1 @@
+export const MAX_VISIBLE_COMMENT_TAGS = 3;

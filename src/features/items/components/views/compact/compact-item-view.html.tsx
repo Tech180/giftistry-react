@@ -1,22 +1,27 @@
 import React from 'react';
-import { Star, Link2, Link as LinkIcon, Pencil, Trash2, Layers2 } from 'lucide-react';
+import { Star, Link2, Link as LinkIcon, Pencil, Trash2, Layers2, Eye } from 'lucide-react';
 import { useAuth } from 'app/providers/auth-context';
-import { Button, EnterPanel } from 'shared/ui';
+import { EnterPanel } from 'shared/ui';
 import { ItemViewProps } from '../../../interfaces/item-view-props.interface';
 import {
   Badges,
   ClaimBadge,
+  SuggestionBadge,
   ClaimPrompt,
+  ClaimForm,
   FundingWidget,
   MetadataGrid,
   SharingAvatars,
   TaggingOverlay,
   TaggingSelect,
   QuantityBadge,
+  PriorityDisplay,
 } from '../../item-presentation';
-import { buildItemCardModifierClasses, getPrimaryClaimForBadge, getClaimedGrayOutClass, getUserClaimedHighlightClass, shouldShowClaimBadge } from '../shared/item-card-modifiers.util';
+import { buildItemCardModifierClasses, getClaimedGrayOutClass, getUserClaimedHighlightClass } from '../shared/item-card-modifiers.util';
 import { hasPriorityValue } from '../../../utils/item-priority.util';
 import { shouldShowSharingAvatars } from '../../../utils/item-audience.util';
+import { resolveItemClaimBadgeState } from '../../../utils/resolve-item-claim-badge-state.util';
+import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import styles from './compact-item-view.module.css';
 
 export const CompactItemView: React.FC<ItemViewProps> = (props) => {
@@ -24,8 +29,11 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     item,
     isOwner,
     canCollaborate,
+    isPublicGuest = false,
+    canEditItem,
     allowGroupFunds,
     isFullyClaimed,
+    isMultiCount,
     totalExtractedPrice,
     totalClaimedAmount,
     showClaimForm,
@@ -43,6 +51,10 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     onEdit,
     claimedByCurrentUser,
     handleUnclaim,
+    canAdjustClaim = false,
+    itemActions,
+    claimUserId,
+    claimActorName,
     isTaggingModeActive,
     isTaggedSelection,
     onSelectTag,
@@ -60,16 +72,21 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     relatedItems,
     isLinkingContext,
     isRelatingContext,
+    isSelected,
+    onSelect,
+    onView,
   } = props;
 
   const { user } = useAuth();
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
   const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
-  const primaryClaim = getPrimaryClaimForBadge(item.Claims);
   const primaryLink = item.Links[0];
   const primaryPrice = primaryLink?.ExtractedPrice;
+  const primaryImageUrl = getItemPrimaryImageUrl(item);
   const showSharingAvatars = shouldShowSharingAvatars(item, isOwner, user?.Id);
   const sharingUsers = item.SharedWith ?? [];
+  const { entries: claimBadgeEntries, showClaimBadge, hasVisibleClaim } =
+    resolveItemClaimBadgeState(item.Claims, claimUserId, claimedByCurrentUser, claimActorName);
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -77,26 +94,34 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
       isFullyClaimed,
       claimedByCurrentUser,
       isOwner,
+      isSuggestion: !!item.IsSuggestion,
       isTaggedSelection,
+      isSelected,
     },
     styles
   );
-  const showClaimBadge = shouldShowClaimBadge(primaryClaim, claimedByCurrentUser);
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
-    primaryClaim != null,
+    hasVisibleClaim,
     claimedByCurrentUser,
     styles,
-    props.isArchived
+    props.isArchived,
+    isMultiCount
   );
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
     styles
   );
+  const showCompactActions =
+    !isPublicGuest &&
+    (canCollaborate || !isOwner || canEditItem) &&
+    !props.isArchived &&
+    !props.isExpired;
+  const hasPriority = hasPriorityValue(item.Priority);
 
   return (
     <div
-      className={`${styles['v-compact-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass} ${isExpanded ? styles.expanded : ''}`}
+      className={`${styles['v-compact-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass} ${isExpanded ? styles.expanded : ''} ${isSelected ? styles['is-selected'] : ''}`}
       aria-expanded={isExpanded}
     >
       <TaggingOverlay
@@ -105,11 +130,14 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
         onSelectTag={onSelectTag}
       />
 
+      <div className={styles['v-compact-card-inner']}>
+        <div className={styles['v-compact-card-body']}>
       <div
         className={styles['v-compact-row']}
         onClick={(e) => {
           const target = e.target as HTMLElement;
           if (target.closest('button') || target.closest('a') || target.closest('input')) return;
+          onSelect?.();
           setIsExpanded?.(!isExpanded);
         }}
         role="button"
@@ -117,32 +145,12 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
+            onSelect?.();
             setIsExpanded?.(!isExpanded);
           }
         }}
       >
-        {hasPriorityValue(item.Priority) && (
-          <div
-            className={styles['v-compact-priority-rail']}
-            title={`Priority ${item.Priority} (1 is highest)`}
-            aria-label={`Priority ${item.Priority}`}
-          >
-            {item.Priority}
-          </div>
-        )}
-        <div
-          className={`${styles['v-compact-row-main']} ${isTaggingModeActive ? styles.tagging : ''}`}
-        >
-        {isTaggingModeActive && (
-          <div className={styles['v-compact-select']}>
-            <TaggingSelect
-              isTaggingModeActive={isTaggingModeActive}
-              isTaggedSelection={isTaggedSelection}
-              onSelectTag={onSelectTag}
-            />
-          </div>
-        )}
-
+        <div className={styles['v-compact-leading']}>
         <div className={styles['v-compact-star']}>
           {isOwner ? (
             <button
@@ -178,6 +186,28 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
           )}
         </div>
 
+        {hasPriority && (
+          <PriorityDisplay
+            priority={item.Priority as number}
+            variant="compact"
+            className={styles['v-compact-priority-rail']}
+          />
+        )}
+        </div>
+
+        <div
+          className={`${styles['v-compact-row-main']} ${isTaggingModeActive ? styles.tagging : ''}`}
+        >
+        {isTaggingModeActive && (
+          <div className={styles['v-compact-select']}>
+            <TaggingSelect
+              isTaggingModeActive={isTaggingModeActive}
+              isTaggedSelection={isTaggedSelection}
+              onSelectTag={onSelectTag}
+            />
+          </div>
+        )}
+
         <div className={styles['v-compact-main']}>
           <span className={styles['v-compact-title']} title={item.Name}>
             {item.Name}
@@ -207,84 +237,61 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
           )}
         </div>
 
-        <div className={styles['v-compact-link']}>
-          {primaryLink ? (
-            <a
-              href={primaryLink.Url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              title={getSiteName(primaryLink.Url, primaryLink.RetailerName)}
-              aria-label={`Open ${getSiteName(primaryLink.Url, primaryLink.RetailerName)}`}
-            >
-              <LinkIcon size={12} aria-hidden />
-              <span className={styles['v-compact-link-label']}>
-                {getSiteName(primaryLink.Url, primaryLink.RetailerName)}
-              </span>
-            </a>
-          ) : (
-            <span className={styles['v-compact-no-link']}>No link</span>
-          )}
-        </div>
-
-        <div className={styles['v-compact-price']}>
-          <div className={styles['v-compact-price-row']}>
-            <QuantityBadge item={item} metadata={metadata} />
-            <span>{primaryPrice != null ? `$${primaryPrice}` : '—'}</span>
-          </div>
-        </div>
-
         <div className={styles['v-compact-claim-badge']}>
           {showSharingAvatars && (
             <SharingAvatars users={sharingUsers} isOwner={isOwner} />
           )}
-          {showClaimBadge && (
-            <ClaimBadge
-              userId={primaryClaim.userId}
-              displayName={primaryClaim.displayName}
-              anonymous={primaryClaim.anonymous}
+          {showClaimBadge && <ClaimBadge entries={claimBadgeEntries} />}
+          {item.IsSuggestion && (
+            <SuggestionBadge
+              userId={item.SuggestedByUserId}
+              displayName={item.SuggestedByUsername || 'Collaborator'}
             />
           )}
         </div>
         </div>
 
-        {(canCollaborate || !isOwner) && !props.isArchived && (
-          <div className={styles['v-compact-actions']}>
-            {!isOwner && (
-              claimedByCurrentUser ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleUnclaim();
-                  }}
-                  disabled={claimLoading}
-                  className={styles['v-compact-action-btn']}
-                >
-                  Unclaim
-                </button>
-              ) : isFullyClaimed ? (
-                <button
-                  type="button"
-                  className={styles['v-compact-action-btn']}
-                  disabled
-                >
-                  Claimed
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowClaimForm(true);
-                  }}
-                  className={styles['v-compact-action-btn']}
-                >
-                  Claim
-                </button>
-              )
+        <div className={styles['v-compact-trailing']}>
+          <div className={styles['v-compact-price']}>
+            <div className={styles['v-compact-price-row']}>
+              <QuantityBadge item={item} metadata={metadata} isOwner={isOwner} />
+              <span>{primaryPrice != null ? `$${primaryPrice}` : '—'}</span>
+            </div>
+          </div>
+
+          {primaryLink && (
+            <div className={styles['v-compact-link']}>
+              <a
+                href={primaryLink.Url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                title={getSiteName(primaryLink.Url, primaryLink.RetailerName)}
+                aria-label={`Open ${getSiteName(primaryLink.Url, primaryLink.RetailerName)}`}
+                className={styles['v-compact-action-btn']}
+              >
+                <LinkIcon size={14} aria-hidden />
+              </a>
+            </div>
+          )}
+
+          {(onView || showCompactActions) && (
+            <div className={styles['v-compact-actions']}>
+            {onView && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView();
+                }}
+                className={styles['v-compact-action-btn']}
+                title="View Item"
+                aria-label="View item"
+              >
+                <Eye size={14} />
+              </button>
             )}
-            {canCollaborate && (
+            {showCompactActions && (canEditItem ?? canCollaborate) && (
               <>
                 <button
                   type="button"
@@ -312,41 +319,155 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
                 </button>
               </>
             )}
-          </div>
-        )}
+            {showCompactActions && !isOwner && !showClaimForm && (
+              claimedByCurrentUser && !canAdjustClaim ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUnclaim();
+                  }}
+                  disabled={claimLoading}
+                  className={styles['v-compact-action-btn']}
+                >
+                  Unclaim
+                </button>
+              ) : claimedByCurrentUser && canAdjustClaim ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUnclaim();
+                    }}
+                    disabled={claimLoading}
+                    className={`${styles['v-compact-action-btn']} ${styles['v-compact-action-btn-danger']}`}
+                  >
+                    Unclaim All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowClaimForm(true);
+                    }}
+                    className={styles['v-compact-action-btn']}
+                  >
+                    Update
+                  </button>
+                </>
+              ) : isFullyClaimed ? (
+                <button
+                  type="button"
+                  className={styles['v-compact-action-btn']}
+                  disabled
+                >
+                  Claimed
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowClaimForm(true);
+                  }}
+                  className={styles['v-compact-action-btn']}
+                >
+                  Claim
+                </button>
+              )
+            )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {showClaimForm && !props.isArchived && (
-        <EnterPanel animation="dropdown" className={styles['confirm-extension']}>
-          <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
-          <div className={styles['confirm-buttons']}>
-            <Button variant="primary" size="sm" onClick={() => handleClaim()} isLoading={claimLoading}>
-              Yes
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setShowClaimForm(false)}>
-              Cancel
-            </Button>
-          </div>
+      {showClaimForm && !props.isArchived && !props.isExpired && (
+        <EnterPanel
+          animation="dropdown"
+          className={
+            canAdjustClaim ? styles['confirm-extension-stack'] : styles['confirm-extension']
+          }
+        >
+          {itemActions ? (
+            <ClaimForm
+              item={item}
+              metadata={item.Metadata}
+              userId={claimUserId}
+              claimedByName={claimActorName ?? null}
+              itemActions={itemActions}
+              anonymous={anonymous}
+              onAnonymousChange={setAnonymous}
+              onSubmitted={() => setShowClaimForm(false)}
+              onCancel={() => setShowClaimForm(false)}
+              compact
+            />
+          ) : (
+            <>
+              <div className={styles['confirm-prompt']}>
+                <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
+              </div>
+              <div className={styles['confirm-buttons']}>
+                <button
+                  type="button"
+                  onClick={() => handleClaim()}
+                  disabled={claimLoading}
+                  className={`${styles['v-compact-action-btn']} ${styles['v-compact-action-btn-wide']} ${styles['v-compact-action-btn-primary']}`}
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowClaimForm(false)}
+                  className={`${styles['v-compact-action-btn']} ${styles['v-compact-action-btn-wide']}`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
         </EnterPanel>
       )}
 
-      {showDeleteConfirm && !props.isArchived && (
+      {showDeleteConfirm && !props.isArchived && !props.isExpired && (
         <EnterPanel animation="dropdown" className={styles['confirm-extension']}>
-          <span>Delete this item?</span>
+          <div className={styles['confirm-prompt']}>
+            <span>Delete this item?</span>
+          </div>
           <div className={styles['confirm-buttons']}>
-            <Button variant="primary" size="sm" onClick={handleDelete} isLoading={deleteLoading}>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleteLoading}
+              className={`${styles['v-compact-action-btn']} ${styles['v-compact-action-btn-wide']} ${styles['v-compact-action-btn-primary']}`}
+            >
               Yes
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(false)}
+              className={`${styles['v-compact-action-btn']} ${styles['v-compact-action-btn-wide']}`}
+            >
               No
-            </Button>
+            </button>
           </div>
         </EnterPanel>
       )}
 
       {isExpanded && (
         <div className={styles['v-compact-expanded']}>
-          <div className={styles['v-compact-expanded-content']}>
+          <div
+            className={`${styles['v-compact-expanded-content']} ${primaryImageUrl ? styles['has-photo'] : ''}`}
+          >
+            {primaryImageUrl && (
+              <div className={styles['expanded-photo-col']}>
+                <img
+                  src={primaryImageUrl}
+                  alt=""
+                  className={styles['expanded-photo']}
+                />
+              </div>
+            )}
             <div className={styles['expanded-desc-col']}>
               {displayDescription && (
                 <p className={styles['expanded-desc']}>{displayDescription}</p>
@@ -369,6 +490,8 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
           )}
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
     currentUserId: user?.Id,
   };
 
-  const showListSettings = isOwner && (canShowAi || canShowWebSearch);
+  const showListSettings = isOwner;
   const showOwnerBadgeRegion =
     showListSettings ||
     (canShowAi && !isOwner && wishlist.AiEnabled) ||

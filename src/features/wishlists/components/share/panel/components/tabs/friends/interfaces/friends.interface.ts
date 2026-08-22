@@ -5,9 +5,11 @@ export interface FriendsTabProps {
   listId: string;
   shares: ListShare[];
   onSuccess?: () => void;
+  variant?: 'classic' | 'compact';
 }
 
 export interface FriendsTabTemplateProps {
+  variant?: 'classic' | 'compact';
   search: string;
   setSearch: (s: string) => void;
   roles: Record<string, 'viewer' | 'collaborator'>;

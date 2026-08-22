@@ -8,6 +8,7 @@ export interface ItemCardProps {
   isExpired: boolean;
   isArchived?: boolean;
   canCollaborate: boolean;
+  isPublicGuest?: boolean;
   allowGroupFunds: boolean;
   itemActions: ItemActions;
   priorityLabel?: string;
@@ -18,6 +19,8 @@ export interface ItemCardProps {
   viewMode?: ItemViewMode;
   isSelected?: boolean;
   onSelect?: () => void;
+  /** Opens read-only View Item drawer (viewers / public guests). */
+  onView?: () => void;
   wishlistItems?: Item[];
   isLinkingContext?: boolean;
   isRelatingContext?: boolean;

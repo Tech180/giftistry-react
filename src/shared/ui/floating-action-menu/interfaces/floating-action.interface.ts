@@ -10,6 +10,13 @@ export interface FloatingActionChild {
 
 export interface FloatingActionPanelHelpers {
   closeMenu: () => void;
+  /** Override the open panel width/height (px). Cleared when leaving panel state. */
+  setPanelSize: (width: number, height: number) => void;
+  /**
+   * When set, Escape in panel state calls this first. Return true to consume
+   * the key (skip the default panel → toolbar step).
+   */
+  setPanelEscapeHandler: (handler: (() => boolean) | null) => void;
 }
 
 export interface FloatingAction {
@@ -29,4 +36,16 @@ export interface FloatingAction {
   panelWidth?: number;
   /** Panel height in px when panelContent is used. Defaults to 300. */
   panelHeight?: number;
+  /** Skip the default chevron + label header so panelContent can own chrome. */
+  hidePanelHeader?: boolean;
+  /**
+   * When true, skip the toolbar divider that normally precedes panel-opening
+   * actions (e.g. keep Restore + Delete in one visual group).
+   */
+  hideToolbarDivider?: boolean;
+  /**
+   * Toolbar icon tone. Defaults to `primary` when the action opens a panel,
+   * otherwise `default` (muted, like Comments).
+   */
+  toolbarTone?: 'default' | 'primary' | 'danger';
 }

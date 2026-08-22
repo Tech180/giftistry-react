@@ -9,6 +9,7 @@ export interface CommentSectionProps {
   isOwner: boolean;
   isExpired?: boolean;
   isArchived?: boolean;
+  autoRollover?: boolean;
   items?: Item[];
   onItemTaggedClick?: (itemId: string) => void;
   isTaggingModeActive: boolean;

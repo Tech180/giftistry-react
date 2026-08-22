@@ -5,7 +5,12 @@ import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import { FriendsTabProps } from './interfaces/friends.interface';
 import { FriendsTabTemplate } from './friends.html';
 
-export const FriendsTab: React.FC<FriendsTabProps> = ({ listId, shares, onSuccess }) => {
+export const FriendsTab: React.FC<FriendsTabProps> = ({
+  listId,
+  shares,
+  onSuccess,
+  variant = 'classic',
+}) => {
   const { friends, fetchFriends } = useFriendsController();
   const [search, setSearch] = useState('');
   const [roles, setRoles] = useState<Record<string, 'viewer' | 'collaborator'>>({});
@@ -56,6 +61,7 @@ export const FriendsTab: React.FC<FriendsTabProps> = ({ listId, shares, onSucces
 
   return (
     <FriendsTabTemplate
+      variant={variant}
       search={search}
       setSearch={setSearch}
       roles={roles}

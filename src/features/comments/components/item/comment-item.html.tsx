@@ -52,9 +52,10 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
   }
 
   const canReply = !comment.ParentId && !!handleReplySubmit;
-
+  const hasLeftIcons = !isOwner || comment.UserId === currentUserId;
   const hasThread = !isThreadChild && (replies.length > 0 || isReplying);
   const showReplyThread = !isThreadChild && (isReplying || (isExpanded && replies.length > 0));
+  const showLeftRail = hasLeftIcons || hasThread;
 
   return (
     <div
@@ -66,33 +67,41 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
         } ${isReplying ? styles['is-replying'] : ''}`}
       >
         <div className={styles['comment-bubble-main']}>
-          <div className={styles['comment-visibility-indicator']}>
-            {!isOwner && (
-              <div
-                title={comment.IsOwnerVisible ? 'Visible to Owner' : 'Hidden from Owner'}
-                className={styles['visibility-icon-wrap']}
-              >
-                {comment.IsOwnerVisible ? (
-                  <Eye size={14} className={styles['visible-eye']} />
-                ) : (
-                  <EyeOff size={14} className={styles['hidden-eye']} />
-                )}
-              </div>
-            )}
+          {showLeftRail && (
+            <div
+              className={styles['comment-visibility-indicator']}
+              aria-hidden={!hasLeftIcons}
+            >
+              {!isOwner && (
+                <div
+                  title={comment.IsOwnerVisible ? 'Visible to Owner' : 'Hidden from Owner'}
+                  className={styles['visibility-icon-wrap']}
+                >
+                  {comment.IsOwnerVisible ? (
+                    <Eye size={14} className={styles['visible-eye']} />
+                  ) : (
+                    <EyeOff size={14} className={styles['hidden-eye']} />
+                  )}
+                </div>
+              )}
 
-            {comment.UserId === currentUserId && (
-              <button
-                type="button"
-                onClick={() => setDeletingCommentId(isDeleting ? null : comment.Id)}
-                className={styles['comment-delete-btn-left']}
-                title="Delete comment"
-              >
-                <Trash2 size={12} />
-              </button>
-            )}
-          </div>
+              {comment.UserId === currentUserId && (
+                <button
+                  type="button"
+                  onClick={() => setDeletingCommentId(isDeleting ? null : comment.Id)}
+                  className={styles['comment-delete-btn-left']}
+                  title="Delete comment"
+                  aria-label="Delete comment"
+                >
+                  <Trash2 size={12} className={styles['comment-delete-icon']} />
+                </button>
+              )}
+            </div>
+          )}
 
-          <div className={styles['comment-bubble-content']}>
+          <div
+            className={`${styles['comment-bubble-content']} ${showLeftRail ? '' : styles['without-left-rail']}`}
+          >
           <div className={styles['comment-main-content']}>
             <Meta
               comment={comment}
@@ -140,49 +149,47 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
                 return null;
               })}
             </div>
-
-            {(canReply || reactionPicker || (replies.length > 0 && !isThreadChild)) && (
-              <div className={styles['comment-actions-row']}>
-                {replies.length > 0 && !isThreadChild && (
-                  <div className={styles['replies-toggle-inline']}>
-                    <button
-                      type="button"
-                      className={styles['replies-toggle-btn']}
-                      onClick={() => setIsExpanded(!isExpanded)}
-                    >
-                      {isExpanded ? (
-                        'Hide'
-                      ) : (
-                        <>
-                          Show
-                          {replies.length > 1 && (
-                            <span className={styles['replies-badge']}>{replies.length}</span>
-                          )}
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-
-                <div className={styles['action-buttons']}>
-                  {canReply && (
-                    <button
-                      type="button"
-                      onClick={onReplyToggle}
-                      className={`${styles['action-btn']} ${isReplying ? styles['action-btn-active'] : ''}`}
-                      title="Reply to comment"
-                    >
-                      <CornerUpLeft size={15} />
-                    </button>
-                  )}
-
-                  {reactionPicker}
-                </div>
-              </div>
-            )}
           </div>
 
+          {(canReply || reactionPicker || (replies.length > 0 && !isThreadChild)) && (
+            <div className={styles['comment-actions-row']}>
+              {replies.length > 0 && !isThreadChild && (
+                <div className={styles['replies-toggle-inline']}>
+                  <button
+                    type="button"
+                    className={styles['replies-toggle-btn']}
+                    onClick={() => setIsExpanded(!isExpanded)}
+                  >
+                    {isExpanded ? (
+                      'Hide'
+                    ) : (
+                      <>
+                        Show
+                        {replies.length > 1 && (
+                          <span className={styles['replies-badge']}>{replies.length}</span>
+                        )}
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
 
+              <div className={styles['action-buttons']}>
+                {canReply && (
+                  <button
+                    type="button"
+                    onClick={onReplyToggle}
+                    className={`${styles['action-btn']} ${isReplying ? styles['action-btn-active'] : ''}`}
+                    title="Reply to comment"
+                  >
+                    <CornerUpLeft size={15} />
+                  </button>
+                )}
+
+                {reactionPicker}
+              </div>
+            </div>
+          )}
 
           <Reactions
             commentId={comment.Id}

@@ -31,6 +31,13 @@
   display: block;
 }
 
+@media (max-width: 48rem) {
+  .textarea {
+    min-height: 3.25rem;
+    font-size: var(--font-size-base);
+  }
+}
+
 .mention-pill {
   font-weight: var(--font-weight-semibold);
   color: var(--primary);

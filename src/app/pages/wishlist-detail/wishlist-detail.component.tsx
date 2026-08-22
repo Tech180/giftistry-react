@@ -1,14 +1,14 @@
 import styles from './wishlist-detail.module.css';
 import { useEffect, useState, useCallback, useMemo, useRef, type SetStateAction } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Download, MessageSquare, Settings, Share2, Upload } from 'lucide-react';
-import { wishlistsApi, Wishlist, Priority } from 'features/wishlists';
+import { Archive, ArchiveRestore, Download, MessageSquare, Settings, Share2, Trash2, Upload } from 'lucide-react';
+import { wishlistsApi, Wishlist, Priority, ShareFabPanel } from 'features/wishlists';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import {
   useItemController,
   Item,
   type ImportStripHandle,
-  ImportDropzone,
+  ImportMenuPanel,
 } from 'features/items';
 import {
   ITEM_VIEW_MODE_STORAGE_KEY,
@@ -29,12 +29,16 @@ import {
 } from 'features/jobs';
 import { WishlistDetailTemplate } from './wishlist-detail.html';
 import { ListSettingsPanel } from './components/list-settings-panel/list-settings-panel.component';
+import { FabConfirmPanel } from './components/fab-confirm-panel/fab-confirm-panel.component';
 import { getFriendlyCategoryLabel, normalizeCategoryLabel } from 'features/items/utils/category-label.util';
 import { canLinkItemsByAudience, linkingContextFromItem, LinkingAudienceContext } from 'features/items/utils/item-audience.util';
 import { resolveEditorLinkedItemIds } from 'features/items/utils/item-links-sync.util';
 import { resolveEditorRelatedItemIds } from 'features/items/utils/item-related-sync.util';
+import { resolveShouldOpenItemViewer } from 'features/items/utils/resolve-should-open-item-viewer.util';
 import { isWishlistExpired } from 'features/wishlists/utils/is-wishlist-expired.util';
 import { isWishlistArchived } from 'features/wishlists/utils/is-wishlist-archived.util';
+import { isWishlistLocked } from 'features/wishlists/utils/is-wishlist-locked.util';
+import { dateInputToExpiresAtIso } from 'features/wishlists/utils/date-input-to-expires-at-iso.util';
 import { formatWishlistExpirationDate } from 'shared/utils/format-date.util';
 import {
   exportToCsv,
@@ -43,6 +47,14 @@ import {
   exportToTxt,
   exportToXlsx,
 } from 'shared/utils/wishlist-export';
+import {
+  COMMENT_SHEET_MOBILE_QUERY,
+  COMMENT_TAG_PEEK_CLOSE_MS,
+  ITEM_CARD_HIGHLIGHT_DURATION_MS,
+} from './constants/comment-tag-peek.constant';
+import { highlightWishlistItemCard } from './utils/highlight-wishlist-item-card.util';
+import { shouldPeekCommentTag } from './utils/should-peek-comment-tag.util';
+import { useIsMobileFab } from 'shared/hooks/use-is-mobile-fab';
 
 export default function WishlistDetail() {
   const { listId } = useParams<{ listId: string }>();
@@ -71,8 +83,14 @@ export default function WishlistDetail() {
   const [isAutoAddOpen, setIsAutoAddOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const importStripRef = useRef<ImportStripHandle>(null);
+  const commentTagPeekTimeoutsRef = useRef<{ highlight: number | null; reopen: number | null }>({
+    highlight: null,
+    reopen: null,
+  });
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [viewingItem, setViewingItem] = useState<Item | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const isMobileFab = useIsMobileFab();
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isTaggingModeActive, setIsTaggingModeActive] = useState(false);
   const [taggedItemIds, setTaggedItemIds] = useState<string[]>([]);
@@ -102,29 +120,31 @@ export default function WishlistDetail() {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(new Set());
 
-  // Synchronize inspector sidebar states for Grid view
+  // Synchronize inspector sidebar states across view modes
   useEffect(() => {
-    if (viewMode === 'grid' && selectedItemId !== null) {
+    if (selectedItemId !== null) {
       setIsCommentsOpen(false);
       setIsAddOpen(false);
       setEditingItem(null);
+      setViewingItem(null);
     }
-  }, [selectedItemId, viewMode]);
+  }, [selectedItemId]);
 
   useEffect(() => {
-    if (viewMode === 'grid' && isCommentsOpen) {
+    if (isCommentsOpen) {
       setSelectedItemId(null);
       setIsAddOpen(false);
       setEditingItem(null);
+      setViewingItem(null);
     }
-  }, [isCommentsOpen, viewMode]);
+  }, [isCommentsOpen]);
 
   useEffect(() => {
-    if (viewMode === 'grid' && (isAddOpen || editingItem)) {
+    if (isAddOpen || editingItem || viewingItem) {
       setSelectedItemId(null);
       setIsCommentsOpen(false);
     }
-  }, [isAddOpen, editingItem, viewMode]);
+  }, [isAddOpen, editingItem, viewingItem]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
@@ -190,6 +210,10 @@ export default function WishlistDetail() {
         wishlistsApi.listPriorities(listId),
         wishlistsApi.listShares(listId),
       ]);
+      if (wl.Id !== listId) {
+        navigate(`/wishlists/${wl.Id}`, { replace: true });
+        return;
+      }
       setWishlist(wl);
       setPriorities(prio || []);
       setListShares(shares || []);
@@ -197,7 +221,7 @@ export default function WishlistDetail() {
     } catch (err) {
       setWishlistError(err instanceof Error ? err.message : 'Failed to load wishlist.');
     }
-  }, [listId, fetchItems]);
+  }, [listId, fetchItems, navigate]);
 
   const softReloadItems = useCallback(async () => {
     if (!listId) return;
@@ -280,13 +304,19 @@ export default function WishlistDetail() {
   }, [items, editingItem]);
 
   useEffect(() => {
-    if (!isAddOpen && !editingItem) {
+    if (viewingItem && !items.some((item) => item.Id === viewingItem.Id)) {
+      setViewingItem(null);
+    }
+  }, [items, viewingItem]);
+
+  useEffect(() => {
+    if (!isAddOpen && !editingItem && !viewingItem) {
       setLinkedItemIds([]);
       setRelatedItemIds([]);
       setIsLinkingModeActive(false);
       setIsRelatingModeActive(false);
     }
-  }, [isAddOpen, editingItem]);
+  }, [isAddOpen, editingItem, viewingItem]);
 
   const setIsLinkingModeActiveExclusive = useCallback((value: SetStateAction<boolean>) => {
     setIsLinkingModeActive((prev) => {
@@ -312,8 +342,26 @@ export default function WishlistDetail() {
     return isOwner || wishlist?.Role === 'collaborator';
   }, [isOwner, wishlist?.Role]);
 
+  const shouldOpenItemViewer = useMemo(
+    () =>
+      resolveShouldOpenItemViewer({
+        isOwner,
+        canCollaborate,
+        isPublicGuest: false,
+      }),
+    [isOwner, canCollaborate]
+  );
+
   const isExpired = useMemo(() => isWishlistExpired(wishlist?.ExpiresAt), [wishlist]);
   const isArchived = useMemo(() => isWishlistArchived(wishlist?.IsActive), [wishlist]);
+  const isLocked = useMemo(
+    () => isWishlistLocked(isExpired, isArchived),
+    [isExpired, isArchived]
+  );
+
+  const canSuggest = useMemo(() => {
+    return Boolean(user && wishlist && !isLocked);
+  }, [user, wishlist, isLocked]);
 
   const canUseWebSearchOnList = useMemo(
     () => Boolean(canShowWebSearch && wishlist?.AiEnabled && wishlist?.WebSearchEnabled),
@@ -333,7 +381,7 @@ export default function WishlistDetail() {
         wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
         wishlist.AllowGroupFunds,
         wishlist.Category,
-        wishlist.RevealSuggestions,
+        undefined,
         wishlist.AiEnabled,
         wishlist.WebSearchEnabled,
         wishlist.ManualJobBackground !== false
@@ -345,16 +393,65 @@ export default function WishlistDetail() {
     }
   };
 
-  const handleItemTaggedClick = useCallback((itemId: string) => {
-    const element = document.getElementById(`item-card-${itemId}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      element.classList.add(styles['item-card-wrapper-highlighted']);
-      setTimeout(() => {
-        element.classList.remove(styles['item-card-wrapper-highlighted']);
-      }, 1500);
+  const clearCommentTagPeekTimeouts = () => {
+    if (commentTagPeekTimeoutsRef.current.highlight !== null) {
+      window.clearTimeout(commentTagPeekTimeoutsRef.current.highlight);
+      commentTagPeekTimeoutsRef.current.highlight = null;
     }
+    if (commentTagPeekTimeoutsRef.current.reopen !== null) {
+      window.clearTimeout(commentTagPeekTimeoutsRef.current.reopen);
+      commentTagPeekTimeoutsRef.current.reopen = null;
+    }
+  };
+
+  useEffect(() => {
+    const peekTimeoutsRef = commentTagPeekTimeoutsRef;
+    return () => {
+      if (peekTimeoutsRef.current.highlight !== null) {
+        window.clearTimeout(peekTimeoutsRef.current.highlight);
+      }
+      if (peekTimeoutsRef.current.reopen !== null) {
+        window.clearTimeout(peekTimeoutsRef.current.reopen);
+      }
+    };
   }, []);
+
+  const handleItemTaggedClick = useCallback((itemId: string) => {
+    const highlight = () => {
+      highlightWishlistItemCard(
+        itemId,
+        styles['item-card-wrapper-highlighted'],
+        ITEM_CARD_HIGHLIGHT_DURATION_MS
+      );
+    };
+
+    const isMobileSheet =
+      typeof window !== 'undefined' && window.matchMedia(COMMENT_SHEET_MOBILE_QUERY).matches;
+    const shouldPeek = shouldPeekCommentTag({
+      isMobileSheet,
+      isCommentsOpen,
+      isCommentTaggingActive: isTaggingModeActive || isReplyTaggingModeActive,
+    });
+
+    if (!shouldPeek) {
+      highlight();
+      return;
+    }
+
+    clearCommentTagPeekTimeouts();
+    setIsCommentsOpen(false);
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const closeDelayMs = prefersReducedMotion ? 0 : COMMENT_TAG_PEEK_CLOSE_MS;
+
+    commentTagPeekTimeoutsRef.current.highlight = window.setTimeout(() => {
+      highlight();
+    }, closeDelayMs);
+
+    commentTagPeekTimeoutsRef.current.reopen = window.setTimeout(() => {
+      setIsCommentsOpen(true);
+    }, closeDelayMs + ITEM_CARD_HIGHLIGHT_DURATION_MS);
+  }, [isCommentsOpen, isTaggingModeActive, isReplyTaggingModeActive]);
 
   const saveDate = async (newDateStr: string) => {
     if (!wishlist) return;
@@ -362,43 +459,27 @@ export default function WishlistDetail() {
     if (newDateStr === prevDateStr) {
       return;
     }
+    const wasArchived = isWishlistArchived(wishlist.IsActive);
     try {
-      const expiresAtIso = newDateStr ? new Date(newDateStr).toISOString() : null;
+      const expiresAtIso = dateInputToExpiresAtIso(newDateStr);
       const updated = await wishlistsApi.updateWishlist(
         wishlist.Id,
         wishlist.Title,
         expiresAtIso,
         wishlist.AllowGroupFunds,
         wishlist.Category,
-        wishlist.RevealSuggestions,
+        undefined,
         wishlist.AiEnabled,
         wishlist.WebSearchEnabled,
         wishlist.ManualJobBackground !== false
       );
       setWishlist(updated);
+      if (wasArchived) {
+        showToast('Date updated. Restore the list to unlock it.', 'info');
+      }
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to update date');
       throw err;
-    }
-  };
-
-  const toggleRevealSuggestions = async () => {
-    if (!wishlist) return;
-    try {
-      const updated = await wishlistsApi.updateWishlist(
-        wishlist.Id,
-        wishlist.Title,
-        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
-        wishlist.AllowGroupFunds,
-        wishlist.Category,
-        !wishlist.RevealSuggestions,
-        wishlist.AiEnabled,
-        wishlist.WebSearchEnabled,
-        wishlist.ManualJobBackground !== false
-      );
-      setWishlist(updated);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update suggestion visibility');
     }
   };
 
@@ -411,7 +492,7 @@ export default function WishlistDetail() {
         wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
         wishlist.AllowGroupFunds,
         wishlist.Category,
-        wishlist.RevealSuggestions,
+        undefined,
         !wishlist.AiEnabled,
         wishlist.WebSearchEnabled,
         wishlist.ManualJobBackground !== false
@@ -431,7 +512,7 @@ export default function WishlistDetail() {
         wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
         wishlist.AllowGroupFunds,
         wishlist.Category,
-        wishlist.RevealSuggestions,
+        undefined,
         wishlist.AiEnabled,
         !wishlist.WebSearchEnabled,
         wishlist.ManualJobBackground !== false
@@ -451,7 +532,7 @@ export default function WishlistDetail() {
         wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
         wishlist.AllowGroupFunds,
         wishlist.Category,
-        wishlist.RevealSuggestions,
+        undefined,
         wishlist.AiEnabled,
         wishlist.WebSearchEnabled,
         wishlist.ManualJobBackground === false
@@ -459,6 +540,83 @@ export default function WishlistDetail() {
       setWishlist(updated);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to toggle background enrich');
+    }
+  };
+
+  const toggleAutoRollover = async () => {
+    if (!wishlist) return;
+    try {
+      const updated = await wishlistsApi.updateWishlist(
+        wishlist.Id,
+        wishlist.Title,
+        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
+        wishlist.AllowGroupFunds,
+        wishlist.Category,
+        undefined,
+        wishlist.AiEnabled,
+        wishlist.WebSearchEnabled,
+        wishlist.ManualJobBackground !== false,
+        wishlist.AutoRollover !== true
+      );
+      setWishlist(updated);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to toggle rollover');
+    }
+  };
+
+  const shareOwnerInfo = useMemo(() => {
+    if (!user) return undefined;
+    const displayName =
+      `${user.FirstName || ''} ${user.LastName || ''}`.trim() || user.Username || 'You';
+    const initials =
+      user.FirstName || user.LastName
+        ? `${user.FirstName?.[0] || ''}${user.LastName?.[0] || ''}`.toUpperCase()
+        : user.Username?.substring(0, 2).toUpperCase() || '??';
+    return { displayName, initials };
+  }, [user?.FirstName, user?.LastName, user?.Username]);
+
+  const handleDeactivateConfirm = async () => {
+    if (!wishlist) return;
+
+    setIsDeactivating(true);
+    setConfirmAction(null);
+    try {
+      await wishlistsApi.deactivateWishlist(wishlist.Id);
+      navigate('/dashboard');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Deactivation failed.');
+    } finally {
+      setIsDeactivating(false);
+    }
+  };
+
+  const handleActivateConfirm = async () => {
+    if (!wishlist) return;
+
+    setIsActivating(true);
+    setConfirmAction(null);
+    try {
+      const updated = await wishlistsApi.activateWishlist(wishlist.Id);
+      setWishlist(updated);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Reactivation failed.');
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!wishlist) return;
+
+    setIsDeleting(true);
+    setConfirmAction(null);
+    try {
+      await wishlistsApi.deleteWishlist(wishlist.Id);
+      navigate('/dashboard');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Deletion failed.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -474,21 +632,25 @@ export default function WishlistDetail() {
 
     const actions: FloatingAction[] = [];
 
-    if (canCollaborate && !isExpired && !isArchived) {
+    if (canCollaborate && !isLocked) {
       actions.push({
         id: 'import',
         label: 'Import',
         icon: <Upload size={18} aria-hidden />,
         panelWidth: 288,
         panelHeight: 268,
-        panelContent: ({ closeMenu }) => (
-          <ImportDropzone
-            variant="menu"
+        hidePanelHeader: true,
+        panelContent: ({ closeMenu, setPanelSize, setPanelEscapeHandler }) => (
+          <ImportMenuPanel
+            mode="existing-list"
+            listId={wishlist.Id}
             allowAi={Boolean(canShowAi && wishlist.AiEnabled)}
-            onFileSelected={(file) => {
-              setIsImportOpen(true);
-              importStripRef.current?.acceptFile(file);
+            onClose={closeMenu}
+            onSizeChange={setPanelSize}
+            setPanelEscapeHandler={setPanelEscapeHandler}
+            onImported={() => {
               closeMenu();
+              void reloadListContent();
             }}
           />
         ),
@@ -536,40 +698,144 @@ export default function WishlistDetail() {
     });
 
     if (isOwner) {
-      actions.push({
-        id: 'share',
-        label: 'Share',
-        icon: <Share2 size={18} aria-hidden />,
-        onClick: () => setIsShareOpen(true),
-      });
+      const shareAction: FloatingAction = isMobileFab
+        ? {
+            id: 'share',
+            label: 'Share',
+            icon: <Share2 size={18} aria-hidden />,
+            panelWidth: 320,
+            panelHeight: 380,
+            hidePanelHeader: true,
+            panelContent: ({ closeMenu }) => (
+              <ShareFabPanel
+                listId={wishlist.Id}
+                isOwner={isOwner}
+                onClose={closeMenu}
+                onSuccess={() => {
+                  void reloadListContent();
+                }}
+                ownerInfo={shareOwnerInfo}
+              />
+            ),
+          }
+        : {
+            id: 'share',
+            label: 'Share',
+            icon: <Share2 size={18} aria-hidden />,
+            onClick: () => setIsShareOpen(true),
+          };
 
-      if (canShowAi || canShowWebSearch) {
+      actions.unshift(shareAction);
+
+      if (isArchived) {
+        actions.push(
+          {
+            id: 'restore',
+            label: 'Restore',
+            icon: <ArchiveRestore size={18} aria-hidden />,
+            disabled: isDeactivating || isActivating || isDeleting,
+            toolbarTone: 'default',
+            panelWidth: 280,
+            panelHeight: 220,
+            panelContent: ({ closeMenu }) => (
+              <FabConfirmPanel
+                tone="warning"
+                message="Are you sure you want to restore this wishlist from the archive?"
+                yesDisabled={isActivating}
+                onYes={() => {
+                  closeMenu();
+                  void handleActivateConfirm();
+                }}
+                onNo={closeMenu}
+              />
+            ),
+          },
+          {
+            id: 'delete',
+            label: 'Delete',
+            icon: <Trash2 size={18} aria-hidden />,
+            disabled: isDeactivating || isActivating || isDeleting,
+            toolbarTone: 'danger',
+            hideToolbarDivider: true,
+            panelWidth: 280,
+            panelHeight: 220,
+            panelContent: ({ closeMenu }) => (
+              <FabConfirmPanel
+                tone="danger"
+                message="Are you sure you want to permanently delete this wishlist and all of its items?"
+                yesDisabled={isDeleting}
+                onYes={() => {
+                  closeMenu();
+                  void handleDeleteConfirm();
+                }}
+                onNo={closeMenu}
+              />
+            ),
+          }
+        );
+      } else {
         actions.push({
-          id: 'settings',
-          label: 'Settings',
-          icon: <Settings size={18} aria-hidden />,
-          panelWidth: 260,
-          panelHeight: canShowAi ? (canShowWebSearch ? 220 : 176) : 132,
-          panelContent: (
-            <ListSettingsPanel
-              aiEnabled={!!wishlist.AiEnabled}
-              webSearchEnabled={!!wishlist.WebSearchEnabled}
-              manualJobBackground={wishlist.ManualJobBackground !== false}
-              canShowAi={canShowAi}
-              canShowWebSearch={canShowWebSearch}
-              onToggleAi={() => {
-                void toggleAiEnabled();
+          id: 'archive',
+          label: 'Archive',
+          icon: <Archive size={18} aria-hidden />,
+          disabled: isDeactivating || isActivating || isDeleting,
+          toolbarTone: 'default',
+          panelWidth: 280,
+          panelHeight: 220,
+          panelContent: ({ closeMenu }) => (
+            <FabConfirmPanel
+              tone="warning"
+              message="Are you sure you want to deactivate and archive this wishlist?"
+              yesDisabled={isDeactivating}
+              onYes={() => {
+                closeMenu();
+                void handleDeactivateConfirm();
               }}
-              onToggleWebSearch={() => {
-                void toggleWebSearchEnabled();
-              }}
-              onToggleManualJobBackground={() => {
-                void toggleManualJobBackground();
-              }}
+              onNo={closeMenu}
             />
           ),
         });
       }
+
+      const settingsRowCount =
+        1 + (canShowAi ? 1 : 0) + (canShowWebSearch ? 1 : 0) + (canShowAi ? 1 : 0);
+      const settingsPanelPad = 32;
+      const settingsPanelHeader = 44;
+      const settingsRowHeight = 44;
+      const settingsRowGap = 4;
+      actions.push({
+        id: 'settings',
+        label: 'Settings',
+        icon: <Settings size={18} aria-hidden />,
+        panelWidth: 260,
+        panelHeight:
+          settingsPanelPad +
+          settingsPanelHeader +
+          settingsRowCount * settingsRowHeight +
+          Math.max(0, settingsRowCount - 1) * settingsRowGap,
+        panelContent: (
+          <ListSettingsPanel
+            aiEnabled={!!wishlist.AiEnabled}
+            webSearchEnabled={!!wishlist.WebSearchEnabled}
+            manualJobBackground={wishlist.ManualJobBackground !== false}
+            autoRollover={wishlist.AutoRollover === true}
+            canShowAi={canShowAi}
+            canShowWebSearch={canShowWebSearch}
+            onToggleAi={() => {
+              void toggleAiEnabled();
+            }}
+            onToggleWebSearch={() => {
+              void toggleWebSearchEnabled();
+            }}
+            onToggleManualJobBackground={() => {
+              void toggleManualJobBackground();
+            }}
+            onToggleAutoRollover={() => {
+              void toggleAutoRollover();
+            }}
+          />
+        ),
+      });
     }
 
     return actions;
@@ -584,54 +850,15 @@ export default function WishlistDetail() {
     isArchived,
     canShowAi,
     canShowWebSearch,
+    isDeactivating,
+    isActivating,
+    isDeleting,
+    reloadListContent,
+    isMobileFab,
+    shareOwnerInfo,
   ]);
 
   useRegisterPageActions(pageActions);
-
-  const handleDeactivateConfirm = async () => {
-    if (!wishlist) return;
-
-    setIsDeactivating(true);
-    setConfirmAction(null);
-    try {
-      await wishlistsApi.deactivateWishlist(wishlist.Id);
-      navigate('/dashboard');
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Deactivation failed.');
-    } finally {
-      setIsDeactivating(false);
-    }
-  };
-
-  const handleActivateConfirm = async () => {
-    if (!wishlist) return;
-
-    setIsActivating(true);
-    setConfirmAction(null);
-    try {
-      await wishlistsApi.activateWishlist(wishlist.Id);
-      setWishlist((prev) => (prev ? { ...prev, IsActive: true } : prev));
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Reactivation failed.');
-    } finally {
-      setIsActivating(false);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!wishlist) return;
-
-    setIsDeleting(true);
-    setConfirmAction(null);
-    try {
-      await wishlistsApi.deleteWishlist(wishlist.Id);
-      navigate('/dashboard');
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Deletion failed.');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const [editingItemDraft, setEditingItemDraft] = useState<Partial<Item> | null>(null);
 
@@ -639,6 +866,7 @@ export default function WishlistDetail() {
     const sourceItem = items.find((i) => i.Id === item.Id) ?? item;
     const sourceContext = linkingContextFromItem(sourceItem);
     setIsAddOpen(false);
+    setViewingItem(null);
     setEditingItemDraft(null);
     setIsLinkingModeActive(false);
     setIsRelatingModeActive(false);
@@ -658,8 +886,43 @@ export default function WishlistDetail() {
     setEditingItem(sourceItem);
   };
 
+  const openItemViewer = (item: Item) => {
+    const sourceItem = items.find((i) => i.Id === item.Id) ?? item;
+    const sourceContext = linkingContextFromItem(sourceItem);
+    setIsAddOpen(false);
+    setEditingItem(null);
+    setEditingItemDraft(null);
+    setIsLinkingModeActive(false);
+    setIsRelatingModeActive(false);
+    setSelectedItemId(null);
+    setIsCommentsOpen(false);
+    setLinkingAudienceContext(sourceContext);
+    setLinkedItemIds(
+      resolveEditorLinkedItemIds(sourceItem.Id, items).filter((id) => {
+        const target = items.find((i) => i.Id === id);
+        return target && canLinkItemsByAudience(sourceContext, target);
+      })
+    );
+    setRelatedItemIds(
+      resolveEditorRelatedItemIds(sourceItem.Id, items).filter((id) => {
+        const target = items.find((i) => i.Id === id);
+        return target && canLinkItemsByAudience(sourceContext, target);
+      })
+    );
+    setViewingItem(sourceItem);
+  };
+
+  const canAutoAdd = Boolean(canCollaborate && canShowAi && wishlist?.AiEnabled);
+
+  useEffect(() => {
+    if (!canAutoAdd) {
+      setIsAutoAddOpen(false);
+    }
+  }, [canAutoAdd]);
+
   const openAddDrawer = () => {
     setEditingItem(null);
+    setViewingItem(null);
     setEditingItemDraft(null);
     setLinkedItemIds([]);
     setRelatedItemIds([]);
@@ -671,11 +934,13 @@ export default function WishlistDetail() {
   };
 
   const openAutoAdd = useCallback(() => {
+    if (!canAutoAdd) return;
     setIsAddOpen(false);
     setEditingItem(null);
+    setViewingItem(null);
     setEditingItemDraft(null);
     setIsAutoAddOpen(true);
-  }, []);
+  }, [canAutoAdd]);
 
   const closeAutoAdd = useCallback(() => {
     setIsAutoAddOpen(false);
@@ -739,7 +1004,7 @@ export default function WishlistDetail() {
   );
 
   useEffect(() => {
-    if (!isAddOpen && !editingItem) {
+    if (!isAddOpen && !editingItem && !viewingItem) {
       return;
     }
     setLinkedItemIds((prev) =>
@@ -754,7 +1019,7 @@ export default function WishlistDetail() {
         return target && canLinkItemsByAudience(linkingAudienceContext, target);
       })
     );
-  }, [linkingAudienceContext, isAddOpen, editingItem, items]);
+  }, [linkingAudienceContext, isAddOpen, editingItem, viewingItem, items]);
 
   const resolvedLinkedItems = useMemo(
     () =>
@@ -915,6 +1180,8 @@ export default function WishlistDetail() {
       priorities={priorities}
       isOwner={isOwner}
       canCollaborate={canCollaborate}
+      canSuggest={canSuggest}
+      isPublicGuest={false}
       isExpired={isExpired}
       isArchived={isArchived}
       isAddOpen={isAddOpen}
@@ -930,6 +1197,10 @@ export default function WishlistDetail() {
       editingItem={editingItem}
       setEditingItem={setEditingItem}
       openItemEditor={openItemEditor}
+      viewingItem={viewingItem}
+      openItemViewer={openItemViewer}
+      shouldOpenItemViewer={shouldOpenItemViewer}
+      setViewingItem={setViewingItem}
       setEditingItemDraft={setEditingItemDraft}
       linkedItemIds={linkedItemIds}
       setLinkedItemIds={setLinkedItemIds}
@@ -961,16 +1232,17 @@ export default function WishlistDetail() {
       handleDeleteConfirm={handleDeleteConfirm}
       saveTitle={saveTitle}
       saveDate={saveDate}
-      toggleRevealSuggestions={toggleRevealSuggestions}
       toggleAiEnabled={toggleAiEnabled}
       toggleWebSearchEnabled={toggleWebSearchEnabled}
       toggleManualJobBackground={toggleManualJobBackground}
+      toggleAutoRollover={toggleAutoRollover}
       canUseWebSearchOnList={canUseWebSearchOnList}
       formatDate={formatWishlistExpirationDate}
       isCommentsOpen={isCommentsOpen}
       setIsCommentsOpen={setIsCommentsOpen}
       isShareOpen={isShareOpen}
       setIsShareOpen={setIsShareOpen}
+      isMobileFab={isMobileFab}
       isImportOpen={isImportOpen}
       setIsImportOpen={setIsImportOpen}
       importStripRef={importStripRef}

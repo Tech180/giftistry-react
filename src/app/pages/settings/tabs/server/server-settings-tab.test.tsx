@@ -25,6 +25,7 @@ vi.mock('features/system/api/system.api', () => ({
   systemApi: {
     checkAiConnection: vi.fn(),
     listModels: vi.fn(),
+    listMetadataPacks: vi.fn(),
   },
 }));
 
@@ -32,7 +33,6 @@ import { ServerSettingsTab } from './server-settings-tab.component';
 import { apiClient } from 'core/api/client';
 import { systemApi } from 'features/system/api/system.api';
 import { writeLocalAiModelsCache } from './utils/local-ai-models-cache.util';
-import { assemblePopulateHubPrompt } from './utils/populate-hub-prompt.util';
 
 const showToast = vi.fn();
 const LOCAL_ENDPOINT = 'http://localhost:11434/v1';
@@ -48,6 +48,42 @@ function localModelOptions(ids: string[]) {
 
 function mockLocalModels(ids: string[]) {
   vi.mocked(systemApi.listModels).mockResolvedValue(localModelOptions(ids));
+}
+
+const mockMetadataPacksCatalog = [
+  {
+    Id: 'technology',
+    Label: 'Technology',
+    Description: 'Extra specs for electronics and computers.',
+    Fields: [{ Key: 'Brand', Label: 'Brand' }],
+    PromptFragment: 'Technology rules.',
+    Children: [
+      {
+        Id: 'technology.cpu',
+        Label: 'CPU',
+        Description: 'Processor cores, clocks, and socket.',
+        Fields: [
+          { Key: 'Cores', Label: 'Cores' },
+          { Key: 'Threads', Label: 'Threads' },
+        ],
+        PromptFragment: 'CPU rules.',
+      },
+      {
+        Id: 'technology.computer-parts',
+        Label: 'Computer parts',
+        Description: 'Form factor, interface, and wattage.',
+        Fields: [{ Key: 'FormFactor', Label: 'Form factor' }],
+        PromptFragment: 'Computer parts rules.',
+      },
+    ],
+  },
+];
+
+function mockMetadataPacks() {
+  vi.mocked(systemApi.listMetadataPacks).mockResolvedValue({
+    Catalog: mockMetadataPacksCatalog,
+    EnabledPackIds: ['technology', 'technology.cpu'],
+  });
 }
 
 const mockAiDefaultPrompts = {
@@ -89,6 +125,7 @@ const defaultSettings = {
   AiPopulatePrompt: '',
   AiCategoryPrompt: '',
   AiDefaultPrompts: mockAiDefaultPrompts,
+  AiEnabledPackIds: ['technology', 'technology.cpu'],
 };
 
 function getLocalModelSelect() {
@@ -121,6 +158,7 @@ describe('ServerSettingsTab local AI validation', () => {
     vi.mocked(apiClient.get).mockResolvedValue({ ...defaultSettings });
     vi.mocked(apiClient.post).mockResolvedValue({ success: true });
     mockLocalModels([]);
+    mockMetadataPacks();
   });
 
   test('does not check AI connection on page load and hides model until endpoint is available', async () => {
@@ -571,6 +609,7 @@ describe('ServerSettingsTab OpenRouter models proxy', () => {
       AiIntelligentModel: 'google/gemini-2.0-flash',
     });
     vi.mocked(apiClient.post).mockResolvedValue({ success: true });
+    mockMetadataPacks();
   });
 
   test('loads OpenRouter models via systemApi.listModels and never calls openrouter.ai', async () => {
@@ -606,93 +645,263 @@ describe('ServerSettingsTab AI default prompts', () => {
     vi.mocked(apiClient.get).mockResolvedValue({ ...defaultSettings });
     vi.mocked(apiClient.post).mockResolvedValue({ success: true });
     mockLocalModels([]);
+    mockMetadataPacks();
   });
 
-  test('prefills populate bundle editor with combined prompt on load', async () => {
+  test('prefills populate editor with the populate body on load', async () => {
     render(<ServerSettingsTab showToast={showToast} />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Populate' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Populate' })).toHaveAttribute('aria-current', 'true');
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Populate' }));
-
-    const expectedBundle = assemblePopulateHubPrompt(
-      mockAiDefaultPrompts.Populate,
-      mockAiDefaultPrompts.Description,
-      mockAiDefaultPrompts.Category
+    expect(await screen.findByLabelText('Populate AI prompt editor')).toHaveValue(
+      mockAiDefaultPrompts.Populate
     );
-
-    await waitFor(() => {
-      expect(screen.getByLabelText('Populate AI prompt bundle editor')).toHaveValue(
-        expectedBundle
-      );
-    });
-
-    const bundleEditor = screen.getByLabelText(
-      'Populate AI prompt bundle editor'
-    ) as HTMLTextAreaElement;
-    expect(bundleEditor.value).toContain('=== Description ===');
-    expect(bundleEditor.value).toContain('=== Category ===');
+    expect(screen.queryByLabelText('Populate AI prompt bundle editor')).not.toBeInTheDocument();
   });
 
-  test('reset to default restores populate body in bundle editor', async () => {
+  test('reset to default restores the populate body', async () => {
     render(<ServerSettingsTab showToast={showToast} />);
 
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Populate' })).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Populate' }));
-
-    const textarea = await screen.findByLabelText('Populate AI prompt bundle editor');
+    const textarea = await screen.findByLabelText('Populate AI prompt editor');
     fireEvent.change(textarea, { target: { value: 'Custom edited populate prompt' } });
 
     await waitFor(() => {
-      expect(textarea).toHaveValue(
-        assemblePopulateHubPrompt(
-          'Custom edited populate prompt',
-          mockAiDefaultPrompts.Description,
-          mockAiDefaultPrompts.Category
-        )
-      );
+      expect(textarea).toHaveValue('Custom edited populate prompt');
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'Reset populate prompt to default' }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Populate AI prompt bundle editor')).toHaveValue(
-        assemblePopulateHubPrompt(
-          mockAiDefaultPrompts.Populate,
-          mockAiDefaultPrompts.Description,
-          mockAiDefaultPrompts.Category
-        )
+      expect(screen.getByLabelText('Populate AI prompt editor')).toHaveValue(
+        mockAiDefaultPrompts.Populate
       );
     });
   });
 
-  test('editing Description tab updates linked section in populate bundle', async () => {
+  test('Auto-Description is a separate prompt and does not rewrite Populate', async () => {
     render(<ServerSettingsTab showToast={showToast} />);
 
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Description' })).toBeInTheDocument();
-    });
+    fireEvent.click(await screen.findByRole('button', { name: 'Auto-Description' }));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Description' }));
-
-    const descriptionEditor = await screen.findByLabelText('Description AI prompt editor');
+    const descriptionEditor = await screen.findByLabelText('Auto-Description AI prompt editor');
     fireEvent.change(descriptionEditor, { target: { value: 'Updated description prompt text' } });
 
     fireEvent.click(screen.getByRole('button', { name: 'Populate' }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Populate AI prompt bundle editor')).toHaveValue(
-        assemblePopulateHubPrompt(
-          mockAiDefaultPrompts.Populate,
-          'Updated description prompt text',
-          mockAiDefaultPrompts.Category
-        )
+      expect(screen.getByLabelText('Populate AI prompt editor')).toHaveValue(
+        mockAiDefaultPrompts.Populate
       );
+    });
+  });
+});
+
+describe('ServerSettingsTab metadata packs', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    vi.mocked(apiClient.get).mockResolvedValue({ ...defaultSettings });
+    vi.mocked(apiClient.post).mockResolvedValue({ success: true });
+    mockLocalModels([]);
+    mockMetadataPacks();
+  });
+
+  async function submitSettings() {
+    const form = screen.getByLabelText('Save changes').closest('form');
+    fireEvent.submit(form!);
+    await waitFor(() => {
+      expect(apiClient.post).toHaveBeenCalled();
+    });
+    return vi.mocked(apiClient.post).mock.calls.find((call) => call[0] === '/api/system/settings');
+  }
+
+  test('directory lists Technology, CPU, and Computer parts', async () => {
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Packs' }));
+
+    expect(await screen.findByRole('heading', { name: 'Packs' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Toggle Technology' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Toggle CPU' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Toggle Computer parts' })).not.toBeChecked();
+    expect(screen.getByRole('button', { name: 'View CPU' })).toBeInTheDocument();
+  });
+
+  test('View opens pack detail with fields and a read-only fragment', async () => {
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Packs' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'View CPU' }));
+
+    expect(await screen.findByRole('heading', { name: 'CPU' })).toBeInTheDocument();
+    expect(screen.getByText('Cores')).toBeInTheDocument();
+    expect(screen.getByText('Threads')).toBeInTheDocument();
+    const fragment = screen.getByLabelText('CPU prompt fragment') as HTMLTextAreaElement;
+    expect(fragment).toHaveValue('CPU rules.');
+    expect(fragment).toHaveAttribute('readonly');
+  });
+
+  test('removing CPU saves without the CPU pack id', async () => {
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Packs' }));
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Toggle CPU' }));
+
+    const postCall = await submitSettings();
+    expect(postCall![1]).toMatchObject({
+      AiEnabledPackIds: [],
+    });
+  });
+
+  test('adding Computer parts includes the parent and that child', async () => {
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Packs' }));
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Toggle Computer parts' }));
+
+    const postCall = await submitSettings();
+    expect(postCall![1]).toMatchObject({
+      AiEnabledPackIds: ['technology', 'technology.cpu', 'technology.computer-parts'],
+    });
+  });
+
+  test('removing CPU while Computer parts stays keeps the parent', async () => {
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Packs' }));
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Toggle Computer parts' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Toggle CPU' }));
+
+    const postCall = await submitSettings();
+    expect(postCall![1]).toMatchObject({
+      AiEnabledPackIds: ['technology', 'technology.computer-parts'],
+    });
+  });
+
+  test('directory lists built-in packs, custom packs, and Create Pack', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({
+      ...defaultSettings,
+      AiEnabledPackIds: ['technology', 'technology.cpu', 'custom.books'],
+      AiCustomPacks: [
+        {
+          Id: 'custom.books',
+          Label: 'Books',
+          Description: 'Book specs',
+          Match: { Categories: [] },
+          Fields: [{ Key: 'Binding', Label: 'Binding', Bucket: 'userDefined' }],
+          PromptFragment: 'Extract binding.',
+        },
+      ],
+    });
+
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Packs' }));
+
+    expect(await screen.findByRole('heading', { name: 'Packs' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create Pack' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Toggle Technology' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Toggle Books' })).toBeChecked();
+    expect(screen.getByText('Custom')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'View Books' })).toBeInTheDocument();
+  });
+
+  test('creating a pack enables it locally and includes it in the save payload', async () => {
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Packs' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Create Pack' }));
+
+    fireEvent.change(screen.getByLabelText('Label'), { target: { value: 'Books' } });
+    fireEvent.change(screen.getByLabelText('Create pack prompt fragment editor'), {
+      target: { value: 'Extract binding.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Add pack' }));
+
+    expect(await screen.findByRole('heading', { name: 'Books' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Toggle Books' })).toBeChecked();
+
+    const postCall = await submitSettings();
+    expect(postCall![1]).toMatchObject({
+      AiEnabledPackIds: ['technology', 'technology.cpu', 'custom.books'],
+      AiCustomPacks: [
+        expect.objectContaining({
+          Id: 'custom.books',
+          Label: 'Books',
+          PromptFragment: 'Extract binding.',
+        }),
+      ],
+    });
+  });
+
+  test('custom fragment is editable and built-in fragment stays readonly', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({
+      ...defaultSettings,
+      AiEnabledPackIds: ['technology', 'technology.cpu', 'custom.books'],
+      AiCustomPacks: [
+        {
+          Id: 'custom.books',
+          Label: 'Books',
+          Description: 'Book specs',
+          Match: { Categories: [] },
+          Fields: [],
+          PromptFragment: 'Extract binding.',
+        },
+      ],
+    });
+
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Packs' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'View CPU' }));
+
+    const cpuFragment = await screen.findByLabelText('CPU prompt fragment');
+    expect(cpuFragment).toHaveAttribute('readonly');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back to packs' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'View Books' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+
+    const editor = await screen.findByLabelText('Edit Books prompt fragment editor');
+    expect(editor).not.toHaveAttribute('readonly');
+    fireEvent.change(editor, { target: { value: 'Updated book rules.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply changes' }));
+
+    const postCall = await submitSettings();
+    expect(postCall![1].AiCustomPacks[0].PromptFragment).toBe('Updated book rules.');
+  });
+
+  test('deleting a custom pack drops it from the payload and enabled ids', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({
+      ...defaultSettings,
+      AiEnabledPackIds: ['technology', 'technology.cpu', 'custom.books'],
+      AiCustomPacks: [
+        {
+          Id: 'custom.books',
+          Label: 'Books',
+          Description: 'Book specs',
+          Match: { Categories: [] },
+          Fields: [],
+          PromptFragment: 'Extract binding.',
+        },
+      ],
+    });
+
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Packs' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'View Books' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+
+    expect(await screen.findByRole('heading', { name: 'Packs' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'View Books' })).not.toBeInTheDocument();
+
+    const postCall = await submitSettings();
+    expect(postCall![1]).toMatchObject({
+      AiEnabledPackIds: ['technology', 'technology.cpu'],
+      AiCustomPacks: [],
     });
   });
 });

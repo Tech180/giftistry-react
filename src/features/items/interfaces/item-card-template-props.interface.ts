@@ -1,5 +1,6 @@
 import React from 'react';
 import { Item } from './item.interface';
+import type { ItemActions } from './item-actions.interface';
 
 export interface ItemCardTemplateProps {
   item: Item;
@@ -7,8 +8,11 @@ export interface ItemCardTemplateProps {
   isExpired: boolean;
   isArchived?: boolean;
   canCollaborate: boolean;
+  isPublicGuest?: boolean;
+  canEditItem?: boolean;
   allowGroupFunds: boolean;
   isFullyClaimed: boolean;
+  isMultiCount: boolean;
   totalExtractedPrice: number;
   totalClaimedAmount: number;
   priorityLabel?: string;
@@ -32,6 +36,10 @@ export interface ItemCardTemplateProps {
   setAnonymous: (val: boolean) => void;
   claimLoading: boolean;
   handleClaim: (e?: React.SyntheticEvent<HTMLFormElement>) => void;
+  canAdjustClaim?: boolean;
+  itemActions?: ItemActions;
+  claimUserId?: string | null;
+  claimActorName?: string | null;
 
   // Delete State/Handlers
   showDeleteConfirm: boolean;
@@ -52,6 +60,8 @@ export interface ItemCardTemplateProps {
   viewMode?: import('../types/item-view-mode.type').ItemViewMode;
   isSelected?: boolean;
   onSelect?: () => void;
+  /** Opens read-only View Item drawer (viewers / public guests). */
+  onView?: () => void;
   isExpanded?: boolean;
   setIsExpanded?: (val: boolean) => void;
   displayDescription: string | null;

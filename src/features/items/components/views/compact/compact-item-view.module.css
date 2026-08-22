@@ -7,6 +7,48 @@
   background: var(--surface);
 }
 
+.v-compact-card.is-selected {
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+}
+
+.is-suggestion {
+  border-left: 3px solid var(--warning);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warning) 35%, transparent);
+}
+
+.is-claimed {
+  border-left: 3px solid var(--success);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 35%, transparent);
+}
+
+.v-compact-card-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-height: 100%;
+}
+
+.v-compact-card-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.v-compact-leading {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+}
+
+.v-compact-row .v-compact-priority-rail {
+  align-self: stretch;
+  flex-shrink: 0;
+  background: transparent;
+  border-right: none;
+}
+
 .v-compact-card:last-child {
   border-bottom: none;
 }
@@ -21,10 +63,6 @@
   );
 }
 
-.is-claimed {
-  border-left: 3px solid var(--success);
-}
-
 .is-tagged {
   background-color: rgba(var(--primary-rgb), 0.05);
 }
@@ -36,23 +74,9 @@
   cursor: pointer;
 }
 
-.v-compact-priority-rail {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  flex-shrink: 0;
-  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
-  border-right: 1px solid var(--border);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  color: var(--primary);
-  line-height: 1;
-}
-
 .v-compact-row-main {
   display: grid;
-  grid-template-columns: max-content minmax(200px, 2fr) 120px max-content max-content max-content;
+  grid-template-columns: minmax(200px, 2fr) 120px max-content;
   align-items: center;
   flex: 1;
   min-width: 0;
@@ -61,31 +85,32 @@
 }
 
 .v-compact-row-main.tagging {
-  grid-template-columns: 32px max-content minmax(200px, 2fr) 120px max-content max-content max-content;
+  grid-template-columns: 32px minmax(200px, 2fr) 120px max-content;
 }
 
-.v-compact-row:hover .v-compact-row-main {
+.v-compact-card:hover .v-compact-card-inner,
+.expanded .v-compact-card-inner {
   background: var(--surface-hover);
 }
 
-.v-compact-row:hover .v-compact-priority-rail {
-  background: color-mix(in srgb, var(--primary) 6%, var(--surface-hover));
-}
-
-.v-compact-row:hover .v-compact-actions {
-  background: color-mix(in srgb, var(--primary) 4%, var(--surface-hover));
-}
-
-.expanded .v-compact-row-main {
-  background: var(--surface-hover);
-}
-
+.v-compact-card:hover .v-compact-priority-rail,
 .expanded .v-compact-priority-rail {
-  background: color-mix(in srgb, var(--primary) 6%, var(--surface-hover));
+  background: transparent;
 }
 
-.expanded .v-compact-actions {
+.v-compact-card:hover .v-compact-trailing,
+.expanded .v-compact-trailing {
   background: color-mix(in srgb, var(--primary) 4%, var(--surface-hover));
+}
+
+.v-compact-card:hover .confirm-buttons,
+.expanded .confirm-buttons {
+  background: color-mix(in srgb, var(--primary) 4%, var(--surface-hover));
+}
+
+.v-compact-card:hover .v-compact-row-main,
+.expanded .v-compact-row-main {
+  background: transparent;
 }
 
 .v-compact-select,
@@ -98,7 +123,9 @@
 }
 
 .v-compact-star {
+  flex-shrink: 0;
   padding-inline: 6px;
+  align-self: center;
 }
 
 .v-compact-star-btn {
@@ -141,10 +168,14 @@
 }
 
 .v-compact-price {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-md);
   font-weight: var(--font-weight-bold);
   color: var(--text);
   font-size: var(--font-size-sm);
-  text-align: right;
+  white-space: nowrap;
 }
 
 .v-compact-claim-badge {
@@ -169,35 +200,30 @@
   min-width: 0;
 }
 
-.v-compact-link a {
-  font-size: var(--font-size-xs);
-  color: var(--primary);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.v-compact-trailing {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  background: transparent;
 }
 
-.v-compact-link a:hover {
-  text-decoration: underline;
-}
-
-.v-compact-no-link {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-}
-
+.v-compact-link,
 .v-compact-actions {
   display: flex;
   flex-shrink: 0;
   align-items: stretch;
   align-self: stretch;
+}
+
+.v-compact-trailing .v-compact-link {
   border-left: 1px solid var(--border);
-  background: color-mix(in srgb, var(--primary) 4%, var(--surface));
+  background: transparent;
+}
+
+.v-compact-trailing .v-compact-actions {
+  border-left: 1px solid var(--border);
+  background: transparent;
 }
 
 .v-compact-action-btn {
@@ -215,6 +241,7 @@
   background: transparent;
   cursor: pointer;
   color: var(--text-muted);
+  text-decoration: none;
   transition:
     color var(--transition-normal),
     background-color var(--transition-normal);
@@ -227,6 +254,20 @@
 .v-compact-action-btn:hover {
   background: var(--surface-hover);
   color: var(--text);
+}
+
+.v-compact-action-btn-primary {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+
+.v-compact-action-btn-primary:hover {
+  background: var(--primary-hover);
+  color: var(--primary-text);
+}
+
+.v-compact-action-btn-danger {
+  color: var(--error);
 }
 
 .v-compact-action-btn-danger:hover {
@@ -245,10 +286,16 @@
   color: var(--text-muted);
 }
 
+.v-compact-action-btn-primary:disabled,
+.v-compact-action-btn-primary:disabled:hover {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+
 .v-compact-expanded {
   display: none;
   padding: var(--spacing-md);
-  background: var(--surface-hover);
+  background: transparent;
   border-top: 1px dashed var(--border);
 }
 
@@ -266,6 +313,27 @@
   align-items: start;
   flex: 1;
   min-width: min(100%, 20rem);
+}
+
+.v-compact-expanded-content.has-photo {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.expanded-photo-col {
+  width: 6.5rem;
+  flex-shrink: 0;
+  aspect-ratio: 1;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.expanded-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .expanded-desc-col {
@@ -286,17 +354,44 @@
 
 .confirm-extension {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--surface-hover);
+  padding: 0;
+  background: transparent;
   border-top: 1px dashed var(--border);
-  gap: var(--spacing-md);
+  gap: 0;
+}
+
+.confirm-extension-stack {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background: transparent;
+  border-top: 1px dashed var(--border);
+}
+
+.confirm-prompt {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
 }
 
 .confirm-buttons {
   display: flex;
-  gap: var(--spacing-sm);
+  flex-shrink: 0;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 0;
+  border-left: 1px solid var(--border);
+  background: transparent;
+}
+
+.v-compact-action-btn-wide {
+  flex: 0 0 calc(2.5rem * 1.5);
+  width: calc(2.5rem * 1.5);
+  min-width: calc(2.5rem * 1.5);
 }
 
 .linked-icon {
@@ -306,33 +401,27 @@
 
 @media (max-width: 1024px) {
   .v-compact-row-main {
-    grid-template-columns: max-content 1fr max-content max-content max-content;
+    grid-template-columns: 1fr max-content;
   }
 
   .v-compact-row-main.tagging {
-    grid-template-columns: 32px max-content 1fr max-content max-content max-content;
+    grid-template-columns: 32px 1fr max-content;
   }
 
   .v-compact-funding {
     display: none;
   }
 
-  .v-compact-link-label,
-  .v-compact-no-link {
-    display: none;
+  .v-compact-expanded-content.has-photo {
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
-  .v-compact-link a {
-    justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-  }
-
-  .v-compact-expanded-content {
+  .v-compact-expanded-content:not(.has-photo) {
     grid-template-columns: 1fr;
+  }
+
+  .v-compact-expanded-content > :last-child {
+    grid-column: 1 / -1;
   }
 
   .expanded .v-compact-expanded {
@@ -342,12 +431,12 @@
 
 @media (max-width: 48rem) {
   .v-compact-row-main {
-    grid-template-columns: max-content 1fr max-content max-content max-content;
+    grid-template-columns: 1fr max-content;
     gap: 6px;
   }
 
   .v-compact-row-main.tagging {
-    grid-template-columns: 28px max-content 1fr max-content max-content max-content;
+    grid-template-columns: 28px 1fr max-content;
   }
 
   .v-compact-meta-sub {
@@ -355,24 +444,41 @@
   }
 
   .v-compact-action-btn {
-    min-width: 2.25rem;
-    padding: 0 var(--spacing-xs);
+    min-width: 3.5rem;
+    min-height: 3.5rem;
+    padding: 0 var(--spacing-sm);
+  }
+
+  .v-compact-action-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .v-compact-action-btn-wide {
+    flex-basis: calc(3.5rem * 1.5);
+    width: calc(3.5rem * 1.5);
+    min-width: calc(3.5rem * 1.5);
   }
 }
 
-.is-user-claimed {
+.is-user-claimed .v-compact-card-inner {
   background: color-mix(in srgb, var(--success) 8%, var(--surface)) !important;
-  border-color: color-mix(in srgb, var(--success) 30%, var(--border));
 }
 
-.is-user-claimed .v-compact-priority-rail {
-  background: color-mix(in srgb, var(--success) 12%, var(--surface-hover));
+.is-user-claimed .v-compact-row .v-compact-priority-rail {
+  background: transparent;
 }
 
-.is-user-claimed .v-compact-row-main:hover,
-.is-user-claimed.expanded .v-compact-row-main,
-.is-user-claimed .v-compact-expanded {
-  background: color-mix(in srgb, var(--success) 12%, var(--surface-hover));
+.is-user-claimed .v-compact-card:hover .v-compact-card-inner,
+.is-user-claimed.expanded .v-compact-card-inner {
+  background: color-mix(in srgb, var(--success) 12%, var(--surface-hover)) !important;
+}
+
+.is-user-claimed .v-compact-card:hover .v-compact-trailing,
+.is-user-claimed.expanded .v-compact-trailing,
+.is-user-claimed .v-compact-card:hover .confirm-buttons,
+.is-user-claimed.expanded .confirm-buttons {
+  background: color-mix(in srgb, var(--success) 16%, var(--surface-hover));
 }
 
 .claimed-gray-out {

@@ -172,3 +172,31 @@
   background-color: var(--error-bg);
   border-color: var(--error-border);
 }
+
+@media (max-width: 48rem) {
+  .row {
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--spacing-sm);
+  }
+
+  .tools-left {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .rock-toggle-wrapper {
+    min-height: 2.75rem;
+  }
+
+  .status-badge {
+    min-height: 2.75rem;
+    padding: 0 var(--spacing-md);
+    font-size: var(--font-size-xs);
+  }
+
+  .status-badge svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}

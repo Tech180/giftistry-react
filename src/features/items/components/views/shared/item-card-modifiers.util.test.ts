@@ -1,67 +1,10 @@
 import {
-  getPrimaryClaimForBadge,
   getClaimedByDisplayName,
   getClaimedGrayOutClass,
   getUserClaimedHighlightClass,
-  shouldShowClaimBadge,
 } from './item-card-modifiers.util';
 
 describe('item-card-modifiers.util', () => {
-  describe('getPrimaryClaimForBadge', () => {
-    it('returns the first claim with a user id', () => {
-      expect(
-        getPrimaryClaimForBadge([
-          { UserId: null, ClaimedByName: 'Anonymous', Anonymous: true },
-          { UserId: 'user-2', ClaimedByName: 'Alex Kim', Anonymous: false },
-        ])
-      ).toEqual({
-        userId: 'user-2',
-        displayName: 'Alex Kim',
-        anonymous: false,
-      });
-    });
-
-    it('returns anonymous display when claim is anonymous', () => {
-      expect(
-        getPrimaryClaimForBadge([
-          { UserId: null, ClaimedByName: 'Anonymous', Anonymous: true },
-        ])
-      ).toEqual({
-        userId: null,
-        displayName: 'Anonymous',
-        anonymous: true,
-      });
-    });
-
-    it('returns anonymous display for own anonymous claim even with user id', () => {
-      expect(
-        getPrimaryClaimForBadge([
-          { UserId: 'user-1', ClaimedByName: 'Jamie Lee', Anonymous: true },
-        ])
-      ).toEqual({
-        userId: null,
-        displayName: 'Anonymous',
-        anonymous: true,
-      });
-    });
-
-    it('returns null when there are no claims', () => {
-      expect(getPrimaryClaimForBadge([])).toBeNull();
-    });
-
-    it('falls back to Someone when claimed by name is missing', () => {
-      expect(
-        getPrimaryClaimForBadge([
-          { UserId: 'user-3', ClaimedByName: null, Anonymous: false },
-        ])
-      ).toEqual({
-        userId: 'user-3',
-        displayName: 'Someone',
-        anonymous: false,
-      });
-    });
-  });
-
   describe('getClaimedByDisplayName', () => {
     it('returns the first non-anonymous claim name', () => {
       expect(
@@ -80,8 +23,20 @@ describe('item-card-modifiers.util', () => {
       expect(getClaimedGrayOutClass(true, false, false, sharedStyles)).toBe('claimed-gray-out');
     });
 
-    it('returns gray-out class when a visible claim exists', () => {
+    it('returns gray-out class when a visible single-qty claim exists', () => {
       expect(getClaimedGrayOutClass(false, true, false, sharedStyles)).toBe('claimed-gray-out');
+    });
+
+    it('does not gray multi-count items with a partial visible claim', () => {
+      expect(
+        getClaimedGrayOutClass(false, true, false, sharedStyles, false, true)
+      ).toBe('');
+    });
+
+    it('grays multi-count items when fully claimed', () => {
+      expect(
+        getClaimedGrayOutClass(true, true, false, sharedStyles, false, true)
+      ).toBe('claimed-gray-out');
     });
 
     it('returns empty string when the current user claimed the item', () => {
@@ -92,8 +47,14 @@ describe('item-card-modifiers.util', () => {
       expect(getClaimedGrayOutClass(false, false, false, sharedStyles)).toBe('');
     });
 
-    it('returns gray-out class when list is archived', () => {
-      expect(getClaimedGrayOutClass(false, false, true, sharedStyles, true)).toBe('claimed-gray-out');
+    it('does not gray items solely because the list is archived', () => {
+      expect(getClaimedGrayOutClass(false, false, false, sharedStyles, true)).toBe('');
+    });
+
+    it('still grays fully claimed items on an archived list', () => {
+      expect(getClaimedGrayOutClass(true, false, false, sharedStyles, true)).toBe(
+        'claimed-gray-out'
+      );
     });
   });
 
@@ -106,26 +67,6 @@ describe('item-card-modifiers.util', () => {
 
     it('returns empty string for other viewers', () => {
       expect(getUserClaimedHighlightClass(false, sharedStyles)).toBe('');
-    });
-  });
-
-  describe('shouldShowClaimBadge', () => {
-    it('hides the badge for the current user claim', () => {
-      expect(
-        shouldShowClaimBadge(
-          { userId: 'user-1', displayName: 'Jamie', anonymous: false },
-          true
-        )
-      ).toBe(false);
-    });
-
-    it('shows the badge for other users', () => {
-      expect(
-        shouldShowClaimBadge(
-          { userId: 'user-1', displayName: 'Jamie', anonymous: false },
-          false
-        )
-      ).toBe(true);
     });
   });
 });

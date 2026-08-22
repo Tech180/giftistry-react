@@ -14,6 +14,7 @@ export interface Wishlist {
   AiEnabled?: boolean;
   WebSearchEnabled?: boolean;
   ManualJobBackground?: boolean;
+  AutoRollover?: boolean;
   OwnerFirstName?: string;
   OwnerAvatar?: string | null;
   Role?: 'owner' | 'collaborator' | 'viewer';

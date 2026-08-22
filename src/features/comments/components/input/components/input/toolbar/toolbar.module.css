@@ -46,3 +46,28 @@
   cursor: not-allowed;
   transform: none;
 }
+
+@media (max-width: 48rem) {
+  .toolbar {
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+  }
+
+  .toolbar-left,
+  .toolbar-right {
+    gap: var(--spacing-xs);
+  }
+
+  .send-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    border-radius: var(--radius);
+  }
+
+  .send-btn svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}

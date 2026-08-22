@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { commentsApi } from '../api/comments.api';
 import { Comment } from '../interfaces/comment.interface';
+import { appendUniqueComment } from '../utils/append-unique-comment.util';
 
 export function useCommentController() {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -40,7 +41,7 @@ export function useCommentController() {
         parentId,
         imageUrl
       );
-      setComments((prev) => [...prev, newComment]);
+      setComments((prev) => appendUniqueComment(prev, newComment));
       return newComment;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to post comment.');

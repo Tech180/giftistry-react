@@ -60,6 +60,34 @@ function normalizeSystemModel(row: SystemModelApiRow): SystemModelOption | null 
   };
 }
 
+export interface SystemMetadataPackFieldView {
+  Key: string;
+  Label: string;
+  Bucket?: 'predefined' | 'userDefined';
+  Hint?: string;
+}
+
+export interface SystemMetadataPackMatchView {
+  Categories: string[];
+  TitleKeywords?: string[];
+}
+
+export interface SystemMetadataPackView {
+  Id: string;
+  Label: string;
+  Description: string;
+  Fields?: SystemMetadataPackFieldView[];
+  PromptFragment?: string;
+  Match?: SystemMetadataPackMatchView;
+  IsCustom?: boolean;
+  Children?: SystemMetadataPackView[];
+}
+
+export interface SystemMetadataPacksResult {
+  Catalog: SystemMetadataPackView[];
+  EnabledPackIds: string[];
+}
+
 export const systemApi = {
   checkAiConnection: (payload: AiCheckPayload) =>
     apiClient.post<AiCheckResult>('/api/system/ai-check', payload, 'System'),
@@ -85,4 +113,7 @@ export const systemApi = {
       .map(normalizeSystemModel)
       .filter((m): m is SystemModelOption => m !== null);
   },
+
+  listMetadataPacks: () =>
+    apiClient.get<SystemMetadataPacksResult>('/api/system/metadata-packs'),
 };

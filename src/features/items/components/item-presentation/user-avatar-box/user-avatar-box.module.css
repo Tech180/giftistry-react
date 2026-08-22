@@ -45,6 +45,20 @@
   color: var(--success);
 }
 
+.user-avatar-box-suggestion {
+  border-color: var(--warning-border);
+  position: relative;
+  z-index: 3;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.user-avatar-box-suggestion .user-avatar-box-title {
+  border-bottom-color: var(--warning-border);
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
 .user-avatar-box-body {
   display: flex;
   align-items: center;

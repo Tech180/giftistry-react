@@ -41,6 +41,7 @@ const baseProps = {
   canCollaborate: false,
   allowGroupFunds: false,
   isFullyClaimed: false,
+  isMultiCount: false,
   totalExtractedPrice: 49.99,
   totalClaimedAmount: 0,
   urlInput: '',
@@ -114,7 +115,7 @@ describe('ItemCardRouter', () => {
 
   it('shows claim button for non-owner in feed view', () => {
     render(<ItemCardRouter {...baseProps} viewMode="feed" />);
-    expect(screen.getByRole('button', { name: /claim item/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^claim item$/i })).toBeInTheDocument();
   });
 
   it('shows tagging select circle when tagging mode is active', () => {
@@ -133,6 +134,24 @@ describe('ItemCardRouter', () => {
     const onSelect = vi.fn();
     const { container } = render(<ItemCardRouter {...baseProps} viewMode="grid" onSelect={onSelect} />);
     fireEvent.click(container.querySelector('[class*="gift-card"]') as Element);
+    expect(onSelect).toHaveBeenCalled();
+  });
+
+  it('calls onSelect in compact view when the main row is clicked', () => {
+    const onSelect = vi.fn();
+    const { container } = render(
+      <ItemCardRouter {...baseProps} viewMode="compact" onSelect={onSelect} setIsExpanded={vi.fn()} />
+    );
+    fireEvent.click(container.querySelector('[class*="v-compact-row"]') as Element);
+    expect(onSelect).toHaveBeenCalled();
+  });
+
+  it('calls onSelect in detailed view when clicked', () => {
+    const onSelect = vi.fn();
+    const { container } = render(
+      <ItemCardRouter {...baseProps} viewMode="detailed" onSelect={onSelect} />
+    );
+    fireEvent.click(container.querySelector('[class*="v-detailed-card"]') as Element);
     expect(onSelect).toHaveBeenCalled();
   });
 });

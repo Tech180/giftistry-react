@@ -47,6 +47,11 @@
   margin-bottom: 0.5rem;
 }
 
+.confirm-banner--warning{
+  background-color: var(--warning-bg);
+  border-color: var(--warning-border);
+}
+
 .confirm-text{
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -77,6 +82,11 @@
 
 .yes-btn:hover{
   filter: brightness(0.9);
+}
+
+.yes-btn--warning{
+  background-color: var(--warning);
+  border-color: var(--warning);
 }
 
 .no-btn{
@@ -119,10 +129,11 @@
   min-width: 0;
 }
 
-.title-actions{
+.archive-actions{
   display: flex;
   gap: var(--spacing-sm);
   align-items: center;
+  justify-content: flex-end;
   flex-shrink: 0;
 }
 
@@ -395,11 +406,18 @@
   }
 
   .header {
-    flex-direction: column;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
     gap: var(--spacing-md);
-    border-bottom: none;
-    padding-bottom: 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: var(--spacing-md);
+  }
+
+  .header-main {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
   }
 
   .title{
@@ -443,17 +461,21 @@
   }
 
   /* Expiration date: regular button radius, not pill. */
-  .meta-chips .calendar-btn{
+  .meta-chips .calendar-btn,
+  .meta-chips .meta-item.chip-primary{
     border-radius: var(--radius);
     box-shadow: var(--button-secondary-shadow, var(--shadow-sm, var(--shadow)));
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
-    cursor: pointer;
     color: var(--text);
     background: var(--surface);
     border-color: var(--border);
     min-height: 2.25rem;
     padding: var(--spacing-xs) var(--spacing-base);
+  }
+
+  .meta-chips .calendar-btn{
+    cursor: pointer;
   }
 
   .meta-chips .calendar-btn:hover{
@@ -475,35 +497,18 @@
   }
 
   .right-container {
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-end;
     gap: var(--spacing-sm);
-    width: 100%;
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
   }
 
+  .archive-actions,
   .mobile-action-bar,
   .headerToolbarActions {
-    width: 100%;
-  }
-
-  .actions.mobile-action-bar,
-  .mobile-action-bar {
-    justify-content: flex-end;
-  }
-
-  .headerToolbarActions {
-    flex-wrap: nowrap;
-    justify-content: flex-end;
-    align-items: center;
-    gap: var(--spacing-sm);
-    overflow-x: auto;
-    padding: var(--spacing-xs) 0 var(--spacing-md);
-    border-bottom: 1px solid var(--border);
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .headerToolbarActions::-webkit-scrollbar{
     display: none;
   }
 
@@ -530,8 +535,9 @@
   }
 
   .owner-badge-container {
+    align-self: end;
     flex-wrap: wrap;
-    justify-content: flex-start;
+    justify-content: flex-end;
   }
 
   .owner-badge-container:not(:has(.mobileOwnerBadge)) {
@@ -1246,6 +1252,12 @@
   border-radius: var(--radius);
   padding: var(--spacing-xs);
   gap: var(--spacing-xs);
+}
+
+@media (max-width: 48.0625rem) {
+  .mobileSharePill {
+    display: none;
+  }
 }
 
 @media (min-width: 48.0625rem) {

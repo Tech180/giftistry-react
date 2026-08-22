@@ -1,15 +1,19 @@
+import type { LinkInvite } from './link-invite.interface';
+
 export interface LinkTabProps {
   listId: string;
   isOwner: boolean;
+  variant?: 'classic' | 'compact';
 }
 
 export interface LinkTabTemplateProps {
+  variant?: 'classic' | 'compact';
   isOwner: boolean;
   isLoading: boolean;
   isGenerating: boolean;
   errorMsg: string | null;
   successMsg: string | null;
-  activeInvite: any;
+  activeInvite: LinkInvite | null;
   generatedToken: string | null;
   copied: boolean;
   role: 'viewer' | 'collaborator';
@@ -28,4 +32,5 @@ export interface LinkTabTemplateProps {
   handleCopy: () => void;
   handleRevoke: () => void;
   handleSettings: () => void;
+  handleToggleLink: (enabled: boolean) => void;
 }

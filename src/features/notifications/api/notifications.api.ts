@@ -1,5 +1,6 @@
 import { apiClient } from 'core/api/client';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
+import type { PublicLinkPreview } from 'features/wishlists/interfaces/public-link-preview.interface';
 import { Notification, NotificationPreferences } from '../interfaces/notification.interface';
 
 type ApiNotification = {
@@ -97,5 +98,15 @@ export const notificationsApi = {
   getInviteLinkDetails: (token: string) =>
     apiClient.get<{ ListId: string; Role: string; PasswordProtected: boolean; ExpiresAt: string | null }>(
       `/api/invites/link/${token}`
+    ),
+
+  getPublicLinkPreview: (token: string) =>
+    apiClient.get<PublicLinkPreview>(`/api/invites/link/${token}/preview`),
+
+  postPublicLinkPreview: (token: string, password: string) =>
+    apiClient.post<PublicLinkPreview>(
+      `/api/invites/link/${token}/preview`,
+      { Password: password },
+      'Invites'
     ),
 };

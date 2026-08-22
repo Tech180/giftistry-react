@@ -122,12 +122,10 @@ describe('ImportStrip', () => {
     await selectFile(container);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /grab info/i })).toBeInTheDocument();
+      expect(screen.getByRole('group', { name: /ai features/i })).toBeInTheDocument();
     });
-    expect(screen.getByRole('button', { name: /grab info/i })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
+    expect(screen.getByRole('checkbox', { name: /grab info/i })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /optimize categories/i })).not.toBeChecked();
     fireEvent.change(screen.getByLabelText(/wishlist title/i), {
       target: { value: 'Holiday' },
     });
@@ -138,6 +136,7 @@ describe('ImportStrip', () => {
         expect.objectContaining({
           allowAi: true,
           grabInfo: true,
+          optimizeCategories: false,
         })
       );
     });
@@ -158,6 +157,65 @@ describe('ImportStrip', () => {
     });
   });
 
+  test('AI panel has Grab info and Optimize categories toggles', async () => {
+    canShowAiRef.current = true;
+    vi.mocked(jobsApi.startWishlistImport).mockResolvedValue({
+      Id: 'job-opt',
+      Kind: 'wishlist-import',
+      ListId: 'list-opt',
+      UserId: 'user-1',
+      Status: 'completed',
+      Phase: 'completed',
+      ProgressDone: 1,
+      ProgressTotal: 1,
+      Message: 'Done',
+      Error: null,
+      GrabInfo: true,
+      Mode: 'create-list',
+    });
+
+    const { container } = renderStrip();
+    await selectFile(container);
+
+    await waitFor(() => {
+      expect(screen.getByRole('group', { name: /ai features/i })).toBeInTheDocument();
+    });
+
+    const grabSwitch = screen.getByRole('checkbox', { name: /grab info/i });
+    const optimizeSwitch = screen.getByRole('checkbox', { name: /optimize categories/i });
+    expect(grabSwitch).toBeChecked();
+    expect(optimizeSwitch).not.toBeChecked();
+    expect(optimizeSwitch).toBeEnabled();
+
+    fireEvent.click(optimizeSwitch);
+    expect(optimizeSwitch).toBeChecked();
+
+    fireEvent.click(grabSwitch);
+    expect(grabSwitch).not.toBeChecked();
+    expect(optimizeSwitch).toBeDisabled();
+
+    fireEvent.click(grabSwitch);
+    expect(optimizeSwitch).toBeEnabled();
+    expect(optimizeSwitch).toBeChecked();
+
+    fireEvent.click(optimizeSwitch);
+    expect(optimizeSwitch).not.toBeChecked();
+
+    fireEvent.change(screen.getByLabelText(/wishlist title/i), {
+      target: { value: 'Holiday' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /create wishlist/i }));
+
+    await waitFor(() => {
+      expect(jobsApi.startWishlistImport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          grabInfo: true,
+          optimizeCategories: false,
+        })
+      );
+    });
+  });
+
   test('hides Grab info and omits PDF from accept when AI is unavailable', async () => {
     canShowAiRef.current = false;
     const { container } = renderStrip();
@@ -172,7 +230,9 @@ describe('ImportStrip', () => {
     await waitFor(() => {
       expect(screen.getByText('Ready')).toBeInTheDocument();
     });
-    expect(screen.queryByRole('button', { name: /grab info/i })).toBeNull();
+    expect(screen.queryByRole('group', { name: /ai features/i })).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: /grab info/i })).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: /optimize categories/i })).toBeNull();
     expect(readImportFile).toHaveBeenCalledWith(
       expect.any(File),
       expect.objectContaining({ allowAi: false })
@@ -218,7 +278,7 @@ describe('ImportStrip', () => {
     await waitFor(() => {
       expect(screen.getByText('Ready')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole('button', { name: /grab info/i }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /grab info/i }));
     fireEvent.change(screen.getByLabelText(/wishlist title/i), {
       target: { value: 'Holiday' },
     });

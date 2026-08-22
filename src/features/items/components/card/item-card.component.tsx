@@ -17,6 +17,9 @@ import { formatAudienceLabel, getItemSharedWithUserIds, isPrivateItem } from '..
 import { resolveLinkedItems } from '../../utils/item-links-sync.util';
 import { resolveRelatedItems } from '../../utils/item-related-sync.util';
 import { resolveItemQuantitySummary } from '../../utils/resolve-item-quantity.util';
+import { itemNeedsClaimQuantityUi } from '../../utils/resolve-claim-quantity-lines.util';
+import { resolveCurrentUserClaimIsAnonymous } from '../../utils/resolve-current-user-claim-is-anonymous.util';
+import { resolveCanEditItem } from '../../utils/resolve-can-edit-item.util';
 
 export const ItemCard: React.FC<ItemCardProps> = ({
   item,
@@ -24,6 +27,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   isExpired,
   isArchived = false,
   canCollaborate,
+  isPublicGuest = false,
   allowGroupFunds,
   itemActions,
   priorityLabel,
@@ -34,6 +38,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   viewMode = 'detailed',
   isSelected,
   onSelect,
+  onView,
   wishlistItems = [],
   isLinkingContext = false,
   isRelatingContext = false,
@@ -41,18 +46,27 @@ export const ItemCard: React.FC<ItemCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { user, canShowAi } = useAuth();
-  const claimedByCurrentUser = !!(user && item.Claims.some(c => c.UserId === user.Id));
+  const claims = item.Claims ?? [];
+  const claimedByCurrentUser = !!(user && claims.some(c => c.UserId === user.Id));
+  const canEditItem = resolveCanEditItem(item, user?.Id, isOwner, isPublicGuest);
 
   const [urlInput, setUrlInput] = useState('');
   const [showAddLink, setShowAddLink] = useState(false);
   const [linkLoading, setLinkLoading] = useState(false);
 
   // Claim states
-  const [showClaimForm, setShowClaimForm] = useState(false);
+  const [showClaimForm, setShowClaimFormState] = useState(false);
   const [claimAmount, setClaimAmount] = useState('');
   const [claimedByName, setClaimedByName] = useState('');
   const [anonymous, setAnonymous] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
+
+  const setShowClaimForm = (open: boolean) => {
+    if (open) {
+      setAnonymous(resolveCurrentUserClaimIsAnonymous(claims, user?.Id));
+    }
+    setShowClaimFormState(open);
+  };
 
   // Delete state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -181,7 +195,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const totalClaimedAmount =
     item.TotalClaimedAmount != null
       ? item.TotalClaimedAmount
-      : item.Claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
+      : claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
 
   const { text: displayDescription, metadata } = useMemo(
     () => parseItemDescription(item.Description, item.Metadata),
@@ -201,6 +215,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({
         : allowGroupFunds && totalExtractedPrice > 0
           ? totalClaimedAmount >= totalExtractedPrice
           : item.IsClaimed;
+
+  const canAdjustClaim = itemNeedsClaimQuantityUi(item, metadata);
+  const claimActorName = user
+    ? `${user.FirstName} ${user.LastName}`.trim() || user.Username
+    : null;
 
   const [isPinned, setIsPinned] = useState(() => {
     try {
@@ -262,8 +281,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       isExpired={isExpired}
       isArchived={isArchived}
       canCollaborate={canCollaborate}
+      isPublicGuest={isPublicGuest}
+      canEditItem={canEditItem}
       allowGroupFunds={allowGroupFunds}
       isFullyClaimed={isFullyClaimed}
+      isMultiCount={quantitySummary.isMultiCount}
       totalExtractedPrice={totalExtractedPrice}
       totalClaimedAmount={totalClaimedAmount}
       priorityLabel={priorityLabel}
@@ -283,6 +305,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       setAnonymous={setAnonymous}
       claimLoading={claimLoading}
       handleClaim={handleClaim}
+      canAdjustClaim={canAdjustClaim}
+      itemActions={itemActions}
+      claimUserId={user?.Id ?? null}
+      claimActorName={claimActorName}
       showDeleteConfirm={showDeleteConfirm}
       setShowDeleteConfirm={setShowDeleteConfirm}
       deleteLoading={deleteLoading}
@@ -300,6 +326,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       viewMode={viewMode}
       isSelected={isSelected}
       onSelect={onSelect}
+      onView={onView}
       isExpanded={isExpanded}
       setIsExpanded={setIsExpanded}
       displayDescription={displayDescription}

@@ -20,6 +20,23 @@
     transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+.sizeFluid {
+  transition:
+    width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.4s ease,
+    box-shadow 0.4s ease,
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root,
+  .sizeFluid {
+    transition: none;
+  }
+}
+
 @media (min-width: 48.0625rem) {
   .root {
     display: none;
@@ -43,11 +60,14 @@
   background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, white));
   box-shadow: var(--shadow-md), inset 0 1px 1px color-mix(in srgb, white 20%, transparent);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.stateClosed:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-lg), inset 0 1px 1px color-mix(in srgb, white 30%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .stateClosed:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg), inset 0 1px 1px color-mix(in srgb, white 30%, transparent);
+  }
 }
 
 .stateClosed:active {
@@ -161,6 +181,7 @@
   justify-content: center;
   color: var(--primary-text);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ─── Face 2: Toolbar ─── */
@@ -193,11 +214,19 @@
   cursor: pointer;
   position: relative;
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.toolBtn:hover {
-  background: var(--surface-hover);
-  color: var(--text);
+@media (hover: hover) and (pointer: fine) {
+  .toolBtn:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+
+  .toolBtn.primary:hover {
+    background: var(--primary);
+    color: var(--primary-text);
+  }
 }
 
 .toolBtn:active {
@@ -209,9 +238,15 @@
   color: var(--primary);
 }
 
-.toolBtn.primary:hover {
-  background: var(--primary);
-  color: var(--primary-text);
+.toolBtn.danger {
+  color: var(--error);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .toolBtn.danger:hover {
+    background: var(--error-bg);
+    color: var(--error);
+  }
 }
 
 .toolDivider {
@@ -233,6 +268,10 @@
   display: flex;
   flex-direction: column;
   padding: 16px;
+}
+
+.facePanelFlush {
+  padding: 0;
 }
 
 .panelHeader {

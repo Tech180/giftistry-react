@@ -8,20 +8,29 @@ vi.mock('features/items', () => ({
     isOpen,
     isLinkingModeActive,
     setIsLinkingModeActive,
+    readOnly,
   }: {
     isOpen: boolean;
     isLinkingModeActive: boolean;
     setIsLinkingModeActive: React.Dispatch<React.SetStateAction<boolean>>;
+    readOnly?: boolean;
   }) => (
-    <div data-testid="add-item-form" data-form-open={String(isOpen)}>
-      <button
-        type="button"
-        title="Select Items from Wishlist"
-        onClick={() => setIsLinkingModeActive(true)}
-      >
-        Link
-      </button>
+    <div
+      data-testid="add-item-form"
+      data-form-open={String(isOpen)}
+      data-read-only={String(!!readOnly)}
+    >
+      {!readOnly && (
+        <button
+          type="button"
+          title="Select Items from Wishlist"
+          onClick={() => setIsLinkingModeActive(true)}
+        >
+          Link
+        </button>
+      )}
       <span data-testid="linking-active">{String(isLinkingModeActive)}</span>
+      <input aria-label="Item name" readOnly={readOnly} defaultValue="Gift" />
     </div>
   ),
 }));
@@ -35,16 +44,19 @@ vi.mock('shared/ui', async () => {
       title,
       children,
       isOpen,
+      footer,
     }: {
       headerExtra?: React.ReactNode;
       title: string;
       children: React.ReactNode;
       isOpen: boolean;
+      footer?: React.ReactNode;
     }) => (
       <div data-testid="drawer" data-drawer-open={String(isOpen)}>
         <h1>{title}</h1>
         <div data-testid="header-extra">{headerExtra}</div>
         {children}
+        <div data-testid="drawer-footer">{footer}</div>
       </div>
     ),
     MiniDrawer: () => null,
@@ -52,6 +64,7 @@ vi.mock('shared/ui', async () => {
 });
 
 import { AddItemTemplate } from './add-item.html';
+import type { AddItemTemplateProps } from './interfaces/add-item-template-props.interface';
 
 const baseProps = {
   isOpen: true,
@@ -146,5 +159,55 @@ describe('AddItemTemplate link-select drawer visibility', () => {
 
     fireEvent.click(screen.getByTitle('Select Items from Wishlist'));
     expect(setIsLinkingModeActive).toHaveBeenCalledWith(true);
+  });
+});
+
+describe('AddItemTemplate suggestion banner', () => {
+  test('shows a Suggestion banner for non-owners', () => {
+    render(<AddItemTemplate {...baseProps} isOwner={false} />);
+
+    expect(screen.getByRole('status')).toHaveTextContent('Suggestion');
+  });
+
+  test('hides the Suggestion banner for owners', () => {
+    render(<AddItemTemplate {...baseProps} isOwner={true} />);
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+});
+
+describe('AddItemTemplate view mode', () => {
+  const viewingItem = {
+    Id: 'item-view-1',
+    Name: 'Viewed Gift',
+    Description: '',
+    Category: 'uncategorized',
+    Links: [],
+    Claims: [],
+    SharedWith: [],
+  } as unknown as NonNullable<AddItemTemplateProps['viewingItem']>;
+
+  test('shows View Item title, View Mode banner, Close only, and read-only form', async () => {
+    const { VIEW_MODE_BANNER_DESCRIPTION } = await import(
+      'features/items/constants/view-mode-banner.constant'
+    );
+    render(
+      <AddItemTemplate
+        {...baseProps}
+        isOwner={false}
+        viewingItem={viewingItem}
+        editingItem={null}
+      />
+    );
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('View Item');
+    expect(screen.getByRole('status')).toHaveTextContent(VIEW_MODE_BANNER_DESCRIPTION);
+    expect(screen.queryByText('Suggestion')).not.toBeInTheDocument();
+    expect(screen.queryByText('View Mode')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('add-item-form')).toHaveAttribute('data-read-only', 'true');
+    expect(screen.getByLabelText('Item name')).toHaveAttribute('readOnly');
   });
 });

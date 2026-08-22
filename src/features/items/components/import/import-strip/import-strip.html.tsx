@@ -1,6 +1,5 @@
 import React, { useId } from 'react';
-import { CollapsibleStrip, Button, Badge } from 'shared/ui';
-import { AiSparklesIcon } from 'shared/ui/badge/icons/ai-badge-icons';
+import { CollapsibleStrip, Button, Badge, Switch } from 'shared/ui';
 import { Timeline } from 'features/jobs';
 import { ImportDropzone } from '../import-dropzone/import-dropzone.component';
 import type { ImportStripTemplateProps } from './interfaces/import-strip-template-props.interface';
@@ -28,15 +27,20 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
   canConfirm,
   canGrabInfo,
   grabInfoActive,
+  canOptimizeCategories,
+  optimizeCategoriesActive,
   allowAi,
   confirmLabel,
   className,
   onFileSelected,
   onReset,
   onConfirm,
-  onGrabInfo,
+  onGrabInfoChange,
+  onOptimizeCategoriesChange,
 }) => {
-  const grabGradientId = `grab-info-badge-gradient-${useId().replace(/:/g, '')}`;
+  const grabSwitchId = `import-grab-info-${useId().replace(/:/g, '')}`;
+  const optimizeSwitchId = `import-optimize-categories-${useId().replace(/:/g, '')}`;
+  const aiPanelActive = grabInfoActive || optimizeCategoriesActive;
   const showDropzone =
     phase === 'idle' || phase === 'uploading' || phase === 'ready' || phase === 'error';
   const showProgress = phase === 'creating' || phase === 'success' || phase === 'enriching';
@@ -108,7 +112,8 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
                   className={styles.titleInput}
                   value={wishlistTitle}
                   onChange={(event) => setWishlistTitle(event.target.value)}
-                  placeholder="Wishlist title"
+                  placeholder="e.g., Q3 Project Backlog"
+                  spellCheck={false}
                   disabled={isBusy}
                 />
               </div>
@@ -144,25 +149,73 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
 
         {showActions ? (
           <div className={styles.actions}>
-            <div className={styles.actionsLeft}>
-              {canGrabInfo ? (
-                <Badge
-                  effect="rainbow"
-                  active={grabInfoActive}
-                  size="md"
-                  gradientId={grabGradientId}
-                  icon={<AiSparklesIcon gradientId={grabGradientId} />}
-                  ariaLabel="Grab info"
-                  ariaPressed={grabInfoActive}
-                  onClick={onGrabInfo}
-                >
-                  Grab info
-                </Badge>
-              ) : null}
-            </div>
-            <div className={styles.actionsRight}>
+            {canGrabInfo ? (
+              <div
+                className={[styles.aiPanel, aiPanelActive ? styles.aiPanelActive : '']
+                  .filter(Boolean)
+                  .join(' ')}
+                role="group"
+                aria-label="AI Features"
+              >
+                <span className={styles.aiPanelGlow} aria-hidden />
+                <div className={styles.aiPanelInner}>
+                  <div className={styles.aiPanelHeader}>
+                    <span className={styles.aiPanelTitle}>AI Processing</span>
+                  </div>
+                  <div className={styles.aiPanelToggles}>
+                    <div className={styles.toggle}>
+                      <Switch
+                        id={grabSwitchId}
+                        size="sm"
+                        checked={grabInfoActive}
+                        onChange={onGrabInfoChange}
+                        disabled={isBusy}
+                        aria-label={
+                          grabInfoActive
+                            ? 'Grab info on. Turn off to skip looking up item details.'
+                            : 'Grab info off. Turn on to look up missing item details.'
+                        }
+                      />
+                      <label className={styles.toggleLabel} htmlFor={grabSwitchId}>
+                        Grab info
+                      </label>
+                    </div>
+                    {canOptimizeCategories ? (
+                      <div className={styles.toggle}>
+                        <Switch
+                          id={optimizeSwitchId}
+                          size="sm"
+                          checked={grabInfoActive && optimizeCategoriesActive}
+                          onChange={onOptimizeCategoriesChange}
+                          disabled={isBusy || !grabInfoActive}
+                          aria-label={
+                            !grabInfoActive
+                              ? 'Optimize categories. Enable Grab info first.'
+                              : optimizeCategoriesActive
+                                ? 'Optimize categories on. Turn off to keep categories from the file except uncategorized.'
+                                : 'Optimize categories off. Categories from the file are kept except uncategorized. Turn on to let AI optimize.'
+                          }
+                        />
+                        <label
+                          className={[
+                            styles.toggleLabel,
+                            !grabInfoActive ? styles.toggleLabelMuted : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                          htmlFor={optimizeSwitchId}
+                        >
+                          Optimize categories
+                        </label>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+            <div className={styles.actionsEnd}>
               <Button type="button" variant="secondary" onClick={onReset} disabled={isBusy}>
-                {phase === 'success' ? 'Import another' : 'Choose different file'}
+                {phase === 'success' ? 'Import another' : 'Cancel'}
               </Button>
               {phase === 'ready' ? (
                 <Button

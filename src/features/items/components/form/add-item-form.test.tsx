@@ -225,7 +225,8 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
         'https://target.com/new-product',
         149.99,
         'Target',
-        null
+        null,
+        false
       );
     });
   });
@@ -698,13 +699,41 @@ describe('AddItemForm - Auto populate', () => {
     fireEvent.click(screen.getByTitle('Auto-fill details from link'));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Failed to fetch product details automatically/i)
-      ).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent('network');
+      expect(screen.getByRole('alert')).toHaveTextContent('You can still enter them manually.');
     });
     expect(
       screen.queryByText(/AI summarization has failed/i)
     ).not.toBeInTheDocument();
+  });
+
+  test('shows the enrich job Error when auto-fill fails', async () => {
+    vi.mocked(jobsApi.startItemEnrich).mockResolvedValue({ Job: queuedJob('item-enrich') });
+    vi.mocked(jobsApi.getJob).mockResolvedValue({
+      ...queuedJob('item-enrich'),
+      Status: 'failed',
+      Error:
+        'Playwright’s bundled Chromium cannot run on NixOS (dynamic linker stub).\nOriginal error: stub-ld',
+    });
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/dyson' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/cannot run on NixOS/i);
+      expect(screen.getByRole('alert')).toHaveTextContent('You can still enter them manually.');
+    });
+    expect(screen.queryByText(/Original error/i)).not.toBeInTheDocument();
   });
 
   test('clears AI warning when sidebar closes', async () => {
@@ -823,6 +852,80 @@ describe('AddItemForm - Metadata hydration on edit', () => {
     vi.mocked(itemsApi.updateItem).mockResolvedValue(mockEditItem);
   });
 
+  test('keeps the custom field name input focused while typing more than one character', () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.click(screen.getByText('Custom Fields'));
+    fireEvent.click(screen.getByRole('button', { name: /Add Field/i }));
+
+    const nameInput = screen.getByPlaceholderText('Field name');
+    fireEvent.change(nameInput, { target: { value: 'B' } });
+    expect(screen.getByPlaceholderText('Field name')).toHaveValue('B');
+    fireEvent.change(screen.getByPlaceholderText('Field name'), { target: { value: 'Br' } });
+    fireEvent.change(screen.getByPlaceholderText('Field name'), { target: { value: 'Bra' } });
+    fireEvent.change(screen.getByPlaceholderText('Field name'), { target: { value: 'Brand' } });
+    expect(screen.getByPlaceholderText('Field name')).toHaveValue('Brand');
+  });
+
+  test('saves user-defined custom fields on create', async () => {
+    vi.mocked(itemsApi.addItem).mockResolvedValue({
+      ...mockEditItem,
+      Id: 'new-1',
+      Name: 'Cool Tee',
+      Links: [],
+    });
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('e.g. Sony WH-1000XM5'), {
+      target: { value: 'Cool Tee' },
+    });
+    fireEvent.click(screen.getByText('Custom Fields'));
+    fireEvent.click(screen.getByRole('button', { name: /Add Field/i }));
+    const fieldNameInput = screen.getByPlaceholderText('Field name');
+    fireEvent.change(fieldNameInput, { target: { value: 'Brand' } });
+    fireEvent.blur(fieldNameInput);
+    const valueInputs = screen.getAllByPlaceholderText('Value');
+    fireEvent.change(valueInputs[valueInputs.length - 1], {
+      target: { value: 'Nike' },
+    });
+
+    fireEvent.submit(document.getElementById(ADD_ITEM_FORM_ID)!);
+
+    await waitFor(() => {
+      expect(itemsApi.addItem).toHaveBeenCalledWith(
+        'test-list-id',
+        'Cool Tee',
+        null,
+        null,
+        false,
+        null,
+        null,
+        null,
+        null,
+        null,
+        [],
+        expect.objectContaining({
+          CustomFields: expect.objectContaining({
+            UserDefined: expect.objectContaining({ Brand: 'Nike' }),
+          }),
+        })
+      );
+    });
+  });
+
   test('loads custom fields from item.Metadata when Description is plain text', async () => {
     const itemWithMetadata: Item = {
       ...mockEditItem,
@@ -885,7 +988,8 @@ describe('AddItemForm - Metadata hydration on edit', () => {
               Brand: 'mosanana',
             }),
           }),
-        })
+        }),
+        false
       );
     });
   });
@@ -1235,5 +1339,119 @@ describe('AddItemForm - abandon pending job on close', () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(jobsApi.cancelJob).not.toHaveBeenCalled();
     expect(jobsApi.startItemEnrich).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('AddItemForm - suggestion visibility', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue([]);
+  });
+
+  test('non-owner form shows Visible to list owner, default off', () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+      />
+    );
+
+    const toggle = screen.getByLabelText('Visible to list owner');
+    expect(toggle).toBeInTheDocument();
+    expect(toggle).not.toBeChecked();
+    expect(screen.queryByText('Suggest as Surprise')).not.toBeInTheDocument();
+  });
+
+  test('edit loads Visible to list owner checked when IsHiddenIdea is false', async () => {
+    const suggestionItem: Item = {
+      ...mockEditItem,
+      IsHiddenIdea: false,
+      IsSuggestion: true,
+      SuggestedByUserId: 'test-user-id',
+    };
+    vi.mocked(itemsApi.updateItem).mockResolvedValue(suggestionItem);
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        item={suggestionItem}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Headphones')).toBeInTheDocument();
+    });
+
+    expect(screen.getByLabelText('Visible to list owner')).toBeChecked();
+  });
+
+  test('toggling Visible to list owner alone marks the edit form dirty', async () => {
+    const suggestionItem: Item = {
+      ...mockEditItem,
+      IsHiddenIdea: true,
+      IsSuggestion: true,
+      SuggestedByUserId: 'test-user-id',
+    };
+    const onDirtyChange = vi.fn();
+    vi.mocked(itemsApi.updateItem).mockResolvedValue(suggestionItem);
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        item={suggestionItem}
+        onDirtyChange={onDirtyChange}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Headphones')).toBeInTheDocument();
+    });
+
+    const toggle = screen.getByLabelText('Visible to list owner');
+    expect(toggle).not.toBeChecked();
+
+    onDirtyChange.mockClear();
+    fireEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(onDirtyChange).toHaveBeenCalledWith(true);
+    });
+  });
+
+  test('edit submit sends IsHiddenIdea false when Visible to list owner is on', async () => {
+    const suggestionItem: Item = {
+      ...mockEditItem,
+      IsHiddenIdea: true,
+      IsSuggestion: true,
+      SuggestedByUserId: 'test-user-id',
+    };
+    vi.mocked(itemsApi.updateItem).mockResolvedValue({
+      ...suggestionItem,
+      IsHiddenIdea: false,
+    });
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        item={suggestionItem}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Headphones')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByLabelText('Visible to list owner'));
+    fireEvent.submit(document.getElementById(ADD_ITEM_FORM_ID)!);
+
+    await waitFor(() => {
+      expect(itemsApi.updateItem).toHaveBeenCalled();
+      const args = vi.mocked(itemsApi.updateItem).mock.calls[0]!;
+      expect(args[0]).toBe('item-1');
+      expect(args[11]).toBe(false);
+    });
   });
 });

@@ -11,8 +11,6 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
   setExpiresAt,
   allowGroupFunds,
   setAllowGroupFunds,
-  revealSuggestions,
-  setRevealSuggestions,
   isLoading,
   errorMsg,
   handleSubmit,
@@ -24,6 +22,8 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
   setAiEnabled,
   webSearchEnabled,
   setWebSearchEnabled,
+  autoRollover,
+  setAutoRollover,
   globalAiEnabled,
   globalWebSearchEnabled,
   onCancel,
@@ -118,16 +118,18 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
             />
           </div>
 
-          {/* Reveal Suggestions Toggle */}
+          {/* Auto Rollover Toggle */}
           <div className={styles['toggle-wrapper']}>
             <div className={styles['toggle-text-block']}>
-              <div className={styles['toggle-title']}>Reveal Suggestions</div>
-              <div className={styles['toggle-description']}>Keep user suggestions anonymous until the list's expiration date passes.</div>
+              <div className={styles['toggle-title']}>Auto Rollover</div>
+              <div className={styles['toggle-description']}>
+                When this list expires, carry unclaimed items and marked comments into a new list.
+              </div>
             </div>
             <Switch
-              checked={revealSuggestions}
-              onChange={setRevealSuggestions}
-              aria-label="Reveal Suggestions"
+              checked={autoRollover}
+              onChange={setAutoRollover}
+              aria-label="Auto Rollover"
             />
           </div>
 

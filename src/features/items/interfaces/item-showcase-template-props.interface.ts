@@ -1,17 +1,26 @@
 import type { ComponentType, CSSProperties, SyntheticEvent } from 'react';
-import type { Item } from './item.interface';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
+import type { ClaimQuantityDraft } from './claim-quantity-draft.interface';
+import type { Item } from './item.interface';
+import type { ItemActions } from './item-actions.interface';
 import type { ShowcaseRelationItem } from './showcase-relation-item.interface';
-import type { ShowcaseVariationOption } from './showcase-variation-option.interface';
 import type { ShowcaseVariationProgress } from './showcase-variation-progress.interface';
 
 export interface ItemShowcaseTemplateProps {
   item: Item;
   isOwner: boolean;
   canCollaborate: boolean;
+  isPublicGuest?: boolean;
+  canEditItem?: boolean;
   isArchived?: boolean;
+  isExpired?: boolean;
   allowGroupFunds: boolean;
   claimedByCurrentUser: boolean;
+  canAdjustClaim: boolean;
+  itemActions: ItemActions;
+  claimUserId?: string | null;
+  claimActorName: string | null;
+  onBeforeClaimSubmit: (draft: ClaimQuantityDraft[]) => boolean | Promise<boolean>;
   claimAmount: string;
   setClaimAmount: (val: string) => void;
   anonymous: boolean;
@@ -23,11 +32,6 @@ export interface ItemShowcaseTemplateProps {
   setShowDeleteConfirm: (val: boolean) => void;
   deleteLoading: boolean;
   localIsFavorite: boolean;
-  selectedVariation: string;
-  setSelectedVariation: (val: string) => void;
-  claimQty: number;
-  setClaimQty: (val: number) => void;
-  onClaimQtyInputChange: (raw: string) => void;
   showDependencyModal: boolean;
   setShowDependencyModal: (val: boolean) => void;
   displayDescription: string;
@@ -45,7 +49,7 @@ export interface ItemShowcaseTemplateProps {
   isFullyClaimed: boolean;
   progressPercent: number;
   onClose: () => void;
-  onEdit: () => void;
+  onEdit?: () => void;
   getSiteName: (url: string, retailerName?: string | null) => string;
   audienceLabel: string | null;
   isPrivate: boolean;
@@ -67,7 +71,6 @@ export interface ItemShowcaseTemplateProps {
   showHiddenSuggestionBadge: boolean;
   suggestionLabel: string;
   variationProgress: ShowcaseVariationProgress[];
-  variationOptions: ShowcaseVariationOption[];
   linkedRelationItems: ShowcaseRelationItem[];
   relatedRelationItems: ShowcaseRelationItem[];
   maxContributionAmount: number;

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { FloatingActionMenuProps } from './interfaces/floating-action-menu-props.interface';
+import type { FloatingActionPanelHelpers } from './interfaces/floating-action.interface';
 import { FloatingActionMenuTemplate } from './floating-action-menu.html';
 import styles from './floating-action-menu.module.css';
 
@@ -27,6 +28,11 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
   const isControlled = openProp !== undefined;
   const [dockStateInternal, setDockStateInternal] = useState<'closed' | 'toolbar' | 'panel'>('closed');
   const [expandedActionId, setExpandedActionId] = useState<string | null>(null);
+  const [panelSizeOverride, setPanelSizeOverride] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+  const panelEscapeHandlerRef = useRef<(() => boolean) | null>(null);
 
   const dockState = isControlled
     ? openProp
@@ -37,6 +43,10 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
     : dockStateInternal;
 
   const setDockState = (nextState: 'closed' | 'toolbar' | 'panel') => {
+    if (nextState !== 'panel') {
+      setPanelSizeOverride(null);
+      panelEscapeHandlerRef.current = null;
+    }
     if (!isControlled) {
       setDockStateInternal(nextState);
     }
@@ -58,6 +68,8 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
       } else {
         setDockStateInternal('closed');
         setExpandedActionId(null);
+        setPanelSizeOverride(null);
+        panelEscapeHandlerRef.current = null;
       }
     }
   }, [openProp, isControlled, dockStateInternal]);
@@ -67,13 +79,16 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
     if (dockState === 'closed') return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        if (dockState === 'panel') {
-          setDockState('toolbar');
-        } else {
-          setDockState('closed');
+      if (event.key !== 'Escape') return;
+      if (dockState === 'panel') {
+        if (panelEscapeHandlerRef.current?.()) {
+          event.preventDefault();
+          return;
         }
+        setDockState('toolbar');
+        return;
       }
+      setDockState('closed');
     };
 
     window.addEventListener('keydown', onKeyDown);
@@ -155,7 +170,7 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
     const PAD = 20; // 10px top + 10px bottom
 
     const dividerCount = actions.filter(
-      (a, i) => actionOpensPanel(a) && i > 0
+      (a, i) => actionOpensPanel(a) && i > 0 && !a.hideToolbarDivider
     ).length;
 
     const actionGroupHeight =
@@ -171,13 +186,13 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
 
   const expandedAction = actions.find((a) => a.id === expandedActionId) ?? null;
 
-  const panelWidth = expandedAction?.panelContent
+  const defaultPanelWidth = expandedAction?.panelContent
     ? (expandedAction.panelWidth ?? 280)
     : 220;
 
   /* Panel: padding 16×2, header 28 + 16 margin, items 38px, gap 4px.
    * Custom panelContent uses explicit panelHeight (default 300). */
-  const panelHeight = (() => {
+  const defaultPanelHeight = (() => {
     if (expandedAction?.panelContent) {
       return expandedAction.panelHeight ?? 300;
     }
@@ -191,6 +206,24 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
     return PAD + HEADER + childCount * ITEM + Math.max(0, childCount - 1) * GAP;
   })();
 
+  const panelWidth = panelSizeOverride?.width ?? defaultPanelWidth;
+  const panelHeight = panelSizeOverride?.height ?? defaultPanelHeight;
+  const hidePanelHeader = Boolean(expandedAction?.hidePanelHeader);
+  const sizeFluid = dockState === 'panel' && panelSizeOverride !== null;
+
+  const panelHelpers: FloatingActionPanelHelpers = {
+    closeMenu: () => setDockState('closed'),
+    setPanelSize: (width, height) => {
+      setPanelSizeOverride((prev) => {
+        if (prev?.width === width && prev?.height === height) return prev;
+        return { width, height };
+      });
+    },
+    setPanelEscapeHandler: (handler) => {
+      panelEscapeHandlerRef.current = handler;
+    },
+  };
+
   const stateClass =
     dockState === 'closed'
       ? styles.stateClosed
@@ -198,7 +231,9 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
         ? styles.stateToolbar
         : styles.statePanel;
 
-  const rootClass = [styles.root, stateClass, className].filter(Boolean).join(' ');
+  const rootClass = [styles.root, stateClass, sizeFluid ? styles.sizeFluid : '', className]
+    .filter(Boolean)
+    .join(' ');
 
   if (actions.length === 0) {
     return null;
@@ -215,6 +250,8 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
       toolbarHeight={toolbarHeight}
       panelHeight={panelHeight}
       panelWidth={panelWidth}
+      hidePanelHeader={hidePanelHeader}
+      panelHelpers={panelHelpers}
       setDockState={setDockState}
       onActionClick={handleActionClick}
       onChildClick={handleChildClick}

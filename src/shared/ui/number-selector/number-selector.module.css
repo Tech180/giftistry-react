@@ -1,0 +1,77 @@
+.number-selector {
+  --number-selector-height: 1.75rem;
+  --number-selector-btn-width: 1.75rem;
+  --number-selector-val-width: 2rem;
+  --number-selector-icon-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  height: var(--number-selector-height);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.number-selector-sm {
+  --number-selector-height: 1.5rem;
+  --number-selector-btn-width: 1.5rem;
+  --number-selector-val-width: 1.75rem;
+  --number-selector-icon-size: 0.75rem;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--number-selector-btn-width);
+  height: 100%;
+  padding: 0;
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--border);
+  color: var(--text);
+}
+
+.btn:active:not(:disabled) {
+  background: var(--text-muted);
+  color: var(--surface);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--surface);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+  z-index: 1;
+}
+
+.icon {
+  width: var(--number-selector-icon-size);
+  height: var(--number-selector-icon-size);
+  stroke-width: 2.5;
+}
+
+.val {
+  width: var(--number-selector-val-width);
+  text-align: center;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+}

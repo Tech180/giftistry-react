@@ -17,6 +17,7 @@ export const EmojiTemplate: React.FC<EmojiTemplateProps> = ({
   setSearchQuery,
   effectiveTheme,
   onEmojiSelect,
+  buttonClassName,
 }) => {
   const currentCategories = searchQuery.trim()
     ? undefined
@@ -27,7 +28,10 @@ export const EmojiTemplate: React.FC<EmojiTemplateProps> = ({
       <button
         type="button"
         onClick={onToggle}
-        className={`${styles['chat-tool-btn']} ${isOpen ? styles.active : ''}`}
+        className={
+          buttonClassName
+            ?? `${styles['chat-tool-btn']} ${isOpen ? styles.active : ''}`
+        }
         title="Add Emoji"
       >
         <Smile size={15} />

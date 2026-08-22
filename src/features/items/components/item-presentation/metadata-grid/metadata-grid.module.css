@@ -11,39 +11,37 @@
 .metadata-compact {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: var(--spacing-sm);
 }
 
 .metadata-chip {
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
+  align-items: center;
+  gap: var(--spacing-sm);
   max-width: 100%;
-  padding: 4px 8px;
+  padding: var(--spacing-xs) 0.625rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--surface-sunken);
   line-height: 1.2;
+  font-size: var(--font-size-xs);
 }
 
 .metadata-chip-label {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  font-size: var(--font-size-sm);
+  gap: var(--spacing-xs);
   font-weight: var(--font-weight-semibold);
   color: var(--text);
 }
 
 .metadata-chip-emoji {
   flex-shrink: 0;
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   line-height: 1;
 }
 
 .metadata-chip-value {
-  font-size: 0.6875rem;
   font-weight: var(--font-weight-medium);
   color: var(--text-muted);
   word-break: break-word;
@@ -54,11 +52,11 @@
   border-color: color-mix(in srgb, var(--primary) 20%, var(--border));
 }
 
-.metadata-chip-priority .metadata-chip-label {
+.metadata-chip-priority-label {
   color: var(--primary);
 }
 
-.metadata-chip-priority .metadata-chip-value {
+.metadata-chip-priority-value {
   color: var(--primary);
   font-weight: var(--font-weight-semibold);
 }
@@ -66,10 +64,10 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  padding: 2px 8px;
+  padding: 0.125rem var(--spacing-sm);
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
 }

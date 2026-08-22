@@ -1,10 +1,12 @@
 import React from 'react';
-import { AlertCircle, Check, Copy, Lock } from 'lucide-react';
-import { Button } from 'shared/ui';
+import { AlertCircle, Check, Copy, Link2, Lock } from 'lucide-react';
+import { Button, Switch } from 'shared/ui';
 import styles from '../../../panel.module.css';
+import fabStyles from '../../../../share-fab-panel/share-fab-panel.module.css';
 import { LinkTabTemplateProps } from './interfaces/link.interface';
 
 export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
+  variant = 'classic',
   isOwner,
   isLoading,
   isGenerating,
@@ -29,7 +31,71 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
   handleCopy,
   handleRevoke,
   handleSettings,
+  handleToggleLink,
 }) => {
+  if (variant === 'compact') {
+    if (!isOwner) {
+      return <p className={fabStyles.compactStatus}>Only the wishlist owner can manage share links.</p>;
+    }
+
+    if (isLoading) {
+      return <p className={fabStyles.compactStatus}>Checking link status...</p>;
+    }
+
+    const shareUrl = generatedToken
+      ? `${window.location.origin}/invite/list/${generatedToken}`
+      : '';
+    const linkEnabled = Boolean(activeInvite);
+
+    return (
+      <div className={fabStyles.compactRoot}>
+        {errorMsg && <p className={fabStyles.compactAlert}>{errorMsg}</p>}
+
+        <div className={fabStyles.linkCard}>
+          <div className={fabStyles.linkHeader}>
+            <div className={fabStyles.linkInfo}>
+              <div className={fabStyles.linkIconWrap}>
+                <Link2 size={16} aria-hidden />
+              </div>
+              <span className={fabStyles.linkLabel}>
+                {linkEnabled ? 'Link sharing on' : 'Link sharing off'}
+              </span>
+            </div>
+            <Switch
+              checked={linkEnabled}
+              onChange={handleToggleLink}
+              disabled={isGenerating}
+              aria-label={linkEnabled ? 'Turn off link sharing' : 'Turn on link sharing'}
+              size="sm"
+            />
+          </div>
+
+          {linkEnabled && shareUrl && (
+            <div className={fabStyles.linkUrlBox}>
+              <span className={fabStyles.linkUrlText}>{shareUrl.replace(/^https?:\/\//, '')}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                iconOnly
+                className={fabStyles.copyBtn}
+                onClick={() => void handleCopy()}
+                disabled={isGenerating}
+                aria-label={copied ? 'Copied' : 'Copy link'}
+                title={copied ? 'Copied' : 'Copy link'}
+              >
+                {copied ? <Check size={16} aria-hidden /> : <Copy size={16} aria-hidden />}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <p className={fabStyles.linkHelper}>
+          Anyone with this link can view your wishlist and mark items as purchased.
+        </p>
+      </div>
+    );
+  }
+
   if (!isOwner) {
     return <p className={styles['info-text']}>Only the wishlist owner can generate share links.</p>;
   }
@@ -60,12 +126,21 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
               <div className={styles['user-details']} style={{ overflow: 'hidden' }}>
                 <span className={styles['label']} style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Share Link</span>
                 <span className={styles['link-text']}>
-                  {generatedToken ? `${window.location.origin}/invite/list/${generatedToken}` : 'Link Active (Token hidden for security)'}
+                  {generatedToken
+                    ? `${window.location.origin}/invite/list/${generatedToken}`
+                    : 'This link was created before URLs were stored. Use Link settings to generate a new one.'}
                 </span>
               </div>
               {generatedToken && (
-                <Button variant="secondary" size="sm" onClick={handleCopy} leftIcon={<Copy size={12} />}>
-                  {copied ? 'Copied' : 'Copy'}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  iconOnly
+                  onClick={handleCopy}
+                  aria-label={copied ? 'Copied' : 'Copy link'}
+                  title={copied ? 'Copied' : 'Copy link'}
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
                 </Button>
               )}
             </div>

@@ -5,7 +5,17 @@
 }
 
 .anon-toggle-label {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 48rem) {
+  .anon-toggle-row {
+    justify-content: space-between;
+    width: 100%;
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--spacing-xs);
+  }
 }

@@ -9,8 +9,8 @@ export const AddItem: React.FC<AddItemProps> = (props) => {
   const [isFormDirty, setIsFormDirty] = useState(true);
 
   useEffect(() => {
-    setIsFormDirty(!props.editingItem);
-  }, [props.editingItem]);
+    setIsFormDirty(!props.editingItem && !props.viewingItem);
+  }, [props.editingItem, props.viewingItem]);
 
   return (
     <AddItemTemplate

@@ -1,4 +1,7 @@
-import type { FloatingAction } from './floating-action.interface';
+import type {
+  FloatingAction,
+  FloatingActionPanelHelpers,
+} from './floating-action.interface';
 
 export interface FloatingActionMenuTemplateProps {
   actions: FloatingAction[];
@@ -10,6 +13,8 @@ export interface FloatingActionMenuTemplateProps {
   toolbarHeight: number;
   panelHeight: number;
   panelWidth: number;
+  hidePanelHeader: boolean;
+  panelHelpers: FloatingActionPanelHelpers;
   setDockState: (state: 'closed' | 'toolbar' | 'panel') => void;
   onActionClick: (actionId: string) => void;
   onChildClick: (actionId: string, childId: string) => void;

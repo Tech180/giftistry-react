@@ -18,6 +18,14 @@ import { formatAudienceLabel, isPrivateItem } from '../../utils/item-audience.ut
 import { resolveLinkedItems } from '../../utils/item-links-sync.util';
 import { resolveRelatedItems } from '../../utils/item-related-sync.util';
 import { getCategoryMeta } from '../card/category-icons';
+import type { ClaimQuantityDraft } from '../../interfaces/claim-quantity-draft.interface';
+import { buildClaimMutations } from '../../utils/build-claim-mutations.util';
+import {
+  itemNeedsClaimQuantityUi,
+  resolveClaimQuantityLines,
+} from '../../utils/resolve-claim-quantity-lines.util';
+import { resolveItemQuantitySummary } from '../../utils/resolve-item-quantity.util';
+import { submitClaimDraft } from '../../utils/submit-claim-draft.util';
 import {
   buildShowcaseRelationItems,
   buildShowcaseVariationProgress,
@@ -27,16 +35,18 @@ import {
   formatShowcaseStatusLabel,
   formatShowcaseSuggestionLabel,
   resolveShowcaseHasNumericPriority,
-  resolveShowcaseVariationOptions,
 } from '../../utils/build-item-showcase-display.util';
+import { resolveCurrentUserClaimIsAnonymous } from '../../utils/resolve-current-user-claim-is-anonymous.util';
+import { resolveCanEditItem } from '../../utils/resolve-can-edit-item.util';
 
 export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   item,
   priorityLabel: _priorityLabel,
   isOwner,
-  isExpired: _isExpired,
+  isExpired = false,
   isArchived = false,
   canCollaborate,
+  isPublicGuest = false,
   allowGroupFunds,
   itemActions,
   onEdit,
@@ -46,23 +56,30 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   variant = 'card',
 }) => {
   const { user } = useAuth();
-  const claimedByCurrentUser = !!(user && item.Claims.some(c => c.UserId === user.Id));
+  const claims = item.Claims ?? [];
+  const claimedByCurrentUser = !!(user && claims.some(c => c.UserId === user.Id));
+  const canEditItem = resolveCanEditItem(item, user?.Id, isOwner, isPublicGuest);
 
   const [claimAmount, setClaimAmount] = useState('');
   const [anonymous, setAnonymous] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
-  const [showClaimForm, setShowClaimForm] = useState(false);
+  const [showClaimForm, setShowClaimFormState] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [localIsFavorite, setLocalIsFavorite] = useState(false);
 
+  const setShowClaimForm = (open: boolean) => {
+    if (open) {
+      setAnonymous(resolveCurrentUserClaimIsAnonymous(claims, user?.Id));
+    }
+    setShowClaimFormState(open);
+  };
+
   // Future: AI item reviews — disabled for now (avoid /reviews AI work).
   void aiEnabled;
 
-  // Advanced States
-  const [selectedVariation, setSelectedVariation] = useState('');
-  const [claimQty, setClaimQty] = useState(1);
   const [showDependencyModal, setShowDependencyModal] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<ClaimQuantityDraft[] | null>(null);
 
   const { text: displayDescription, metadata } = useMemo(
     () => parseItemDescription(item.Description, item.Metadata),
@@ -80,15 +97,6 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       (entry) => !userNames.has(entry.label)
     );
   }, [metadata, userDefinedEntries]);
-
-  useEffect(() => {
-    if (metadata?.MultiCount && metadata.Variations && metadata.Variations.length > 0) {
-      setSelectedVariation(metadata.Variations[0].Name);
-    } else {
-      setSelectedVariation('');
-    }
-    setClaimQty(1);
-  }, [item, metadata]);
 
   useEffect(() => {
     setLocalIsFavorite(getItemFavoriteFlag(item.Description, item.Metadata));
@@ -136,15 +144,60 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   //   };
   // }, [item.Id, canShowAi, aiEnabled, item.Links]);
 
+  const claimActorName = user
+    ? `${user.FirstName} ${user.LastName}`.trim() || user.Username
+    : null;
+
+  const hasUnclaimedLinkedItems = () => {
+    const linkedIds = metadata?.LinkedItemIds || [];
+    return (
+      linkedIds.length > 0 &&
+      wishlistItems.some((wishlistItem) => linkedIds.includes(wishlistItem.Id) && !wishlistItem.IsClaimed)
+    );
+  };
+
+  const submitQuantityDraft = async (
+    draft: ClaimQuantityDraft[],
+    includeLinked?: boolean
+  ) => {
+    const lines = resolveClaimQuantityLines(item, metadata, user?.Id);
+    const plan = buildClaimMutations({
+      itemId: item.Id,
+      lines,
+      draft,
+      claimedByName: anonymous ? null : claimActorName,
+      anonymous,
+      includeLinked,
+    });
+    await submitClaimDraft({
+      itemId: item.Id,
+      userId: user?.Id,
+      plan,
+      itemActions,
+    });
+  };
+
   const handleClaim = async (e?: React.SyntheticEvent, skipLinkedCheck = false) => {
     if (e) e.preventDefault();
 
-    const linkedIds = metadata?.LinkedItemIds || [];
-    const hasUnclaimedLinkedItems = linkedIds.length > 0 && wishlistItems.some(
-      (wi: any) => linkedIds.includes(wi.Id) && !wi.IsClaimed
-    );
+    if (pendingDraft) {
+      setClaimLoading(true);
+      try {
+        await submitQuantityDraft(pendingDraft, false);
+        setPendingDraft(null);
+        setClaimAmount('');
+        setAnonymous(false);
+        setShowClaimForm(false);
+        setShowDependencyModal(false);
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Failed to claim item');
+      } finally {
+        setClaimLoading(false);
+      }
+      return;
+    }
 
-    if (hasUnclaimedLinkedItems && !skipLinkedCheck) {
+    if (hasUnclaimedLinkedItems() && !skipLinkedCheck) {
       setShowDependencyModal(true);
       return;
     }
@@ -152,17 +205,11 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     setClaimLoading(true);
     try {
       const amount = claimAmount ? parseFloat(claimAmount) : null;
-      const finalSelection = metadata?.MultiCount ? selectedVariation : undefined;
-      const finalQuantity = metadata?.MultiCount ? claimQty : undefined;
-      const claimerName = anonymous ? null : (user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null);
-
       await itemActions.claimItem({
         itemId: item.Id,
         amount,
-        claimedByName: claimerName,
+        claimedByName: anonymous ? null : claimActorName,
         anonymous,
-        quantity: finalQuantity,
-        selection: finalSelection,
       });
       setClaimAmount('');
       setAnonymous(false);
@@ -178,21 +225,19 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     setClaimLoading(true);
     setShowDependencyModal(false);
     try {
-      const amount = claimAmount ? parseFloat(claimAmount) : null;
-      const finalSelection = metadata?.MultiCount ? selectedVariation : undefined;
-      const finalQuantity = metadata?.MultiCount ? claimQty : undefined;
-      const claimerName = anonymous ? null : (user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null);
-
-      await itemActions.claimItem({
-        itemId: item.Id,
-        amount,
-        claimedByName: claimerName,
-        anonymous,
-        quantity: finalQuantity,
-        selection: finalSelection,
-        includeLinked: true,
-      });
-
+      if (pendingDraft) {
+        await submitQuantityDraft(pendingDraft, true);
+        setPendingDraft(null);
+      } else {
+        const amount = claimAmount ? parseFloat(claimAmount) : null;
+        await itemActions.claimItem({
+          itemId: item.Id,
+          amount,
+          claimedByName: anonymous ? null : claimActorName,
+          anonymous,
+          includeLinked: true,
+        });
+      }
       setClaimAmount('');
       setAnonymous(false);
       setShowClaimForm(false);
@@ -201,6 +246,15 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     } finally {
       setClaimLoading(false);
     }
+  };
+
+  const onBeforeClaimSubmit = (draft: ClaimQuantityDraft[]) => {
+    if (hasUnclaimedLinkedItems()) {
+      setPendingDraft(draft);
+      setShowDependencyModal(true);
+      return false;
+    }
+    return true;
   };
 
   const handleUnclaim = async () => {
@@ -235,18 +289,13 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const totalClaimedAmount =
     item.TotalClaimedAmount != null
       ? item.TotalClaimedAmount
-      : item.Claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
+      : claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
 
-  const isMultiCount =
-    item.IsMultiCount != null ? item.IsMultiCount : !!(metadata && metadata.MultiCount);
-  const totalClaimedQty =
-    item.TotalClaimedQuantity != null
-      ? item.TotalClaimedQuantity
-      : item.Claims.reduce((acc, c) => acc + (c.Quantity || 1), 0);
-  const desiredQtyVal =
-    item.DesiredQuantity != null
-      ? item.DesiredQuantity
-      : (metadata && metadata.DesiredQuantity) || 1;
+  const quantitySummary = resolveItemQuantitySummary(item, metadata);
+  const canAdjustClaim = itemNeedsClaimQuantityUi(item, metadata);
+  const isMultiCount = quantitySummary.isMultiCount;
+  const totalClaimedQty = quantitySummary.claimedQuantity;
+  const desiredQtyVal = quantitySummary.desiredQuantity;
 
   const isFullyClaimed =
     item.IsFullyClaimed != null
@@ -297,10 +346,6 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     () => buildShowcaseVariationProgress(item, metadata),
     [item, metadata]
   );
-  const variationOptions = useMemo(
-    () => resolveShowcaseVariationOptions(item, metadata),
-    [item, metadata]
-  );
   const linkedRelationItems = useMemo(
     () => buildShowcaseRelationItems(linkedItems),
     [linkedItems]
@@ -314,22 +359,26 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const suggestionLabel = formatShowcaseSuggestionLabel(item.SuggestedByUsername);
   const showHeroMeta =
     showSuggestionBadge || showHiddenSuggestionBadge || !!audienceLabel || localIsFavorite;
-  const showGroupFunding = !isMultiCount && allowGroupFunds && totalExtractedPrice > 0;
+  const showGroupFunding = !canAdjustClaim && allowGroupFunds && totalExtractedPrice > 0;
   const showQuantityProgress = isMultiCount;
-  const showVariationsProgress = isMultiCount && variationProgress.length > 0;
-
-  const onClaimQtyInputChange = (raw: string) => {
-    setClaimQty(Math.max(1, parseInt(raw, 10) || 1));
-  };
+  const showVariationsProgress = variationProgress.length > 0;
 
   return (
     <ItemShowcaseTemplate
       item={item}
       isOwner={isOwner}
       canCollaborate={canCollaborate}
+      isPublicGuest={isPublicGuest}
+      canEditItem={canEditItem}
       isArchived={isArchived}
+      isExpired={isExpired}
       allowGroupFunds={allowGroupFunds}
       claimedByCurrentUser={claimedByCurrentUser}
+      canAdjustClaim={canAdjustClaim}
+      itemActions={itemActions}
+      claimUserId={user?.Id ?? null}
+      claimActorName={claimActorName}
+      onBeforeClaimSubmit={onBeforeClaimSubmit}
       claimAmount={claimAmount}
       setClaimAmount={setClaimAmount}
       anonymous={anonymous}
@@ -341,13 +390,13 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       setShowDeleteConfirm={setShowDeleteConfirm}
       deleteLoading={deleteLoading}
       localIsFavorite={localIsFavorite}
-      selectedVariation={selectedVariation}
-      setSelectedVariation={setSelectedVariation}
-      claimQty={claimQty}
-      setClaimQty={setClaimQty}
-      onClaimQtyInputChange={onClaimQtyInputChange}
       showDependencyModal={showDependencyModal}
-      setShowDependencyModal={setShowDependencyModal}
+      setShowDependencyModal={(open) => {
+        setShowDependencyModal(open);
+        if (!open) {
+          setPendingDraft(null);
+        }
+      }}
       displayDescription={displayDescription || ''}
       metadata={metadata}
       predefinedDisplayEntries={predefinedDisplayEntries}
@@ -385,7 +434,6 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       showHiddenSuggestionBadge={showHiddenSuggestionBadge}
       suggestionLabel={suggestionLabel}
       variationProgress={variationProgress}
-      variationOptions={variationOptions}
       linkedRelationItems={linkedRelationItems}
       relatedRelationItems={relatedRelationItems}
       maxContributionAmount={Math.max(0, totalExtractedPrice - totalClaimedAmount)}

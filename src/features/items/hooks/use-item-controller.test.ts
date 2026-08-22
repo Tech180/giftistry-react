@@ -188,9 +188,73 @@ describe('useItemController', () => {
       });
     });
 
+    expect(itemsApi.claimItem).toHaveBeenCalledWith(
+      existing.Id,
+      undefined,
+      'Test',
+      false,
+      undefined,
+      undefined,
+      undefined
+    );
     expect(result.current.items[0].Claims).toEqual([claim]);
     expect(result.current.items[0].IsClaimed).toBe(true);
     expect(result.current.items[0].IsFullyClaimed).toBe(true);
+  });
+
+  test('claimItem forwards quantity and selection to the API', async () => {
+    const existing = baseItem();
+    const claim: Claim = {
+      Id: 'claim-1',
+      ItemId: existing.Id,
+      UserId: 'user-1',
+      Amount: null,
+      ClaimedByName: 'Test',
+      Quantity: 3,
+      Selection: 'Red',
+    };
+    vi.mocked(itemsApi.listItems).mockResolvedValue([existing]);
+    vi.mocked(itemsApi.claimItem).mockResolvedValue({
+      Claims: claim,
+      Items: [
+        {
+          Id: existing.Id,
+          Claims: [claim],
+          IsClaimed: true,
+          IsFullyClaimed: false,
+          TotalClaimedQuantity: 3,
+          DesiredQuantity: 5,
+          IsMultiCount: true,
+        },
+      ],
+    });
+
+    const { result } = renderHook(() => useItemController());
+
+    await act(async () => {
+      await result.current.fetchItems('list-1', { silent: true });
+    });
+
+    await act(async () => {
+      await result.current.claimItem({
+        itemId: existing.Id,
+        claimedByName: 'Test',
+        anonymous: false,
+        quantity: 3,
+        selection: 'Red',
+      });
+    });
+
+    expect(itemsApi.claimItem).toHaveBeenCalledWith(
+      existing.Id,
+      undefined,
+      'Test',
+      false,
+      3,
+      'Red',
+      undefined
+    );
+    expect(result.current.items[0].TotalClaimedQuantity).toBe(3);
   });
 
   test('claimItems claims multiple items', async () => {

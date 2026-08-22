@@ -1,3 +1,4 @@
+import type { CustomPackSettings } from '../components/ai-section/components/metadata-packs/interfaces/custom-pack-settings.interface';
 import React from 'react';
 import { LocalAiModelMode } from './local-ai-model.interface';
 import type { AiDefaultPromptsView, AiSlotProvider } from './backend-settings.interface';
@@ -108,6 +109,10 @@ export interface ServerSettingsTabTemplateProps {
   intelligentConnectionStatus: AiConnectionStatus;
   intelligentConnectionMessage: string;
   onTestAiConnection: (slot: AiModelSlot) => void;
+  aiEnabledPackIds: string[];
+  onEnabledPackIdsChange: (ids: string[]) => void;
+  aiCustomPacks: CustomPackSettings[];
+  onCustomPacksChange: (packs: CustomPackSettings[]) => void;
   isLoading: boolean;
   isSaving: boolean;
   handleSave: (e: React.SubmitEvent<HTMLFormElement>) => void;

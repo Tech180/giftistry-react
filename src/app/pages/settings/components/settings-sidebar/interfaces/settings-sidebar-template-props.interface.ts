@@ -3,4 +3,7 @@ export interface SettingsSidebarTemplateProps {
   isOwner: boolean;
   activePath: string;
   onNavigate: (path: string) => void;
+  isCollapsed: boolean;
+  panelId: string;
+  onToggleCollapsed: () => void;
 }

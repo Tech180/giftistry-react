@@ -4,6 +4,13 @@
   flex-wrap: wrap;
 }
 
+.editor-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
 .actions-stack {
   display: flex;
   flex-direction: column;
@@ -16,39 +23,58 @@
 
 .actions-stack-split {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  gap: var(--spacing-xs);
-  width: fit-content;
-  margin-inline: auto;
+  width: 100%;
+  margin-inline: 0;
+  gap: var(--spacing-sm);
+}
+
+/* Owner-only edit cluster: keep pencil + trash together (not split across the footer). */
+.actions-stack-split:has(> .editor-actions:only-child) {
+  justify-content: flex-end;
+}
+
+.actions-update {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.unclaim-all-btn {
+  color: var(--error);
+  background-color: transparent;
+}
+
+.claim-action-btn.unclaim-all-btn:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--error) 10%, transparent);
+  color: var(--error);
 }
 
 @media (max-width: 900px) {
-  .actions-stack-split {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-inline: 0;
-    gap: var(--spacing-sm);
+  .actions-stack-split .claim-icon-btn {
+    flex: 0 0 2.75rem;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    height: 2.75rem;
+    min-height: 2.75rem;
+    background-color: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+    box-shadow: var(--shadow-sm, var(--shadow));
   }
 }
 
-/* Mobile: demo-like claim row — primary flexes, icon is fixed square. */
+/* Phone: full-width claim/unclaim; keep the same split as tablet. */
 @media (max-width: 48rem) {
   .actions-row,
-  .actions-stack,
-  .actions-stack-split {
+  .actions-stack {
     width: 100%;
     margin-inline: 0;
     gap: var(--spacing-sm);
-  }
-
-  .actions-stack-split {
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: stretch;
   }
 
   .actions-row {
@@ -58,7 +84,7 @@
   .claim-action-btn {
     flex: 1 1 auto;
     width: 100%;
-    min-height: 2.75rem;
+    min-height: 3.5rem;
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
   }
@@ -72,9 +98,20 @@
   }
 
   .actions-stack-split .claim-icon-btn {
-    background-color: var(--surface);
-    color: var(--text);
-    border-color: var(--border);
-    box-shadow: var(--shadow-sm, var(--shadow));
+    flex-basis: 3.5rem;
+    width: 3.5rem;
+    min-width: 3.5rem;
+    height: 3.5rem;
+    min-height: 3.5rem;
+  }
+
+  .actions-stack-split .claim-icon-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .actions-update {
+    flex-direction: column-reverse;
+    align-items: stretch;
   }
 }

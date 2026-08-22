@@ -56,6 +56,11 @@
   border-left: 4px solid var(--success);
 }
 
+.v-feed-card.is-suggestion {
+  border-color: var(--warning, #eab308);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--warning, #eab308) 45%, transparent);
+}
+
 .is-tagged {
   border-color: var(--primary);
   box-shadow: 0 0 0 1px var(--primary);
@@ -153,8 +158,8 @@
 
 .claim-form-panel {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: var(--spacing-md);
   width: 100%;
 }

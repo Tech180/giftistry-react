@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './wishlist-detail.module.css';
-import { Plus, Eye, ArrowLeft, ChevronDown, X, MessageSquare, Wand2 } from 'lucide-react';
+import { Plus, ArrowLeft, ChevronDown, X, MessageSquare, Wand2 } from 'lucide-react';
 import { SharePanel } from 'features/wishlists';
 import { ItemCard, ItemCardSkeleton, ItemShowcase, getCategoryMeta } from 'features/items';
 import { CommentSection } from 'features/comments';
@@ -27,6 +27,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   priorities,
   isOwner,
   canCollaborate,
+  canSuggest,
+  isPublicGuest = false,
   isExpired,
   isArchived,
   isAddOpen,
@@ -40,6 +42,10 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   editingItem,
   setEditingItem,
   openItemEditor,
+  viewingItem,
+  setViewingItem,
+  openItemViewer,
+  shouldOpenItemViewer,
   setEditingItemDraft,
   linkedItemIds,
   setLinkedItemIds,
@@ -71,16 +77,17 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   handleDeleteConfirm,
   saveTitle,
   saveDate,
-  toggleRevealSuggestions,
   toggleAiEnabled,
   toggleWebSearchEnabled,
   toggleManualJobBackground,
+  toggleAutoRollover,
   canUseWebSearchOnList = false,
   formatDate,
   isCommentsOpen,
   setIsCommentsOpen,
   isShareOpen,
   setIsShareOpen,
+  isMobileFab,
   isImportOpen,
   setIsImportOpen,
   importStripRef,
@@ -124,20 +131,24 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         <ErrorState
           message={wishlistError || 'This wishlist does not exist or you do not have permission to view it.'}
         />
-        <Link to="/dashboard">
+        <Link to={isPublicGuest ? '/login' : '/dashboard'}>
           <Button variant="secondary" leftIcon={<ArrowLeft size={16} />}>
-            Back to Dashboard
+            {isPublicGuest ? 'Log in' : 'Back to Dashboard'}
           </Button>
         </Link>
       </div>
     );
   }
 
+  const canAutoAdd = Boolean(canCollaborate && canShowAi && wishlist.AiEnabled);
+  const isLocked = isExpired || isArchived;
+
   const addItemWidget =
-    canCollaborate && !isExpired && !isArchived ? (
+    canSuggest ? (
       <AddItemWidget
         listId={wishlist.Id}
         isInputMode={isAutoAddOpen}
+        canAutoAdd={canAutoAdd}
         onEnterInputMode={openAutoAdd}
         onExitInputMode={closeAutoAdd}
         onManual={openAddDrawer}
@@ -148,16 +159,18 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   const emptyStateCard = (
     <Card className={styles['empty-items-card']} padding="lg">
       <p>This wishlist is currently empty.</p>
-      {canCollaborate && !isArchived && !isExpired && (
+      {canSuggest && (
         <div className={styles['empty-items-actions']}>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<Wand2 size={14} />}
-            onClick={openAutoAdd}
-          >
-            Auto Add from Link
-          </Button>
+          {canAutoAdd ? (
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<Wand2 size={14} />}
+              onClick={openAutoAdd}
+            >
+              Auto Add from Link
+            </Button>
+          ) : null}
           <Button
             variant="secondary"
             size="sm"
@@ -181,10 +194,11 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         isOwner={isOwner}
         isExpired={isExpired}
         isArchived={isArchived}
-        canCollaborate={canCollaborate && !isArchived}
+        canCollaborate={canCollaborate && !isLocked}
+        isPublicGuest={isPublicGuest}
         allowGroupFunds={wishlist.AllowGroupFunds}
         itemActions={itemActions}
-        onEdit={isArchived ? undefined : () => openItemEditor(item)}
+        onEdit={isLocked ? undefined : () => openItemEditor(item)}
         aiEnabled={wishlist.AiEnabled}
         isTaggingModeActive={
           (isAddOpen || !!editingItem)
@@ -216,25 +230,36 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           }
         }}
         viewMode={viewMode}
-        isSelected={selectedItemId === item.Id}
-        onSelect={() => setSelectedItemId(item.Id)}
+        isSelected={selectedItemId === item.Id || viewingItem?.Id === item.Id}
+        onSelect={
+          shouldOpenItemViewer ? undefined : () => setSelectedItemId(item.Id)
+        }
+        onView={
+          shouldOpenItemViewer ? () => openItemViewer(item) : undefined
+        }
         wishlistItems={displayItems}
         isLinkingContext={(isAddOpen || !!editingItem) && isLinkingModeActive}
         isRelatingContext={(isAddOpen || !!editingItem) && isRelatingModeActive}
       />
     );
 
-  const isItemFormSessionActive = isAddOpen || !!editingItem;
+  const isItemFormSessionActive = isAddOpen || !!editingItem || !!viewingItem;
   const isAssociationModeActive = isLinkingModeActive || isRelatingModeActive;
+  const isCommentTaggingActive = isTaggingModeActive || isReplyTaggingModeActive;
   const collapseDrawerWhileLinking = isAssociationModeActive && doesAddSidebarOverlayList;
+  const collapseDrawerWhileTagging =
+    isCommentsOpen && isCommentTaggingActive && doesAddSidebarOverlayList;
   const isItemDrawerVisible = isItemFormSessionActive && !collapseDrawerWhileLinking;
+  const showApplyBar =
+    (isItemFormSessionActive && isAssociationModeActive) || collapseDrawerWhileTagging;
 
   return (
     <div className={styles['app-layout']}>
-      {/* LEFT SIDEBAR: Add Item form */}
+      {(!isPublicGuest || !!viewingItem) && (
       <AddItem
         isOpen={isItemFormSessionActive}
         editingItem={editingItem}
+        viewingItem={viewingItem}
         items={items}
         linkableItems={linkableItems}
         resolvedLinkedItems={resolvedLinkedItems}
@@ -258,6 +283,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           setIsAddOpen(false);
           setEditingItem(null);
           setEditingItemDraft(null);
+          setViewingItem(null);
           setIsLinkingModeActive(false);
           setIsRelatingModeActive(false);
         }}
@@ -265,6 +291,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           setIsAddOpen(false);
           setEditingItem(null);
           setEditingItemDraft(null);
+          setViewingItem(null);
           setIsLinkingModeActive(false);
           setIsRelatingModeActive(false);
           void reloadListContent();
@@ -275,6 +302,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         listShares={listShares}
         onItemTaggedClick={handleItemTaggedClick}
       />
+      )}
 
       <EnterPanel
         animation="fade"
@@ -285,6 +313,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           items={items}
           priorities={priorities}
           isOwner={isOwner}
+          isPublicGuest={isPublicGuest}
           isExpired={isExpired}
           isArchived={isArchived}
           isDeactivating={isDeactivating}
@@ -298,19 +327,19 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           saveTitle={saveTitle}
           saveDate={saveDate}
           formatDate={formatDate}
-          toggleRevealSuggestions={toggleRevealSuggestions}
           toggleAiEnabled={toggleAiEnabled || (() => {})}
           toggleWebSearchEnabled={toggleWebSearchEnabled || (() => {})}
           toggleManualJobBackground={toggleManualJobBackground || (() => {})}
+          toggleAutoRollover={toggleAutoRollover || (() => {})}
           isCommentsOpen={isCommentsOpen}
           setIsCommentsOpen={setIsCommentsOpen}
           setIsShareOpen={setIsShareOpen}
-          canImport={canCollaborate && !isExpired && !isArchived}
+          canImport={canCollaborate && !isLocked}
           isImportOpen={isImportOpen}
           onImportToggle={() => setIsImportOpen(!isImportOpen)}
         />
 
-        {wishlist?.Id && canCollaborate && !isExpired && !isArchived ? (
+        {!isPublicGuest && wishlist?.Id && canCollaborate && !isLocked ? (
           <ImportStrip
             ref={importStripRef}
             mode="existing-list"
@@ -323,7 +352,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           />
         ) : null}
 
-        {activeJob &&
+        {!isPublicGuest && activeJob &&
         activeJob.Kind === 'wishlist-import' &&
         (activeJob.Status === 'queued' ||
           activeJob.Status === 'running' ||
@@ -444,10 +473,11 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                         isOwner={isOwner}
                         isExpired={isExpired}
                         isArchived={isArchived}
-                        canCollaborate={canCollaborate && !isArchived}
+                        canCollaborate={canCollaborate && !isLocked}
+                        isPublicGuest={isPublicGuest}
                         allowGroupFunds={wishlist.AllowGroupFunds}
                         itemActions={itemActions}
-                        onEdit={() => openItemEditor(selectedItem)}
+                        onEdit={isLocked ? undefined : () => openItemEditor(selectedItem)}
                         onClose={() => setSelectedItemId(null)}
                         wishlistItems={items}
                         aiEnabled={wishlist.AiEnabled}
@@ -458,7 +488,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                 )}
 
                 {/* View 2: Comments */}
-                {isCommentsOpen && (
+                {isCommentsOpen && !isPublicGuest && (
                   <div className={`${styles['inspector-view']} ${styles['active']}`}>
                     <div className={styles['inspector-header']}>
                       <span className={styles['inspector-title']}>
@@ -481,6 +511,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                         isOwner={isOwner}
                         isExpired={isExpired}
                         isArchived={isArchived}
+                        autoRollover={wishlist.AutoRollover === true}
                         items={displayItems}
                         onItemTaggedClick={handleItemTaggedClick}
                         isTaggingModeActive={isTaggingModeActive}
@@ -500,7 +531,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
             </div>
           </div>
         ) : (
-          /* Fallback Content Layout */
+          /* Non-grid layouts: list without inspector; Comments uses right drawer */
           <div className={styles['content-layout']}>
             <div className={styles['items-column']}>
               <ListViewControls
@@ -517,46 +548,6 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                 </div>
               ) : (
                 <>
-                  {/* Grid View Detail Preview Panel (Fallback for other viewModes if needed, but they don't use grid-preview-container) */}
-                  {(viewMode as string) === 'grid' && (
-                    selectedItem ? (
-                      <div className={styles['grid-preview-container']}>
-                        <div className={styles['grid-preview-header']}>
-                          <span className={styles['grid-preview-title']}>Item Preview</span>
-                          <button
-                            type="button"
-                            className={styles['close-preview-btn']}
-                            onClick={() => setSelectedItemId(null)}
-                          >
-                            Close
-                          </button>
-                        </div>
-                        <div className={styles['grid-preview-card-wrapper']}>
-                          <ItemShowcase
-                            key={`preview-${selectedItem.Id}`}
-                            item={selectedItem}
-                            priorityLabel={selectedItemPriorityLabel}
-                            isOwner={isOwner}
-                            isExpired={isExpired}
-                            isArchived={isArchived}
-                            canCollaborate={canCollaborate && !isArchived}
-                            allowGroupFunds={wishlist.AllowGroupFunds}
-                            itemActions={itemActions}
-                            onEdit={() => openItemEditor(selectedItem)}
-                            onClose={() => setSelectedItemId(null)}
-                            wishlistItems={items}
-                            aiEnabled={wishlist.AiEnabled}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className={styles['grid-preview-placeholder']}>
-                        <Eye size={20} className={styles['placeholder-icon']} />
-                        <span>Select an item from the gallery below to view details & claims</span>
-                      </div>
-                    )
-                  )}
-
                   {items.length > 0 ? (
                     groupedItems.length > 0 ? (
                       <div className={`${styles['groups-container']} ${styles[getLayoutClass(viewMode)]}`}>
@@ -618,8 +609,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         )}
       </EnterPanel>
 
-      {/* RIGHT SIDEBAR: Comments & Discussion */}
-      {viewMode !== 'grid' && (
+      {viewMode !== 'grid' && !isPublicGuest && (
         <Comments
           isOpen={isCommentsOpen}
           onClose={() => setIsCommentsOpen(false)}
@@ -643,11 +633,13 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           isOwner={isOwner}
           isExpired={isExpired}
           isArchived={isArchived}
+          autoRollover={wishlist.AutoRollover === true}
           handleItemTaggedClick={handleItemTaggedClick}
+          collapseDrawerWhileTagging={collapseDrawerWhileTagging}
         />
       )}
 
-      {isItemFormSessionActive && isAssociationModeActive && (
+      {showApplyBar && (
         <div className={styles['link-apply-bar']} data-testid="link-apply-bar">
           <Button
             type="button"
@@ -657,6 +649,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
             onClick={() => {
               setIsLinkingModeActive(false);
               setIsRelatingModeActive(false);
+              setIsTaggingModeActive(false);
+              setIsReplyTaggingModeActive(false);
             }}
           >
             Apply
@@ -664,6 +658,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         </div>
       )}
 
+      {!isPublicGuest && !isMobileFab && (
       <Modal
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
@@ -674,6 +669,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           isOwner={isOwner}
         />
       </Modal>
+      )}
     </div>
   );
 };

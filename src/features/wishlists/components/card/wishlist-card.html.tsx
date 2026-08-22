@@ -24,7 +24,7 @@ export const WishlistCardTemplate: React.FC<WishlistCardTemplateProps> = ({
 
   return (
     <div
-      className={`${styles.shell} ${isArchived ? styles.archived : ''} ${isSharesSidebarOpen ? styles['shell-active'] : ''}`}
+      className={`${styles.shell} ${isSharesSidebarOpen ? styles['shell-active'] : ''}`}
     >
       <Link
         to={`/wishlists/${wishlist.Id}`}

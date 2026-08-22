@@ -1,5 +1,6 @@
 import React from 'react';
 import { hasPriorityValue } from '../../../utils/item-priority.util';
+import { PriorityDisplay } from '../priority-display/priority-display.html';
 import { MetadataGridProps } from './interfaces/metadata-grid-props.interface';
 import styles from './metadata-grid.module.css';
 
@@ -20,10 +21,7 @@ export const MetadataGrid: React.FC<MetadataGridProps> = ({
     return (
       <div className={styles['metadata-compact']}>
         {showPriority && (
-          <span className={`${styles['metadata-chip']} ${styles['metadata-chip-priority']}`}>
-            <span className={styles['metadata-chip-label']}>Priority</span>
-            <span className={styles['metadata-chip-value']}>{priority}</span>
-          </span>
+          <PriorityDisplay priority={priority} variant="chip" />
         )}
         {predefinedDisplayEntries.map((entry) => (
           <span key={entry.label} className={styles['metadata-chip']}>
@@ -50,6 +48,9 @@ export const MetadataGrid: React.FC<MetadataGridProps> = ({
 
   return (
     <div className={styles['metadata-grid']}>
+      {showPriority && (
+        <PriorityDisplay priority={priority} variant="chip" />
+      )}
       {predefinedDisplayEntries.map((entry) => (
         <span key={entry.label} className={`${styles.badge} ${styles['badge-meta']}`}>
           {metadataBadgeEmoji[entry.label] ? `${metadataBadgeEmoji[entry.label]} ` : ''}

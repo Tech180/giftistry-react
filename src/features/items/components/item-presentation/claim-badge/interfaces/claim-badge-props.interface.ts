@@ -1,6 +1,5 @@
+import type { ClaimBadgeEntry } from '../../../../interfaces/claim-badge-entry.interface';
+
 export interface ClaimBadgeProps {
-  userId?: string | null;
-  displayName: string;
-  anonymous?: boolean;
-  claimedByCurrentUser?: boolean;
+  entries: ClaimBadgeEntry[];
 }

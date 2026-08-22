@@ -27,5 +27,6 @@ export * from './enter-panel/enter-panel.component';
 export * from './collapsible-strip/collapsible-strip.component';
 export * from './user-avatar/user-avatar.component';
 export * from './switch/switch.component';
+export * from './number-selector/number-selector.component';
 export * from './linked-item-squares';
 export * from './floating-action-menu/floating-action-menu.component';

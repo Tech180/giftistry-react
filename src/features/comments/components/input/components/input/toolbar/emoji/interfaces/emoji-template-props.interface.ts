@@ -12,4 +12,5 @@ export interface EmojiTemplateProps {
   setSearchQuery: (query: string) => void;
   effectiveTheme: string;
   onEmojiSelect: (emoji: string) => void;
+  buttonClassName?: string;
 }

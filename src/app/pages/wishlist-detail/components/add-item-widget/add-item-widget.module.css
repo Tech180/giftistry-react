@@ -32,6 +32,12 @@
   box-shadow: var(--shadow-md, var(--shadow));
 }
 
+.widget:not([data-auto-add='true']):not([data-input-mode='true']):hover .drawer-bar,
+.widget:not([data-auto-add='true']):not([data-input-mode='true']):focus-within .drawer-bar,
+.widget:not([data-auto-add='true']):not([data-input-mode='true'])[data-menu-open='true'] .drawer-bar{
+  width: 9.5rem;
+}
+
 .widget[data-input-mode='true'] .drawer-bar{
   width: 21.25rem;
   background: var(--input-fill, var(--surface));
@@ -323,6 +329,12 @@
   .widget:not([data-input-mode='true'])[data-menu-open='true']:focus-within .drawer-bar{
     width: 13.125rem;
     box-shadow: var(--shadow-md, var(--shadow));
+  }
+
+  .widget:not([data-auto-add='true']):not([data-input-mode='true'])[data-menu-open='true'] .drawer-bar,
+  .widget:not([data-auto-add='true']):not([data-input-mode='true'])[data-menu-open='true']:hover .drawer-bar,
+  .widget:not([data-auto-add='true']):not([data-input-mode='true'])[data-menu-open='true']:focus-within .drawer-bar{
+    width: 9.5rem;
   }
 
   .widget:not([data-input-mode='true']):hover .icon-trigger,

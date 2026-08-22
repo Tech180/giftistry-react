@@ -10,6 +10,7 @@ import { OnlineUser } from '../../interfaces/online-user.interface';
 import { ListParticipant } from '../../interfaces/list-participant.interface';
 import { convertMentionsToMarkdown } from '../../utils/comment-content.util';
 import { getCommentWsUrl } from '../../utils/comment-ws.util';
+import { appendUniqueComment } from '../../utils/append-unique-comment.util';
 import {
   COMMENT_ANON_STORAGE_KEY,
   ANONYMOUS_COMMENTER_NAME,
@@ -27,6 +28,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   isOwner,
   isExpired = false,
   isArchived = false,
+  autoRollover = false,
   items = [],
   onItemTaggedClick,
   isTaggingModeActive,
@@ -164,7 +166,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         formattedReplyContent,
         resolvedCommenterName || null,
         replyIsOwnerVisible !== undefined ? replyIsOwnerVisible : (isOwner ? true : isOwnerVisible),
-        replyIsRollover !== undefined ? replyIsRollover : isRollover,
+        autoRollover && (replyIsRollover !== undefined ? replyIsRollover : isRollover),
         parentId,
         replyImageUrl
       );
@@ -378,10 +380,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
             if (isOwner && !isExpired && data.Comment.IsOwnerVisible === false) {
               return;
             }
-            setComments(prev => {
-              if (prev.some(c => c.Id === data.Comment.Id)) return prev;
-              return [...prev, data.Comment];
-            });
+            setComments(prev => appendUniqueComment(prev, data.Comment));
           }
         } else if (data.Type === 'comment.deleted') {
           if (data.CommentId) {
@@ -500,7 +499,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         finalContent,
         commenterName.trim() || null,
         isOwner ? true : isOwnerVisible,
-        isRollover,
+        autoRollover && isRollover,
         null,
         imageUrl
       );
@@ -552,6 +551,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       setIsOwnerVisible={setIsOwnerVisible}
       isRollover={isRollover}
       setIsRollover={setIsRollover}
+      autoRollover={autoRollover}
       isSubmitLoading={isSubmitLoading}
       handleSubmit={handleSubmit}
       formatDate={formatCommentDate}

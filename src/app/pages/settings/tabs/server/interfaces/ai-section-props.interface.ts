@@ -1,5 +1,6 @@
 import { LocalAiModelMode } from './local-ai-model.interface';
 import type { AiDefaultPromptsView, AiSlotProvider } from './backend-settings.interface';
+import type { CustomPackSettings } from '../components/ai-section/components/metadata-packs/interfaces/custom-pack-settings.interface';
 import type { PromptType } from '../utils/ai-prompt-settings.util';
 
 export type AiModelSlot = 'fast' | 'intelligent';
@@ -66,4 +67,8 @@ export interface AiSectionProps {
   intelligentConnectionStatus: AiConnectionStatus;
   intelligentConnectionMessage: string;
   onTestAiConnection: (slot: AiModelSlot) => void;
+  aiEnabledPackIds: string[];
+  onEnabledPackIdsChange: (ids: string[]) => void;
+  aiCustomPacks: CustomPackSettings[];
+  onCustomPacksChange: (packs: CustomPackSettings[]) => void;
 }

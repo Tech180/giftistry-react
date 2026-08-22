@@ -132,6 +132,9 @@
   justify-content: flex-start;
   gap: var(--spacing-md);
   min-height: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
   opacity: 1;
   cursor: default;
   text-align: left;
@@ -218,14 +221,15 @@
 .hint-with-ai {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: 0;
 }
 
 .ai-icon {
   display: inline-flex;
   flex-shrink: 0;
-  width: 0.875rem;
-  height: 0.875rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-right: -0.8rem;
 }
 
 .ai-icon svg {

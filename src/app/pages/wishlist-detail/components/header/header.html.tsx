@@ -8,8 +8,6 @@ import {
   Edit2,
   Calendar,
   Users,
-  Eye,
-  EyeOff,
   Download,
   Upload,
   MessageSquare,
@@ -27,6 +25,7 @@ import styles from '../../wishlist-detail.module.css';
 export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   wishlist,
   isOwner,
+  isPublicGuest = false,
   isExpired,
   isArchived,
   isDeactivating,
@@ -40,10 +39,10 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   saveTitle,
   saveDate,
   formatDate,
-  toggleRevealSuggestions,
   toggleAiEnabled,
   toggleWebSearchEnabled,
   toggleManualJobBackground,
+  toggleAutoRollover,
   canShowAi,
   canShowWebSearch,
   isCommentsOpen,
@@ -73,7 +72,10 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   return (
     <>
       {confirmAction && (
-        <EnterPanel animation="slide-down" className={styles['confirm-banner']}>
+        <EnterPanel
+          animation="slide-down"
+          className={`${styles['confirm-banner']}${confirmAction === 'activate' || confirmAction === 'deactivate' ? ` ${styles['confirm-banner--warning']}` : ''}`}
+        >
           <span className={styles['confirm-text']}>
             {confirmAction === 'deactivate'
               ? 'Are you sure you want to deactivate and archive this wishlist?'
@@ -90,7 +92,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                     ? handleActivateConfirm
                     : handleDeleteConfirm
               }
-              className={`${styles['confirm-btn']} ${styles['yes-btn']}`}
+              className={`${styles['confirm-btn']} ${styles['yes-btn']}${confirmAction === 'activate' || confirmAction === 'deactivate' ? ` ${styles['yes-btn--warning']}` : ''}`}
             >
               Yes
             </button>
@@ -105,9 +107,15 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
       )}
 
       <div className={styles['top-row']}>
-        <Link to="/dashboard" className={styles['back-link']}>
-          <ArrowLeft size={14} aria-hidden /> Back to Dashboard
-        </Link>
+        {isPublicGuest ? (
+          <Link to="/login" className={styles['back-link']}>
+            <ArrowLeft size={14} aria-hidden /> Log in
+          </Link>
+        ) : (
+          <Link to="/dashboard" className={styles['back-link']}>
+            <ArrowLeft size={14} aria-hidden /> Back to Dashboard
+          </Link>
+        )}
       </div>
 
       <div className={styles.header}>
@@ -149,48 +157,6 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                   </button>
                 )}
               </h1>
-            )}
-            {isOwner && (
-              <div className={styles['title-actions']}>
-                {isArchived ? (
-                  <>
-                    <button
-                      type="button"
-                      className={styles['action-pill']}
-                      onClick={() => setConfirmAction('activate')}
-                      disabled={isDeactivating || isActivating || isDeleting}
-                      title="Restore Wishlist from Archive"
-                      aria-label="Restore Wishlist from Archive"
-                    >
-                      <ArchiveRestore size={16} aria-hidden />
-                      <span className={styles['action-pill-label']}>Restore</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles['action-pill']} ${styles['action-pill-danger']}`}
-                      onClick={() => setConfirmAction('delete')}
-                      disabled={isDeactivating || isActivating || isDeleting}
-                      title="Delete Wishlist and Items"
-                      aria-label="Delete Wishlist and Items"
-                    >
-                      <Trash2 size={16} aria-hidden />
-                      <span className={styles['action-pill-label']}>Delete</span>
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    className={`${styles['action-pill']} ${styles['action-pill-warning']}`}
-                    onClick={() => setConfirmAction('deactivate')}
-                    disabled={isDeactivating || isActivating || isDeleting}
-                    title="Deactivate / Archive Wishlist"
-                    aria-label="Deactivate / Archive Wishlist"
-                  >
-                    <Archive size={16} aria-hidden />
-                    <span className={styles['action-pill-label']}>Archive</span>
-                  </button>
-                )}
-              </div>
             )}
           </div>
           <div className={`${styles['meta-row']} ${styles['meta-chips']}`}>
@@ -236,35 +202,59 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                 <span>Group Funding Enabled</span>
               </div>
             )}
-            {isOwner && (
-              <button
-                type="button"
-                className={`${styles['settings-btn']} ${styles.chip}`}
-                onClick={toggleRevealSuggestions}
-                title="Toggle suggestion visibility after list expiration"
-              >
-                {wishlist.RevealSuggestions ? (
-                  <Eye size={14} aria-hidden />
-                ) : (
-                  <EyeOff size={14} aria-hidden />
-                )}
-                <span>
-                  {wishlist.RevealSuggestions
-                    ? 'Reveal after expiration'
-                    : 'Hide suggestions permanently'}
-                </span>
-              </button>
-            )}
           </div>
         </div>
 
         <div className={styles['right-container']}>
+          {isOwner && (
+            <div className={styles['archive-actions']}>
+              {isArchived ? (
+                <>
+                  <button
+                    type="button"
+                    className={styles['action-pill']}
+                    onClick={() => setConfirmAction('activate')}
+                    disabled={isDeactivating || isActivating || isDeleting}
+                    title="Restore Wishlist from Archive"
+                    aria-label="Restore Wishlist from Archive"
+                  >
+                    <ArchiveRestore size={16} aria-hidden />
+                    <span className={styles['action-pill-label']}>Restore</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles['action-pill']} ${styles['action-pill-danger']}`}
+                    onClick={() => setConfirmAction('delete')}
+                    disabled={isDeactivating || isActivating || isDeleting}
+                    title="Delete Wishlist and Items"
+                    aria-label="Delete Wishlist and Items"
+                  >
+                    <Trash2 size={16} aria-hidden />
+                    <span className={styles['action-pill-label']}>Delete</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className={`${styles['action-pill']} ${styles['action-pill-warning']}`}
+                  onClick={() => setConfirmAction('deactivate')}
+                  disabled={isDeactivating || isActivating || isDeleting}
+                  title="Deactivate / Archive Wishlist"
+                  aria-label="Deactivate / Archive Wishlist"
+                >
+                  <Archive size={16} aria-hidden />
+                  <span className={styles['action-pill-label']}>Archive</span>
+                </button>
+              )}
+            </div>
+          )}
+          {!isPublicGuest && (
           <div className={`${styles.actions} ${styles['mobile-action-bar']}`}>
             <div className={styles.headerToolbarActions}>
               {isOwner && (
                 <button
                   type="button"
-                  className={styles['action-pill']}
+                  className={`${styles['action-pill']} ${styles.mobileSharePill}`}
                   onClick={() => setIsShareOpen(true)}
                   title="Share Registry"
                   aria-label="Share Registry"
@@ -273,17 +263,19 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                   <span className={styles['action-pill-label']}>Share</span>
                 </button>
               )}
-              <button
-                type="button"
-                className={styles['action-pill']}
-                onClick={() => setIsCommentsOpen(!isCommentsOpen)}
-                title="Discussion"
-                aria-label="Discussion"
-                aria-pressed={isCommentsOpen}
-              >
-                <MessageSquare size={16} aria-hidden />
-                <span className={styles['action-pill-label']}>Discuss</span>
-              </button>
+              {!isPublicGuest && (
+                <button
+                  type="button"
+                  className={styles['action-pill']}
+                  onClick={() => setIsCommentsOpen(!isCommentsOpen)}
+                  title="Discussion"
+                  aria-label="Discussion"
+                  aria-pressed={isCommentsOpen}
+                >
+                  <MessageSquare size={16} aria-hidden />
+                  <span className={styles['action-pill-label']}>Discuss</span>
+                </button>
+              )}
               {showListSettings && (
                 <div className={styles['export-dropdown-container']} ref={listSettingsRef}>
                   <button
@@ -309,11 +301,13 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                         aiEnabled={!!wishlist.AiEnabled}
                         webSearchEnabled={!!wishlist.WebSearchEnabled}
                         manualJobBackground={wishlist.ManualJobBackground !== false}
+                        autoRollover={wishlist.AutoRollover === true}
                         canShowAi={canShowAi}
                         canShowWebSearch={canShowWebSearch}
                         onToggleAi={toggleAiEnabled}
                         onToggleWebSearch={toggleWebSearchEnabled}
                         onToggleManualJobBackground={toggleManualJobBackground}
+                        onToggleAutoRollover={toggleAutoRollover}
                       />
                     </EnterPanel>
                   )}
@@ -331,7 +325,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                   <span className={styles['action-pill-label']}>Import</span>
                 </button>
               )}
-              {wishlist && (
+              {wishlist && !isPublicGuest && (
                 <div className={styles['export-dropdown-container']} ref={exportRef} title="Export">
                   <button
                     type="button"
@@ -401,6 +395,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
               )}
             </div>
           </div>
+          )}
 
           {showOwnerBadgeRegion && (
             <div className={styles['owner-badge-container']}>

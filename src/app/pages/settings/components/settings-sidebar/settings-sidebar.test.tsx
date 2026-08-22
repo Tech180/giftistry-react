@@ -22,6 +22,9 @@ describe('SettingsSidebarTemplate Server nav', () => {
           isOwner={false}
           activePath="/settings/admin"
           onNavigate={vi.fn()}
+          isCollapsed={false}
+          panelId="settings-sidebar-panel"
+          onToggleCollapsed={vi.fn()}
         />
       </MemoryRouter>
     );
@@ -38,6 +41,9 @@ describe('SettingsSidebarTemplate Server nav', () => {
           isOwner
           activePath="/settings/admin/server"
           onNavigate={vi.fn()}
+          isCollapsed={false}
+          panelId="settings-sidebar-panel"
+          onToggleCollapsed={vi.fn()}
         />
       </MemoryRouter>
     );

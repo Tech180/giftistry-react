@@ -5,15 +5,20 @@ import { ItemViewProps } from '../../../interfaces/item-view-props.interface';
 import {
   Badges,
   ClaimBadge,
+  SuggestionBadge,
   ClaimPrompt,
   FundingWidget,
   ActionButtons,
+  ClaimForm,
   TaggingOverlay,
   TaggingSelect,
   QuantityBadge,
+  PriorityDisplay,
 } from '../../item-presentation';
-import { buildItemCardModifierClasses, getPrimaryClaimForBadge, getClaimedGrayOutClass, getUserClaimedHighlightClass, shouldShowClaimBadge } from '../shared/item-card-modifiers.util';
+import { buildItemCardModifierClasses, getClaimedGrayOutClass, getUserClaimedHighlightClass } from '../shared/item-card-modifiers.util';
 import { resolveItemQuantitySummary } from '../../../utils/resolve-item-quantity.util';
+import { resolveItemClaimBadgeState } from '../../../utils/resolve-item-claim-badge-state.util';
+import { hasPriorityValue } from '../../../utils/item-priority.util';
 import styles from './kanban-item-view.module.css';
 
 export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
@@ -23,6 +28,7 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
     canCollaborate,
     allowGroupFunds,
     isFullyClaimed,
+    isMultiCount,
     totalExtractedPrice,
     totalClaimedAmount,
     showClaimForm,
@@ -38,6 +44,10 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
     onEdit,
     claimedByCurrentUser,
     handleUnclaim,
+    canAdjustClaim = false,
+    itemActions,
+    claimUserId,
+    claimActorName,
     isTaggingModeActive,
     isTaggedSelection,
     onSelectTag,
@@ -48,13 +58,17 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
     isLinkingContext,
     isRelatingContext,
     metadata,
+    isSelected,
+    onSelect,
+    onView,
   } = props;
 
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
   const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
-  const primaryClaim = getPrimaryClaimForBadge(item.Claims);
   const primaryPrice = item.Links[0]?.ExtractedPrice;
   const showQuantity = resolveItemQuantitySummary(item, metadata).shouldDisplay;
+  const { entries: claimBadgeEntries, showClaimBadge, hasVisibleClaim } =
+    resolveItemClaimBadgeState(item.Claims, claimUserId, claimedByCurrentUser, claimActorName);
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -62,17 +76,19 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
       isFullyClaimed,
       claimedByCurrentUser,
       isOwner,
+      isSuggestion: !!item.IsSuggestion,
       isTaggedSelection,
+      isSelected,
     },
     styles
   );
-  const showClaimBadge = shouldShowClaimBadge(primaryClaim, claimedByCurrentUser);
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
-    primaryClaim != null,
+    hasVisibleClaim,
     claimedByCurrentUser,
     styles,
-    props.isArchived
+    props.isArchived,
+    isMultiCount
   );
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
@@ -80,7 +96,30 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
   );
 
   return (
-    <div className={`${styles['v-kanban-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass}`}>
+    <div
+      className={`${styles['v-kanban-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass}`}
+      onClick={
+        onSelect
+          ? (e) => {
+              const target = e.target as HTMLElement;
+              if (target.closest('button') || target.closest('a') || target.closest('input')) return;
+              onSelect();
+            }
+          : undefined
+      }
+      role={onSelect ? 'button' : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      onKeyDown={
+        onSelect
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect();
+              }
+            }
+          : undefined
+      }
+    >
       <TaggingOverlay
         isTaggingModeActive={isTaggingModeActive}
         isTaggedSelection={isTaggedSelection}
@@ -104,6 +143,9 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
           )}
           {item.Name}
         </h4>
+        {hasPriorityValue(item.Priority) && (
+          <PriorityDisplay priority={item.Priority} variant="meta" />
+        )}
       </div>
 
       <div className={styles['v-kanban-badges']}>
@@ -111,6 +153,7 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
           item={item}
           audienceLabel={audienceLabel}
           isPrivate={isPrivate}
+          showPriority={false}
         />
       </div>
 
@@ -125,45 +168,67 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
         <span>{item.Links.length} link{item.Links.length !== 1 ? 's' : ''}</span>
         {(primaryPrice != null || showClaimBadge || showQuantity) && (
           <div className={styles['v-kanban-price-row']}>
-            <QuantityBadge item={item} metadata={metadata} />
+            <QuantityBadge item={item} metadata={metadata} isOwner={isOwner} />
             {primaryPrice != null && (
               <span className={styles['v-kanban-price']}>${primaryPrice}</span>
             )}
-            {showClaimBadge && (
-              <ClaimBadge
-                userId={primaryClaim.userId}
-                displayName={primaryClaim.displayName}
-                anonymous={primaryClaim.anonymous}
+            {showClaimBadge && <ClaimBadge entries={claimBadgeEntries} />}
+            {item.IsSuggestion && (
+              <SuggestionBadge
+                userId={item.SuggestedByUserId}
+                displayName={item.SuggestedByUsername || 'Collaborator'}
               />
             )}
           </div>
         )}
       </div>
 
-      {showClaimForm ? (
+      {showClaimForm && !props.isArchived && !props.isExpired ? (
         <EnterPanel animation="dropdown" className={styles['claim-form-panel']}>
-          <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
-          <div className={styles['claim-form-actions']}>
-            <Button variant="primary" size="sm" onClick={() => handleClaim()} isLoading={claimLoading}>
-              Yes
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setShowClaimForm(false)}>
-              Cancel
-            </Button>
-          </div>
+          {itemActions ? (
+            <ClaimForm
+              item={item}
+              metadata={item.Metadata}
+              userId={claimUserId}
+              claimedByName={claimActorName ?? null}
+              itemActions={itemActions}
+              anonymous={anonymous}
+              onAnonymousChange={setAnonymous}
+              onSubmitted={() => setShowClaimForm(false)}
+              onCancel={() => setShowClaimForm(false)}
+              compact
+            />
+          ) : (
+            <>
+              <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
+              <div className={styles['claim-form-actions']}>
+                <Button variant="primary" size="sm" onClick={() => handleClaim()} isLoading={claimLoading}>
+                  Yes
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowClaimForm(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </>
+          )}
         </EnterPanel>
       ) : (
         <div className={styles['v-kanban-actions']}>
           <ActionButtons
             isOwner={isOwner}
             canCollaborate={canCollaborate}
+            isPublicGuest={props.isPublicGuest}
+            canEditItem={props.canEditItem}
             isArchived={props.isArchived}
+            isExpired={props.isExpired}
             claimedByCurrentUser={claimedByCurrentUser}
             isFullyClaimed={isFullyClaimed}
+            canAdjustClaim={canAdjustClaim}
             claimLoading={claimLoading}
             showDeleteConfirm={showDeleteConfirm}
             deleteLoading={deleteLoading}
             onEdit={onEdit}
+            onView={onView}
             onClaim={() => setShowClaimForm(true)}
             onUnclaim={handleUnclaim}
             onDeleteRequest={() => setShowDeleteConfirm(true)}

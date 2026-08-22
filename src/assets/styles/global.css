@@ -7,6 +7,7 @@
   --border: var(--theme-border);
   --surface: var(--theme-surface);
   --surface-hover: var(--theme-surface-hover);
+  --surface-sunken: var(--theme-surface-sunken, var(--surface-hover));
   --surface-glass: var(--theme-surface-glass);
   --radius: var(--theme-radius);
   --shadow: var(--theme-shadow);
@@ -35,8 +36,16 @@
   --error-border: var(--theme-error-border);
   --success: var(--theme-success);
   --success-bg: var(--theme-success-bg);
+  --success-border: var(
+    --theme-success-border,
+    color-mix(in srgb, var(--success) 30%, var(--border))
+  );
   --warning: var(--theme-warning);
   --warning-bg: var(--theme-warning-bg);
+  --warning-border: var(
+    --theme-warning-border,
+    color-mix(in srgb, var(--warning) 35%, var(--border))
+  );
 
   /* Presentation token aliases (neutral fallbacks preserve non-TTYD themes) */
   --font-family-body: var(--theme-font-body, var(--font-family-main));
@@ -147,6 +156,11 @@
   margin: 0;
   padding: 0;
   transition: background-color var(--transition-slow), border-color var(--transition-slow), color var(--transition-fast);
+}
+
+html,
+#root {
+  background-color: var(--bg, #000);
 }
 
 body {

@@ -42,3 +42,13 @@
 .tag-check-btn:hover {
   background: var(--primary-hover);
 }
+
+@media (max-width: 48rem) {
+  .tag-icon-btn,
+  .tag-check-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}

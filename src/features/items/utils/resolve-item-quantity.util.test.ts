@@ -98,7 +98,7 @@ describe('formatItemQuantityBadge', () => {
     ).toBe('×3');
   });
 
-  it('formats claimed/desired when claims exist', () => {
+  it('formats remaining ×N for guests when claims exist', () => {
     expect(
       formatItemQuantityBadge({
         isMultiCount: true,
@@ -107,6 +107,21 @@ describe('formatItemQuantityBadge', () => {
         shouldDisplay: true,
         progressPercent: 40,
       })
-    ).toBe('2/5');
+    ).toBe('×3');
+  });
+
+  it('formats ×N for owners even when claims exist', () => {
+    expect(
+      formatItemQuantityBadge(
+        {
+          isMultiCount: true,
+          desiredQuantity: 5,
+          claimedQuantity: 2,
+          shouldDisplay: true,
+          progressPercent: 40,
+        },
+        true,
+      )
+    ).toBe('×5');
   });
 });

@@ -20,7 +20,7 @@ describe('MetadataGrid', () => {
     );
 
     expect(screen.queryByText('Details')).not.toBeInTheDocument();
-    expect(screen.getByText('Priority')).toBeInTheDocument();
+    expect(screen.getByText('Priority:')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getByText('Shirt Size')).toBeInTheDocument();
     expect(screen.getByText('Small')).toBeInTheDocument();

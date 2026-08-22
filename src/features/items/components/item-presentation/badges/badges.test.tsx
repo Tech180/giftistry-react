@@ -26,7 +26,8 @@ describe('Badges', () => {
       />
     );
 
-    expect(screen.getByText('Priority 1')).toBeInTheDocument();
+    expect(screen.getByText('Priority:')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
   });
 
   it('hides priority badge when showPriority is false', () => {
@@ -39,7 +40,7 @@ describe('Badges', () => {
       />
     );
 
-    expect(screen.queryByText('Priority 1')).not.toBeInTheDocument();
+    expect(screen.queryByText('Priority:')).not.toBeInTheDocument();
   });
 
   it('shows Everyone audience with globe affordance', () => {

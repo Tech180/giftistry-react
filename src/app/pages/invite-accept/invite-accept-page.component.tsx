@@ -1,48 +1,62 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import type { FormEvent } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { notificationsApi } from 'features/notifications';
-import { Button, LoadingState, ErrorState, EnterPanel } from 'shared/ui';
-import styles from './invite-accept-page.module.css';
-
-interface InviteDetails {
-  ListId: string;
-  Role: string;
-  PasswordProtected: boolean;
-  ExpiresAt: string | null;
-}
+import { useAuth } from 'app/providers/auth-context';
+import type { PublicLinkPreview } from 'features/wishlists';
+import { normalizeGuestPreviewItem } from 'features/wishlists/utils/normalize-guest-preview-item.util';
+import { InviteAcceptPageTemplate } from './invite-accept-page.html';
 
 export default function InviteAcceptPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
-  const [inviteDetails, setInviteDetails] = useState<InviteDetails | null>(null);
   const [password, setPassword] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [listId, setListId] = useState<string | null>(null);
+  const [guestPreview, setGuestPreview] = useState<PublicLinkPreview | null>(null);
 
   useEffect(() => {
-    if (!token) {
-      setError('Invalid invite link.');
-      setIsLoading(false);
+    if (!token || isAuthLoading) {
+      if (!token) {
+        setError('Invalid invite link.');
+        setIsLoading(false);
+      }
       return;
     }
 
     const loadDetails = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const details = await notificationsApi.getInviteLinkDetails(token);
-        setInviteDetails(details);
-        
-        if (!details.PasswordProtected) {
-          // Auto-accept if not password protected
+
+        if (details.PasswordProtected) {
+          return;
+        }
+
+        if (isAuthenticated) {
           const result = await notificationsApi.acceptListInvite(token);
           if (result.ListId) {
             setListId(result.ListId);
           }
           setIsSuccess(true);
+          return;
         }
+
+        const preview = await notificationsApi.getPublicLinkPreview(token);
+        setGuestPreview({
+          ...preview,
+          Items: (preview.Items ?? []).map(normalizeGuestPreviewItem),
+          Groups: (preview.Groups ?? []).map((group) => ({
+            ...group,
+            Items: (group.Items ?? []).map(normalizeGuestPreviewItem),
+          })),
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to retrieve invite details.');
       } finally {
@@ -50,97 +64,63 @@ export default function InviteAcceptPage() {
       }
     };
 
-    loadDetails();
-  }, [token]);
+    void loadDetails();
+  }, [token, isAuthenticated, isAuthLoading]);
 
-  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!token) return;
     setIsSubmitting(true);
     setInviteError(null);
 
     try {
-      const result = await notificationsApi.acceptListInvite(token, password);
-      if (result.ListId) {
-        setListId(result.ListId);
+      if (isAuthenticated) {
+        const result = await notificationsApi.acceptListInvite(token, password);
+        if (result.ListId) {
+          setListId(result.ListId);
+        }
+        setIsSuccess(true);
+      } else {
+        const preview = await notificationsApi.postPublicLinkPreview(token, password);
+        setGuestPreview({
+          ...preview,
+          Items: (preview.Items ?? []).map(normalizeGuestPreviewItem),
+          Groups: (preview.Groups ?? []).map((group) => ({
+            ...group,
+            Items: (group.Items ?? []).map(normalizeGuestPreviewItem),
+          })),
+        });
       }
-      setIsSuccess(true);
     } catch (err) {
-      setInviteError(err instanceof Error ? err.message : 'Failed to accept invite.');
+      setInviteError(
+        err instanceof Error
+          ? err.message
+          : isAuthenticated
+            ? 'Failed to accept invite.'
+            : 'Failed to open wishlist.'
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isLoading) {
-    return <LoadingState message="Checking invite link..." fullHeight />;
-  }
-
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <ErrorState message={error} />
-        <Link to="/dashboard">
-          <Button variant="secondary">Back to Dashboard</Button>
-        </Link>
-      </div>
-    );
-  }
-
-  if (isSuccess) {
-    return (
-      <EnterPanel animation="fade" className={styles.container}>
-        <div className={styles['success-card']}>
-          <h1 className={styles.title}>Invite Accepted!</h1>
-          <p className={styles.message}>You now have access to this wishlist.</p>
-          <div className={styles.actions}>
-            {listId && (
-              <Button variant="primary" onClick={() => navigate(`/wishlists/${listId}`)}>
-                View Wishlist
-              </Button>
-            )}
-            <Button variant="secondary" onClick={() => navigate('/dashboard')}>
-              Go to Dashboard
-            </Button>
-          </div>
-        </div>
-      </EnterPanel>
-    );
-  }
-
   return (
-    <EnterPanel animation="fade" className={styles.container}>
-      <div className={styles['success-card']}>
-        <h1 className={styles.title}>Password Required</h1>
-        <p className={styles.message}>This wishlist share link is password-protected.</p>
-        
-        <form onSubmit={handleSubmit} className={styles['password-form']}>
-          <div className={styles['input-group']}>
-            <label htmlFor="invite-password" className={styles.label}>
-              Enter Link Password
-            </label>
-            <input
-              id="invite-password"
-              type="password"
-              className={styles['password-input']}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              disabled={isSubmitting}
-              required
-            />
-            {inviteError && <div className={styles['error-message']}>{inviteError}</div>}
-          </div>
-          <div className={styles.actions}>
-            <Button type="submit" variant="primary" disabled={isSubmitting || !password}>
-              {isSubmitting ? 'Accepting...' : 'Accept Invite'}
-            </Button>
-            <Button type="button" variant="secondary" onClick={() => navigate('/dashboard')} disabled={isSubmitting}>
-              Cancel
-            </Button>
-          </div>
-        </form>
-      </div>
-    </EnterPanel>
+    <InviteAcceptPageTemplate
+      isLoading={isLoading || isAuthLoading}
+      error={error}
+      inviteError={inviteError}
+      password={password}
+      setPassword={setPassword}
+      isSubmitting={isSubmitting}
+      isSuccess={isSuccess}
+      listId={listId}
+      isAuthenticated={isAuthenticated}
+      guestPreview={guestPreview}
+      handleSubmit={handleSubmit}
+      handleViewWishlist={() => {
+        if (listId) navigate(`/wishlists/${listId}`);
+      }}
+      handleGoDashboard={() => navigate(isAuthenticated ? '/dashboard' : '/login')}
+    />
   );
 }

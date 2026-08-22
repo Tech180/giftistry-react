@@ -4,6 +4,7 @@ import { ServerSettingsTabTemplate } from './server-settings-tab.html';
 import { apiClient } from 'core/api/client';
 import { systemApi } from 'features/system/api/system.api';
 import { ServerSettingsTabProps } from './interfaces/server-settings-tab-props.interface';
+import type { CustomPackSettings } from './components/ai-section/components/metadata-packs/interfaces/custom-pack-settings.interface';
 import {
   BackendSettings,
   normalizeAiSlotProvider,
@@ -17,11 +18,8 @@ import {
   writeLocalAiModelsCache,
 } from './utils/local-ai-models-cache.util';
 import { applyLocalModelsState } from './utils/local-ai-model-state.util';
-import {
-  applyAiPromptSettings,
-  getDefaultPromptForType,
-  type PromptType,
-} from './utils/ai-prompt-settings.util';
+import { applyAiPromptSettings, getDefaultPromptForType, type PromptType } from './utils/ai-prompt-settings.util';
+import { DEFAULT_AI_ENABLED_PACK_IDS } from './constants/default-ai-enabled-pack-ids.constant';
 
 export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast }) => {
   const { checkSystemStatus } = useAuth();
@@ -57,6 +55,8 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [aiPopulatePrompt, setAiPopulatePrompt] = useState('');
   const [aiCategoryPrompt, setAiCategoryPrompt] = useState('');
   const [aiImportPrompt, setAiImportPrompt] = useState('');
+  const [aiEnabledPackIds, setAiEnabledPackIds] = useState<string[]>([...DEFAULT_AI_ENABLED_PACK_IDS]);
+  const [aiCustomPacks, setAiCustomPacks] = useState<CustomPackSettings[]>([]);
   const [aiDefaultPrompts, setAiDefaultPrompts] = useState<BackendSettings['AiDefaultPrompts']>();
 
   const [oauthEnabled, setOauthEnabled] = useState(false);
@@ -208,6 +208,11 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       setAiCategoryPrompt(s.AiCategoryPrompt || '');
       setAiImportPrompt(s.AiImportPrompt || '');
     }
+
+    setAiEnabledPackIds(
+      Array.isArray(s.AiEnabledPackIds) ? s.AiEnabledPackIds : [...DEFAULT_AI_ENABLED_PACK_IDS]
+    );
+    setAiCustomPacks(Array.isArray(s.AiCustomPacks) ? s.AiCustomPacks : []);
 
     hydrateLocalSlotFromCache(fastProvider, savedFastEndpoint, savedFastModel, 'fast');
     hydrateLocalSlotFromCache(intelligentProvider, savedIntelligentEndpoint, savedIntelligentModel, 'intelligent');
@@ -498,6 +503,8 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       AiPopulatePrompt: aiEnabled ? aiPopulatePrompt : '',
       AiCategoryPrompt: aiEnabled ? aiCategoryPrompt : '',
       AiImportPrompt: aiEnabled ? aiImportPrompt : '',
+      AiEnabledPackIds: aiEnabledPackIds,
+      AiCustomPacks: aiCustomPacks,
       AllowSetup: overrides.AllowSetup ?? allowSetup,
     };
 
@@ -705,6 +712,10 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       intelligentConnectionStatus={intelligentConnectionStatus}
       intelligentConnectionMessage={intelligentConnectionMessage}
       onTestAiConnection={(slot) => { void checkLocalAiConnection(slot); }}
+      aiEnabledPackIds={aiEnabledPackIds}
+      onEnabledPackIdsChange={setAiEnabledPackIds}
+      aiCustomPacks={aiCustomPacks}
+      onCustomPacksChange={setAiCustomPacks}
       isLoading={isLoading}
       isSaving={isSaving}
       handleSave={handleSave}

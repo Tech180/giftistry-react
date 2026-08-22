@@ -13,6 +13,10 @@ vi.mock('app/providers/auth-context', () => ({
   }),
 }));
 
+vi.mock('app/providers/theme-context', () => ({
+  useTheme: () => ({ theme: 'light' }),
+}));
+
 vi.mock('../list-settings-panel/list-settings-panel.component', () => ({
   ListSettingsPanel: () => null,
 }));
@@ -52,10 +56,10 @@ const baseProps: HeaderTemplateProps = {
   saveTitle: vi.fn(async () => undefined),
   saveDate: vi.fn(async () => undefined),
   formatDate: () => '',
-  toggleRevealSuggestions: vi.fn(),
   toggleAiEnabled: vi.fn(),
   toggleWebSearchEnabled: vi.fn(),
   toggleManualJobBackground: vi.fn(),
+  toggleAutoRollover: vi.fn(),
   canShowAi: false,
   canShowWebSearch: false,
   isCommentsOpen: false,
@@ -104,5 +108,21 @@ describe('HeaderTemplate archive actions', () => {
     expect(screen.queryByLabelText('Deactivate / Archive Wishlist')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Restore Wishlist from Archive')).toBeInTheDocument();
     expect(screen.getByLabelText('Delete Wishlist and Items')).toBeInTheDocument();
+  });
+
+  test('does not show reveal after expiration chip', () => {
+    renderHeader();
+    expect(screen.queryByText('Reveal after expiration')).not.toBeInTheDocument();
+    expect(screen.queryByText('Hide suggestions permanently')).not.toBeInTheDocument();
+  });
+
+  test('public guest header hides discuss, export, and dashboard link', () => {
+    renderHeader({ isPublicGuest: true, isOwner: false, canImport: false, showOwnerBadgeRegion: true });
+    expect(screen.getByRole('link', { name: /log in/i })).toBeInTheDocument();
+    expect(screen.getByText('Owner')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /back to dashboard/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /discussion/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /export/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /share registry/i })).not.toBeInTheDocument();
   });
 });

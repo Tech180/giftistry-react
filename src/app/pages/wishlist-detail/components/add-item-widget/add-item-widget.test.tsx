@@ -15,6 +15,7 @@ describe('AddItemWidget', () => {
   const baseProps = {
     listId: 'list-1',
     isInputMode: false,
+    canAutoAdd: true,
     onEnterInputMode: vi.fn(),
     onExitInputMode: vi.fn(),
     onManual: vi.fn(),
@@ -23,6 +24,16 @@ describe('AddItemWidget', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  test('hides Auto when auto-add is disabled', () => {
+    render(<AddItemWidget {...baseProps} canAutoAdd={false} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open add options' }));
+    expect(screen.queryByRole('button', { name: 'Auto' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('form', { name: 'Auto add item from link' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Manual' }));
+    expect(baseProps.onManual).toHaveBeenCalled();
   });
 
   test('Auto enters input mode and Manual calls onManual', () => {

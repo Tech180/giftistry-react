@@ -19,7 +19,8 @@ function AppContent() {
   } = useAuth();
   const location = useLocation();
   const isSettingsPage = location.pathname.startsWith('/settings');
-  const isFullWidth = location.pathname.includes('/wishlists/');
+  const isFullWidth =
+    location.pathname.includes('/wishlists/') || location.pathname.startsWith('/invite/list/');
   const isAuthPage =
     location.pathname === '/login' ||
     location.pathname === '/register' ||

@@ -3,7 +3,7 @@ import { Item } from 'features/items';
 export interface MiniDrawerProps {
   items: Item[];
   selectedIds: string[];
-  onRemoveId: (id: string) => void;
+  onRemoveId?: (id: string) => void;
   onItemClick?: (id: string) => void;
   isActive: boolean;
   position: 'left' | 'right';

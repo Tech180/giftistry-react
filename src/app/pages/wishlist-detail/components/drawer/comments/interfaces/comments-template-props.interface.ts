@@ -19,5 +19,7 @@ export interface CommentsTemplateProps {
   isOwner: boolean;
   isExpired?: boolean;
   isArchived?: boolean;
+  autoRollover?: boolean;
   handleItemTaggedClick: (itemId: string) => void;
+  collapseDrawerWhileTagging?: boolean;
 }

@@ -1,43 +1,25 @@
 import React from 'react';
 import { ActionButtonsProps } from './interfaces/action-buttons-props.interface';
-import type {
-  ActionButtonsLayoutMode,
-  ActionButtonsSize,
-} from './interfaces/action-buttons-template-props.interface';
+import type { ActionButtonsSize } from './interfaces/action-buttons-template-props.interface';
+import { resolveActionButtonsLayoutMode } from './utils/resolve-action-buttons-layout-mode.util';
 import { ActionButtonsTemplate } from './action-buttons.html';
 import styles from './action-buttons.module.css';
-
-function resolveLayoutMode(
-  isOwner: boolean,
-  canCollaborate: boolean,
-  claimedByCurrentUser: boolean,
-  isFullyClaimed: boolean
-): ActionButtonsLayoutMode | null {
-  if (isOwner && canCollaborate) {
-    return 'owner-edit';
-  }
-  if (isOwner) {
-    return null;
-  }
-  if (claimedByCurrentUser) {
-    return 'unclaim';
-  }
-  if (isFullyClaimed) {
-    return 'claimed';
-  }
-  return 'claim';
-}
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
   isOwner,
   canCollaborate,
+  isPublicGuest = false,
+  canEditItem,
   isArchived = false,
+  isExpired = false,
   claimedByCurrentUser,
   isFullyClaimed,
+  canAdjustClaim = false,
   claimLoading,
   showDeleteConfirm,
   deleteLoading,
   onEdit,
+  onView,
   onClaim,
   onUnclaim,
   onDeleteRequest,
@@ -45,22 +27,25 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onDeleteCancel,
   compact = false,
   splitOnMobile = false,
+  unclaimDisabled = false,
 }) => {
-  if (isArchived) {
-    return null;
-  }
-
-  const layoutMode = resolveLayoutMode(
+  const layoutMode = resolveActionButtonsLayoutMode({
     isOwner,
     canCollaborate,
     claimedByCurrentUser,
-    isFullyClaimed
-  );
+    isFullyClaimed,
+    canAdjustClaim,
+    isPublicGuest,
+    canEditItem,
+    isArchived,
+    isExpired,
+  });
 
-  if (layoutMode == null) {
+  if (layoutMode == null && !onView) {
     return null;
   }
 
+  const showSuggesterEditActions = !!canEditItem && !isOwner;
   const size: ActionButtonsSize = compact ? 'sm' : 'md';
   const stackClassName = compact
     ? styles['actions-row']
@@ -79,12 +64,15 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       claimLoading={claimLoading}
       showDeleteConfirm={showDeleteConfirm}
       deleteLoading={deleteLoading}
+      showSuggesterEditActions={showSuggesterEditActions}
       onEdit={onEdit}
+      onView={onView}
       onClaim={onClaim}
       onUnclaim={onUnclaim}
       onDeleteRequest={onDeleteRequest}
       onDeleteConfirm={onDeleteConfirm}
       onDeleteCancel={onDeleteCancel}
+      unclaimDisabled={unclaimDisabled}
     />
   );
 };

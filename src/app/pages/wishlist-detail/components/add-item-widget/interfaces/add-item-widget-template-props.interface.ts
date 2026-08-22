@@ -3,6 +3,7 @@ import type { FormEvent, RefObject } from 'react';
 export interface AddItemWidgetTemplateProps {
   isInputMode: boolean;
   isMenuOpen: boolean;
+  canAutoAdd: boolean;
   url: string;
   setUrl: (value: string) => void;
   errorMsg: string | null;

@@ -4,7 +4,12 @@ import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import { ManagementProps } from './interfaces/management.interface';
 import { ShareManagementTemplate } from './management.html';
 
-export const ShareManagement: React.FC<ManagementProps> = ({ listId, isOwner }) => {
+export const ShareManagement: React.FC<ManagementProps> = ({
+  listId,
+  isOwner,
+  variant = 'classic',
+  ownerInfo,
+}) => {
   const [shares, setShares] = useState<ListShare[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +64,8 @@ export const ShareManagement: React.FC<ManagementProps> = ({ listId, isOwner }) 
 
   return (
     <ShareManagementTemplate
+      variant={variant}
+      ownerInfo={ownerInfo}
       shares={shares}
       isOwner={isOwner}
       isLoading={isLoading}

@@ -14,6 +14,8 @@ export interface WishlistDetailTemplateProps {
   priorities: Priority[];
   isOwner: boolean;
   canCollaborate: boolean;
+  canSuggest: boolean;
+  isPublicGuest?: boolean;
   isExpired: boolean;
   isArchived: boolean;
   isAddOpen: boolean;
@@ -27,6 +29,10 @@ export interface WishlistDetailTemplateProps {
   editingItem: Item | null;
   setEditingItem: (item: Item | null) => void;
   openItemEditor: (item: Item) => void;
+  viewingItem: Item | null;
+  setViewingItem: (item: Item | null) => void;
+  openItemViewer: (item: Item) => void;
+  shouldOpenItemViewer: boolean;
   setEditingItemDraft: (draft: Partial<Item> | null) => void;
   linkedItemIds: string[];
   setLinkedItemIds: (ids: string[] | ((prev: string[]) => string[])) => void;
@@ -59,16 +65,17 @@ export interface WishlistDetailTemplateProps {
   handleDeleteConfirm: () => void;
   saveTitle: (title: string) => Promise<void>;
   saveDate: (date: string) => Promise<void>;
-  toggleRevealSuggestions: () => void;
   toggleAiEnabled?: () => void;
   toggleWebSearchEnabled?: () => void;
   toggleManualJobBackground?: () => void;
+  toggleAutoRollover?: () => void;
   canUseWebSearchOnList?: boolean;
   formatDate: (dateStr: string | null) => string;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isShareOpen: boolean;
   setIsShareOpen: (open: boolean) => void;
+  isMobileFab: boolean;
   isImportOpen: boolean;
   setIsImportOpen: (open: boolean) => void;
   importStripRef: React.RefObject<ImportStripHandle | null>;

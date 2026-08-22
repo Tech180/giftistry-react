@@ -47,10 +47,14 @@ export function resolveItemQuantitySummary(
   };
 }
 
-/** Label for list badges: progress once anything is claimed, otherwise ×N. */
-export function formatItemQuantityBadge(summary: ItemQuantitySummary): string {
-  if (summary.claimedQuantity > 0) {
-    return `${summary.claimedQuantity}/${summary.desiredQuantity}`;
+/** Label for list badges: owners see desired ×N; guests see remaining ×N. */
+export function formatItemQuantityBadge(
+  summary: ItemQuantitySummary,
+  isOwner = false,
+): string {
+  if (isOwner) {
+    return `×${summary.desiredQuantity}`;
   }
-  return `×${summary.desiredQuantity}`;
+  const remaining = Math.max(0, summary.desiredQuantity - summary.claimedQuantity);
+  return `×${remaining}`;
 }

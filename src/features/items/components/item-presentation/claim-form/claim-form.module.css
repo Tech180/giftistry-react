@@ -1,0 +1,214 @@
+.claim-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+  min-width: 0;
+  background: var(--surface-sunken);
+  padding: var(--spacing-lg);
+}
+
+.claim-form-compact {
+  border: 0;
+  border-radius: 0;
+  padding: var(--spacing-md);
+  background: transparent;
+  gap: var(--spacing-base);
+}
+
+.claim-form-compact-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.claim-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--spacing-base);
+  gap: var(--spacing-md);
+}
+
+.header-count {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.drawer-total {
+  width: 2rem;
+  height: 1.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  color: var(--text);
+  background: var(--surface-hover);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.claim-drawer-title {
+  margin: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: 1rem;
+  text-align: right;
+  color: var(--text);
+}
+
+.qty-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  max-height: 15rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.qty-list::-webkit-scrollbar {
+  width: var(--spacing-xs);
+}
+
+.qty-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.qty-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+
+.qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.375rem var(--spacing-base);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.qty-row:hover {
+  background: var(--surface-hover);
+}
+
+.qty-row-active {
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.qty-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-base);
+  min-width: 0;
+}
+
+.qty-label {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--text);
+}
+
+.qty-hint {
+  width: 2rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.qty-hint-out-of-stock {
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+  border-color: color-mix(in srgb, var(--error) 20%, transparent);
+}
+
+.drawer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.action-group {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+  margin-inline-start: auto;
+}
+
+.claim-simple-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 48rem) {
+  .drawer-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-group {
+    flex-direction: column-reverse;
+  }
+
+  .drawer-action-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 2.75rem;
+  }
+
+  .claim-form-compact-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .claim-simple-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-actions {
+    margin-inline-start: 0;
+    width: 100%;
+    flex-direction: column-reverse;
+  }
+
+  .form-actions > * {
+    width: 100%;
+    justify-content: center;
+    min-height: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qty-row {
+    transition: none;
+  }
+}

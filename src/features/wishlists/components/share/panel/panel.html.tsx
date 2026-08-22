@@ -6,7 +6,6 @@ export const SharePanelTemplate: React.FC<PanelTemplateProps> = ({
   activeTab,
   setActiveTab,
   friendsTab,
-  emailTab,
   linkTab,
   manageTab,
   manageCount,
@@ -20,13 +19,6 @@ export const SharePanelTemplate: React.FC<PanelTemplateProps> = ({
           className={`${styles['tab-btn']} ${activeTab === 'friends' ? styles['tab-btn-active'] : ''}`}
         >
           Friends
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('email')}
-          className={`${styles['tab-btn']} ${activeTab === 'email' ? styles['tab-btn-active'] : ''}`}
-        >
-          Email
         </button>
         <button
           type="button"
@@ -46,7 +38,6 @@ export const SharePanelTemplate: React.FC<PanelTemplateProps> = ({
       </nav>
       <div className={styles['tab-content']}>
         {activeTab === 'friends' && friendsTab}
-        {activeTab === 'email' && emailTab}
         {activeTab === 'link' && linkTab}
         {activeTab === 'manage' && manageTab}
       </div>

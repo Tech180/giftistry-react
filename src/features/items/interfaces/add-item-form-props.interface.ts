@@ -33,5 +33,7 @@ export interface AddItemFormProps {
   listAiEnabled?: boolean;
   listManualJobBackground?: boolean;
   canUseWebSearchOnList?: boolean;
+  /** When true, form fields are non-editable (View Item drawer). */
+  readOnly?: boolean;
 }
 

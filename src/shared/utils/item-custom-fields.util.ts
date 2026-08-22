@@ -147,8 +147,8 @@ export function getUserDefinedEntries(
 ): { name: string; value: string }[] {
   const normalized = normalizeItemDescriptionMetadata(metadata);
   return Object.entries(normalized.CustomFields?.UserDefined ?? {})
-    .filter(([, value]) => value.trim())
-    .map(([name, value]) => ({ name, value }));
+    .filter(([, value]) => typeof value === 'string' && value.trim())
+    .map(([name, value]) => ({ name, value: value.trim() }));
 }
 
 export interface MetadataDisplayEntry {
@@ -170,7 +170,7 @@ export function getMetadataDisplayEntries(
   }
 
   for (const [name, value] of Object.entries(normalized.CustomFields?.UserDefined ?? {})) {
-    if (value.trim()) {
+    if (typeof value === 'string' && value.trim()) {
       entries.push({ label: name, value: value.trim() });
     }
   }

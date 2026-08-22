@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { Sparkles, Users, Archive, Upload, Plus } from 'lucide-react';
 import { useWishlistController } from 'features/wishlists';
-import { ImportDropzone, type ImportStripHandle } from 'features/items';
+import { ImportMenuPanel, type ImportStripHandle } from 'features/items';
 import { useAuth } from 'app/providers/auth-context';
 import { useRegisterPageActions } from 'app/providers/mobile-page-actions-context';
 import type { FloatingAction } from 'shared/ui';
@@ -29,6 +29,13 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
+  const handleImportStarted = useCallback((_result: { listId: string }) => {
+    void fetchWishlists({
+      bucket: tabToBucket(activeTab),
+      q: debouncedSearch || undefined,
+    });
+  }, [fetchWishlists, activeTab, debouncedSearch]);
+
   const pageActions = useMemo((): FloatingAction[] => {
     return [
       {
@@ -37,14 +44,17 @@ export default function Dashboard() {
         icon: <Upload size={18} aria-hidden />,
         panelWidth: 288,
         panelHeight: 268,
-        panelContent: ({ closeMenu }) => (
-          <ImportDropzone
-            variant="menu"
+        hidePanelHeader: true,
+        panelContent: ({ closeMenu, setPanelSize, setPanelEscapeHandler }) => (
+          <ImportMenuPanel
+            mode="create-list"
             allowAi={canShowAi}
-            onFileSelected={(file) => {
-              setIsImportOpen(true);
-              importStripRef.current?.acceptFile(file);
+            onClose={closeMenu}
+            onSizeChange={setPanelSize}
+            setPanelEscapeHandler={setPanelEscapeHandler}
+            onImported={(result) => {
               closeMenu();
+              handleImportStarted(result);
             }}
           />
         ),
@@ -56,7 +66,7 @@ export default function Dashboard() {
         onClick: () => setIsCreateOpen(true),
       },
     ];
-  }, [canShowAi]);
+  }, [canShowAi, handleImportStarted]);
 
   useRegisterPageActions(pageActions);
 
@@ -99,13 +109,6 @@ export default function Dashboard() {
 
   const handleCreateSuccess = () => {
     setIsCreateOpen(false);
-    void fetchWishlists({
-      bucket: tabToBucket(activeTab),
-      q: debouncedSearch || undefined,
-    });
-  };
-
-  const handleImportStarted = (_result: { listId: string }) => {
     void fetchWishlists({
       bucket: tabToBucket(activeTab),
       q: debouncedSearch || undefined,

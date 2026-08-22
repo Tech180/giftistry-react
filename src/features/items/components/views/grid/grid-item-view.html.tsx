@@ -1,16 +1,14 @@
 import React from 'react';
-import { Star, Link2, Layers2 } from 'lucide-react';
-import { Button, EnterPanel } from 'shared/ui';
+import { Star, Link2, Layers2, Eye } from 'lucide-react';
 import { ItemViewProps } from '../../../interfaces/item-view-props.interface';
 import {
-  Badges,
-  ClaimBadge,
   TaggingOverlay,
-  TaggingSelect,
   QuantityBadge,
+  SuggestionBadge,
 } from '../../item-presentation';
-import { buildItemCardModifierClasses, getPrimaryClaimForBadge, getClaimedGrayOutClass, getUserClaimedHighlightClass, shouldShowClaimBadge } from '../shared/item-card-modifiers.util';
+import { buildItemCardModifierClasses, getClaimedGrayOutClass, getUserClaimedHighlightClass } from '../shared/item-card-modifiers.util';
 import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
+import { resolveItemClaimBadgeState } from '../../../utils/resolve-item-claim-badge-state.util';
 import styles from './grid-item-view.module.css';
 
 export const GridItemView: React.FC<ItemViewProps> = (props) => {
@@ -18,36 +16,36 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
     item,
     isOwner,
     isFullyClaimed,
-    showClaimForm,
-    setShowClaimForm,
-    claimLoading,
-    handleClaim,
+    isMultiCount,
     isFavorite,
     toggleFavorite,
     claimedByCurrentUser,
-    handleUnclaim,
     isTaggingModeActive,
     isTaggedSelection,
     onSelectTag,
     isSelected,
     onSelect,
+    onView,
     CategoryIcon,
-    displayCategoryBadge,
-    audienceLabel,
     isPrivate,
     linkedItems,
     relatedItems,
     isLinkingContext,
     isRelatingContext,
-    allowGroupFunds,
     metadata,
+    claimUserId,
   } = props;
 
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
   const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
-  const primaryClaim = getPrimaryClaimForBadge(item.Claims);
   const primaryPrice = item.Links[0]?.ExtractedPrice;
   const primaryImageUrl = getItemPrimaryImageUrl(item);
+  const { hasVisibleClaim } = resolveItemClaimBadgeState(
+    item.Claims,
+    claimUserId,
+    claimedByCurrentUser
+  );
+  const isSelectable = typeof onSelect === 'function';
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -55,18 +53,19 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
       isFullyClaimed,
       claimedByCurrentUser,
       isOwner,
+      isSuggestion: !!item.IsSuggestion,
       isTaggedSelection,
       isSelected,
     },
     styles
   );
-  const showClaimBadge = shouldShowClaimBadge(primaryClaim, claimedByCurrentUser);
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
-    primaryClaim != null,
+    hasVisibleClaim,
     claimedByCurrentUser,
     styles,
-    props.isArchived
+    props.isArchived,
+    isMultiCount
   );
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
@@ -75,17 +74,21 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
 
   return (
     <div
-      className={`${styles['gift-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass} ${isSelected ? styles['is-selected'] : ''}`}
-      onClick={onSelect}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onSelect?.();
-        }
-      }}
-      aria-pressed={isSelected}
+      className={`${styles['gift-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass} ${isSelected ? styles['is-selected'] : ''} ${isSelectable ? styles['is-selectable'] : ''}`}
+      onClick={isSelectable ? onSelect : undefined}
+      role={isSelectable ? 'button' : undefined}
+      tabIndex={isSelectable ? 0 : undefined}
+      onKeyDown={
+        isSelectable
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect?.();
+              }
+            }
+          : undefined
+      }
+      aria-pressed={isSelectable ? isSelected : undefined}
     >
       <TaggingOverlay
         isTaggingModeActive={isTaggingModeActive}
@@ -97,20 +100,32 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
         {isFullyClaimed && (
           <span className={`${styles.badge} ${styles['badge-success']}`}>Claimed</span>
         )}
-        {!isFullyClaimed && item.Claims && item.Claims.length > 0 && (
-          <span className={`${styles.badge} ${styles['badge-success']}`}>
-            {allowGroupFunds ? 'Funded' : 'Claimed'}
-          </span>
-        )}
         {isPrivate && (
           <span className={`${styles.badge} ${styles['badge-private']}`}>Private</span>
-        )}
-        {item.IsSuggestion && (
-          <span className={`${styles.badge} ${styles['badge-suggestion']}`}>Suggestion</span>
         )}
       </div>
 
       <div className={styles['card-badges-tr']}>
+        {item.IsSuggestion && (
+          <SuggestionBadge
+            userId={item.SuggestedByUserId}
+            displayName={item.SuggestedByUsername || 'Collaborator'}
+          />
+        )}
+        {onView ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onView();
+            }}
+            className={styles['view-btn']}
+            title="View Item"
+            aria-label="View item"
+          >
+            <Eye size={14} />
+          </button>
+        ) : null}
         {isOwner ? (
           <button
             type="button"
@@ -157,7 +172,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
           {item.Name}
         </h4>
         <div className={styles['card-price-row']}>
-          <QuantityBadge item={item} metadata={metadata} />
+          <QuantityBadge item={item} metadata={metadata} isOwner={isOwner} />
           <span className={styles['card-price']}>
             {primaryPrice != null ? `$${primaryPrice}` : '—'}
           </span>

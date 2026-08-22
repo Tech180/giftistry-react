@@ -20,6 +20,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   setIsOwnerVisible,
   isRollover,
   setIsRollover,
+  autoRollover = false,
   content,
   setContent,
   commenterName,
@@ -99,6 +100,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           setIsOwnerVisible={setIsOwnerVisible}
           isRollover={isRollover}
           setIsRollover={setIsRollover}
+          autoRollover={autoRollover}
           items={items}
           isTaggingModeActive={isTaggingModeActive}
           setIsTaggingModeActive={setIsTaggingModeActive}

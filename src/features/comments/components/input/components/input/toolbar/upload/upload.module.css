@@ -21,6 +21,15 @@
   background-color: color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
+@media (max-width: 48rem) {
+  .chat-tool-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
 .hidden-file-input {
   display: none;
 }
