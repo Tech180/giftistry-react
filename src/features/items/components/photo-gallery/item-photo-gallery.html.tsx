@@ -34,7 +34,7 @@ export const ItemPhotoGalleryTemplate: React.FC<ItemPhotoGalleryTemplateProps> =
   const hasPhotos = photos.length > 0;
 
   return (
-    <div className={`section ${styles['photo-gallery']}`}>
+    <div className={styles['photo-gallery']}>
       <div className={styles['photo-header']}>
         <span className={styles.label}>Item Photos</span>
         <span className={styles['photo-count']}>{countLabel}</span>
@@ -42,7 +42,12 @@ export const ItemPhotoGalleryTemplate: React.FC<ItemPhotoGalleryTemplateProps> =
 
       <button
         type="button"
-        className={styles['main-photo-area']}
+        className={[
+          styles['main-photo-area'],
+          hasPhotos ? styles['main-photo-filled'] : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
         title={hasPhotos ? 'Main photo' : 'Click to upload main photo'}
         onClick={onMainAreaClick}
         disabled={disabled || hasPhotos}

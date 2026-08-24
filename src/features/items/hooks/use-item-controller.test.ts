@@ -388,6 +388,70 @@ describe('useItemController', () => {
     expect(result.current.items[0].IsClaimed).toBe(true);
   });
 
+  test('unclaimItem with includeLinked applies projections for multiple items', async () => {
+    const primary = baseItem({
+      Id: 'item-1',
+      IsClaimed: true,
+      Claims: [
+        {
+          Id: 'c1',
+          ItemId: 'item-1',
+          UserId: 'user-1',
+          Amount: null,
+          ClaimedByName: 'Me',
+        },
+      ],
+    });
+    const peer = baseItem({
+      Id: 'item-2',
+      Name: 'Peer',
+      IsClaimed: true,
+      Claims: [
+        {
+          Id: 'c2',
+          ItemId: 'item-2',
+          UserId: 'user-1',
+          Amount: null,
+          ClaimedByName: 'Me',
+        },
+      ],
+    });
+    vi.mocked(itemsApi.listItems).mockResolvedValue([primary, peer]);
+    vi.mocked(itemsApi.unclaimItem).mockResolvedValue({
+      Message: 'Item unclaimed successfully',
+      Items: [
+        {
+          Id: 'item-1',
+          Claims: [],
+          IsClaimed: false,
+          IsFullyClaimed: false,
+          TotalClaimedQuantity: 0,
+        },
+        {
+          Id: 'item-2',
+          Claims: [],
+          IsClaimed: false,
+          IsFullyClaimed: false,
+          TotalClaimedQuantity: 0,
+        },
+      ],
+    });
+
+    const { result } = renderHook(() => useItemController());
+
+    await act(async () => {
+      await result.current.fetchItems('list-1', { silent: true });
+    });
+
+    await act(async () => {
+      await result.current.unclaimItem('item-1', 'user-1', true);
+    });
+
+    expect(itemsApi.unclaimItem).toHaveBeenCalledWith('item-1', true);
+    expect(result.current.items.find((i) => i.Id === 'item-1')?.IsClaimed).toBe(false);
+    expect(result.current.items.find((i) => i.Id === 'item-2')?.IsClaimed).toBe(false);
+  });
+
   test('deleteItem removes the item from state', async () => {
     const existing = baseItem();
     vi.mocked(itemsApi.listItems).mockResolvedValue([existing]);

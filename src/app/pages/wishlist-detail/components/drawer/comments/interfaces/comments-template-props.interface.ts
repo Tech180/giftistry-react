@@ -20,6 +20,8 @@ export interface CommentsTemplateProps {
   isExpired?: boolean;
   isArchived?: boolean;
   autoRollover?: boolean;
-  handleItemTaggedClick: (itemId: string) => void;
+  handleItemTaggedClick: (itemId: string, returnToItemId?: string) => void;
   collapseDrawerWhileTagging?: boolean;
+  showDeletedComments: boolean;
+  onToggleShowDeletedComments: () => void;
 }

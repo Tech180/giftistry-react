@@ -1,6 +1,6 @@
 import React from 'react';
 import { Drawer, MiniDrawer } from 'shared/ui';
-import { CommentSection } from 'features/comments';
+import { CommentSection, DeletedCommentsToggle } from 'features/comments';
 import { CommentsTemplateProps } from './interfaces/comments-template-props.interface';
 
 export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
@@ -25,6 +25,8 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
   autoRollover,
   handleItemTaggedClick,
   collapseDrawerWhileTagging = false,
+  showDeletedComments,
+  onToggleShowDeletedComments,
 }) => {
   const drawerTaggingActive = isTaggingModeActive || isReplyTaggingModeActive;
   const drawerTaggedIds = isReplyTaggingModeActive ? replyTaggedItemIds : taggedItemIds;
@@ -38,6 +40,12 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
       onClose={onClose}
       mobilePresentation="sheet"
       overflowVisible={true}
+      headerExtra={
+        <DeletedCommentsToggle
+          showDeletedComments={showDeletedComments}
+          onToggle={onToggleShowDeletedComments}
+        />
+      }
       miniDrawer={
         <MiniDrawer
           items={items}
@@ -75,6 +83,7 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
         setIsReplyTaggingModeActive={setIsReplyTaggingModeActive}
         replyTaggedItemIds={replyTaggedItemIds}
         setReplyTaggedItemIds={setReplyTaggedItemIds}
+        showDeletedComments={showDeletedComments}
       />
     </Drawer>
   );

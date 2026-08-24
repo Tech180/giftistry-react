@@ -63,7 +63,7 @@ function EditorActions({
       {showDeleteConfirm ? (
         <div className={confirmClassName}>
           <Button
-            variant="primary"
+            variant="danger"
             size={size}
             onClick={onDeleteConfirm}
             isLoading={deleteLoading}
@@ -114,6 +114,7 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
   onDeleteConfirm,
   onDeleteCancel,
   unclaimDisabled,
+  hasLinkedUnclaimPeers = false,
 }) => {
   const viewAction = onView ? <ViewAction size={size} onView={onView} /> : null;
 
@@ -164,7 +165,7 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
         disabled={unclaimDisabled}
         className={styles['claim-action-btn']}
       >
-        Unclaim
+        Unclaim{hasLinkedUnclaimPeers ? ' all' : ''}
       </Button>
     );
     if (!showSuggesterEditActions && !viewAction) {
@@ -173,8 +174,8 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
     return (
       <div className={stackClassName}>
         {viewAction}
-        {claimControl}
         {editorActions}
+        {claimControl}
       </div>
     );
   }
@@ -191,8 +192,8 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
     return (
       <div className={stackClassName}>
         {viewAction}
-        {claimControl}
         {editorActions}
+        {claimControl}
       </div>
     );
   }
@@ -226,8 +227,8 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
     return (
       <div className={stackClassName}>
         {viewAction}
-        {claimControl}
         {editorActions}
+        {claimControl}
       </div>
     );
   }
@@ -249,8 +250,8 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
   return (
     <div className={stackClassName}>
       {viewAction}
-      {claimControl}
       {editorActions}
+      {claimControl}
     </div>
   );
 };

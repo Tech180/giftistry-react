@@ -8,6 +8,7 @@ export { BackgroundProcessesPanel } from './components/background-processes-pane
 export { mapJobToTimeline, buildSeedTimeline } from './utils/map-job-to-timeline.util';
 export { formatImportJobSummary } from './utils/format-import-job-summary.util';
 export { formatJobTerminalSummary } from './utils/format-job-summary.util';
+export { formatItemJobNotificationSummary } from './utils/format-item-job-notification-summary.util';
 export { claimImportJobTerminalToast } from './utils/import-job-terminal-toast.util';
 export { getEnrichingItemIds } from './utils/get-enriching-item-ids.util';
 export { waitForJob, isTerminalJobStatus } from './utils/wait-for-job.util';

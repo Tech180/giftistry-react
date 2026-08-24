@@ -396,6 +396,25 @@
   gap: var(--spacing-base);
 }
 
+.claim-prompt-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  width: 100%;
+  min-width: 0;
+}
+
+.claim-linked-tags {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  min-width: 0;
+  margin-inline-start: auto;
+}
+
 .form-group{
   display: flex;
   flex-direction: column;

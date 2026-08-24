@@ -19,3 +19,8 @@ export const ITEM_VIEW_MODE_LABELS: Record<ItemViewMode, string> = {
   kanban: 'Kanban',
   feed: 'Feed',
 };
+
+/** Kanban is only offered at the desktop drawer / ultra-wide breakpoint. */
+export const KANBAN_VIEW_MODE_MIN_WIDTH_MEDIA_QUERY = '(min-width: 75rem)';
+
+export const KANBAN_FALLBACK_VIEW_MODE: ItemViewMode = 'detailed';

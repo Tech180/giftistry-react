@@ -85,8 +85,12 @@ export function resolveClaimQuantityLines(
   if (variations.length === 0) {
     const claimedByUser = sumMatchingClaims(claims, userId, true, () => true);
     const claimedByOthers = sumMatchingClaims(claims, userId, false, () => true);
+    const capacity =
+      summary.desiredQuantity === 0
+        ? Number.MAX_SAFE_INTEGER
+        : summary.desiredQuantity;
     return [
-      toQuantityLine(null, 'Quantity', claimedByUser, claimedByOthers, summary.desiredQuantity),
+      toQuantityLine(null, 'Quantity', claimedByUser, claimedByOthers, capacity),
     ];
   }
 
@@ -106,7 +110,10 @@ export function resolveClaimQuantityLines(
   });
 
   const namedCapacity = namedLines.reduce((sum, line) => sum + line.capacity, 0);
-  const leftover = Math.max(0, summary.desiredQuantity - namedCapacity);
+  const leftover =
+    summary.desiredQuantity === 0
+      ? Number.MAX_SAFE_INTEGER
+      : Math.max(0, summary.desiredQuantity - namedCapacity);
   const matchesGeneric = (claim: Claim) => {
     const key = claimSelectionKey(claim);
     return key == null || !namedNames.has(key);

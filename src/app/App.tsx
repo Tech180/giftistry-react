@@ -3,6 +3,9 @@ import { BrowserRouter, useLocation } from 'react-router-dom';
 import { ThemeProvider } from 'app/providers/theme-provider';
 import { AuthProvider, useAuth } from 'app/providers/auth-context';
 import { ToastProvider } from 'app/providers/toast-context';
+import { UserSocketProvider } from 'app/providers/user-socket-context';
+import { NotificationsProvider } from 'app/providers/notifications-context';
+import { JobNotificationToastHost } from 'features/notifications';
 import {
   MobilePageActionsProvider,
   MobilePageActionsHost,
@@ -54,19 +57,20 @@ function AppContent() {
   );
 }
 
-import { UserSocketProvider } from 'app/providers/user-socket-context';
-
 function App() {
   return (
     <AuthProvider>
       <UserSocketProvider>
-        <ThemeProvider>
-          <ToastProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </ToastProvider>
-        </ThemeProvider>
+        <NotificationsProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              <BrowserRouter>
+                <JobNotificationToastHost />
+                <AppContent />
+              </BrowserRouter>
+            </ToastProvider>
+          </ThemeProvider>
+        </NotificationsProvider>
       </UserSocketProvider>
     </AuthProvider>
   );

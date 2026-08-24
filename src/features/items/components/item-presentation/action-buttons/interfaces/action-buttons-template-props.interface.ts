@@ -27,4 +27,5 @@ export interface ActionButtonsTemplateProps {
   onDeleteConfirm: () => void;
   onDeleteCancel: () => void;
   unclaimDisabled: boolean;
+  hasLinkedUnclaimPeers?: boolean;
 }

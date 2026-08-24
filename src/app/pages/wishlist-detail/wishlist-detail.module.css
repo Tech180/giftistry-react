@@ -35,6 +35,27 @@
   color: var(--primary);
 }
 
+.archived-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  box-sizing: border-box;
+  /* Escape .mainInner horizontal padding; must sit outside .app-layout (overflow-x: hidden). */
+  width: calc(100% + 2 * var(--spacing-lg));
+  max-width: none;
+  /* Pull up past extra mainInner top padding so the strip sits flush under the fixed nav (--spacing-2xl). */
+  margin: calc(-1 * (var(--spacing-4xl) - var(--spacing-2xl))) calc(-1 * var(--spacing-lg)) var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-bottom: 1px solid var(--warning-border, color-mix(in srgb, var(--warning) 35%, var(--border)));
+  background: var(--warning-bg, color-mix(in srgb, var(--warning) 8%, var(--surface)));
+  color: var(--warning);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .confirm-banner{
   display: flex;
   justify-content: space-between;
@@ -237,6 +258,12 @@
   background: var(--warning-bg, color-mix(in srgb, var(--warning) 8%, var(--surface)));
 }
 
+.action-pill-muted{
+  color: var(--text-muted);
+  opacity: 0.72;
+  background: var(--surface-hover);
+}
+
 .action-pill:hover{
   filter: brightness(1.05);
   transform: translateY(-2px);
@@ -286,10 +313,30 @@
   gap: var(--spacing-sm);
 }
 
-.desktopListFeatureBadges {
+.fabOwnerAvatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-full, 999px);
+  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  justify-content: center;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.fabOwnerAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fabOwnerAvatarInitials {
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text);
+  line-height: 1;
 }
 
 .content-layout{
@@ -541,10 +588,6 @@
   }
 
   .owner-badge-container:not(:has(.mobileOwnerBadge)) {
-    display: none;
-  }
-
-  .desktopListFeatureBadges:empty {
     display: none;
   }
 
@@ -1098,6 +1141,17 @@
   overflow-x: hidden;
 }
 
+.highlight-interaction-lock{
+  position: fixed;
+  inset: 0;
+  /* Above app nav (overlay+1) and mobile nav drawer (overlay+100); below toasts. */
+  z-index: calc(var(--zindex-overlay) + 150);
+  cursor: wait;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .link-apply-bar{
   position: fixed;
   left: var(--spacing-md);
@@ -1158,24 +1212,42 @@
 
 @keyframes card-pulse {
   0% {
-    box-shadow: 0 0 0 0px rgba(var(--success-rgb), 0.4);
-    transform: scale(1);
+    box-shadow:
+      inset 0 0 0 3px color-mix(in srgb, var(--primary) 75%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--primary) 55%, transparent),
+      0 0 14px 0 color-mix(in srgb, var(--primary) 40%, transparent);
   }
 
-  50%{
-    box-shadow: 0 0 0 10px rgba(var(--success-rgb), 0);
-    transform: scale(1.02);
+  70% {
+    box-shadow:
+      inset 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent),
+      0 0 0 10px color-mix(in srgb, var(--primary) 0%, transparent),
+      0 0 0 18px color-mix(in srgb, var(--primary) 0%, transparent);
   }
 
-  100%{
-    box-shadow: 0 0 0 0px rgba(var(--success-rgb), 0);
-    transform: scale(1);
+  100% {
+    box-shadow:
+      inset 0 0 0 3px color-mix(in srgb, var(--primary) 75%, transparent),
+      0 0 0 0 transparent,
+      0 0 0 0 transparent;
   }
 }
 
 .item-card-wrapper-highlighted{
-  animation: card-pulse 1.5s ease-out;
+  position: relative;
+  z-index: 50;
   border-radius: var(--radius);
+  /* Inset so L/R rings stay visible inside overflow-clipped list containers */
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+  animation: card-pulse 0.85s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item-card-wrapper-highlighted{
+    animation: none;
+    box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--primary) 55%, transparent);
+  }
 }
 
 .export-dropdown-container{
@@ -1258,6 +1330,10 @@
   .mobileSharePill {
     display: none;
   }
+
+  .hideOwnerBadgeOnMobile {
+    display: none;
+  }
 }
 
 @media (min-width: 48.0625rem) {
@@ -1315,8 +1391,23 @@
   flex-direction: column;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  /* Visible so outer pulse can paint past card edges; corners still clipped via radius on kids */
+  overflow: visible;
   background: var(--surface);
+}
+
+.items-container-compact > :first-child {
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+}
+
+.items-container-compact > :last-child {
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+.items-container-compact > :only-child {
+  border-radius: var(--radius);
 }
 
 .items-container-grid {
@@ -1664,6 +1755,13 @@
   background: var(--surface-hover);
   flex-shrink: 0;
   box-sizing: border-box;
+}
+
+.inspector-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
 }
 
 .inspector-title {

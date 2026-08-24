@@ -1,8 +1,10 @@
 export const CLAIM_FORM_PROMPT_CLAIM = 'Claim this item?';
+export const CLAIM_FORM_PROMPT_CLAIM_LINKED = 'Claim these items?';
 export const CLAIM_FORM_PROMPT_UPDATE = 'Update your claim?';
 export const CLAIM_FORM_TITLE_CLAIM = 'Select quantities';
 export const CLAIM_FORM_TITLE_UPDATE = 'Update your quantities';
 export const CLAIM_FORM_CONFIRM_CLAIM = 'Confirm Claim';
 export const CLAIM_FORM_CONFIRM_UPDATE = 'Update Claim';
 export const CLAIM_FORM_CONFIRM_FALLBACK = 'Confirm';
+export const CLAIM_FORM_CONFIRM_LINKED = 'Claim all';
 export const CLAIM_FORM_QUANTITY_LABEL = 'quantity';

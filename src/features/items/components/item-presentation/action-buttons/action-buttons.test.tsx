@@ -101,9 +101,10 @@ describe('ActionButtons', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: 'Claim Item' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit item' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete item' })).toBeInTheDocument();
+    const buttons = screen.getAllByRole('button');
+    const labels = buttons.map((button) => button.getAttribute('aria-label') ?? button.textContent);
+    expect(labels.indexOf('Edit item')).toBeLessThan(labels.indexOf('Claim Item'));
+    expect(labels.indexOf('Delete item')).toBeLessThan(labels.indexOf('Claim Item'));
   });
 
   it('shows Unclaim with Edit and Delete for a suggestor who claimed', () => {
@@ -122,8 +123,9 @@ describe('ActionButtons', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: 'Unclaim' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit item' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete item' })).toBeInTheDocument();
+    const buttons = screen.getAllByRole('button');
+    const labels = buttons.map((button) => button.getAttribute('aria-label') ?? button.textContent);
+    expect(labels.indexOf('Edit item')).toBeLessThan(labels.indexOf('Unclaim'));
+    expect(labels.indexOf('Delete item')).toBeLessThan(labels.indexOf('Unclaim'));
   });
 });

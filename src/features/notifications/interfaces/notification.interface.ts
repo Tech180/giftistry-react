@@ -7,6 +7,8 @@ export type NotificationType =
   | 'invite_accepted'
   | 'item_claimed'
   | 'comment'
+  | 'job_completed'
+  | 'job_failed'
   | 'system';
 
 export interface Notification {
@@ -27,4 +29,17 @@ export interface NotificationPreferences {
   ListShares: boolean;
   ItemClaims: boolean;
   Comments: boolean;
+  JobCompletions: boolean;
+  PushAlerts: boolean;
+}
+
+export type PushTransport = 'ntfy' | 'webpush' | 'fcm';
+
+export interface PushSubscription {
+  Id: string;
+  Platform: 'ios' | 'android';
+  Transport: PushTransport;
+  IsPrimary: boolean;
+  CreatedAt: string;
+  LastSeenAt?: string;
 }

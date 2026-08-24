@@ -21,6 +21,14 @@ import {
   resolveEditorRelatedItemIds,
 } from '../../utils/item-related-sync.util';
 import {
+  LINKED_ITEMS_MULTI_COUNT_UNSUPPORTED_MESSAGE,
+  LINKED_ITEMS_SUGGESTION_UNSUPPORTED_MESSAGE,
+} from '../../constants/linked-items-messages.constant';
+import {
+  itemSupportsLinkedItems,
+  linkGroupSupportsLinkedItems,
+} from '../../utils/item-supports-linked-items.util';
+import {
   buildLinkingAudienceContext,
   buildDraftSharedWithUsers,
   canLinkItemsByAudience,
@@ -64,6 +72,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   onDraftChange,
   wishlistItems = [],
   linkedItemIds,
+  setLinkedItemIds,
   resolvedLinkedCount,
   relatedItemIds,
   resolvedRelatedCount,
@@ -109,9 +118,42 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const [aiCategoryAlternatives, setAiCategoryAlternatives] = useState<string[]>([]);
 
   // Advanced fields (multi-count and linked items)
-  const [desiredQuantity, setDesiredQuantity] = useState<number | ''>(1);
-  const isMultiCount = typeof desiredQuantity === 'number' && desiredQuantity > 1;
+  const [desiredQuantity, setDesiredQuantityState] = useState<number | ''>(1);
+  const isUnlimitedQuantity = desiredQuantity === 0;
+  const isMultiCount =
+    typeof desiredQuantity === 'number' &&
+    (isUnlimitedQuantity || desiredQuantity > 1);
+  const isSuggestion = item?.IsSuggestion ?? !isOwner;
   const [variations, setVariations] = useState<{ name: string; quantity: number }[]>([]);
+
+  const setDesiredQuantity = useCallback(
+    (val: number | '') => {
+      const nextBlocksLinks = typeof val === 'number' && (val === 0 || val > 1);
+      if (nextBlocksLinks && linkedItemIds.length > 0) {
+        setLinkedItemIds([]);
+        setIsLinkingModeActive(false);
+        setErrorMsg(LINKED_ITEMS_MULTI_COUNT_UNSUPPORTED_MESSAGE);
+      }
+      setDesiredQuantityState(val);
+    },
+    [linkedItemIds.length, setLinkedItemIds, setIsLinkingModeActive]
+  );
+
+  const handleSetIsLinkingModeActive = useCallback(
+    (value: React.SetStateAction<boolean>) => {
+      const next = typeof value === 'function' ? value(isLinkingModeActive) : value;
+      if (next && isSuggestion) {
+        setErrorMsg(LINKED_ITEMS_SUGGESTION_UNSUPPORTED_MESSAGE);
+        return;
+      }
+      if (next && isMultiCount) {
+        setErrorMsg(LINKED_ITEMS_MULTI_COUNT_UNSUPPORTED_MESSAGE);
+        return;
+      }
+      setIsLinkingModeActive(value);
+    },
+    [isLinkingModeActive, isMultiCount, isSuggestion, setIsLinkingModeActive]
+  );
 
   const [customFields, setCustomFields] = useState<CustomFieldRow[]>([]);
   const [editingCustomFieldNameId, setEditingCustomFieldNameId] = useState<string | null>(null);
@@ -411,7 +453,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setEditingCustomFieldNameId(null);
     setDynamicValues({});
     setShowExtraFields(false);
-    setDesiredQuantity(1);
+    setDesiredQuantityState(1);
     setVariations([]);
     loadedMetadataRef.current = null;
     pendingExtractedRef.current = null;
@@ -482,9 +524,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         },
         MultiCount: isMultiCount || undefined,
         DesiredQuantity: isMultiCount ? (desiredQuantity as number) : undefined,
-        Variations: isMultiCount
-          ? variations.map((v) => ({ Name: v.name, Quantity: v.quantity }))
-          : undefined,
+        Variations:
+          typeof desiredQuantity === 'number' && desiredQuantity > 1
+            ? variations.map((v) => ({ Name: v.name, Quantity: v.quantity }))
+            : undefined,
         LinkedItemIds: linkedItemIds.length > 0 ? linkedItemIds : undefined,
         RelatedItemIds: relatedItemIds.length > 0 ? relatedItemIds : undefined,
         OtherUsersCanSee: options.isOwner ? true : otherUsersCanSee,
@@ -559,7 +602,9 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           setDynamicValues({});
         }
 
-        setDesiredQuantity(meta.DesiredQuantity || 1);
+        setDesiredQuantityState(
+          meta.DesiredQuantity != null ? meta.DesiredQuantity : 1
+        );
         setVariations(
           (meta.Variations ?? []).map((variation) => ({
             name: variation.Name,
@@ -571,7 +616,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       } else {
         setDescription(parsed.text || item.Description || '');
         setOtherUsersCanSee(true);
-        setDesiredQuantity(1);
+        setDesiredQuantityState(1);
         setVariations([]);
       }
 
@@ -669,53 +714,60 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     };
   }, [onDraftChange]);
 
-  // Trigger draft change callback for live item preview
+  // Trigger draft change callback for live item preview + linking qty gates
   useEffect(() => {
+    if (!onDraftChange) {
+      return;
+    }
+
+    if (item && loadedItemId !== item.Id) {
+      return;
+    }
+
+    const metaPayload = buildDescriptionPayload({ isOwner, isFavorite });
+    const quantityFields = {
+      DesiredQuantity: typeof desiredQuantity === 'number' ? desiredQuantity : 1,
+      IsMultiCount: isMultiCount,
+      Metadata: metaPayload,
+    };
+
     if (!item) {
-      onDraftChange?.(null);
+      onDraftChange(quantityFields);
       return;
     }
 
-    if (loadedItemId !== item.Id) {
-      return;
-    }
-
-    if (onDraftChange) {
-      const metaPayload = buildDescriptionPayload({ isOwner, isFavorite });
-
-      onDraftChange({
-        Id: item.Id,
-        Name: name.trim(),
-        Description: metaPayload?.Text ?? (description.trim() || null),
-        Metadata: metaPayload,
-        Photos: photoEntries.map((p, index) => ({
-          Id: p.id ?? p.localId,
-          Url: p.dataUrl,
-          SortOrder: index,
-        })),
-        Category: category === 'uncategorized' ? '' : category,
-        PriorityId: null,
-        Priority: priorityWeight ? parseInt(priorityWeight, 10) : null,
-        SharedWith: buildDraftSharedWithUsers(
-          visibilityMode,
-          sharedWithUserIds,
-          listShares,
-          user?.Id
-        ),
-        Links: linkUrl.trim()
-          ? [
-            {
-              Id: item.Links?.[0]?.Id || 'temp-link-id',
-              ItemId: item.Id,
-              Url: linkUrl.trim(),
-              RetailerName: websiteName.trim() || null,
-              ExtractedPrice: price.trim() ? parseFloat(price) : null,
-              ExtractedImageUrl: item.Links?.[0]?.ExtractedImageUrl || null
-            }
-          ]
-          : []
-      });
-    }
+    onDraftChange({
+      Id: item.Id,
+      Name: name.trim(),
+      Description: metaPayload?.Text ?? (description.trim() || null),
+      ...quantityFields,
+      Photos: photoEntries.map((p, index) => ({
+        Id: p.id ?? p.localId,
+        Url: p.dataUrl,
+        SortOrder: index,
+      })),
+      Category: category === 'uncategorized' ? '' : category,
+      PriorityId: null,
+      Priority: priorityWeight ? parseInt(priorityWeight, 10) : null,
+      SharedWith: buildDraftSharedWithUsers(
+        visibilityMode,
+        sharedWithUserIds,
+        listShares,
+        user?.Id
+      ),
+      Links: linkUrl.trim()
+        ? [
+          {
+            Id: item.Links?.[0]?.Id || 'temp-link-id',
+            ItemId: item.Id,
+            Url: linkUrl.trim(),
+            RetailerName: websiteName.trim() || null,
+            ExtractedPrice: price.trim() ? parseFloat(price) : null,
+            ExtractedImageUrl: item.Links?.[0]?.ExtractedImageUrl || null
+          }
+        ]
+        : []
+    });
   }, [
     name,
     description,
@@ -791,12 +843,13 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         category: category === 'uncategorized' ? undefined : category,
         priority: priorityWeight.trim() ? parseInt(priorityWeight, 10) : null,
         customFields: summarizeCustomFields,
-        variations: isMultiCount
-          ? variations.map((variation) => ({
-            Name: variation.name,
-            Quantity: variation.quantity,
-          }))
-          : undefined,
+        variations:
+          typeof desiredQuantity === 'number' && desiredQuantity > 1
+            ? variations.map((variation) => ({
+              Name: variation.name,
+              Quantity: variation.quantity,
+            }))
+            : undefined,
         desiredQuantity: typeof desiredQuantity === 'number' ? desiredQuantity : undefined,
       });
 
@@ -991,9 +1044,12 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       return;
     }
 
-    const limit = Number(desiredQuantity) || 1;
+    const limit =
+      desiredQuantity === 0
+        ? Number.POSITIVE_INFINITY
+        : Number(desiredQuantity) || 1;
     const varTotal = variations.reduce((sum, v) => sum + v.quantity, 0);
-    if (isMultiCount && varTotal > limit) {
+    if (typeof desiredQuantity === 'number' && desiredQuantity > 1 && varTotal > limit) {
       setErrorMsg('Cannot exceed the total limit.');
       return;
     }
@@ -1042,6 +1098,44 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     if (incompatibleRelated) {
       setErrorMsg(LINK_AUDIENCE_MISMATCH_MESSAGE);
       return;
+    }
+
+    if (linkedItemIds.length > 0) {
+      const draftSource: Item = {
+        ...(item ?? {
+          Id: 'draft',
+          ListId: listId,
+          PriorityId: null,
+          SuggestedByUserId: user?.Id ?? null,
+          Name: name.trim() || 'Draft',
+          Description: null,
+          IsHiddenIdea: false,
+          Category: category,
+          Links: [],
+          Claims: [],
+          IsClaimed: false,
+        }),
+        DesiredQuantity: typeof desiredQuantity === 'number' ? desiredQuantity : 1,
+        IsMultiCount: isMultiCount,
+        IsSuggestion: item?.IsSuggestion ?? !isOwner,
+      };
+      const linkedPeers = linkedItemIds
+        .map((id) => wishlistItems.find((i) => i.Id === id))
+        .filter((peer): peer is Item => !!peer);
+      if (
+        !itemSupportsLinkedItems(draftSource) ||
+        !linkGroupSupportsLinkedItems(draftSource, linkedPeers)
+      ) {
+        const isSuggestionBlock =
+          draftSource.IsSuggestion === true ||
+          linkedPeers.some((peer) => peer.IsSuggestion === true);
+        setErrorMsg(
+          isSuggestionBlock
+            ? LINKED_ITEMS_SUGGESTION_UNSUPPORTED_MESSAGE
+            : LINKED_ITEMS_MULTI_COUNT_UNSUPPORTED_MESSAGE
+        );
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -1392,6 +1486,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       claimOnCreate={claimOnCreate}
       setClaimOnCreate={setClaimOnCreate}
       isMultiCount={isMultiCount}
+      isSuggestion={isSuggestion}
       desiredQuantity={desiredQuantity}
       setDesiredQuantity={setDesiredQuantity}
       variations={variations}
@@ -1403,7 +1498,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       wishlistItems={wishlistItems}
       itemId={item?.Id}
       isLinkingModeActive={isLinkingModeActive}
-      setIsLinkingModeActive={setIsLinkingModeActive}
+      setIsLinkingModeActive={handleSetIsLinkingModeActive}
       isRelatingModeActive={isRelatingModeActive}
       setIsRelatingModeActive={setIsRelatingModeActive}
       getFriendlyCategoryLabel={getFriendlyCategoryLabel}

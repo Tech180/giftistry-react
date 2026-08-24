@@ -124,6 +124,35 @@ describe('FloatingActionMenu', () => {
     expect(screen.queryByRole('menu', { name: /page actions/i })).toBeNull();
   });
 
+  test('renders a divider after actions with separateAfter', () => {
+    const { container } = render(
+      <FloatingActionMenu
+        actions={[
+          {
+            id: 'owner',
+            label: 'View owner: Ada',
+            icon: <span>A</span>,
+            separateAfter: true,
+            onClick: vi.fn(),
+          },
+          {
+            id: 'comments',
+            label: 'Comments',
+            icon: <span>C</span>,
+            onClick: vi.fn(),
+          },
+        ]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /page actions/i }));
+    const menu = screen.getByRole('menu', { name: /page actions/i });
+    const dividers = menu.querySelectorAll('[class*="toolDivider"]');
+    expect(dividers).toHaveLength(1);
+    expect(screen.getByRole('menuitem', { name: /view owner: ada/i })).toBeInTheDocument();
+    expect(container.querySelector('[class*="toolDivider"]')).toBeTruthy();
+  });
+
   test('grows toolbar height to fit five or more actions', () => {
     const { container } = render(
       <FloatingActionMenu

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, UserPlus } from 'lucide-react';
-import { UserPreviewCard, Badge } from 'shared/ui';
+import { Badge } from 'shared/ui';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { UserAvatar } from 'shared/ui/user-avatar/user-avatar.component';
 import { UserSearchTemplateProps } from './interfaces/user-search-template-props.interface';
 import styles from './user-search.module.css';

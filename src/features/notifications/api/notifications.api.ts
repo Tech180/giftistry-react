@@ -1,18 +1,12 @@
 import { apiClient } from 'core/api/client';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import type { PublicLinkPreview } from 'features/wishlists/interfaces/public-link-preview.interface';
-import { Notification, NotificationPreferences } from '../interfaces/notification.interface';
-
-type ApiNotification = {
-  Id: string;
-  UserId: string;
-  Type: Notification['Type'];
-  Title: string;
-  Message: string;
-  ReadAt?: string | null;
-  CreatedAt: string;
-  Metadata?: Record<string, string>;
-};
+import {
+  NotificationPreferences,
+  PushSubscription,
+  PushTransport,
+} from '../interfaces/notification.interface';
+import { mapNotification, type NotificationPayload } from '../utils/map-notification.util';
 
 type ApiNotificationPreferences = {
   EmailAlerts?: boolean;
@@ -21,9 +15,30 @@ type ApiNotificationPreferences = {
   ListShares?: boolean;
   ItemClaims?: boolean;
   Comments?: boolean;
+  JobCompletions?: boolean;
+  PushAlerts?: boolean;
 };
 
-function mapPreferencesFromApi(api: ApiNotificationPreferences): NotificationPreferences {
+export type RegisterPushPayload = {
+  Platform: PushSubscription['Platform'];
+  Transport: PushTransport;
+  Endpoint?: string;
+  Keys?: {
+    P256dh?: string;
+    Auth?: string;
+  };
+  IsPrimary?: boolean;
+};
+
+export type RegisterPushResult =
+  | {
+      SubscriptionId: string;
+      Topic: string;
+      AccessToken: string;
+    }
+  | PushSubscription;
+
+export function mapPreferencesFromApi(api: ApiNotificationPreferences): NotificationPreferences {
   return {
     EmailAlerts: api.EmailAlerts ?? true,
     MarketingPromos: api.Marketing ?? false,
@@ -31,10 +46,12 @@ function mapPreferencesFromApi(api: ApiNotificationPreferences): NotificationPre
     ListShares: api.ListShares ?? true,
     ItemClaims: api.ItemClaims ?? true,
     Comments: api.Comments ?? true,
+    JobCompletions: api.JobCompletions ?? true,
+    PushAlerts: api.PushAlerts ?? true,
   };
 }
 
-function mapPreferencesToApi(preferences: Partial<NotificationPreferences>): ApiNotificationPreferences {
+export function mapPreferencesToApi(preferences: Partial<NotificationPreferences>): ApiNotificationPreferences {
   const body: ApiNotificationPreferences = {};
   if (preferences.EmailAlerts !== undefined) body.EmailAlerts = preferences.EmailAlerts;
   if (preferences.MarketingPromos !== undefined) body.Marketing = preferences.MarketingPromos;
@@ -42,25 +59,14 @@ function mapPreferencesToApi(preferences: Partial<NotificationPreferences>): Api
   if (preferences.ListShares !== undefined) body.ListShares = preferences.ListShares;
   if (preferences.ItemClaims !== undefined) body.ItemClaims = preferences.ItemClaims;
   if (preferences.Comments !== undefined) body.Comments = preferences.Comments;
+  if (preferences.JobCompletions !== undefined) body.JobCompletions = preferences.JobCompletions;
+  if (preferences.PushAlerts !== undefined) body.PushAlerts = preferences.PushAlerts;
   return body;
-}
-
-function mapNotification(notification: ApiNotification): Notification {
-  return {
-    Id: notification.Id,
-    UserId: notification.UserId,
-    Type: notification.Type,
-    Title: notification.Title,
-    Message: notification.Message ?? '',
-    IsRead: !!notification.ReadAt,
-    CreatedAt: notification.CreatedAt,
-    Metadata: notification.Metadata,
-  };
 }
 
 export const notificationsApi = {
   listNotifications: async () => {
-    const result = await apiClient.get<ApiNotification[]>('/api/notifications');
+    const result = await apiClient.get<NotificationPayload[]>('/api/notifications');
     return (result || []).map(mapNotification);
   },
 
@@ -87,6 +93,21 @@ export const notificationsApi = {
       mapPreferencesToApi(preferences),
       'Notifications'
     ).then(mapPreferencesFromApi),
+
+  registerPush: (payload: RegisterPushPayload) =>
+    apiClient.post<RegisterPushResult>('/api/notifications/push/register', payload, 'Push'),
+
+  listPushSubscriptions: () =>
+    apiClient.get<PushSubscription[]>('/api/notifications/push/subscriptions'),
+
+  deletePushSubscription: (subscriptionId: string) =>
+    apiClient.delete<Record<string, never>>(`/api/notifications/push/register/${subscriptionId}`),
+
+  setPrimaryPushSubscription: (subscriptionId: string) =>
+    apiClient.put<PushSubscription>(
+      `/api/notifications/push/register/${subscriptionId}/primary`,
+      {}
+    ),
 
   acceptListInvite: (token: string, password?: string) =>
     apiClient.post<ListShare>(

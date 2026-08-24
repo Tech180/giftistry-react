@@ -8,6 +8,7 @@ export const TagsTemplate: React.FC<TagsTemplateProps> = ({
   taggedIds,
   items,
   onItemTaggedClick,
+  appearance = 'rail',
   listRef,
   canScroll,
   canScrollUp,
@@ -17,9 +18,25 @@ export const TagsTemplate: React.FC<TagsTemplateProps> = ({
   onScrollDown,
   onListKeyDown,
 }) => {
+  const isBadges = appearance === 'badges';
+  const showScrollChrome = canScroll && !isBadges;
+  const containerClass = [
+    styles['comment-tags-container'],
+    isBadges ? styles['comment-tags-container-badges'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const listClass = [
+    styles['comment-tags-list'],
+    isBadges ? styles['comment-tags-list-badges'] : '',
+    showScrollChrome ? styles['comment-tags-list-scrollable'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className={styles['comment-tags-container']} onKeyDown={onListKeyDown}>
-      {canScroll && (
+    <div className={containerClass} onKeyDown={onListKeyDown}>
+      {showScrollChrome && (
         <button
           type="button"
           className={styles['comment-tags-scroll-btn']}
@@ -33,9 +50,9 @@ export const TagsTemplate: React.FC<TagsTemplateProps> = ({
 
       <div
         ref={listRef}
-        className={`${styles['comment-tags-list']}${canScroll ? ` ${styles['comment-tags-list-scrollable']}` : ''}`}
+        className={listClass}
         onScroll={onScroll}
-        tabIndex={canScroll ? 0 : undefined}
+        tabIndex={showScrollChrome ? 0 : undefined}
         aria-label="Tagged items"
       >
         {taggedIds.map((itemId, index) => {
@@ -51,7 +68,10 @@ export const TagsTemplate: React.FC<TagsTemplateProps> = ({
               title={`${itemName} (${stackNumber})`}
               aria-label={`${itemName}, tag ${stackNumber} of ${taggedIds.length}`}
             >
-              <Tag size={12} className={styles['comment-tag-icon']} />
+              <Tag
+                size={isBadges ? 20 : 12}
+                className={styles['comment-tag-icon']}
+              />
               <span className={styles['comment-tag-index']} aria-hidden="true">
                 {stackNumber}
               </span>
@@ -60,7 +80,7 @@ export const TagsTemplate: React.FC<TagsTemplateProps> = ({
         })}
       </div>
 
-      {canScroll && (
+      {showScrollChrome && (
         <button
           type="button"
           className={styles['comment-tags-scroll-btn']}

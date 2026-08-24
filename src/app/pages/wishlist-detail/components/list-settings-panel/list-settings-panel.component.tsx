@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+import React, { useId, type ReactNode } from 'react';
 import { Layers, RefreshCw, Search } from 'lucide-react';
 import { Switch } from 'shared/ui';
 import { AiDisabledIcon, AiSparklesIcon } from 'shared/ui/badge/icons/ai-badge-icons';
@@ -15,7 +15,97 @@ export interface ListSettingsPanelProps {
   onToggleWebSearch: () => void;
   onToggleManualJobBackground: () => void;
   onToggleAutoRollover: () => void;
+  /** When true, settings are visible but not editable (viewers / collaborators / archived). */
+  readOnly?: boolean;
 }
+
+interface SettingsRowProps {
+  label: string;
+  checked: boolean;
+  readOnly: boolean;
+  icon: ReactNode;
+  iconClassName?: string;
+  onToggle: () => void;
+  viewLabel: string;
+  editEnableLabel: string;
+  editDisableLabel: string;
+  switchEnableLabel: string;
+  switchDisableLabel: string;
+}
+
+const SettingsRow: React.FC<SettingsRowProps> = ({
+  label,
+  checked,
+  readOnly,
+  icon,
+  iconClassName,
+  onToggle,
+  viewLabel,
+  editEnableLabel,
+  editDisableLabel,
+  switchEnableLabel,
+  switchDisableLabel,
+}) => {
+  const rowClassName = [
+    styles.row,
+    checked ? styles.rowActive : '',
+    readOnly ? styles.rowReadOnly : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const meta = checked ? 'On' : 'Off';
+  const ariaLabel = readOnly
+    ? viewLabel
+    : checked
+      ? editDisableLabel
+      : editEnableLabel;
+
+  const body = (
+    <>
+      <span className={[styles.rowIcon, iconClassName].filter(Boolean).join(' ')} aria-hidden>
+        {icon}
+      </span>
+      <span className={styles.rowText}>
+        <span className={styles.rowLabel}>{label}</span>
+        <span className={styles.rowMeta}>{meta}</span>
+      </span>
+      <span
+        className={styles.switchSlot}
+        onClick={readOnly ? undefined : (event) => event.stopPropagation()}
+        onKeyDown={readOnly ? undefined : (event) => event.stopPropagation()}
+      >
+        <Switch
+          size="sm"
+          checked={checked}
+          disabled={readOnly}
+          onChange={readOnly ? () => undefined : () => onToggle()}
+          aria-label={checked ? switchDisableLabel : switchEnableLabel}
+        />
+      </span>
+    </>
+  );
+
+  if (readOnly) {
+    return (
+      <div className={rowClassName} aria-disabled="true" aria-label={ariaLabel}>
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={rowClassName}
+      onClick={onToggle}
+      aria-pressed={checked}
+      aria-label={ariaLabel}
+    >
+      {body}
+    </button>
+  );
+};
 
 export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
   aiEnabled,
@@ -28,60 +118,41 @@ export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
   onToggleWebSearch,
   onToggleManualJobBackground,
   onToggleAutoRollover,
+  readOnly = false,
 }) => {
   const aiGradientId = `list-settings-ai-${useId().replace(/:/g, '')}`;
+  const showAiRows = readOnly || canShowAi;
+  const showWebSearchRow = readOnly || canShowWebSearch;
 
   return (
-    <div className={styles.root} role="group" aria-label="List settings">
-      <button
-        type="button"
-        className={[styles.row, autoRollover ? styles.rowActive : ''].filter(Boolean).join(' ')}
-        onClick={onToggleAutoRollover}
-        aria-pressed={autoRollover}
-        aria-label={
-          autoRollover
-            ? 'Auto rollover enabled for this list. Click to disable.'
-            : 'Auto rollover disabled for this list. Click to enable.'
+    <div
+      className={[styles.root, readOnly ? styles.rootReadOnly : ''].filter(Boolean).join(' ')}
+      role="group"
+      aria-label="List settings"
+    >
+      <SettingsRow
+        label="Rollover"
+        checked={autoRollover}
+        readOnly={readOnly}
+        icon={<RefreshCw size={16} />}
+        onToggle={onToggleAutoRollover}
+        viewLabel={
+          autoRollover ? 'Auto rollover is on for this list' : 'Auto rollover is off for this list'
         }
-      >
-        <span className={styles.rowIcon} aria-hidden>
-          <RefreshCw size={16} />
-        </span>
-        <span className={styles.rowText}>
-          <span className={styles.rowLabel}>Rollover</span>
-          <span className={styles.rowMeta}>{autoRollover ? 'On' : 'Off'}</span>
-        </span>
-        <span
-          className={styles.switchSlot}
-          onClick={(event) => event.stopPropagation()}
-          onKeyDown={(event) => event.stopPropagation()}
-        >
-          <Switch
-            size="sm"
-            checked={autoRollover}
-            onChange={() => onToggleAutoRollover()}
-            aria-label={autoRollover ? 'Disable rollover' : 'Enable rollover'}
-          />
-        </span>
-      </button>
+        editEnableLabel="Auto rollover disabled for this list. Click to enable."
+        editDisableLabel="Auto rollover enabled for this list. Click to disable."
+        switchEnableLabel="Enable rollover"
+        switchDisableLabel="Disable rollover"
+      />
 
-      {canShowAi ? (
-        <button
-          type="button"
-          className={[styles.row, aiEnabled ? styles.rowActive : ''].filter(Boolean).join(' ')}
-          onClick={onToggleAi}
-          aria-pressed={aiEnabled}
-          aria-label={
-            aiEnabled
-              ? 'AI enabled for this list. Click to disable.'
-              : 'AI disabled for this list. Click to enable.'
-          }
-        >
-          <span
-            className={[styles.rowIcon, aiEnabled ? styles.rowIconAi : ''].filter(Boolean).join(' ')}
-            aria-hidden
-          >
-            {aiEnabled ? (
+      {showAiRows ? (
+        <SettingsRow
+          label="AI"
+          checked={aiEnabled}
+          readOnly={readOnly}
+          iconClassName={aiEnabled ? styles.rowIconAi : undefined}
+          icon={
+            aiEnabled ? (
               <>
                 <AiSparklesIcon gradientId={aiGradientId} />
                 <svg width="0" height="0" aria-hidden focusable="false">
@@ -96,99 +167,51 @@ export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
               </>
             ) : (
               <AiDisabledIcon />
-            )}
-          </span>
-          <span className={styles.rowText}>
-            <span className={styles.rowLabel}>AI</span>
-            <span className={styles.rowMeta}>{aiEnabled ? 'On' : 'Off'}</span>
-          </span>
-          <span
-            className={styles.switchSlot}
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={(event) => event.stopPropagation()}
-          >
-            <Switch
-              size="sm"
-              checked={aiEnabled}
-              onChange={() => onToggleAi()}
-              aria-label={aiEnabled ? 'Disable AI' : 'Enable AI'}
-            />
-          </span>
-        </button>
-      ) : null}
-
-      {canShowWebSearch ? (
-        <button
-          type="button"
-          className={[styles.row, webSearchEnabled ? styles.rowActive : '']
-            .filter(Boolean)
-            .join(' ')}
-          onClick={onToggleWebSearch}
-          aria-pressed={webSearchEnabled}
-          aria-label={
-            webSearchEnabled
-              ? 'Web search enabled for this list. Click to disable.'
-              : 'Web search disabled for this list. Click to enable.'
+            )
           }
-        >
-          <span className={styles.rowIcon} aria-hidden>
-            <Search size={16} />
-          </span>
-          <span className={styles.rowText}>
-            <span className={styles.rowLabel}>Web search</span>
-            <span className={styles.rowMeta}>{webSearchEnabled ? 'On' : 'Off'}</span>
-          </span>
-          <span
-            className={styles.switchSlot}
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={(event) => event.stopPropagation()}
-          >
-            <Switch
-              size="sm"
-              checked={webSearchEnabled}
-              onChange={() => onToggleWebSearch()}
-              aria-label={webSearchEnabled ? 'Disable web search' : 'Enable web search'}
-            />
-          </span>
-        </button>
+          onToggle={onToggleAi}
+          viewLabel={aiEnabled ? 'AI is on for this list' : 'AI is off for this list'}
+          editEnableLabel="AI disabled for this list. Click to enable."
+          editDisableLabel="AI enabled for this list. Click to disable."
+          switchEnableLabel="Enable AI"
+          switchDisableLabel="Disable AI"
+        />
       ) : null}
 
-      {canShowAi ? (
-        <button
-          type="button"
-          className={[styles.row, manualJobBackground ? styles.rowActive : '']
-            .filter(Boolean)
-            .join(' ')}
-          onClick={onToggleManualJobBackground}
-          aria-pressed={manualJobBackground}
-          aria-label={
+      {showWebSearchRow ? (
+        <SettingsRow
+          label="Web search"
+          checked={webSearchEnabled}
+          readOnly={readOnly}
+          icon={<Search size={16} />}
+          onToggle={onToggleWebSearch}
+          viewLabel={
+            webSearchEnabled ? 'Web search is on for this list' : 'Web search is off for this list'
+          }
+          editEnableLabel="Web search disabled for this list. Click to enable."
+          editDisableLabel="Web search enabled for this list. Click to disable."
+          switchEnableLabel="Enable web search"
+          switchDisableLabel="Disable web search"
+        />
+      ) : null}
+
+      {showAiRows ? (
+        <SettingsRow
+          label="Background enrich"
+          checked={manualJobBackground}
+          readOnly={readOnly}
+          icon={<Layers size={16} />}
+          onToggle={onToggleManualJobBackground}
+          viewLabel={
             manualJobBackground
-              ? 'Background enrich enabled for this list. Click to disable.'
-              : 'Background enrich disabled for this list. Click to enable.'
+              ? 'Background enrich is on for this list'
+              : 'Background enrich is off for this list'
           }
-        >
-          <span className={styles.rowIcon} aria-hidden>
-            <Layers size={16} />
-          </span>
-          <span className={styles.rowText}>
-            <span className={styles.rowLabel}>Background enrich</span>
-            <span className={styles.rowMeta}>{manualJobBackground ? 'On' : 'Off'}</span>
-          </span>
-          <span
-            className={styles.switchSlot}
-            onClick={(event) => event.stopPropagation()}
-            onKeyDown={(event) => event.stopPropagation()}
-          >
-            <Switch
-              size="sm"
-              checked={manualJobBackground}
-              onChange={() => onToggleManualJobBackground()}
-              aria-label={
-                manualJobBackground ? 'Disable background enrich' : 'Enable background enrich'
-              }
-            />
-          </span>
-        </button>
+          editEnableLabel="Background enrich disabled for this list. Click to enable."
+          editDisableLabel="Background enrich enabled for this list. Click to disable."
+          switchEnableLabel="Enable background enrich"
+          switchDisableLabel="Disable background enrich"
+        />
       ) : null}
     </div>
   );

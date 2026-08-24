@@ -76,6 +76,7 @@ export interface AddItemFormTemplateProps {
   claimOnCreate: boolean;
   setClaimOnCreate: (val: boolean) => void;
   isMultiCount: boolean;
+  isSuggestion: boolean;
   desiredQuantity: number | '';
   setDesiredQuantity: (val: number | '') => void;
   variations: { name: string; quantity: number }[];

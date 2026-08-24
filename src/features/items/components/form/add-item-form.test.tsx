@@ -50,6 +50,7 @@ const baseFormProps = {
   onSuccess: vi.fn(),
   existingCategories: [],
   linkedItemIds: [] as string[],
+  setLinkedItemIds: vi.fn(),
   resolvedLinkedCount: 0,
   relatedItemIds: [] as string[],
   resolvedRelatedCount: 0,
@@ -159,6 +160,7 @@ describe('AddItemForm - Dynamic Fields & Dependencies', () => {
         onSuccess={() => {}}
         existingCategories={[]}
         linkedItemIds={[]}
+        setLinkedItemIds={() => {}}
         resolvedLinkedCount={0}
         relatedItemIds={[]}
         resolvedRelatedCount={0}
@@ -428,6 +430,20 @@ describe('AddItemForm - Auto populate', () => {
 
   test('starts an update-item enrich job and notifies the parent when editing', async () => {
     const onItemEnriched = vi.fn();
+    mockEnrichJob({
+      ItemId: 'item-1',
+      Title: 'Cool Hoodie',
+      Price: 59.99,
+      Description: 'Soft fleece',
+      Category: 'clothing',
+      CategoryAlternatives: [],
+      ImageUrl: null,
+      WebsiteName: null,
+      CustomFields: {
+        Predefined: { ShirtSize: 'L', Color: 'Black' },
+        UserDefined: { Brand: 'Acme' },
+      },
+    });
 
     render(
       <AddItemForm
@@ -455,6 +471,15 @@ describe('AddItemForm - Auto populate', () => {
         itemId: 'item-1',
         writeBack: true,
       });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Color')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Black')).toBeInTheDocument();
+      expect(screen.getByText('Shirt Size')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('L')).toBeInTheDocument();
+      expect(screen.getByText('Brand')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Acme')).toBeInTheDocument();
     });
 
     await waitFor(() => {
@@ -1453,5 +1478,160 @@ describe('AddItemForm - suggestion visibility', () => {
       expect(args[0]).toBe('item-1');
       expect(args[11]).toBe(false);
     });
+  });
+});
+
+describe('AddItemForm readOnly view mode', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue([]);
+  });
+
+  test('keeps copy link enabled and hides scrape controls', async () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={mockEditItem}
+        readOnly
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('https://amazon.com/old-product')).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByRole('button', { name: /copy link to clipboard/i })
+    ).toBeEnabled();
+    expect(
+      screen.queryByRole('button', { name: /auto-fill details from link/i })
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('AddItemForm - linked items multi-count restriction', () => {
+  const peerItem: Item = {
+    ...mockEditItem,
+    Id: 'peer-1',
+    Name: 'Peer Gift',
+    Links: [],
+  };
+
+  test('hides Linked Items when quantity is greater than 1', async () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        wishlistItems={[mockEditItem, peerItem]}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Linked Items')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Increase quantity' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Increase quantity' }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Linked Items')).not.toBeInTheDocument();
+    });
+    expect(screen.getByText('Related Items')).toBeInTheDocument();
+  });
+
+  test('shows error and clears links when raising quantity above 1 with links selected', async () => {
+    const setLinkedItemIds = vi.fn();
+    const setIsLinkingModeActive = vi.fn();
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        wishlistItems={[mockEditItem, peerItem]}
+        linkedItemIds={['peer-1']}
+        resolvedLinkedCount={1}
+        setLinkedItemIds={setLinkedItemIds}
+        setIsLinkingModeActive={setIsLinkingModeActive}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Linked Items')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Increase quantity' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        /quantity greater than 1 are not currently supported with the linked items feature/i
+      );
+    });
+    expect(setLinkedItemIds).toHaveBeenCalledWith([]);
+    expect(setIsLinkingModeActive).toHaveBeenCalledWith(false);
+  });
+
+  test('hides Linked Items for non-owner create (suggestion)', async () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        wishlistItems={[mockEditItem, peerItem]}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Related Items')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Linked Items')).not.toBeInTheDocument();
+  });
+
+  test('hides Linked Items when editing a suggestion', async () => {
+    const suggestionItem: Item = {
+      ...mockEditItem,
+      IsSuggestion: true,
+      SuggestedByUserId: 'test-user-id',
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        item={suggestionItem}
+        wishlistItems={[suggestionItem, peerItem]}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Headphones')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Linked Items')).not.toBeInTheDocument();
+    expect(screen.getByText('Related Items')).toBeInTheDocument();
+  });
+
+  test('rejects submit when a suggestion has linked items selected', async () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        wishlistItems={[mockEditItem, peerItem]}
+        linkedItemIds={['peer-1']}
+        resolvedLinkedCount={1}
+      />
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText('e.g. Sony WH-1000XM5')
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('e.g. Sony WH-1000XM5'), {
+      target: { value: 'Suggested Gift' },
+    });
+    fireEvent.submit(document.getElementById(ADD_ITEM_FORM_ID)!);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        /suggestions cannot use linked items/i
+      );
+    });
+    expect(itemsApi.addItem).not.toHaveBeenCalled();
   });
 });

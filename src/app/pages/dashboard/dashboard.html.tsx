@@ -1,10 +1,11 @@
 import React from 'react';
 import { Plus, Upload } from 'lucide-react';
 import { WishlistCard, CreateListForm } from 'features/wishlists';
-import { ImportStrip } from 'features/items';
+import { ImportStrip } from 'features/items/components/import/import-strip/import-strip.component';
 import { Button, Modal, TabBar, SearchInput, EmptyState, LoadingState, EnterPanel } from 'shared/ui';
 import styles from './dashboard.module.css';
 import { DashboardTemplateProps } from './interfaces/dashboard-template-props.interface';
+import { isWishlistInArchiveBucket } from 'features/wishlists/utils/is-wishlist-in-archive-bucket.util';
 
 export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
   getGreeting,
@@ -90,7 +91,11 @@ export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
         ) : currentLists.length > 0 ? (
           <div className={styles.grid} ref={gridRef} data-columns={columns}>
             {currentLists.map((list) => (
-              <WishlistCard key={list.Id} wishlist={list} isArchived={activeTab === 'archive'} />
+              <WishlistCard
+                key={list.Id}
+                wishlist={list}
+                isArchived={isWishlistInArchiveBucket(list)}
+              />
             ))}
           </div>
         ) : (

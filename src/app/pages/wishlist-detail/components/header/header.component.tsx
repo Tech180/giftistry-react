@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { HeaderProps } from './interfaces/header-props.interface';
 import { HeaderTemplate } from './header.html';
 import { useAuth } from 'app/providers/auth-context';
+import { expiresAtIsoToDateInput } from 'features/wishlists/utils/expires-at-iso-to-date-input.util';
 
 export const Header: React.FC<HeaderProps> = (props) => {
   const { wishlist, isOwner } = props;
@@ -22,8 +23,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
   }, [wishlist.Title]);
 
   useEffect(() => {
-    const prevDateStr = wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString().split('T')[0] : '';
-    setTempDate(prevDateStr);
+    setTempDate(expiresAtIsoToDateInput(wishlist.ExpiresAt));
   }, [wishlist.ExpiresAt]);
 
   useEffect(() => {
@@ -54,8 +54,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
     try {
       await props.saveDate(newDateStr);
     } catch (_) {
-      const prevDateStr = wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString().split('T')[0] : '';
-      setTempDate(prevDateStr);
+      setTempDate(expiresAtIsoToDateInput(wishlist.ExpiresAt));
     }
   };
 
@@ -66,12 +65,10 @@ export const Header: React.FC<HeaderProps> = (props) => {
     currentUserId: user?.Id,
   };
 
-  const showListSettings = isOwner;
-  const showOwnerBadgeRegion =
-    showListSettings ||
-    (canShowAi && !isOwner && wishlist.AiEnabled) ||
-    (canShowWebSearch && !isOwner && wishlist.WebSearchEnabled) ||
-    !isOwner;
+  const showListSettings = !props.isPublicGuest;
+  const listSettingsReadOnly = !isOwner || props.isArchived;
+  const showOwnerBadgeRegion = !isOwner;
+  const hideOwnerBadgeOnMobile = !props.isPublicGuest && !isOwner;
 
   return (
     <HeaderTemplate
@@ -99,7 +96,9 @@ export const Header: React.FC<HeaderProps> = (props) => {
       isImportOpen={props.isImportOpen}
       onImportToggle={props.onImportToggle}
       showListSettings={showListSettings}
+      listSettingsReadOnly={listSettingsReadOnly}
       showOwnerBadgeRegion={showOwnerBadgeRegion}
+      hideOwnerBadgeOnMobile={hideOwnerBadgeOnMobile}
     />
   );
 };

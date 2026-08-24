@@ -170,16 +170,17 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
         )
       }
     >
+      {(formItem?.IsSuggestion || (!isView && !isOwner)) && (
+        <p className={styles.suggestionBanner} role="status">
+          Suggestion
+        </p>
+      )}
       {isView ? (
         <div className={styles['view-mode-banner']} role="status">
           <span className={styles['view-mode-banner-description']}>
             {VIEW_MODE_BANNER_DESCRIPTION}
           </span>
         </div>
-      ) : !isOwner ? (
-        <p className={styles.suggestionBanner} role="status">
-          Suggestion
-        </p>
       ) : null}
       <AddItemForm
         key={formItem?.Id ?? 'add'}
@@ -197,6 +198,7 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
         onDraftChange={isView ? undefined : setEditingItemDraft}
         wishlistItems={linkableItems}
         linkedItemIds={linkedItemIds}
+        setLinkedItemIds={setLinkedItemIds}
         resolvedLinkedCount={resolvedLinkedItems.length}
         relatedItemIds={relatedItemIds}
         resolvedRelatedCount={resolvedRelatedItems.length}

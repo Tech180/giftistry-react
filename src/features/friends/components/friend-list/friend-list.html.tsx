@@ -1,5 +1,5 @@
 import { UserMinus, Gift, Sparkles, ListTree, Users } from 'lucide-react';
-import { UserPreviewCard } from 'shared/ui';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { UserAvatar } from 'shared/ui/user-avatar/user-avatar.component';
 import { resolveOnlineStatus } from 'shared/utils/resolve-online-status.util';
 import { toPreviewFallback } from '../../utils/to-preview-fallback.util';

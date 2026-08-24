@@ -52,4 +52,59 @@ describe('NumberSelector', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Increase' }));
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it('increments without an upper bound when max is omitted', () => {
+    const onChange = vi.fn();
+    render(<NumberSelector value={5} min={1} onChange={onChange} />);
+
+    expect(screen.getByRole('button', { name: 'Increase' })).not.toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Increase' }));
+    expect(onChange).toHaveBeenCalledWith(6);
+  });
+
+  it('lets the user click the value and type a custom number', () => {
+    const onChange = vi.fn();
+    render(<NumberSelector value={2} min={0} max={99} onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit quantity' }));
+    const input = screen.getByRole('textbox', { name: 'Edit quantity' });
+    fireEvent.change(input, { target: { value: '12' } });
+    fireEvent.blur(input);
+
+    expect(onChange).toHaveBeenCalledWith(12);
+  });
+
+  it('shows infinity when value is 0 and zeroAsInfinity is set', () => {
+    const onChange = vi.fn();
+    render(
+      <NumberSelector
+        value={0}
+        min={0}
+        onChange={onChange}
+        zeroAsInfinity
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Edit quantity (0 is unlimited)' })).toBeInTheDocument();
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
+  });
+
+  it('commits typed 0 when min allows it', () => {
+    const onChange = vi.fn();
+    render(
+      <NumberSelector
+        value={3}
+        min={0}
+        onChange={onChange}
+        zeroAsInfinity
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit quantity' }));
+    const input = screen.getByRole('textbox', { name: 'Edit quantity' });
+    fireEvent.change(input, { target: { value: '0' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(onChange).toHaveBeenCalledWith(0);
+  });
 });

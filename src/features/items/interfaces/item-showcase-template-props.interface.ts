@@ -1,6 +1,5 @@
 import type { ComponentType, CSSProperties, SyntheticEvent } from 'react';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
-import type { ClaimQuantityDraft } from './claim-quantity-draft.interface';
 import type { Item } from './item.interface';
 import type { ItemActions } from './item-actions.interface';
 import type { ShowcaseRelationItem } from './showcase-relation-item.interface';
@@ -20,7 +19,6 @@ export interface ItemShowcaseTemplateProps {
   itemActions: ItemActions;
   claimUserId?: string | null;
   claimActorName: string | null;
-  onBeforeClaimSubmit: (draft: ClaimQuantityDraft[]) => boolean | Promise<boolean>;
   claimAmount: string;
   setClaimAmount: (val: string) => void;
   anonymous: boolean;
@@ -32,15 +30,12 @@ export interface ItemShowcaseTemplateProps {
   setShowDeleteConfirm: (val: boolean) => void;
   deleteLoading: boolean;
   localIsFavorite: boolean;
-  showDependencyModal: boolean;
-  setShowDependencyModal: (val: boolean) => void;
   displayDescription: string;
   metadata: ItemDescriptionMetadata | null;
   predefinedDisplayEntries: { label: string; value: string }[];
   userDefinedEntries: { name: string; value: string }[];
   metadataBadgeEmoji: Record<string, string>;
-  handleClaim: (e?: SyntheticEvent, skipLinkedCheck?: boolean) => void;
-  handleBulkClaim: () => void;
+  handleClaim: (e?: SyntheticEvent) => void;
   handleUnclaim: () => void;
   handleDelete: () => void;
   totalExtractedPrice: number;
@@ -74,4 +69,8 @@ export interface ItemShowcaseTemplateProps {
   linkedRelationItems: ShowcaseRelationItem[];
   relatedRelationItems: ShowcaseRelationItem[];
   maxContributionAmount: number;
+  /** Unclaimed linked peers for a single "Claim these items?" prompt. */
+  linkedClaimPeers?: Item[];
+  wishlistItemsForLinkedClaim?: Item[];
+  onLinkedClaimItemClick?: (itemId: string) => void;
 }

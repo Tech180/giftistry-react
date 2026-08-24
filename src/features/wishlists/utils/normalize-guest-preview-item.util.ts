@@ -7,6 +7,8 @@ export function normalizeGuestPreviewItem(raw: Partial<Item> & { Id?: string; Na
     PriorityId: raw.PriorityId ?? null,
     SuggestedByUserId: null,
     SuggestedByUsername: null,
+    SuggestedByFirstName: null,
+    SuggestedByLastName: null,
     Name: raw.Name ?? '',
     Description: raw.Description ?? null,
     IsHiddenIdea: false,

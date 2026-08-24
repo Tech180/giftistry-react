@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, NumberSelector } from 'shared/ui';
+import { Tags } from 'features/comments';
 import { ClaimAnonymousToggle } from '../claim-anonymous-toggle/claim-anonymous-toggle.html';
 import { ClaimPrompt } from '../claim-prompt/claim-prompt.html';
 import { CLAIM_FORM_QUANTITY_LABEL } from './constants/claim-form-copy.constant';
@@ -22,6 +23,9 @@ export const ClaimFormTemplate: React.FC<ClaimFormTemplateProps> = ({
   onQuantityChange,
   onSubmit,
   onCancel,
+  linkedItems = [],
+  wishlistItems = [],
+  onLinkedItemClick,
 }) => {
   const formClass = [
     styles['claim-form'],
@@ -31,6 +35,7 @@ export const ClaimFormTemplate: React.FC<ClaimFormTemplateProps> = ({
     .filter(Boolean)
     .join(' ');
   const inlineRow = !showVariationList ? quantityRows[0] : undefined;
+  const showLinkedTags = linkedItems.length > 0;
 
   return (
     <form
@@ -135,6 +140,16 @@ export const ClaimFormTemplate: React.FC<ClaimFormTemplateProps> = ({
             onAnonymousChange={onAnonymousChange}
             prompt={prompt}
           />
+          {showLinkedTags && (
+            <div className={styles['claim-linked-tags']}>
+              <Tags
+                appearance="badges"
+                taggedIds={linkedItems.map((linked) => linked.Id)}
+                items={wishlistItems}
+                onItemTaggedClick={onLinkedItemClick}
+              />
+            </div>
+          )}
           <div className={styles['form-actions']}>
             <Button variant="ghost" size="sm" type="button" onClick={onCancel}>
               Cancel

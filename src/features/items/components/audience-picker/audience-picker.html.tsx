@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Switch } from 'shared/ui';
-import { UserPreviewCard } from 'shared/ui/user-preview-card';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { AudiencePickerTemplateProps } from './interfaces/audience-picker-template-props.interface';
 import styles from './audience-picker.module.css';
 

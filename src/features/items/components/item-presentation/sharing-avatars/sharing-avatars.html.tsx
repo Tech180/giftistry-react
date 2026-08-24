@@ -1,5 +1,6 @@
 import React from 'react';
-import { UserAvatar, UserPreviewCard } from 'shared/ui';
+import { UserAvatar } from 'shared/ui';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { useAuth } from 'app/providers/auth-context';
 import { ItemAudienceUser } from '../../../interfaces/item-audience-user.interface';
 import {

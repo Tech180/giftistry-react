@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getCommentWsUrl } from 'features/comments/utils/comment-ws.util';
 import { jobsApi } from '../api/jobs.api';
 import type { BackgroundJobView } from '../interfaces/background-job.interface';
+import type { UseWishlistJobOptions } from '../interfaces/use-wishlist-job-options.interface';
 import { getEnrichingItemIds } from '../utils/get-enriching-item-ids.util';
 
 /** Kinds whose active streams map onto item cards that should show a skeleton. */
@@ -11,13 +12,18 @@ function isActiveStatus(status: string | undefined): boolean {
   return status === 'queued' || status === 'running';
 }
 
-export function useWishlistJob(listId: string | undefined) {
+export function useWishlistJob(
+  listId: string | undefined,
+  options: UseWishlistJobOptions = {}
+) {
   const [job, setJob] = useState<BackgroundJobView | null>(null);
   const [activeJobs, setActiveJobs] = useState<Record<string, BackgroundJobView>>({});
   const [error, setError] = useState<string | null>(null);
   const jobIdRef = useRef<string | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<any>(null);
+  const onListChangedRef = useRef(options.onListChanged);
+  onListChangedRef.current = options.onListChanged;
 
   // Jobs arrive from two independent channels, so accumulate them by id instead
   // of replacing: a WS frame for job B must not drop job A's in-flight streams.
@@ -81,6 +87,9 @@ export function useWishlistJob(listId: string | undefined) {
             const data = JSON.parse(String(event.data)) as {
               Type?: string;
               Job?: BackgroundJobView;
+              Reason?: string;
+              ItemId?: string;
+              ActorUserId?: string;
             };
             if (
               (data.Type === 'job.progress' ||
@@ -91,6 +100,15 @@ export function useWishlistJob(listId: string | undefined) {
               setJob(data.Job);
               trackJob(data.Job);
               jobIdRef.current = data.Job.Id;
+              return;
+            }
+            if (data.Type === 'list.changed' && typeof data.Reason === 'string') {
+              onListChangedRef.current?.({
+                reason: data.Reason,
+                itemId: typeof data.ItemId === 'string' ? data.ItemId : undefined,
+                actorUserId:
+                  typeof data.ActorUserId === 'string' ? data.ActorUserId : undefined,
+              });
             }
           } catch {
             /* ignore malformed frames */

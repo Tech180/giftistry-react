@@ -10,6 +10,7 @@ export const MetadataGrid: React.FC<MetadataGridProps> = ({
   metadataBadgeEmoji,
   priority,
   variant = 'badges',
+  compactAlign = 'start',
 }) => {
   const showPriority = hasPriorityValue(priority);
 
@@ -19,7 +20,9 @@ export const MetadataGrid: React.FC<MetadataGridProps> = ({
 
   if (variant === 'compact') {
     return (
-      <div className={styles['metadata-compact']}>
+      <div
+        className={`${styles['metadata-compact']} ${compactAlign === 'end' ? styles['metadata-compact-end'] : ''}`}
+      >
         {showPriority && (
           <PriorityDisplay priority={priority} variant="chip" />
         )}

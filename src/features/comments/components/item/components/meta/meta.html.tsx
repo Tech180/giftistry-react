@@ -1,6 +1,6 @@
 import React from 'react';
 import { MetaTemplateProps } from './interfaces/meta-template-props.interface';
-import { UserPreviewCard } from 'shared/ui/user-preview-card';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { UserAvatar } from 'shared/ui/user-avatar/user-avatar.component';
 import styles from './meta.module.css';
 

@@ -12,15 +12,15 @@ import {
   Upload,
   MessageSquare,
   Share2,
-  Search,
   Settings,
 } from 'lucide-react';
-import { EnterPanel, AiStatusBadge, Badge } from 'shared/ui';
+import { EnterPanel } from 'shared/ui';
 import { OwnerBadge } from 'features/items/components/item-presentation';
 import { exportToCsv, exportToXlsx, exportToTxt, exportToJson, exportToPdf } from 'shared/utils/wishlist-export';
 import { ListSettingsPanel } from '../list-settings-panel/list-settings-panel.component';
 import { HeaderTemplateProps } from './interfaces/header-template-props.interface';
 import styles from '../../wishlist-detail.module.css';
+import { expiresAtIsoToDateInput } from 'features/wishlists/utils/expires-at-iso-to-date-input.util';
 
 export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   wishlist,
@@ -67,7 +67,9 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   listSettingsRef,
   exportContext,
   showListSettings,
+  listSettingsReadOnly,
   showOwnerBadgeRegion,
+  hideOwnerBadgeOnMobile = false,
 }) => {
   return (
     <>
@@ -168,10 +170,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                 onBlur={() => setIsEditingDate(false)}
                 onKeyDown={(e) => {
                   if (e.key === 'Escape') {
-                    const prevDateStr = wishlist.ExpiresAt
-                      ? new Date(wishlist.ExpiresAt).toISOString().split('T')[0]
-                      : '';
-                    setTempDate(prevDateStr);
+                    setTempDate(expiresAtIsoToDateInput(wishlist.ExpiresAt));
                     setIsEditingDate(false);
                   }
                 }}
@@ -280,7 +279,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                 <div className={styles['export-dropdown-container']} ref={listSettingsRef}>
                   <button
                     type="button"
-                    className={styles['action-pill']}
+                    className={`${styles['action-pill']}${listSettingsReadOnly ? ` ${styles['action-pill-muted']}` : ''}`}
                     onClick={() => setIsListSettingsOpen(!isListSettingsOpen)}
                     title="List settings"
                     aria-label="List settings"
@@ -304,6 +303,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                         autoRollover={wishlist.AutoRollover === true}
                         canShowAi={canShowAi}
                         canShowWebSearch={canShowWebSearch}
+                        readOnly={listSettingsReadOnly}
                         onToggleAi={toggleAiEnabled}
                         onToggleWebSearch={toggleWebSearchEnabled}
                         onToggleManualJobBackground={toggleManualJobBackground}
@@ -398,39 +398,25 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
           )}
 
           {showOwnerBadgeRegion && (
-            <div className={styles['owner-badge-container']}>
-              <div className={styles.desktopListFeatureBadges}>
-                {canShowAi && !isOwner && wishlist.AiEnabled && (
-                  <AiStatusBadge
-                    enabled
-                    ariaLabelEnabled="AI reviews active on this list"
-                    ariaLabelDisabled="AI reviews inactive on this list"
-                  />
-                )}
-                {canShowWebSearch && !isOwner && wishlist.WebSearchEnabled && (
-                  <Badge
-                    size="md"
-                    icon={<Search size={16} />}
-                    active
-                    ariaLabel="Web search active on this list"
-                  >
-                    Web Search Enabled
-                  </Badge>
-                )}
+            <div
+              className={[
+                styles['owner-badge-container'],
+                hideOwnerBadgeOnMobile ? styles.hideOwnerBadgeOnMobile : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              <div className={styles.mobileOwnerBadge}>
+                <OwnerBadge
+                  userId={wishlist.UserId}
+                  displayName={
+                    wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Registry Owner'
+                  }
+                  username={wishlist.OwnerUsername}
+                  firstName={wishlist.OwnerFirstName}
+                  avatar={wishlist.OwnerAvatar}
+                />
               </div>
-              {!isOwner && (
-                <div className={styles.mobileOwnerBadge}>
-                  <OwnerBadge
-                    userId={wishlist.UserId}
-                    displayName={
-                      wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Registry Owner'
-                    }
-                    username={wishlist.OwnerUsername}
-                    firstName={wishlist.OwnerFirstName}
-                    avatar={wishlist.OwnerAvatar}
-                  />
-                </div>
-              )}
             </div>
           )}
         </div>

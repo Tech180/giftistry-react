@@ -22,4 +22,6 @@ export interface ActionButtonsProps {
   /** Full-width footer row; claim left / editor actions right when both present. */
   splitOnMobile?: boolean;
   unclaimDisabled?: boolean;
+  /** When true, simple unclaim button reads "Unclaim all" (linked claim group). */
+  hasLinkedUnclaimPeers?: boolean;
 }

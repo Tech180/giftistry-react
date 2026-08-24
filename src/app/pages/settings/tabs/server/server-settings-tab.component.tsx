@@ -33,6 +33,18 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [smtpPass, setSmtpPass] = useState('');
   const [smtpSecure, setSmtpSecure] = useState(false);
   const [smtpFrom, setSmtpFrom] = useState('');
+  const [ntfyEnabled, setNtfyEnabled] = useState(false);
+  const [ntfyBaseUrl, setNtfyBaseUrl] = useState('https://ntfy.sh');
+  const [ntfyAuthToken, setNtfyAuthToken] = useState('');
+  const [ntfyTopicPrefix, setNtfyTopicPrefix] = useState('giftistry');
+  const [webPushEnabled, setWebPushEnabled] = useState(false);
+  const [webPushVapidPublicKey, setWebPushVapidPublicKey] = useState('');
+  const [webPushVapidPrivateKey, setWebPushVapidPrivateKey] = useState('');
+  const [webPushSubject, setWebPushSubject] = useState('mailto:admin@localhost');
+  const [fcmEnabled, setFcmEnabled] = useState(false);
+  const [fcmProjectId, setFcmProjectId] = useState('');
+  const [fcmServiceAccountJson, setFcmServiceAccountJson] = useState('');
+  const [isTestingNtfy, setIsTestingNtfy] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false);
   const [aiWebSearchEnabled, setAiWebSearchEnabled] = useState(false);
   const [aiRateLimitEnabled, setAiRateLimitEnabled] = useState(false);
@@ -156,6 +168,17 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     setSmtpPass(s.SmtpPass || '');
     setSmtpSecure(!!s.SmtpSecure);
     setSmtpFrom(s.SmtpFrom || 'noreply@giftistry.local');
+    setNtfyEnabled(!!s.NtfyEnabled);
+    setNtfyBaseUrl(s.NtfyBaseUrl || 'https://ntfy.sh');
+    setNtfyAuthToken(s.NtfyAuthToken || '');
+    setNtfyTopicPrefix(s.NtfyTopicPrefix || 'giftistry');
+    setWebPushEnabled(!!s.WebPushEnabled);
+    setWebPushVapidPublicKey(s.WebPushVapidPublicKey || '');
+    setWebPushVapidPrivateKey(s.WebPushVapidPrivateKey || '');
+    setWebPushSubject(s.WebPushSubject || 'mailto:admin@localhost');
+    setFcmEnabled(!!s.FcmEnabled);
+    setFcmProjectId(s.FcmProjectId || '');
+    setFcmServiceAccountJson(s.FcmServiceAccountJson || '');
     setAiEnabled(!!s.AiEnabled);
     setAiWebSearchEnabled(!!s.AiWebSearchEnabled);
     setAiRateLimitEnabled(!!s.AiRateLimitEnabled);
@@ -481,28 +504,39 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       SmtpPass: smtpType === 'remote' ? smtpPass : '',
       SmtpSecure: smtpType === 'remote' ? smtpSecure : false,
       SmtpFrom: smtpType === 'remote' ? smtpFrom : 'noreply@giftistry.local',
+      NtfyEnabled: ntfyEnabled,
+      NtfyBaseUrl: ntfyBaseUrl.trim(),
+      NtfyAuthToken: ntfyAuthToken,
+      NtfyTopicPrefix: ntfyTopicPrefix.trim() || 'giftistry',
+      WebPushEnabled: webPushEnabled,
+      WebPushVapidPublicKey: webPushVapidPublicKey.trim(),
+      WebPushVapidPrivateKey: webPushVapidPrivateKey,
+      WebPushSubject: webPushSubject.trim() || 'mailto:admin@localhost',
+      FcmEnabled: fcmEnabled,
+      FcmProjectId: fcmProjectId.trim(),
+      FcmServiceAccountJson: fcmServiceAccountJson,
       AiEnabled: aiEnabled,
-      AiWebSearchEnabled: aiEnabled ? aiWebSearchEnabled : false,
-      AiRateLimitEnabled: aiEnabled ? aiRateLimitEnabled : false,
+      AiWebSearchEnabled: aiWebSearchEnabled,
+      AiRateLimitEnabled: aiRateLimitEnabled,
       AiCompletionTimeoutMs: aiCompletionTimeoutMs,
       ScrapeFetchTimeoutMs: scrapeFetchTimeoutMs,
       ScrapePlaywrightTimeoutMs: scrapePlaywrightTimeoutMs,
       GrabInfoConcurrency: grabInfoConcurrency,
       GrabInfoConcurrencyUnlimited: grabInfoConcurrencyUnlimited,
       GrabInfoActiveStreamLimit: grabInfoActiveStreamLimit,
-      AiFastProvider: aiEnabled ? aiFastProvider : 'openrouter',
-      AiFastEndpoint: aiEnabled ? aiFastEndpoint : '',
-      AiFastApiKey: aiEnabled ? aiFastApiKey : '',
-      AiFastModel: aiEnabled ? aiFastModel : '',
-      AiIntelligentProvider: aiEnabled ? aiIntelligentProvider : 'openrouter',
-      AiIntelligentEndpoint: aiEnabled ? aiIntelligentEndpoint : '',
-      AiIntelligentApiKey: aiEnabled ? aiIntelligentApiKey : '',
-      AiIntelligentModel: aiEnabled ? aiIntelligentModel : '',
-      AiPrompt: aiEnabled ? aiPrompt : '',
-      AiDescriptionPrompt: aiEnabled ? aiDescriptionPrompt : '',
-      AiPopulatePrompt: aiEnabled ? aiPopulatePrompt : '',
-      AiCategoryPrompt: aiEnabled ? aiCategoryPrompt : '',
-      AiImportPrompt: aiEnabled ? aiImportPrompt : '',
+      AiFastProvider: aiFastProvider,
+      AiFastEndpoint: aiFastEndpoint,
+      AiFastApiKey: aiFastApiKey,
+      AiFastModel: aiFastModel,
+      AiIntelligentProvider: aiIntelligentProvider,
+      AiIntelligentEndpoint: aiIntelligentEndpoint,
+      AiIntelligentApiKey: aiIntelligentApiKey,
+      AiIntelligentModel: aiIntelligentModel,
+      AiPrompt: aiPrompt,
+      AiDescriptionPrompt: aiDescriptionPrompt,
+      AiPopulatePrompt: aiPopulatePrompt,
+      AiCategoryPrompt: aiCategoryPrompt,
+      AiImportPrompt: aiImportPrompt,
       AiEnabledPackIds: aiEnabledPackIds,
       AiCustomPacks: aiCustomPacks,
       AllowSetup: overrides.AllowSetup ?? allowSetup,
@@ -579,6 +613,19 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     }
   };
 
+  const handleTestNtfy = async () => {
+    setIsTestingNtfy(true);
+    try {
+      const result = await apiClient.post<{ Topic?: string }>('/api/system/test-ntfy', {}, 'System');
+      const topic = result?.Topic ? ` (topic: ${result.Topic})` : '';
+      showToast(`ntfy test published successfully${topic}`, 'success');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to publish ntfy test', 'error');
+    } finally {
+      setIsTestingNtfy(false);
+    }
+  };
+
   const handleDeleteServer = async () => {
     if (
       !window.confirm(
@@ -641,6 +688,30 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       setSmtpSecure={setSmtpSecure}
       smtpFrom={smtpFrom}
       setSmtpFrom={setSmtpFrom}
+      ntfyEnabled={ntfyEnabled}
+      setNtfyEnabled={setNtfyEnabled}
+      ntfyBaseUrl={ntfyBaseUrl}
+      setNtfyBaseUrl={setNtfyBaseUrl}
+      ntfyAuthToken={ntfyAuthToken}
+      setNtfyAuthToken={setNtfyAuthToken}
+      ntfyTopicPrefix={ntfyTopicPrefix}
+      setNtfyTopicPrefix={setNtfyTopicPrefix}
+      webPushEnabled={webPushEnabled}
+      setWebPushEnabled={setWebPushEnabled}
+      webPushVapidPublicKey={webPushVapidPublicKey}
+      setWebPushVapidPublicKey={setWebPushVapidPublicKey}
+      webPushVapidPrivateKey={webPushVapidPrivateKey}
+      setWebPushVapidPrivateKey={setWebPushVapidPrivateKey}
+      webPushSubject={webPushSubject}
+      setWebPushSubject={setWebPushSubject}
+      fcmEnabled={fcmEnabled}
+      setFcmEnabled={setFcmEnabled}
+      fcmProjectId={fcmProjectId}
+      setFcmProjectId={setFcmProjectId}
+      fcmServiceAccountJson={fcmServiceAccountJson}
+      setFcmServiceAccountJson={setFcmServiceAccountJson}
+      onTestNtfy={() => { void handleTestNtfy(); }}
+      isTestingNtfy={isTestingNtfy}
       aiEnabled={aiEnabled}
       setAiEnabled={setAiEnabled}
       aiWebSearchEnabled={aiWebSearchEnabled}

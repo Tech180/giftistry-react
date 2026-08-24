@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check } from 'lucide-react';
-import { UserPreviewCard } from 'shared/ui';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { FriendPickerTemplateProps } from './interfaces/friend-picker-template-props.interface';
 import styles from './friend-picker.module.css';
 

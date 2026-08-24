@@ -48,4 +48,8 @@ export interface FloatingAction {
    * otherwise `default` (muted, like Comments).
    */
   toolbarTone?: 'default' | 'primary' | 'danger';
+  /** Extra grayed appearance without blocking clicks (e.g. view-only Settings). */
+  toolbarMuted?: boolean;
+  /** When true, render a toolbar divider after this action. */
+  separateAfter?: boolean;
 }

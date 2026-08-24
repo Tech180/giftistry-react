@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useNotificationsController } from '../../hooks/use-notifications-controller';
+import { useNotifications } from 'app/providers/notifications-context';
 import { NotificationBellTemplate } from './notification-bell.html';
 
 const formatTime = (dateStr: string) => {
@@ -25,16 +25,11 @@ export const NotificationBell: React.FC = () => {
     notifications,
     isLoading,
     unreadCount,
-    fetchNotifications,
     markAsRead,
     markAllAsRead,
     clearAll,
     deleteNotification,
-  } = useNotificationsController();
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+  } = useNotifications();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -45,12 +40,6 @@ export const NotificationBell: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchNotifications();
-    }
-  }, [isOpen, fetchNotifications]);
 
   return (
     <NotificationBellTemplate

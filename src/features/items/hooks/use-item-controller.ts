@@ -249,10 +249,14 @@ export function useItemController() {
     return claims;
   };
 
-  const unclaimItem = async (itemId: string, _userId?: string | null) => {
+  const unclaimItem = async (
+    itemId: string,
+    _userId?: string | null,
+    includeLinked?: boolean
+  ) => {
     setError(null);
     try {
-      const result = await itemsApi.unclaimItem(itemId);
+      const result = await itemsApi.unclaimItem(itemId, includeLinked);
       applyClaimProjections(result.Items ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to unclaim item.');

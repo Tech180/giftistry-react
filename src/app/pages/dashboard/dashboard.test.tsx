@@ -8,7 +8,7 @@ vi.mock('features/wishlists', () => ({
   CreateListForm: () => null,
 }));
 
-vi.mock('features/items', () => ({
+vi.mock('features/items/components/import/import-strip/import-strip.component', () => ({
   ImportStrip: React.forwardRef(() => <div data-testid="import-strip" />),
 }));
 

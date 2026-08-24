@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eye, EyeOff, Trash2, CornerUpLeft } from 'lucide-react';
 import { CommentItemTemplateProps } from '../../interfaces/comment-item-template-props.interface';
-import { UserPreviewCard } from 'shared/ui/user-preview-card';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { Meta } from './components/meta';
 import { Reactions } from './components/reactions';
 import { DeleteConfirm } from './components/delete-confirm';

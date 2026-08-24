@@ -65,9 +65,9 @@ export function buildShowcaseRelationItems(items: Item[]): ShowcaseRelationItem[
 }
 
 export function formatShowcaseSuggestionLabel(
-  suggestedByUsername: string | null | undefined
+  suggestedByDisplayName: string | null | undefined
 ): string {
-  return `Suggestion by ${suggestedByUsername || 'Collaborator'}`;
+  return `Suggestion by ${suggestedByDisplayName || 'Collaborator'}`;
 }
 
 export function formatShowcaseQuantityProgressMetric(

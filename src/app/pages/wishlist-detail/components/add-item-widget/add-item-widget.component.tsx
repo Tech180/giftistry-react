@@ -89,7 +89,7 @@ export const AddItemWidget: React.FC<AddItemWidgetProps> = ({
   };
 
   const handleToggleMenu = () => {
-    if (isInputMode) return;
+    if (isInputMode || !isMobileViewport) return;
     setIsMenuOpen((prev) => !prev);
   };
 

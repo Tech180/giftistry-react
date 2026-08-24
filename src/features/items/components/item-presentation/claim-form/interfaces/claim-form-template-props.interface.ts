@@ -1,4 +1,5 @@
 import type { ClaimFormQuantityRow } from './claim-form-quantity-row.interface';
+import type { Item } from '../../../../interfaces/item.interface';
 
 export interface ClaimFormTemplateProps {
   prompt: string;
@@ -16,4 +17,7 @@ export interface ClaimFormTemplateProps {
   onQuantityChange: (selection: string | null, quantity: number) => void;
   onSubmit: () => void;
   onCancel: () => void;
+  linkedItems?: Item[];
+  wishlistItems?: Item[];
+  onLinkedItemClick?: (itemId: string) => void;
 }

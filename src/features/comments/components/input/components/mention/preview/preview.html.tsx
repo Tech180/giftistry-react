@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserPreviewCard } from 'shared/ui/user-preview-card';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { PreviewTemplateProps } from './interfaces/preview-template-props.interface';
 import styles from './preview.module.css';
 

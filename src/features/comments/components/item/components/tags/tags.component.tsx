@@ -4,11 +4,16 @@ import { TagsProps } from './interfaces/tags-props.interface';
 import { TagsTemplate } from './tags.html';
 import { getTagScrollState, scrollTagsByOne } from './utils/tag-scroll.util';
 
-export const Tags: React.FC<TagsProps> = ({ taggedIds, items, onItemTaggedClick }) => {
+export const Tags: React.FC<TagsProps> = ({
+  taggedIds,
+  items,
+  onItemTaggedClick,
+  appearance = 'rail',
+}) => {
   const listRef = useRef<HTMLDivElement>(null);
   const [canScrollUp, setCanScrollUp] = useState(false);
   const [canScrollDown, setCanScrollDown] = useState(taggedIds.length > MAX_VISIBLE_COMMENT_TAGS);
-  const canScroll = taggedIds.length > MAX_VISIBLE_COMMENT_TAGS;
+  const canScroll = appearance === 'rail' && taggedIds.length > MAX_VISIBLE_COMMENT_TAGS;
 
   const syncScrollState = () => {
     const element = listRef.current;
@@ -71,6 +76,7 @@ export const Tags: React.FC<TagsProps> = ({ taggedIds, items, onItemTaggedClick 
       taggedIds={taggedIds}
       items={items}
       onItemTaggedClick={onItemTaggedClick}
+      appearance={appearance}
       listRef={listRef}
       canScroll={canScroll}
       canScrollUp={canScrollUp}

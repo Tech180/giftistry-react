@@ -20,7 +20,7 @@ export interface CommentsProps {
   isExpired?: boolean;
   isArchived?: boolean;
   autoRollover?: boolean;
-  handleItemTaggedClick: (itemId: string) => void;
+  handleItemTaggedClick: (itemId: string, returnToItemId?: string) => void;
   /** When true, tagging mode hides the comments drawer so the list is selectable (overlay / mobile). */
   collapseDrawerWhileTagging?: boolean;
 }

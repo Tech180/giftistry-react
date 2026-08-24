@@ -21,13 +21,19 @@ export {
   DEFAULT_ITEM_VIEW_MODE,
   ITEM_VIEW_MODES,
   ITEM_VIEW_MODE_LABELS,
+  KANBAN_VIEW_MODE_MIN_WIDTH_MEDIA_QUERY,
+  KANBAN_FALLBACK_VIEW_MODE,
 } from './constants/item-view-mode.constants';
 export {
   normalizeStoredViewMode,
+  isKanbanViewMode,
+  resolveEffectiveViewMode,
+  getSelectableViewModes,
   getLayoutClass,
   getItemsContainerClass,
 } from './utils/item-view-mode.util';
 export { ItemCardRouter } from './components/views/item-card-router.component';
+export { CompactCategoryList } from './components/views/compact/compact-category-list';
 export { ItemCardSkeleton } from './components/skeleton/item-card-skeleton.component';
 export type { ItemCardSkeletonProps } from './components/skeleton/interfaces/item-card-skeleton-props.interface';
 export { ImportStrip } from './components/import/import-strip/import-strip.component';

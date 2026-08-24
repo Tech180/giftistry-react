@@ -22,6 +22,8 @@ export function getNotificationNavigationTarget(notification: Notification): str
     case 'invite_accepted':
     case 'item_claimed':
     case 'comment':
+    case 'job_completed':
+    case 'job_failed':
       if (meta.ListId) {
         return `/wishlists/${meta.ListId}`;
       }

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Users, ArrowRight, Archive, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
-import { UserAvatar, UserPreviewCard } from 'shared/ui';
+import { UserAvatar } from 'shared/ui';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { WishlistCardTemplateProps } from '../../interfaces/wishlist-card-template-props.interface';
 import { WishlistCategoryIcon } from './wishlist-category-icon.component';
 import styles from './wishlist-card.module.css';

@@ -9,6 +9,7 @@ import {
 import { buildItemCardModifierClasses, getClaimedGrayOutClass, getUserClaimedHighlightClass } from '../shared/item-card-modifiers.util';
 import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import { resolveItemClaimBadgeState } from '../../../utils/resolve-item-claim-badge-state.util';
+import { resolveSuggestedByDisplayName } from '../../../utils/resolve-suggested-by-display-name.util';
 import styles from './grid-item-view.module.css';
 
 export const GridItemView: React.FC<ItemViewProps> = (props) => {
@@ -109,7 +110,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
         {item.IsSuggestion && (
           <SuggestionBadge
             userId={item.SuggestedByUserId}
-            displayName={item.SuggestedByUsername || 'Collaborator'}
+            displayName={resolveSuggestedByDisplayName(item)}
           />
         )}
         {onView ? (

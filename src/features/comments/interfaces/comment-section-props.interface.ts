@@ -20,4 +20,6 @@ export interface CommentSectionProps {
   setIsReplyTaggingModeActive: (val: boolean) => void;
   replyTaggedItemIds: string[];
   setReplyTaggedItemIds: (ids: string[]) => void;
+  /** When true, soft-deleted comments remain visible in the thread. Defaults to false. */
+  showDeletedComments?: boolean;
 }

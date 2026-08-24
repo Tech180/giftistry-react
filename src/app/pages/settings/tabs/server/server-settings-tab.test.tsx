@@ -104,6 +104,17 @@ const defaultSettings = {
   SmtpPass: '',
   SmtpSecure: false,
   SmtpFrom: 'noreply@giftistry.local',
+  NtfyEnabled: false,
+  NtfyBaseUrl: 'https://ntfy.sh',
+  NtfyAuthToken: '',
+  NtfyTopicPrefix: 'giftistry',
+  WebPushEnabled: false,
+  WebPushVapidPublicKey: '',
+  WebPushVapidPrivateKey: '',
+  WebPushSubject: 'mailto:admin@localhost',
+  FcmEnabled: false,
+  FcmProjectId: '',
+  FcmServiceAccountJson: '',
   AiEnabled: true,
   AiFastProvider: 'local' as const,
   AiFastEndpoint: '',
@@ -694,6 +705,67 @@ describe('ServerSettingsTab AI default prompts', () => {
       expect(screen.getByLabelText('Populate AI prompt editor')).toHaveValue(
         mockAiDefaultPrompts.Populate
       );
+    });
+  });
+});
+
+describe('ServerSettingsTab AI disable persists config', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    vi.mocked(apiClient.get).mockResolvedValue({
+      ...defaultSettings,
+      AiEnabled: true,
+      AiWebSearchEnabled: true,
+      AiRateLimitEnabled: true,
+      AiFastProvider: 'openrouter',
+      AiFastEndpoint: 'https://openrouter.ai/api/v1',
+      AiFastApiKey: 'sk-keep-me',
+      AiFastModel: 'google/gemini-2.0-flash',
+      AiIntelligentProvider: 'openrouter',
+      AiIntelligentEndpoint: 'https://openrouter.ai/api/v1',
+      AiIntelligentApiKey: 'sk-keep-intelligent',
+      AiIntelligentModel: 'anthropic/claude-sonnet-4',
+      AiPopulatePrompt: 'Keep this populate prompt',
+      AiDescriptionPrompt: 'Keep this description prompt',
+    });
+    vi.mocked(apiClient.post).mockResolvedValue({ success: true });
+    mockLocalModels([]);
+    mockMetadataPacks();
+  });
+
+  test('disabling AI still saves prompts, keys, and provider settings', async () => {
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    const enableAi = await screen.findByLabelText('Enable AI assistant integration');
+    expect(enableAi).toBeChecked();
+    fireEvent.click(enableAi);
+    expect(enableAi).not.toBeChecked();
+
+    const form = screen.getByLabelText('Save changes').closest('form');
+    fireEvent.submit(form!);
+
+    await waitFor(() => {
+      expect(apiClient.post).toHaveBeenCalled();
+    });
+
+    const postCall = vi.mocked(apiClient.post).mock.calls.find(
+      (call) => call[0] === '/api/system/settings'
+    );
+    expect(postCall![1]).toMatchObject({
+      AiEnabled: false,
+      AiWebSearchEnabled: true,
+      AiRateLimitEnabled: true,
+      AiFastProvider: 'openrouter',
+      AiFastEndpoint: 'https://openrouter.ai/api/v1',
+      AiFastApiKey: 'sk-keep-me',
+      AiFastModel: 'google/gemini-2.0-flash',
+      AiIntelligentProvider: 'openrouter',
+      AiIntelligentEndpoint: 'https://openrouter.ai/api/v1',
+      AiIntelligentApiKey: 'sk-keep-intelligent',
+      AiIntelligentModel: 'anthropic/claude-sonnet-4',
+      AiPopulatePrompt: 'Keep this populate prompt',
+      AiDescriptionPrompt: 'Keep this description prompt',
     });
   });
 });

@@ -83,6 +83,17 @@ describe('resolveItemQuantitySummary', () => {
     expect(summary.shouldDisplay).toBe(true);
     expect(summary.progressPercent).toBe(100);
   });
+  it('treats DesiredQuantity 0 as unlimited', () => {
+    const summary = resolveItemQuantitySummary({
+      ...baseItem,
+      DesiredQuantity: 0,
+      IsMultiCount: true,
+    });
+    expect(summary.desiredQuantity).toBe(0);
+    expect(summary.isMultiCount).toBe(true);
+    expect(summary.shouldDisplay).toBe(true);
+    expect(summary.progressPercent).toBe(0);
+  });
 });
 
 describe('formatItemQuantityBadge', () => {
@@ -123,5 +134,17 @@ describe('formatItemQuantityBadge', () => {
         true,
       )
     ).toBe('×5');
+  });
+
+  it('formats infinity for unlimited quantity', () => {
+    expect(
+      formatItemQuantityBadge({
+        isMultiCount: true,
+        desiredQuantity: 0,
+        claimedQuantity: 2,
+        shouldDisplay: true,
+        progressPercent: 0,
+      })
+    ).toBe('∞');
   });
 });

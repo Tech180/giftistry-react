@@ -17,10 +17,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
-    sourcemap: true,
-  },
-  optimizeDeps: {
-    include: ['exceljs'],
+    sourcemap: false,
   },
   test: {
     globals: true,
@@ -29,8 +26,6 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     css: {
       modules: {
-        // Export both dashed and camelCase keys so styles['tab-pane'] and styles.tabPane resolve.
-        localsConvention: 'dashes',
         classNameStrategy: 'non-scoped',
       },
     },

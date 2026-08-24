@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { Sparkles, Users, Archive, Upload, Plus } from 'lucide-react';
 import { useWishlistController } from 'features/wishlists';
-import { ImportMenuPanel, type ImportStripHandle } from 'features/items';
+import { ImportMenuPanel } from 'features/items/components/import/import-menu-panel/import-menu-panel.component';
+import type { ImportStripHandle } from 'features/items/components/import/import-strip/interfaces/import-strip-handle.interface';
 import { useAuth } from 'app/providers/auth-context';
 import { useRegisterPageActions } from 'app/providers/mobile-page-actions-context';
 import type { FloatingAction } from 'shared/ui';

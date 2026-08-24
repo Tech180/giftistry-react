@@ -18,6 +18,8 @@ import {
   shouldShowActionButtons,
   PriorityDisplay,
 } from '../../item-presentation';
+import { CLAIM_FORM_PROMPT_CLAIM_LINKED } from '../../item-presentation/claim-form/constants/claim-form-copy.constant';
+import { Tags } from 'features/comments';
 import {
   buildItemCardModifierClasses,
   getClaimedGrayOutClass,
@@ -28,6 +30,7 @@ import { shouldShowSharingAvatars } from '../../../utils/item-audience.util';
 import { useAuth } from 'app/providers/auth-context';
 import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import { resolveItemClaimBadgeState } from '../../../utils/resolve-item-claim-badge-state.util';
+import { resolveSuggestedByDisplayName } from '../../../utils/resolve-suggested-by-display-name.util';
 import styles from './detailed-item-view.module.css';
 
 export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
@@ -59,6 +62,10 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
     itemActions,
     claimUserId,
     claimActorName,
+    linkedClaimPeers = [],
+    hasLinkedUnclaimPeers = false,
+    wishlistItemsForLinkedClaim = [],
+    onLinkedClaimItemClick,
     isTaggingModeActive,
     isTaggedSelection,
     onSelectTag,
@@ -203,7 +210,7 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
               {item.IsSuggestion && (
                 <SuggestionBadge
                   userId={item.SuggestedByUserId}
-                  displayName={item.SuggestedByUsername || 'Collaborator'}
+                  displayName={resolveSuggestedByDisplayName(item)}
                 />
               )}
               {hasPriorityValue(item.Priority) && (
@@ -317,6 +324,7 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
               onDeleteCancel={() => setShowDeleteConfirm(false)}
               splitOnMobile
               unclaimDisabled={showClaimForm}
+              hasLinkedUnclaimPeers={hasLinkedUnclaimPeers}
             />
           </div>
         </footer>
@@ -338,13 +346,37 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
                 onAnonymousChange={setAnonymous}
                 onSubmitted={() => setShowClaimForm(false)}
                 onCancel={() => setShowClaimForm(false)}
+                linkedItems={linkedClaimPeers}
+                wishlistItems={wishlistItemsForLinkedClaim}
+                onLinkedItemClick={onLinkedClaimItemClick}
               />
             ) : (
               <div className={styles['claim-fallback']}>
-                <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
+                <ClaimPrompt
+                  anonymous={anonymous}
+                  onAnonymousChange={setAnonymous}
+                  prompt={
+                    linkedClaimPeers.length > 0
+                      ? CLAIM_FORM_PROMPT_CLAIM_LINKED
+                      : undefined
+                  }
+                />
+                {linkedClaimPeers.length > 0 && (
+                  <Tags
+                    appearance="badges"
+                    taggedIds={linkedClaimPeers.map((peer) => peer.Id)}
+                    items={wishlistItemsForLinkedClaim}
+                    onItemTaggedClick={onLinkedClaimItemClick}
+                  />
+                )}
                 <div className={styles['claim-fallback-actions']}>
-                  <Button variant="primary" size="sm" onClick={() => handleClaim()} isLoading={claimLoading}>
-                    Yes
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleClaim()}
+                    isLoading={claimLoading}
+                  >
+                    {linkedClaimPeers.length > 0 ? 'Claim all' : 'Yes'}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => setShowClaimForm(false)}>
                     Cancel

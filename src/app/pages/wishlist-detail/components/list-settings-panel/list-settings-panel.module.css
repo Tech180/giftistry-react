@@ -7,6 +7,10 @@
   justify-content: flex-start;
 }
 
+.rootReadOnly {
+  opacity: 0.85;
+}
+
 .row {
   display: flex;
   align-items: center;
@@ -31,6 +35,30 @@
 
 .row:active {
   transform: scale(0.98);
+}
+
+.rowReadOnly {
+  cursor: default;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.rowReadOnly:hover {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: transparent;
+}
+
+.rowReadOnly.rowActive {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.rowReadOnly.rowActive:hover {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
 .rowActive {

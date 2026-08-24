@@ -55,6 +55,11 @@
   flex-direction: row;
 }
 
+.emoji-picker-loading {
+  min-width: 21.875rem;
+  min-height: 21.875rem;
+}
+
 .custom-emoji-sidebar {
   width: 44px !important;
   display: flex !important;

@@ -1,5 +1,6 @@
 import React from 'react';
-import { UserAvatar, UserPreviewCard } from 'shared/ui';
+import { UserAvatar } from 'shared/ui';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { UserAvatarBox } from '../user-avatar-box/user-avatar-box.html';
 import { CLAIM_BADGE_MAX_VISIBLE_AVATARS } from './constants/claim-badge-max-visible-avatars.constant';
 import { ClaimBadgeProps } from './interfaces/claim-badge-props.interface';

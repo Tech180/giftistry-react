@@ -344,9 +344,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
       }
     });
-    checkSystemStatus().then(() => {
-      fetchCurrentUser();
-    });
+    void Promise.all([checkSystemStatus(), fetchCurrentUser()]);
     return () => {
       removeInterceptor();
     };

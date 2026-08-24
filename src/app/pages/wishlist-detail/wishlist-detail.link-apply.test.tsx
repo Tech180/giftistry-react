@@ -52,6 +52,11 @@ vi.mock('features/items', () => ({
   ItemCard: () => null,
   ItemCardSkeleton: () => null,
   ItemShowcase: () => null,
+  getCategoryMeta: () => ({ label: '', icon: () => null }),
+  CompactCategoryList: () => null,
+}));
+
+vi.mock('features/items/components/import/import-strip/import-strip.component', () => ({
   ImportStrip: () => null,
 }));
 
@@ -142,6 +147,7 @@ const baseProps: WishlistDetailTemplateProps = {
   doesAddSidebarOverlayList: false,
   handleLinkingAudienceChange: vi.fn(),
   isItemLinkCompatible: () => true,
+  isItemRelateCompatible: () => true,
   handleLinkItemToggle: vi.fn(),
   handleRelateItemToggle: vi.fn(),
   loadData: vi.fn(async () => undefined),
@@ -161,6 +167,8 @@ const baseProps: WishlistDetailTemplateProps = {
   formatDate: () => '',
   isCommentsOpen: false,
   setIsCommentsOpen: vi.fn(),
+  showDeletedComments: false,
+  onToggleShowDeletedComments: vi.fn(),
   isShareOpen: false,
   setIsShareOpen: vi.fn(),
   isMobileFab: false,
@@ -168,6 +176,7 @@ const baseProps: WishlistDetailTemplateProps = {
   setIsImportOpen: vi.fn(),
   importStripRef: { current: null },
   viewMode: 'grid',
+  supportsKanbanViewMode: true,
   handleSetViewMode: vi.fn(),
   searchQuery: '',
   setSearchQuery: vi.fn(),
@@ -181,6 +190,8 @@ const baseProps: WishlistDetailTemplateProps = {
   displayItems: [],
   listShares: [],
   handleItemTaggedClick: vi.fn(),
+  onLinkedItemsUnsupported: vi.fn(),
+  isHighlightInteractionLocked: false,
   isTaggingModeActive: false,
   setIsTaggingModeActive: vi.fn(),
   taggedItemIds: [],
@@ -288,7 +299,7 @@ describe('WishlistDetailTemplate link apply bar', () => {
     expect(screen.getByTestId('comments')).toHaveAttribute('data-collapse', 'false');
   });
 
-  test('viewer sees add actions while import and auto-add stay collaborator-only', () => {
+  test('viewer sees add and auto-add while import stays collaborator-only', () => {
     render(
       <MemoryRouter>
         <WishlistDetailTemplate
@@ -304,7 +315,26 @@ describe('WishlistDetailTemplate link apply bar', () => {
     );
 
     expect(screen.getByRole('button', { name: /add manually/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /auto add from link/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /import/i })).not.toBeInTheDocument();
+  });
+
+  test('viewer without AI does not see auto-add', () => {
+    render(
+      <MemoryRouter>
+        <WishlistDetailTemplate
+          {...baseProps}
+          wishlist={{ ...wishlist, AiEnabled: false }}
+          canShowAi
+          isOwner={false}
+          canCollaborate={false}
+          canSuggest
+          isAddOpen={false}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('button', { name: /add manually/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /auto add from link/i })).not.toBeInTheDocument();
   });
 

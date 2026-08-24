@@ -15,4 +15,8 @@ export interface ClaimFormProps {
   onCancel: () => void;
   onBeforeSubmit?: (draft: ClaimQuantityDraft[]) => boolean | Promise<boolean>;
   compact?: boolean;
+  /** Unclaimed linked peers — when present, claim UI is a single "Claim these items?" prompt. */
+  linkedItems?: Item[];
+  wishlistItems?: Item[];
+  onLinkedItemClick?: (itemId: string) => void;
 }

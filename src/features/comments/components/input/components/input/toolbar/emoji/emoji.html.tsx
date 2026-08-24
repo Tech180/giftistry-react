@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Smile } from 'lucide-react';
-import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { EMOJI_CATEGORIES } from '../../../../../../constants/emoji-categories';
 import { EmojiTemplateProps } from './interfaces/emoji-template-props.interface';
 import { AnchoredPopover } from '../anchored-popover/anchored-popover.component';
 import styles from './emoji.module.css';
+
+const EmojiPickerPanel = lazy(() => import('./emoji-picker-panel.component'));
 
 export const EmojiTemplate: React.FC<EmojiTemplateProps> = ({
   isOpen,
@@ -19,10 +20,6 @@ export const EmojiTemplate: React.FC<EmojiTemplateProps> = ({
   onEmojiSelect,
   buttonClassName,
 }) => {
-  const currentCategories = searchQuery.trim()
-    ? undefined
-    : [{ category: activeCategory, name: EMOJI_CATEGORIES.find((c) => c.id === activeCategory)?.name || '' }];
-
   return (
     <div ref={anchorRef} className={styles['picker-anchor']}>
       <button
@@ -66,15 +63,16 @@ export const EmojiTemplate: React.FC<EmojiTemplateProps> = ({
               </button>
             ))}
           </div>
-          <EmojiPicker
-            key={`${activeCategory}-${searchQuery ? 'search' : 'normal'}`}
-            onEmojiClick={(emojiData) => onEmojiSelect(emojiData.emoji)}
-            autoFocusSearch={false}
-            theme={effectiveTheme as Theme}
-            skinTonesDisabled
-            previewConfig={{ showPreview: false }}
-            categories={currentCategories}
-          />
+          {isOpen ? (
+            <Suspense fallback={<div className={styles['emoji-picker-loading']} aria-hidden />}>
+              <EmojiPickerPanel
+                activeCategory={activeCategory}
+                searchQuery={searchQuery}
+                effectiveTheme={effectiveTheme}
+                onEmojiSelect={onEmojiSelect}
+              />
+            </Suspense>
+          ) : null}
         </div>
       </AnchoredPopover>
     </div>

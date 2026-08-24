@@ -5,6 +5,7 @@ import type { ItemQuantitySummary } from '../interfaces/item-quantity-summary.in
 /**
  * Resolve multi-count / desired quantity for list cards and claim state.
  * Prefers server claim summaries, then metadata, then claim rows.
+ * DesiredQuantity 0 means unlimited.
  */
 export function resolveItemQuantitySummary(
   item: Item,
@@ -12,16 +13,16 @@ export function resolveItemQuantitySummary(
 ): ItemQuantitySummary {
   const meta = metadata ?? item.Metadata ?? null;
 
-  const desiredQuantity = Math.max(
-    1,
-    Number(
-      item.DesiredQuantity != null
-        ? item.DesiredQuantity
-        : meta?.DesiredQuantity != null
-          ? meta.DesiredQuantity
-          : 1
-    ) || 1
-  );
+  const rawDesired =
+    item.DesiredQuantity != null
+      ? item.DesiredQuantity
+      : meta?.DesiredQuantity != null
+        ? meta.DesiredQuantity
+        : 1;
+  const parsed = Number(rawDesired);
+  const desiredQuantity =
+    parsed === 0 ? 0 : Math.max(1, Number.isFinite(parsed) ? parsed : 1);
+  const isUnlimited = desiredQuantity === 0;
 
   const claimedQuantity =
     item.TotalClaimedQuantity != null
@@ -31,18 +32,18 @@ export function resolveItemQuantitySummary(
   const isMultiCount =
     item.IsMultiCount != null
       ? item.IsMultiCount
-      : meta?.MultiCount === true || desiredQuantity > 1;
+      : meta?.MultiCount === true || isUnlimited || desiredQuantity > 1;
 
   const progressPercent =
-    desiredQuantity > 0
-      ? Math.min(100, Math.round((claimedQuantity / desiredQuantity) * 100))
-      : 0;
+    isUnlimited || desiredQuantity <= 0
+      ? 0
+      : Math.min(100, Math.round((claimedQuantity / desiredQuantity) * 100));
 
   return {
     isMultiCount,
     desiredQuantity,
     claimedQuantity,
-    shouldDisplay: desiredQuantity > 1,
+    shouldDisplay: isUnlimited || desiredQuantity > 1,
     progressPercent,
   };
 }
@@ -52,6 +53,9 @@ export function formatItemQuantityBadge(
   summary: ItemQuantitySummary,
   isOwner = false,
 ): string {
+  if (summary.desiredQuantity === 0) {
+    return '∞';
+  }
   if (isOwner) {
     return `×${summary.desiredQuantity}`;
   }

@@ -1,5 +1,6 @@
 import React from 'react';
-import { UserAvatar, UserPreviewCard } from 'shared/ui';
+import { UserAvatar } from 'shared/ui';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { UserAvatarBox } from '../user-avatar-box/user-avatar-box.html';
 import { OwnerBadgeProps } from './interfaces/owner-badge-props.interface';
 import styles from './owner-badge.module.css';

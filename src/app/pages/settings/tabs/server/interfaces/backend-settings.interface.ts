@@ -54,6 +54,17 @@ export interface BackendSettings {
   GrabInfoConcurrency?: number;
   GrabInfoConcurrencyUnlimited?: boolean;
   GrabInfoActiveStreamLimit?: number;
+  NtfyEnabled?: boolean;
+  NtfyBaseUrl?: string;
+  NtfyAuthToken?: string;
+  NtfyTopicPrefix?: string;
+  WebPushEnabled?: boolean;
+  WebPushVapidPublicKey?: string;
+  WebPushVapidPrivateKey?: string;
+  WebPushSubject?: string;
+  FcmEnabled?: boolean;
+  FcmProjectId?: string;
+  FcmServiceAccountJson?: string;
   AiDefaultPrompts?: AiDefaultPromptsView;
 }
 

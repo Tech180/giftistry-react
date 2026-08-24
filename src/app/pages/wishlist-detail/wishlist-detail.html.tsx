@@ -1,10 +1,12 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import styles from './wishlist-detail.module.css';
-import { Plus, ArrowLeft, ChevronDown, X, MessageSquare, Wand2 } from 'lucide-react';
+import { Plus, ArrowLeft, ChevronDown, X, MessageSquare, Wand2, Archive } from 'lucide-react';
 import { SharePanel } from 'features/wishlists';
-import { ItemCard, ItemCardSkeleton, ItemShowcase, getCategoryMeta } from 'features/items';
-import { CommentSection } from 'features/comments';
+import { ItemCard, ItemCardSkeleton, ItemShowcase, getCategoryMeta, CompactCategoryList } from 'features/items';
+import { ImportStrip } from 'features/items/components/import/import-strip/import-strip.component';
+import { CommentSection, DeletedCommentsToggle } from 'features/comments';
 import {
   getItemsContainerClass,
   getLayoutClass,
@@ -16,7 +18,6 @@ import { AddItemWidget } from './components/add-item-widget/add-item-widget.comp
 import { Comments } from './components/drawer/comments/comments.component';
 import { Header } from './components/header/header.component';
 import { ListViewControls } from './components/list-view-controls/list-view-controls.component';
-import { ImportStrip } from 'features/items';
 import { JobProgressBox } from 'features/jobs';
 
 export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
@@ -61,6 +62,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   doesAddSidebarOverlayList,
   handleLinkingAudienceChange,
   isItemLinkCompatible,
+  isItemRelateCompatible,
   handleLinkItemToggle,
   handleRelateItemToggle,
   loadData: _loadData,
@@ -85,6 +87,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   formatDate,
   isCommentsOpen,
   setIsCommentsOpen,
+  showDeletedComments,
+  onToggleShowDeletedComments,
   isShareOpen,
   setIsShareOpen,
   isMobileFab,
@@ -92,6 +96,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   setIsImportOpen,
   importStripRef,
   viewMode,
+  supportsKanbanViewMode,
   handleSetViewMode,
   searchQuery,
   setSearchQuery,
@@ -105,6 +110,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   displayItems,
   listShares,
   handleItemTaggedClick,
+  onLinkedItemsUnsupported,
+  isHighlightInteractionLocked = false,
   isTaggingModeActive,
   setIsTaggingModeActive,
   taggedItemIds,
@@ -140,7 +147,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
     );
   }
 
-  const canAutoAdd = Boolean(canCollaborate && canShowAi && wishlist.AiEnabled);
+  const canAutoAdd = Boolean(canSuggest && canShowAi && wishlist.AiEnabled);
   const isLocked = isExpired || isArchived;
 
   const addItemWidget =
@@ -204,7 +211,9 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           (isAddOpen || !!editingItem)
             ? ((isLinkingModeActive || isRelatingModeActive) &&
                 (!editingItem || item.Id !== editingItem.Id) &&
-                isItemLinkCompatible(item))
+                (isLinkingModeActive
+                  ? isItemLinkCompatible(item)
+                  : isItemRelateCompatible(item)))
             : (isTaggingModeActive || isReplyTaggingModeActive)
         }
         isTaggedSelection={
@@ -232,14 +241,22 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         viewMode={viewMode}
         isSelected={selectedItemId === item.Id || viewingItem?.Id === item.Id}
         onSelect={
-          shouldOpenItemViewer ? undefined : () => setSelectedItemId(item.Id)
+          viewMode === 'grid'
+            ? shouldOpenItemViewer
+              ? () => openItemViewer(item)
+              : () => setSelectedItemId(item.Id)
+            : undefined
         }
         onView={
-          shouldOpenItemViewer ? () => openItemViewer(item) : undefined
+          shouldOpenItemViewer && viewMode !== 'grid'
+            ? () => openItemViewer(item)
+            : undefined
         }
         wishlistItems={displayItems}
         isLinkingContext={(isAddOpen || !!editingItem) && isLinkingModeActive}
         isRelatingContext={(isAddOpen || !!editingItem) && isRelatingModeActive}
+        onLinkedItemNavigate={handleItemTaggedClick}
+        onLinkedItemsUnsupported={onLinkedItemsUnsupported}
       />
     );
 
@@ -254,7 +271,19 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
     (isItemFormSessionActive && isAssociationModeActive) || collapseDrawerWhileTagging;
 
   return (
-    <div className={styles['app-layout']}>
+    <>
+    {isArchived ? (
+      <p className={styles['archived-banner']} role="status" aria-label="Archived">
+        <Archive size={14} aria-hidden />
+        <span>Archived</span>
+        <Archive size={14} aria-hidden />
+      </p>
+    ) : null}
+    <div
+      className={styles['app-layout']}
+      inert={isHighlightInteractionLocked || undefined}
+      aria-busy={isHighlightInteractionLocked || undefined}
+    >
       {(!isPublicGuest || !!viewingItem) && (
       <AddItem
         isOpen={isItemFormSessionActive}
@@ -372,6 +401,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
             <div className={styles['grid-column']}>
               <ListViewControls
                 viewMode={viewMode}
+                supportsKanbanViewMode={supportsKanbanViewMode}
                 handleSetViewMode={handleSetViewMode}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
@@ -482,6 +512,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                         wishlistItems={items}
                         aiEnabled={wishlist.AiEnabled}
                         variant="inline"
+                        onLinkedItemNavigate={handleItemTaggedClick}
+                        onLinkedItemsUnsupported={onLinkedItemsUnsupported}
                       />
                     </div>
                   </div>
@@ -494,9 +526,15 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                       <span className={styles['inspector-title']}>
                         <MessageSquare size={16} /> Discussion
                       </span>
-                      <button className={styles['close-btn']} onClick={() => setIsCommentsOpen(false)}>
-                        <X size={16} />
-                      </button>
+                      <div className={styles['inspector-header-actions']}>
+                        <DeletedCommentsToggle
+                          showDeletedComments={showDeletedComments}
+                          onToggle={onToggleShowDeletedComments}
+                        />
+                        <button className={styles['close-btn']} onClick={() => setIsCommentsOpen(false)}>
+                          <X size={16} />
+                        </button>
+                      </div>
                     </div>
                     <div className={styles['inspector-body']}>
                       <CommentSection
@@ -522,6 +560,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                         setIsReplyTaggingModeActive={setIsReplyTaggingModeActive}
                         replyTaggedItemIds={replyTaggedItemIds}
                         setReplyTaggedItemIds={setReplyTaggedItemIds}
+                        showDeletedComments={showDeletedComments}
                       />
                     </div>
                   </div>
@@ -536,6 +575,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
             <div className={styles['items-column']}>
               <ListViewControls
                 viewMode={viewMode}
+                supportsKanbanViewMode={supportsKanbanViewMode}
                 handleSetViewMode={handleSetViewMode}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
@@ -576,16 +616,43 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                                 <span className={styles['group-count']}>{group.items.length}</span>
                               </button>
                               {!isCollapsed && (
-                                <div
-                                  id={`group-items-${group.categoryKey}`}
-                                  className={styles[getItemsContainerClass(viewMode)]}
-                                >
-                                  {group.items.map((item) => (
-                                    <div key={item.Id} id={`item-card-${item.Id}`}>
-                                      {renderItemCard(item, group.label)}
-                                    </div>
-                                  ))}
-                                </div>
+                                viewMode === 'compact' ? (
+                                  <CompactCategoryList
+                                    id={`group-items-${group.categoryKey}`}
+                                    items={group.items}
+                                    allowGroupFunds={wishlist.AllowGroupFunds}
+                                    isTaggingModeActive={
+                                      isTaggingModeActive ||
+                                      isReplyTaggingModeActive ||
+                                      ((isAddOpen || !!editingItem) &&
+                                        (isLinkingModeActive || isRelatingModeActive))
+                                    }
+                                    isOwner={isOwner}
+                                    canShowTrailingActions={
+                                      !isPublicGuest &&
+                                      (canCollaborate || !isOwner) &&
+                                      !isLocked
+                                    }
+                                    className={styles['items-container-compact']}
+                                  >
+                                    {(item) => (
+                                      <div key={item.Id} id={`item-card-${item.Id}`}>
+                                        {renderItemCard(item, group.label)}
+                                      </div>
+                                    )}
+                                  </CompactCategoryList>
+                                ) : (
+                                  <div
+                                    id={`group-items-${group.categoryKey}`}
+                                    className={styles[getItemsContainerClass(viewMode)]}
+                                  >
+                                    {group.items.map((item) => (
+                                      <div key={item.Id} id={`item-card-${item.Id}`}>
+                                        {renderItemCard(item, group.label)}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )
                               )}
                             </section>
                           );
@@ -671,5 +738,16 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
       </Modal>
       )}
     </div>
+    {isHighlightInteractionLocked
+      ? createPortal(
+          <div
+            className={styles['highlight-interaction-lock']}
+            aria-hidden="true"
+            data-testid="highlight-interaction-lock"
+          />,
+          document.body
+        )
+      : null}
+    </>
   );
 };

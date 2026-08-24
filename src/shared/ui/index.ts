@@ -7,7 +7,7 @@ export * from './drawer/drawer.component';
 export * from './drawer/mini/mini-drawer.component';
 export * from './sidebar/sidebar.component';
 export * from './sidebar/item/sidebar-item.component';
-export * from './user-preview-card';
+export type { UserPreviewCardProps } from './user-preview-card/interfaces/user-preview-card-props.interface';
 export * from './badge/badge.component';
 export * from './ai-status-badge/ai-status-badge.component';
 export * from './chip/chip.component';

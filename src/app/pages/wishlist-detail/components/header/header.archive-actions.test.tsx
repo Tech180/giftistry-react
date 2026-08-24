@@ -84,6 +84,7 @@ const baseProps: HeaderTemplateProps = {
   listSettingsRef: { current: null },
   exportContext: { exporterName: 'Owner', isOwner: true, currentUserId: 'u1' },
   showListSettings: false,
+  listSettingsReadOnly: false,
   showOwnerBadgeRegion: false,
 };
 
@@ -124,5 +125,42 @@ describe('HeaderTemplate archive actions', () => {
     expect(screen.queryByRole('button', { name: /discussion/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /export/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /share registry/i })).not.toBeInTheDocument();
+  });
+
+  test('authenticated non-owner owner badge can hide on mobile FAB breakpoint', () => {
+    const { container } = renderHeader({
+      isOwner: false,
+      showOwnerBadgeRegion: true,
+      hideOwnerBadgeOnMobile: true,
+      wishlist: {
+        ...wishlist,
+        UserId: 'owner-2',
+        OwnerFirstName: 'Ada',
+        OwnerUsername: 'ada',
+      },
+    });
+
+    const badgeRegion = container.querySelector('[class*="hideOwnerBadgeOnMobile"]');
+    expect(badgeRegion).not.toBeNull();
+    expect(screen.getAllByLabelText('Owner: Ada').length).toBeGreaterThan(0);
+  });
+
+  test('public guest owner badge stays visible without mobile hide class', () => {
+    const { container } = renderHeader({
+      isPublicGuest: true,
+      isOwner: false,
+      canImport: false,
+      showOwnerBadgeRegion: true,
+      hideOwnerBadgeOnMobile: false,
+      wishlist: {
+        ...wishlist,
+        UserId: 'owner-2',
+        OwnerFirstName: 'Ada',
+        OwnerUsername: 'ada',
+      },
+    });
+
+    expect(container.querySelector('[class*="hideOwnerBadgeOnMobile"]')).toBeNull();
+    expect(screen.getAllByLabelText('Owner: Ada').length).toBeGreaterThan(0);
   });
 });

@@ -25,4 +25,6 @@ export interface ItemCardProps {
   isLinkingContext?: boolean;
   isRelatingContext?: boolean;
   aiEnabled?: boolean;
+  onLinkedItemNavigate?: (itemId: string, returnToItemId?: string) => void;
+  onLinkedItemsUnsupported?: () => void;
 }

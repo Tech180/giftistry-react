@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { authApi, ApiUser } from 'features/auth';
+import { authApi } from 'features/auth/api/auth.api';
+import type { ApiUser } from 'features/auth/interfaces/api-user.interface';
 import { useAuth } from 'app/providers/auth-context';
 import { UserPreviewCardProps } from './interfaces/user-preview-card-props.interface';
 import { UserPreviewCardTemplate } from './user-preview-card.html';

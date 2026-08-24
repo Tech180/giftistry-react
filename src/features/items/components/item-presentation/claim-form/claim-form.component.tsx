@@ -15,8 +15,10 @@ import { ClaimFormTemplate } from './claim-form.html';
 import {
   CLAIM_FORM_CONFIRM_CLAIM,
   CLAIM_FORM_CONFIRM_FALLBACK,
+  CLAIM_FORM_CONFIRM_LINKED,
   CLAIM_FORM_CONFIRM_UPDATE,
   CLAIM_FORM_PROMPT_CLAIM,
+  CLAIM_FORM_PROMPT_CLAIM_LINKED,
   CLAIM_FORM_PROMPT_UPDATE,
   CLAIM_FORM_TITLE_CLAIM,
   CLAIM_FORM_TITLE_UPDATE,
@@ -35,11 +37,16 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
   onCancel,
   onBeforeSubmit,
   compact = false,
+  linkedItems = [],
+  wishlistItems = [],
+  onLinkedItemClick,
 }) => {
   const idPrefix = useId();
   const resolvedMetadata =
     metadata ?? parseItemDescription(item.Description, item.Metadata).metadata;
-  const showQuantityUi = itemNeedsClaimQuantityUi(item, resolvedMetadata);
+  const hasLinkedBundle = linkedItems.length > 0;
+  const showQuantityUi =
+    !hasLinkedBundle && itemNeedsClaimQuantityUi(item, resolvedMetadata);
   const lines = resolveClaimQuantityLines(item, resolvedMetadata, userId);
   const [draft, setDraft] = useState<ClaimQuantityDraft[]>(() => buildInitialClaimDraft(lines));
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -52,6 +59,7 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
     draft,
     claimedByName: submitName,
     anonymous,
+    includeLinked: hasLinkedBundle,
   });
   const confirmDisabled = showQuantityUi && plan.type === 'noop';
   const visibleLines = lines.filter(isClaimQuantityLineVisible);
@@ -117,12 +125,20 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
       return;
     }
 
+    if (!hasLinkedBundle && onBeforeSubmit) {
+      const allowed = await onBeforeSubmit(draft);
+      if (!allowed) {
+        return;
+      }
+    }
+
     setConfirmLoading(true);
     try {
       await itemActions.claimItem({
         itemId: item.Id,
         claimedByName: submitName,
         anonymous,
+        includeLinked: hasLinkedBundle,
       });
       onSubmitted();
     } catch (err) {
@@ -132,16 +148,24 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
     }
   };
 
+  const prompt = userHasClaims
+    ? CLAIM_FORM_PROMPT_UPDATE
+    : hasLinkedBundle
+      ? CLAIM_FORM_PROMPT_CLAIM_LINKED
+      : CLAIM_FORM_PROMPT_CLAIM;
+
   return (
     <ClaimFormTemplate
-      prompt={userHasClaims ? CLAIM_FORM_PROMPT_UPDATE : CLAIM_FORM_PROMPT_CLAIM}
+      prompt={prompt}
       title={userHasClaims ? CLAIM_FORM_TITLE_UPDATE : CLAIM_FORM_TITLE_CLAIM}
       confirmLabel={
         showQuantityUi
           ? userHasClaims
             ? CLAIM_FORM_CONFIRM_UPDATE
             : CLAIM_FORM_CONFIRM_CLAIM
-          : CLAIM_FORM_CONFIRM_FALLBACK
+          : hasLinkedBundle
+            ? CLAIM_FORM_CONFIRM_LINKED
+            : CLAIM_FORM_CONFIRM_FALLBACK
       }
       anonymous={anonymous}
       onAnonymousChange={onAnonymousChange}
@@ -155,6 +179,9 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
       onQuantityChange={onQuantityChange}
       onSubmit={onSubmit}
       onCancel={onCancel}
+      linkedItems={linkedItems}
+      wishlistItems={wishlistItems}
+      onLinkedItemClick={onLinkedItemClick}
     />
   );
 };

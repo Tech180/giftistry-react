@@ -11,7 +11,7 @@
 .claim-form-compact {
   border: 0;
   border-radius: 0;
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
   background: transparent;
   gap: var(--spacing-base);
 }
@@ -21,6 +21,27 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-md);
+}
+
+.claim-form-compact .drawer-actions {
+  margin-top: 0;
+  padding-top: var(--spacing-sm);
+  border-top: 1px dashed var(--border);
+}
+
+.claim-form-compact .action-group {
+  gap: 0;
+  min-width: var(--compact-col-claimActions, 10.75rem);
+  align-self: stretch;
+  border-left: 1px solid var(--border);
+  margin-inline-start: auto;
+}
+
+.claim-form-compact .drawer-action-btn {
+  flex: 1 1 0;
+  min-width: 6rem;
+  border-radius: 0;
+  min-height: 100%;
 }
 
 .claim-drawer-header {
@@ -168,6 +189,23 @@
   min-width: 0;
 }
 
+.claim-linked-tags {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.claim-simple-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-width: 0;
+}
+
 @media (max-width: 48rem) {
   .drawer-actions {
     flex-direction: column;
@@ -184,6 +222,19 @@
     min-height: 2.75rem;
   }
 
+  .claim-form-compact .action-group {
+    min-width: 0;
+    width: 100%;
+    border-left: none;
+    margin-inline-start: 0;
+  }
+
+  .claim-form-compact .drawer-action-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 2.75rem;
+  }
+
   .claim-form-compact-row {
     flex-direction: column;
     align-items: stretch;
@@ -192,6 +243,11 @@
   .claim-simple-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .claim-linked-tags {
+    margin-inline-start: 0;
+    justify-content: flex-start;
   }
 
   .form-actions {

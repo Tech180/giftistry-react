@@ -10,6 +10,8 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
   ListShares: true,
   ItemClaims: true,
   Comments: true,
+  JobCompletions: true,
+  PushAlerts: true,
 };
 
 export const NotificationsTab: React.FC<NotificationsTabProps> = ({ showToast }) => {

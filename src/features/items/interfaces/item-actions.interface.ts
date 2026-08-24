@@ -31,6 +31,10 @@ export interface ItemActions {
   addItemLink: (itemId: string, url: string) => Promise<ItemLink>;
   claimItem: (params: ClaimItemParams) => Promise<Claim | Claim[]>;
   claimItems: (requests: ClaimItemParams[]) => Promise<Claim[]>;
-  unclaimItem: (itemId: string, userId?: string | null) => Promise<void>;
+  unclaimItem: (
+    itemId: string,
+    userId?: string | null,
+    includeLinked?: boolean
+  ) => Promise<void>;
   deleteItem: (itemId: string) => Promise<void>;
 }

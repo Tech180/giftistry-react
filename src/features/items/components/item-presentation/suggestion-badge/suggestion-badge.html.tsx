@@ -1,5 +1,6 @@
 import React from 'react';
-import { UserAvatar, UserPreviewCard } from 'shared/ui';
+import { UserAvatar } from 'shared/ui';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { UserAvatarBox } from '../user-avatar-box/user-avatar-box.html';
 import { getClaimInitials } from '../claim-badge/utils/claim-badge-display.util';
 import { SuggestionBadgeProps } from './interfaces/suggestion-badge-props.interface';

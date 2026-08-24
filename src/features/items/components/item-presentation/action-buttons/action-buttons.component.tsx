@@ -28,6 +28,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   compact = false,
   splitOnMobile = false,
   unclaimDisabled = false,
+  hasLinkedUnclaimPeers = false,
 }) => {
   const layoutMode = resolveActionButtonsLayoutMode({
     isOwner,
@@ -73,6 +74,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       onDeleteConfirm={onDeleteConfirm}
       onDeleteCancel={onDeleteCancel}
       unclaimDisabled={unclaimDisabled}
+      hasLinkedUnclaimPeers={hasLinkedUnclaimPeers}
     />
   );
 };

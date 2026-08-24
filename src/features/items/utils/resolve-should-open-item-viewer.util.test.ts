@@ -51,4 +51,34 @@ describe('resolveShouldOpenItemViewer', () => {
       })
     ).toBe(true);
   });
+
+  it('returns true for owners when the list is locked', () => {
+    expect(
+      resolveShouldOpenItemViewer({
+        isOwner: true,
+        canCollaborate: true,
+        isLocked: true,
+      })
+    ).toBe(true);
+  });
+
+  it('returns true for collaborators when the list is locked', () => {
+    expect(
+      resolveShouldOpenItemViewer({
+        isOwner: false,
+        canCollaborate: true,
+        isLocked: true,
+      })
+    ).toBe(true);
+  });
+
+  it('returns false for owners when the list is not locked', () => {
+    expect(
+      resolveShouldOpenItemViewer({
+        isOwner: true,
+        canCollaborate: true,
+        isLocked: false,
+      })
+    ).toBe(false);
+  });
 });

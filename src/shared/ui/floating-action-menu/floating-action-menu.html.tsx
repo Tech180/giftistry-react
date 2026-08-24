@@ -103,6 +103,7 @@ export const FloatingActionMenuTemplate: React.FC<FloatingActionMenuTemplateProp
                       styles.toolBtn,
                       toolbarTone === 'primary' ? styles.primary : '',
                       toolbarTone === 'danger' ? styles.danger : '',
+                      action.toolbarMuted ? styles.muted : '',
                     ]
                       .filter(Boolean)
                       .join(' ')}
@@ -117,6 +118,7 @@ export const FloatingActionMenuTemplate: React.FC<FloatingActionMenuTemplateProp
                   >
                     <span className={styles.icon}>{action.icon}</span>
                   </button>
+                  {action.separateAfter && <div className={styles.toolDivider} />}
                 </React.Fragment>
               );
             })}

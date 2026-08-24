@@ -1,0 +1,25 @@
+.compact-category-list {
+  --compact-col-leading: auto;
+  --compact-col-select: 0px;
+  --compact-col-relations: 0px;
+  --compact-col-audience: 0px;
+  --compact-col-quantity: 0px;
+  --compact-col-price: auto;
+  --compact-col-funding: 0px;
+  --compact-col-trailing: 0px;
+  --compact-col-claimActions: 10.75rem;
+}
+
+@media (max-width: 48rem) {
+  .compact-category-list {
+    --compact-col-leading: auto !important;
+    --compact-col-select: 0px !important;
+    --compact-col-relations: 0px !important;
+    --compact-col-audience: 0px !important;
+    --compact-col-quantity: 0px !important;
+    --compact-col-price: auto !important;
+    --compact-col-funding: 0px !important;
+    --compact-col-trailing: auto !important;
+    --compact-col-claimActions: auto !important;
+  }
+}

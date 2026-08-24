@@ -1,4 +1,13 @@
-import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useAuth } from './auth-context';
 import { getUserWsUrl } from 'features/comments/utils/comment-ws.util';
 
@@ -15,23 +24,23 @@ export function UserSocketProvider({ children }: { children: ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<WebSocket | null>(null);
   const listenersRef = useRef<Record<string, Set<(data: any) => void>>>({});
-  const reconnectTimeoutRef = useRef<any>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const addEventListener = (type: string, callback: (data: any) => void) => {
+  const addEventListener = useCallback((type: string, callback: (data: any) => void) => {
     if (!listenersRef.current[type]) {
       listenersRef.current[type] = new Set();
     }
     listenersRef.current[type].add(callback);
-  };
+  }, []);
 
-  const removeEventListener = (type: string, callback: (data: any) => void) => {
+  const removeEventListener = useCallback((type: string, callback: (data: any) => void) => {
     if (listenersRef.current[type]) {
       listenersRef.current[type].delete(callback);
       if (listenersRef.current[type].size === 0) {
         delete listenersRef.current[type];
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -109,8 +118,13 @@ export function UserSocketProvider({ children }: { children: ReactNode }) {
     };
   }, [isAuthenticated, user]);
 
+  const value = useMemo(
+    () => ({ isConnected, addEventListener, removeEventListener }),
+    [isConnected, addEventListener, removeEventListener]
+  );
+
   return (
-    <UserSocketContext.Provider value={{ isConnected, addEventListener, removeEventListener }}>
+    <UserSocketContext.Provider value={value}>
       {children}
     </UserSocketContext.Provider>
   );

@@ -16,6 +16,7 @@ export interface AddItemFormProps {
   onDraftChange?: (draft: Partial<Item> | null) => void;
   wishlistItems?: Item[];
   linkedItemIds: string[];
+  setLinkedItemIds: React.Dispatch<React.SetStateAction<string[]>>;
   resolvedLinkedCount: number;
   relatedItemIds: string[];
   resolvedRelatedCount: number;

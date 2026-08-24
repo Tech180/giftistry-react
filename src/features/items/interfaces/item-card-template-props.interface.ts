@@ -40,6 +40,12 @@ export interface ItemCardTemplateProps {
   itemActions?: ItemActions;
   claimUserId?: string | null;
   claimActorName?: string | null;
+  /** Unclaimed linked peers for a single "Claim these items?" prompt. */
+  linkedClaimPeers?: Item[];
+  /** True when unclaim should clear the user's claims across the link group. */
+  hasLinkedUnclaimPeers?: boolean;
+  wishlistItemsForLinkedClaim?: Item[];
+  onLinkedClaimItemClick?: (itemId: string) => void;
 
   // Delete State/Handlers
   showDeleteConfirm: boolean;

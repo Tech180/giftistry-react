@@ -11,6 +11,7 @@ import { ListParticipant } from '../../interfaces/list-participant.interface';
 import { convertMentionsToMarkdown } from '../../utils/comment-content.util';
 import { getCommentWsUrl } from '../../utils/comment-ws.util';
 import { appendUniqueComment } from '../../utils/append-unique-comment.util';
+import { buildVisibleCommentTree } from '../../utils/build-visible-comment-tree.util';
 import {
   COMMENT_ANON_STORAGE_KEY,
   ANONYMOUS_COMMENTER_NAME,
@@ -39,6 +40,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   setIsReplyTaggingModeActive,
   replyTaggedItemIds,
   setReplyTaggedItemIds,
+  showDeletedComments = false,
 }) => {
   const { user, isAuthenticated } = useAuth();
 
@@ -113,27 +115,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   participantsRef.current = participants;
 
   // Compute comment tree structure
-  const parentComments = React.useMemo(() => {
-    return comments.filter((c) => !c.ParentId);
-  }, [comments]);
-
-  const repliesMap = React.useMemo(() => {
-    const map: Record<string, any[]> = {};
-    for (const c of comments) {
-      if (c.ParentId) {
-        if (!map[c.ParentId]) {
-          map[c.ParentId] = [];
-        }
-        map[c.ParentId].push(c);
-      }
-    }
-    for (const parentId of Object.keys(map)) {
-      map[parentId].sort(
-        (a, b) => new Date(a.CreatedAt ?? 0).getTime() - new Date(b.CreatedAt ?? 0).getTime()
-      );
-    }
-    return map;
-  }, [comments]);
+  const { parentComments, repliesMap } = React.useMemo(
+    () => buildVisibleCommentTree(comments, showDeletedComments),
+    [comments, showDeletedComments]
+  );
 
   useEffect(() => {
     if (!shouldScrollToBottomRef.current) return;

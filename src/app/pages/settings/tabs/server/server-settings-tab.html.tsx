@@ -5,6 +5,7 @@ import { ServerSettingsTabTemplateProps } from './interfaces/server-settings-tab
 import styles from './server-settings-tab.module.css';
 import { DbSection } from './components/db-section/db-section.component';
 import { SmtpSection } from './components/smtp-section/smtp-section.component';
+import { PushSection } from './components/push-section/push-section.component';
 import { ScrapeSection } from './components/scrape-section/scrape-section.component';
 import { AiSection } from './components/ai-section/ai-section.component';
 import dbStyles from './components/db-section/db-section.module.css';
@@ -42,6 +43,30 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   setSmtpSecure,
   smtpFrom,
   setSmtpFrom,
+  ntfyEnabled,
+  setNtfyEnabled,
+  ntfyBaseUrl,
+  setNtfyBaseUrl,
+  ntfyAuthToken,
+  setNtfyAuthToken,
+  ntfyTopicPrefix,
+  setNtfyTopicPrefix,
+  webPushEnabled,
+  setWebPushEnabled,
+  webPushVapidPublicKey,
+  setWebPushVapidPublicKey,
+  webPushVapidPrivateKey,
+  setWebPushVapidPrivateKey,
+  webPushSubject,
+  setWebPushSubject,
+  fcmEnabled,
+  setFcmEnabled,
+  fcmProjectId,
+  setFcmProjectId,
+  fcmServiceAccountJson,
+  setFcmServiceAccountJson,
+  onTestNtfy,
+  isTestingNtfy,
   showPassword,
   setShowPassword,
   isLoading,
@@ -302,6 +327,33 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
           setSmtpFrom={setSmtpFrom}
           showPassword={showPassword}
           setShowPassword={setShowPassword}
+        />
+
+        <PushSection
+          ntfyEnabled={ntfyEnabled}
+          setNtfyEnabled={setNtfyEnabled}
+          ntfyBaseUrl={ntfyBaseUrl}
+          setNtfyBaseUrl={setNtfyBaseUrl}
+          ntfyAuthToken={ntfyAuthToken}
+          setNtfyAuthToken={setNtfyAuthToken}
+          ntfyTopicPrefix={ntfyTopicPrefix}
+          setNtfyTopicPrefix={setNtfyTopicPrefix}
+          webPushEnabled={webPushEnabled}
+          setWebPushEnabled={setWebPushEnabled}
+          webPushVapidPublicKey={webPushVapidPublicKey}
+          setWebPushVapidPublicKey={setWebPushVapidPublicKey}
+          webPushVapidPrivateKey={webPushVapidPrivateKey}
+          setWebPushVapidPrivateKey={setWebPushVapidPrivateKey}
+          webPushSubject={webPushSubject}
+          setWebPushSubject={setWebPushSubject}
+          fcmEnabled={fcmEnabled}
+          setFcmEnabled={setFcmEnabled}
+          fcmProjectId={fcmProjectId}
+          setFcmProjectId={setFcmProjectId}
+          fcmServiceAccountJson={fcmServiceAccountJson}
+          setFcmServiceAccountJson={setFcmServiceAccountJson}
+          onTestNtfy={onTestNtfy}
+          isTestingNtfy={isTestingNtfy}
         />
 
         <ScrapeSection

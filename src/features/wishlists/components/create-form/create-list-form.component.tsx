@@ -3,6 +3,7 @@ import { wishlistsApi } from '../../api/wishlists.api';
 import { CreateListFormProps } from '../../interfaces/create-list-form-props.interface';
 import { CreateListFormTemplate } from './create-list-form.html';
 import { useAuth } from 'app/providers/auth-context';
+import { dateInputToExpiresAtIso } from '../../utils/date-input-to-expires-at-iso.util';
 
 export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess, onCancel }) => {
   const { canShowAi, canShowWebSearch } = useAuth();
@@ -54,7 +55,7 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess, onCan
     try {
       const res = await wishlistsApi.createWishlist(
         title.trim(),
-        expiresAt ? new Date(expiresAt).toISOString() : null,
+        dateInputToExpiresAtIso(expiresAt),
         allowGroupFunds,
         finalCategory,
         undefined,

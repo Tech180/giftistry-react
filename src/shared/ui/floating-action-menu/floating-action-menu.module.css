@@ -238,6 +238,10 @@
   color: var(--primary);
 }
 
+.toolBtn.muted {
+  opacity: 0.55;
+}
+
 .toolBtn.danger {
   color: var(--error);
 }

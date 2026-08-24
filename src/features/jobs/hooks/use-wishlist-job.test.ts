@@ -142,4 +142,33 @@ describe('useWishlistJob', () => {
     expect([...result.current.enrichingItemIds]).toEqual(['item-1']);
     expect(result.current.isActive).toBe(true);
   });
+
+  test('invokes onListChanged for list.changed frames', async () => {
+    vi.mocked(jobsApi.getActiveForList).mockResolvedValue(null);
+    const onListChanged = vi.fn();
+
+    renderHook(() => useWishlistJob('list-1', { onListChanged }));
+
+    await waitFor(() => {
+      expect(MockWebSocket.instances.length).toBe(1);
+    });
+
+    const socket = MockWebSocket.instances[0];
+    act(() => {
+      socket.onmessage?.({
+        data: JSON.stringify({
+          Type: 'list.changed',
+          Reason: 'item.created',
+          ItemId: 'item-42',
+          ActorUserId: 'user-9',
+        }),
+      });
+    });
+
+    expect(onListChanged).toHaveBeenCalledWith({
+      reason: 'item.created',
+      itemId: 'item-42',
+      actorUserId: 'user-9',
+    });
+  });
 });

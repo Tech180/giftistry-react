@@ -95,8 +95,12 @@ export const itemsApi = {
       'Items'
     ),
 
-  unclaimItem: (itemId: string) =>
-    apiClient.delete<UnclaimItemResult>(`/api/items/${itemId}/claims`),
+  unclaimItem: (itemId: string, includeLinked?: boolean) =>
+    apiClient.delete<UnclaimItemResult>(
+      `/api/items/${itemId}/claims`,
+      includeLinked ? { IncludeLinked: true } : undefined,
+      includeLinked ? 'Items' : undefined
+    ),
 
   updateItem: (
     itemId: string,

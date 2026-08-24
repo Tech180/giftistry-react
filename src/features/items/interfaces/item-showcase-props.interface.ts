@@ -16,4 +16,6 @@ export interface ItemShowcaseProps {
   wishlistItems?: Item[];
   aiEnabled?: boolean;
   variant?: 'card' | 'inline';
+  onLinkedItemNavigate?: (itemId: string, returnToItemId?: string) => void;
+  onLinkedItemsUnsupported?: () => void;
 }

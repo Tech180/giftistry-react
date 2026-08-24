@@ -49,6 +49,7 @@ export interface WishlistDetailTemplateProps {
   doesAddSidebarOverlayList: boolean;
   handleLinkingAudienceChange: (context: LinkingAudienceContext) => void;
   isItemLinkCompatible: (item: Item) => boolean;
+  isItemRelateCompatible: (item: Item) => boolean;
   handleLinkItemToggle: (itemId: string) => void;
   handleRelateItemToggle: (itemId: string) => void;
   loadData: () => Promise<void>;
@@ -73,6 +74,8 @@ export interface WishlistDetailTemplateProps {
   formatDate: (dateStr: string | null) => string;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  showDeletedComments: boolean;
+  onToggleShowDeletedComments: () => void;
   isShareOpen: boolean;
   setIsShareOpen: (open: boolean) => void;
   isMobileFab: boolean;
@@ -80,6 +83,8 @@ export interface WishlistDetailTemplateProps {
   setIsImportOpen: (open: boolean) => void;
   importStripRef: React.RefObject<ImportStripHandle | null>;
   viewMode: ItemViewMode;
+  /** True at ≥75rem where kanban is offered in the view picker. */
+  supportsKanbanViewMode: boolean;
   handleSetViewMode: (mode: ItemViewMode) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -92,7 +97,10 @@ export interface WishlistDetailTemplateProps {
   toggleGroupCollapsed: (categoryKey: string) => void;
   displayItems: Item[];
   listShares: ListShare[];
-  handleItemTaggedClick: (itemId: string) => void;
+  handleItemTaggedClick: (itemId: string, returnToItemId?: string) => void;
+  onLinkedItemsUnsupported: () => void;
+  /** Blocks clicks/selection while a tagged-item highlight (or mobile peek) is running. */
+  isHighlightInteractionLocked?: boolean;
   isTaggingModeActive: boolean;
   setIsTaggingModeActive: (active: boolean) => void;
   taggedItemIds: string[];

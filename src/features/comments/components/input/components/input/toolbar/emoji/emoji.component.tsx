@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Categories } from 'emoji-picker-react';
 import { useTheme } from 'app/providers/theme-context';
 import { DEFAULT_EMOJI_CATEGORY } from '../../../../../../constants/emoji-categories';
+import type { EmojiCategoryId } from '../../../../../../interfaces/emoji-category-id.type';
 import { EmojiProps } from './interfaces/emoji-props.interface';
 import { EmojiTemplate } from './emoji.html';
 
@@ -19,7 +19,7 @@ export const EmojiPickerButton: React.FC<EmojiProps> = ({
     ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
     : appearance === 'dark' ? 'dark' : 'light';
 
-  const [activeCategory, setActiveCategory] = useState<Categories>(DEFAULT_EMOJI_CATEGORY);
+  const [activeCategory, setActiveCategory] = useState<EmojiCategoryId>(DEFAULT_EMOJI_CATEGORY);
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleEmojiSelect = (emoji: string) => {

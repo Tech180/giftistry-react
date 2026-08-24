@@ -4,7 +4,7 @@ import {
   Wand2, ChevronDown, AlertTriangle, Check, Undo2, Pencil, Sparkles, Search,
   Layers2, Infinity,
 } from 'lucide-react';
-import { Button, Chip, Switch, AiStatusBadge } from 'shared/ui';
+import { Button, Chip, Switch, AiStatusBadge, NumberSelector } from 'shared/ui';
 import { AddItemFormTemplateProps } from '../../interfaces/add-item-form-template-props.interface';
 import { AudiencePicker } from '../audience-picker';
 import { ItemPhotoGallery } from '../photo-gallery/item-photo-gallery.component';
@@ -68,6 +68,8 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   setOtherUsersCanSee,
   claimOnCreate,
   setClaimOnCreate,
+  isMultiCount,
+  isSuggestion,
   desiredQuantity,
   setDesiredQuantity,
   variations,
@@ -152,13 +154,14 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           <div className={styles.divider} />
         </>
       )}
+      </fieldset>
 
-      {/* Section 1: Core details */}
+      {/* Item link: copy button stays outside disabled fieldsets in view mode */}
       <div className={styles.section}>
         <div className={styles['form-group']}>
           <div className={styles['link-label-row']}>
             <label className={styles.label}>Item Link</label>
-            {canUseWebSearchOnList && (
+            {canUseWebSearchOnList && !readOnly && (
               <span
                 className={styles['web-search-indicator']}
                 title="Web search enabled — scrape will also search the web for specs"
@@ -180,25 +183,31 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             >
               {linkCopied ? <Check size={16} /> : <Link size={16} />}
             </button>
-            <input
-              type="url"
-              className={`${styles.input} ${styles['input-has-icon']} ${styles['input-has-action']}`}
-              placeholder="Paste product URL..."
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-            />
-            <button
-              type="button"
-              onClick={handleScrapeClick}
-              disabled={isAutopopulating || isSummarizingNotes || !linkUrl.trim()}
-              className={`${styles['input-action']} ${isScrapeButtonPulsing ? styles['input-action-pulse'] : ''}`}
-              title="Auto-fill details from link"
-              aria-label="Auto-fill details from link"
-            >
-              <Wand2 size={14} />
-            </button>
+            <fieldset disabled={readOnly} className={styles['link-input-fieldset']}>
+              <input
+                type="url"
+                className={`${styles.input} ${styles['input-has-icon']} ${readOnly ? styles['input-has-icon-only'] : styles['input-has-action']}`}
+                placeholder="Paste product URL..."
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                readOnly={readOnly}
+                tabIndex={readOnly ? -1 : undefined}
+              />
+              {!readOnly && (
+                <button
+                  type="button"
+                  onClick={handleScrapeClick}
+                  disabled={isAutopopulating || isSummarizingNotes || !linkUrl.trim()}
+                  className={`${styles['input-action']} ${isScrapeButtonPulsing ? styles['input-action-pulse'] : ''}`}
+                  title="Auto-fill details from link"
+                  aria-label="Auto-fill details from link"
+                >
+                  <Wand2 size={14} />
+                </button>
+              )}
+            </fieldset>
           </div>
-          {isAutopopulating && (
+          {!readOnly && isAutopopulating && (
             <div className={styles['autopopulate-loader']}>
               <div className={styles.spinner} />
               <span>
@@ -209,7 +218,11 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             </div>
           )}
         </div>
+      </div>
 
+      <fieldset disabled={readOnly} className={styles['form-fieldset']}>
+      {/* Section 1: Core details */}
+      <div className={styles.section}>
         <div className={styles['form-group']}>
           <label className={styles.label}>Website Name</label>
           <div className={styles['input-wrapper']}>
@@ -258,19 +271,14 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           </div>
           <div className={styles['form-group']}>
             <label className={styles.label}>Qty</label>
-            <input
-              type="number"
-              className={`${styles.input} ${styles['input-qty']}`}
-              min="1"
-              value={desiredQuantity}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === '') setDesiredQuantity('');
-                else {
-                  const num = parseInt(val, 10);
-                  if (!isNaN(num)) setDesiredQuantity(Math.max(1, num));
-                }
-              }}
+            <NumberSelector
+              value={typeof desiredQuantity === 'number' ? desiredQuantity : 1}
+              min={0}
+              onChange={setDesiredQuantity}
+              decreaseLabel="Decrease quantity"
+              increaseLabel="Increase quantity"
+              zeroAsInfinity
+              className={styles['qty-selector']}
             />
           </div>
           <div className={styles['form-group']}>
@@ -610,7 +618,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           </div>
         )}
 
-        {hasPeerItems && !readOnly && (
+        {hasPeerItems && !readOnly && !isMultiCount && !isSuggestion && (
           <div className={styles['form-group']}>
             <label className={styles.label}>Linked Items</label>
             <div className={styles['linked-row']}>

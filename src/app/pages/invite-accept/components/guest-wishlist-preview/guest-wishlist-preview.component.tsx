@@ -4,7 +4,11 @@ import {
   ITEM_VIEW_MODE_STORAGE_KEY,
 } from 'features/items/constants/item-view-mode.constants';
 import type { ItemViewMode } from 'features/items/types/item-view-mode.type';
-import { normalizeStoredViewMode } from 'features/items/utils/item-view-mode.util';
+import {
+  isKanbanViewMode,
+  normalizeStoredViewMode,
+  resolveEffectiveViewMode,
+} from 'features/items/utils/item-view-mode.util';
 import { resolveEditorLinkedItemIds } from 'features/items/utils/item-links-sync.util';
 import { resolveEditorRelatedItemIds } from 'features/items/utils/item-related-sync.util';
 import {
@@ -12,6 +16,7 @@ import {
   linkingContextFromItem,
 } from 'features/items/utils/item-audience.util';
 import { formatWishlistExpirationDate } from 'shared/utils/format-date.util';
+import { useSupportsKanbanViewMode } from 'shared/hooks/use-supports-kanban-view-mode';
 import { isWishlistArchived } from 'features/wishlists/utils/is-wishlist-archived.util';
 import { isWishlistExpired } from 'features/wishlists/utils/is-wishlist-expired.util';
 import { groupGuestPreviewItems } from 'features/wishlists/utils/group-guest-preview-items.util';
@@ -34,6 +39,11 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
     normalizeStoredViewMode(
       typeof localStorage === 'undefined' ? null : localStorage.getItem(ITEM_VIEW_MODE_STORAGE_KEY)
     )
+  );
+  const supportsKanbanViewMode = useSupportsKanbanViewMode();
+  const effectiveViewMode = useMemo(
+    () => resolveEffectiveViewMode(viewMode, supportsKanbanViewMode),
+    [viewMode, supportsKanbanViewMode]
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -71,6 +81,9 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
   );
 
   const handleSetViewMode = (mode: ItemViewMode) => {
+    if (isKanbanViewMode(mode) && !supportsKanbanViewMode) {
+      return;
+    }
     setViewMode(mode);
     localStorage.setItem(ITEM_VIEW_MODE_STORAGE_KEY, mode);
   };
@@ -140,6 +153,7 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       doesAddSidebarOverlayList={false}
       handleLinkingAudienceChange={noop}
       isItemLinkCompatible={() => false}
+      isItemRelateCompatible={() => false}
       handleLinkItemToggle={noop}
       handleRelateItemToggle={noop}
       loadData={noopAsync}
@@ -159,13 +173,16 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       formatDate={formatWishlistExpirationDate}
       isCommentsOpen={isCommentsOpen}
       setIsCommentsOpen={setIsCommentsOpen}
+      showDeletedComments={false}
+      onToggleShowDeletedComments={noop}
       isShareOpen={false}
       setIsShareOpen={noop}
       isMobileFab={false}
       isImportOpen={false}
       setIsImportOpen={noop}
       importStripRef={importStripRef}
-      viewMode={viewMode}
+      viewMode={effectiveViewMode}
+      supportsKanbanViewMode={supportsKanbanViewMode}
       handleSetViewMode={handleSetViewMode}
       searchQuery={searchQuery}
       setSearchQuery={setSearchQuery}
@@ -189,6 +206,7 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       displayItems={items}
       listShares={[]}
       handleItemTaggedClick={noop}
+      onLinkedItemsUnsupported={noop}
       isTaggingModeActive={false}
       setIsTaggingModeActive={noop}
       taggedItemIds={[]}

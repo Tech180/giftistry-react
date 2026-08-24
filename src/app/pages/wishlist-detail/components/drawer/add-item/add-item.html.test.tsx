@@ -210,4 +210,22 @@ describe('AddItemTemplate view mode', () => {
     expect(screen.getByTestId('add-item-form')).toHaveAttribute('data-read-only', 'true');
     expect(screen.getByLabelText('Item name')).toHaveAttribute('readOnly');
   });
+
+  test('keeps the Suggestion banner above View Mode when viewing a suggestion item', async () => {
+    const { VIEW_MODE_BANNER_DESCRIPTION } = await import(
+      'features/items/constants/view-mode-banner.constant'
+    );
+    render(
+      <AddItemTemplate
+        {...baseProps}
+        isOwner={false}
+        viewingItem={{ ...viewingItem, IsSuggestion: true }}
+        editingItem={null}
+      />
+    );
+
+    const statuses = screen.getAllByRole('status');
+    expect(statuses[0]).toHaveTextContent('Suggestion');
+    expect(statuses[1]).toHaveTextContent(VIEW_MODE_BANNER_DESCRIPTION);
+  });
 });

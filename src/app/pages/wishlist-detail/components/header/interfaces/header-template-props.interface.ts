@@ -49,5 +49,7 @@ export interface HeaderTemplateProps {
   listSettingsRef: React.RefObject<HTMLDivElement | null>;
   exportContext: WishlistExportContext;
   showListSettings: boolean;
+  listSettingsReadOnly: boolean;
   showOwnerBadgeRegion: boolean;
+  hideOwnerBadgeOnMobile?: boolean;
 }

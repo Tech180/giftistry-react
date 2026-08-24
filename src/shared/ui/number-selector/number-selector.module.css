@@ -63,11 +63,62 @@
 
 .val {
   width: var(--number-selector-val-width);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-sm);
   font-variant-numeric: tabular-nums;
   color: var(--text);
+}
+
+.val-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: text;
+  color: inherit;
+}
+
+.val-btn:hover .val {
+  color: var(--primary);
+}
+
+.val-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+  z-index: 1;
+}
+
+.val-input {
+  width: var(--number-selector-val-width);
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  outline: none;
+}
+
+.val-input:focus {
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+.infinity-icon {
+  width: var(--number-selector-icon-size);
+  height: var(--number-selector-icon-size);
+  stroke-width: 2.5;
 }
 
 @media (prefers-reduced-motion: reduce) {

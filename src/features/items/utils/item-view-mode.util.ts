@@ -1,6 +1,7 @@
 import {
   DEFAULT_ITEM_VIEW_MODE,
   ITEM_VIEW_MODES,
+  KANBAN_FALLBACK_VIEW_MODE,
 } from '../constants/item-view-mode.constants';
 import type { ItemViewMode } from '../types/item-view-mode.type';
 
@@ -19,6 +20,24 @@ export function normalizeStoredViewMode(raw: string | null): ItemViewMode {
   }
 
   return DEFAULT_ITEM_VIEW_MODE;
+}
+
+export function isKanbanViewMode(mode: ItemViewMode): boolean {
+  return mode === 'kanban';
+}
+
+export function resolveEffectiveViewMode(
+  mode: ItemViewMode,
+  supportsKanban: boolean
+): ItemViewMode {
+  if (isKanbanViewMode(mode) && !supportsKanban) {
+    return KANBAN_FALLBACK_VIEW_MODE;
+  }
+  return mode;
+}
+
+export function getSelectableViewModes(supportsKanban: boolean): ItemViewMode[] {
+  return ITEM_VIEW_MODES.filter((mode) => supportsKanban || mode !== 'kanban');
 }
 
 export function getLayoutClass(mode: ItemViewMode): string {

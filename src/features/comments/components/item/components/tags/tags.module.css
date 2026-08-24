@@ -14,6 +14,18 @@
   align-self: stretch;
 }
 
+.comment-tags-container-badges {
+  --comment-tag-size: 2.75rem;
+  --comment-tag-gap: var(--spacing-sm);
+  --comment-tag-index-size: var(--spacing-md);
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: auto;
+  padding: 0;
+  border-left: none;
+}
+
 .comment-tags-list {
   position: relative;
   z-index: 1;
@@ -22,6 +34,14 @@
   align-items: center;
   gap: var(--comment-tag-gap);
   padding-inline: calc(var(--comment-tag-index-size) * 0.4);
+}
+
+.comment-tags-list-badges {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  padding-inline: calc(var(--comment-tag-index-size) * 0.35);
 }
 
 .comment-tags-list-scrollable {
@@ -104,6 +124,11 @@
 .comment-tag-icon {
   width: 0.75rem;
   height: 0.75rem;
+}
+
+.comment-tags-container-badges .comment-tag-icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .comment-tag-index {

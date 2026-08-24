@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
-import { UserPreviewCard } from 'shared/ui';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { CommentSectionTemplateProps } from '../../interfaces/comment-section-template-props.interface';
 import { CommentItem } from '../item/comment-item.component';
 import { CommentInput } from '../input/comment-input.component';

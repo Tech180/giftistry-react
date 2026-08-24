@@ -4,4 +4,5 @@ export interface MetadataGridProps {
   metadataBadgeEmoji: Record<string, string>;
   priority?: number | null;
   variant?: 'badges' | 'compact';
+  compactAlign?: 'start' | 'end';
 }

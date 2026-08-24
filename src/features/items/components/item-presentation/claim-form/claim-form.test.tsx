@@ -217,6 +217,43 @@ describe('ClaimForm', () => {
     expect(screen.queryByRole('button', { name: 'Unclaim All' })).not.toBeInTheDocument();
   });
 
+  it('replaces the claim prompt with a linked bundle prompt and includeLinked', async () => {
+    const itemActions = mockActions();
+    const peer: Item = {
+      ...baseItem,
+      Id: 'item-2',
+      Name: 'Hat',
+      IsClaimed: false,
+    };
+    render(
+      <ClaimForm
+        item={baseItem}
+        userId="u1"
+        claimedByName="Ada"
+        itemActions={itemActions}
+        anonymous={false}
+        onAnonymousChange={() => {}}
+        onSubmitted={() => {}}
+        onCancel={() => {}}
+        linkedItems={[peer]}
+        wishlistItems={[baseItem, peer]}
+      />
+    );
+
+    expect(screen.getByText('Claim these items?')).toBeInTheDocument();
+    expect(screen.queryByText('Claim this item?')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Claim all' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Claim all' }));
+    await waitFor(() => {
+      expect(itemActions.claimItem).toHaveBeenCalledWith(
+        expect.objectContaining({
+          itemId: 'item-1',
+          includeLinked: true,
+        })
+      );
+    });
+  });
+
   it('enables confirm after changing a quantity with the NumberSelector', async () => {
     const itemActions = mockActions();
     render(

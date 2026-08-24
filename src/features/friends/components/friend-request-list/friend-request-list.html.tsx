@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, X } from 'lucide-react';
-import { UserPreviewCard, Badge } from 'shared/ui';
+import { Badge } from 'shared/ui';
+import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { UserAvatar } from 'shared/ui/user-avatar/user-avatar.component';
 import { FriendRequestListTemplateProps } from './interfaces/friend-request-list-template-props.interface';
 import styles from './friend-request-list.module.css';

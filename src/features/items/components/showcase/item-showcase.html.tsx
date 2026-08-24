@@ -4,6 +4,8 @@ import { Button, Card } from 'shared/ui';
 // Future: AI item reviews — re-enable AiReviewsPanel when shipping the feature.
 // import { LinksWidget, FundingWidget, AiReviewsPanel, ClaimPrompt } from '../item-presentation';
 import { LinksWidget, FundingWidget, ClaimPrompt, ClaimForm, QuantityBadge, PriorityDisplay } from '../item-presentation';
+import { CLAIM_FORM_PROMPT_CLAIM_LINKED } from '../item-presentation/claim-form/constants/claim-form-copy.constant';
+import { Tags } from 'features/comments';
 import type { ItemShowcaseTemplateProps } from '../../interfaces/item-showcase-template-props.interface';
 import { getItemPrimaryImageUrl } from '../../utils/item-primary-image.util';
 import styles from './item-showcase.module.css';
@@ -22,7 +24,6 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   itemActions,
   claimUserId,
   claimActorName,
-  onBeforeClaimSubmit,
   claimAmount,
   setClaimAmount,
   anonymous,
@@ -34,15 +35,12 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   setShowDeleteConfirm,
   deleteLoading,
   localIsFavorite,
-  showDependencyModal,
-  setShowDependencyModal,
   displayDescription,
   metadata,
   predefinedDisplayEntries,
   userDefinedEntries,
   metadataBadgeEmoji,
   handleClaim,
-  handleBulkClaim,
   handleUnclaim,
   handleDelete,
   totalExtractedPrice,
@@ -76,8 +74,12 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   linkedRelationItems,
   relatedRelationItems,
   maxContributionAmount,
+  linkedClaimPeers = [],
+  wishlistItemsForLinkedClaim = [],
+  onLinkedClaimItemClick,
 }) => {
   const primaryImageUrl = getItemPrimaryImageUrl(item);
+  const hasLinkedBundle = linkedClaimPeers.length > 0;
 
   const quantityClaimForm = (
     <ClaimForm
@@ -90,7 +92,9 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
       onAnonymousChange={setAnonymous}
       onSubmitted={() => setShowClaimForm(false)}
       onCancel={() => setShowClaimForm(false)}
-      onBeforeSubmit={onBeforeClaimSubmit}
+      linkedItems={linkedClaimPeers}
+      wishlistItems={wishlistItemsForLinkedClaim}
+      onLinkedItemClick={onLinkedClaimItemClick}
     />
   );
 
@@ -102,7 +106,23 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
       }}
       className={styles['claim-form']}
     >
-      <ClaimPrompt anonymous={anonymous} onAnonymousChange={setAnonymous} />
+      <div className={styles['claim-prompt-row']}>
+        <ClaimPrompt
+          anonymous={anonymous}
+          onAnonymousChange={setAnonymous}
+          prompt={hasLinkedBundle ? CLAIM_FORM_PROMPT_CLAIM_LINKED : undefined}
+        />
+        {hasLinkedBundle && (
+          <div className={styles['claim-linked-tags']}>
+            <Tags
+              appearance="badges"
+              taggedIds={linkedClaimPeers.map((peer) => peer.Id)}
+              items={wishlistItemsForLinkedClaim}
+              onItemTaggedClick={onLinkedClaimItemClick}
+            />
+          </div>
+        )}
+      </div>
       {allowGroupFunds && (
         <div className={styles['form-group']}>
           <label className={styles['form-label']} htmlFor="showcase-claim-amount">
@@ -122,7 +142,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
       )}
       <div className={styles['form-actions']}>
         <Button variant="primary" size="sm" type="submit" isLoading={claimLoading}>
-          Confirm
+          {hasLinkedBundle ? 'Claim all' : 'Confirm'}
         </Button>
         <Button variant="ghost" size="sm" onClick={() => setShowClaimForm(false)}>
           Cancel
@@ -130,6 +150,8 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
       </div>
     </form>
   );
+
+  const claimSectionContent = canAdjustClaim ? quantityClaimForm : claimForm;
 
   const ownerActions =
     isArchived || isExpired || !onEdit ? null : (
@@ -164,6 +186,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   const guestActions =
     isArchived || isExpired || isPublicGuest ? null : !isOwner ? (
     <>
+      {(canEditItem ?? canCollaborate) && ownerActions}
       {canAdjustClaim ? (
         isFullyClaimed && !claimedByCurrentUser ? (
           <Button variant="secondary" className={styles['claim-button']} disabled>
@@ -172,7 +195,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
         ) : (
           <div className={styles['claim-widget']}>
             {showClaimForm ? (
-              quantityClaimForm
+              claimSectionContent
             ) : (
               <div className={styles['claim-footer-actions']}>
                 {claimedByCurrentUser && (
@@ -212,7 +235,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
       ) : (
         <div className={styles['claim-widget']}>
           {showClaimForm ? (
-            claimForm
+            claimSectionContent
           ) : (
             <Button
               variant="primary"
@@ -224,53 +247,10 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
           )}
         </div>
       )}
-      {(canEditItem ?? canCollaborate) && ownerActions}
     </>
   ) : (
     ownerActions
   );
-
-  const dependencyModal = showDependencyModal ? (
-    <div className={styles['modal-overlay']}>
-      <Card className={styles['dependency-modal']} glass={true}>
-        <h3 className={styles['modal-title']}>🔗 Connected Gift Items</h3>
-        <p className={styles['modal-text']}>
-          This gift is linked to other items in the wishlist. Would you like to claim them all at once?
-        </p>
-        <div className={styles['linked-items-preview-list']}>
-          {linkedRelationItems.map((linkedItem) => (
-            <div key={linkedItem.id} className={styles['linked-item-preview-row']}>
-              <span className={styles['linked-item-name']}>{linkedItem.name}</span>
-              <span
-                className={
-                  linkedItem.statusLabel === 'Claimed'
-                    ? styles['linked-item-status-claimed']
-                    : styles['linked-item-status-available']
-                }
-              >
-                {linkedItem.statusLabel === 'Claimed' ? 'Already Claimed' : 'Available'}
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className={styles['modal-actions']}>
-          <Button variant="primary" onClick={handleBulkClaim} isLoading={claimLoading}>
-            Claim All Unclaimed
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => handleClaim(undefined, true)}
-            isLoading={claimLoading}
-          >
-            Claim Selected Only
-          </Button>
-          <Button variant="ghost" onClick={() => setShowDependencyModal(false)}>
-            Cancel
-          </Button>
-        </div>
-      </Card>
-    </div>
-  ) : null;
 
   if (variant === 'inline') {
     return (
@@ -447,8 +427,6 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
         <div className={styles['inspector-footer']}>
           <div className={styles['action-btn-row']}>{guestActions}</div>
         </div>
-
-        {dependencyModal}
       </div>
     );
   }
@@ -601,8 +579,6 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
           </div>
         </div>
       </div>
-
-      {dependencyModal}
     </Card>
   );
 };

@@ -7,38 +7,50 @@ import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import {
   useItemController,
   Item,
-  type ImportStripHandle,
-  ImportMenuPanel,
 } from 'features/items';
+import type { ImportStripHandle } from 'features/items/components/import/import-strip/interfaces/import-strip-handle.interface';
+import { ImportMenuPanel } from 'features/items/components/import/import-menu-panel/import-menu-panel.component';
 import {
   ITEM_VIEW_MODE_STORAGE_KEY,
 } from 'features/items/constants/item-view-mode.constants';
 import {
+  isKanbanViewMode,
   normalizeStoredViewMode,
+  resolveEffectiveViewMode,
 } from 'features/items/utils/item-view-mode.util';
 import type { ItemViewMode } from 'features/items/types/item-view-mode.type';
 import { useAuth } from 'app/providers/auth-context';
 import { useToast } from 'app/providers/toast-context';
 import { useRegisterPageActions } from 'app/providers/mobile-page-actions-context';
 import type { FloatingAction } from 'shared/ui';
+import { UserAvatar } from 'shared/ui';
+import { getInitialsFromDisplayName } from 'shared/utils/get-initials.util';
+import { useSupportsKanbanViewMode } from 'shared/hooks/use-supports-kanban-view-mode';
 import {
   useWishlistJob,
   formatJobTerminalSummary,
   claimImportJobTerminalToast,
   type ItemEnrichJobResult,
 } from 'features/jobs';
+import { markJobNotificationHandled } from 'features/notifications';
 import { WishlistDetailTemplate } from './wishlist-detail.html';
 import { ListSettingsPanel } from './components/list-settings-panel/list-settings-panel.component';
 import { FabConfirmPanel } from './components/fab-confirm-panel/fab-confirm-panel.component';
 import { getFriendlyCategoryLabel, normalizeCategoryLabel } from 'features/items/utils/category-label.util';
 import { canLinkItemsByAudience, linkingContextFromItem, LinkingAudienceContext } from 'features/items/utils/item-audience.util';
 import { resolveEditorLinkedItemIds } from 'features/items/utils/item-links-sync.util';
+import { itemSupportsLinkedItems } from 'features/items/utils/item-supports-linked-items.util';
+import {
+  LINKED_ITEMS_MULTI_COUNT_UNSUPPORTED_MESSAGE,
+  LINKED_ITEMS_SUGGESTION_UNSUPPORTED_MESSAGE,
+} from 'features/items/constants/linked-items-messages.constant';
 import { resolveEditorRelatedItemIds } from 'features/items/utils/item-related-sync.util';
 import { resolveShouldOpenItemViewer } from 'features/items/utils/resolve-should-open-item-viewer.util';
 import { isWishlistExpired } from 'features/wishlists/utils/is-wishlist-expired.util';
 import { isWishlistArchived } from 'features/wishlists/utils/is-wishlist-archived.util';
 import { isWishlistLocked } from 'features/wishlists/utils/is-wishlist-locked.util';
 import { dateInputToExpiresAtIso } from 'features/wishlists/utils/date-input-to-expires-at-iso.util';
+import { expiresAtIsoToDateInput } from 'features/wishlists/utils/expires-at-iso-to-date-input.util';
 import { formatWishlistExpirationDate } from 'shared/utils/format-date.util';
 import {
   exportToCsv,
@@ -50,9 +62,14 @@ import {
 import {
   COMMENT_SHEET_MOBILE_QUERY,
   COMMENT_TAG_PEEK_CLOSE_MS,
+  COMMENT_TAG_PEEK_DWELL_MS,
+  COMMENT_TAG_PEEK_SCROLL_FALLBACK_MS,
   ITEM_CARD_HIGHLIGHT_DURATION_MS,
 } from './constants/comment-tag-peek.constant';
-import { highlightWishlistItemCard } from './utils/highlight-wishlist-item-card.util';
+import {
+  highlightWishlistItemCard,
+  peekHighlightWishlistItemCard,
+} from './utils/highlight-wishlist-item-card.util';
 import { shouldPeekCommentTag } from './utils/should-peek-comment-tag.util';
 import { useIsMobileFab } from 'shared/hooks/use-is-mobile-fab';
 
@@ -61,13 +78,6 @@ export default function WishlistDetail() {
   const navigate = useNavigate();
   const { user, canShowWebSearch, canShowAi } = useAuth();
   const { showToast } = useToast();
-  const {
-    job: activeJob,
-    isActive: isJobActive,
-    cancel: cancelJob,
-    refresh: refreshJob,
-    enrichingItemIds,
-  } = useWishlistJob(listId);
 
   const [wishlist, setWishlist] = useState<Wishlist | null>(null);
   const [isWishlistLoading, setIsWishlistLoading] = useState(true);
@@ -87,11 +97,15 @@ export default function WishlistDetail() {
     highlight: null,
     reopen: null,
   });
+  const commentTagPeekGenerationRef = useRef(0);
+  const highlightUnlockTimeoutRef = useRef<number | null>(null);
+  const [isHighlightInteractionLocked, setIsHighlightInteractionLocked] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [viewingItem, setViewingItem] = useState<Item | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const isMobileFab = useIsMobileFab();
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [showDeletedComments, setShowDeletedComments] = useState(false);
   const [isTaggingModeActive, setIsTaggingModeActive] = useState(false);
   const [taggedItemIds, setTaggedItemIds] = useState<string[]>([]);
   const [isReplyTaggingModeActive, setIsReplyTaggingModeActive] = useState(false);
@@ -116,6 +130,11 @@ export default function WishlistDetail() {
 
   const [viewMode, setViewMode] = useState<ItemViewMode>(() =>
     normalizeStoredViewMode(localStorage.getItem(ITEM_VIEW_MODE_STORAGE_KEY))
+  );
+  const supportsKanbanViewMode = useSupportsKanbanViewMode();
+  const effectiveViewMode = useMemo(
+    () => resolveEffectiveViewMode(viewMode, supportsKanbanViewMode),
+    [viewMode, supportsKanbanViewMode]
   );
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(new Set());
@@ -172,6 +191,9 @@ export default function WishlistDetail() {
   }, []);
 
   const handleSetViewMode = (mode: ItemViewMode) => {
+    if (isKanbanViewMode(mode) && !supportsKanbanViewMode) {
+      return;
+    }
     setSelectedItemId(null);
     setViewMode(mode);
     localStorage.setItem(ITEM_VIEW_MODE_STORAGE_KEY, mode);
@@ -242,6 +264,47 @@ export default function WishlistDetail() {
     }
   }, [listId, reloadListContent]);
 
+  const listChangedTimerRef = useRef<number | null>(null);
+  const listChangedNeedsFullReloadRef = useRef(false);
+
+  const handleListChanged = useCallback(
+    (event: { reason: string }) => {
+      if (event.reason === 'list.updated') {
+        listChangedNeedsFullReloadRef.current = true;
+      }
+      if (listChangedTimerRef.current !== null) {
+        window.clearTimeout(listChangedTimerRef.current);
+      }
+      listChangedTimerRef.current = window.setTimeout(() => {
+        listChangedTimerRef.current = null;
+        const needsFull = listChangedNeedsFullReloadRef.current;
+        listChangedNeedsFullReloadRef.current = false;
+        if (needsFull) {
+          void reloadListContent();
+        } else {
+          void softReloadItems();
+        }
+      }, 300);
+    },
+    [reloadListContent, softReloadItems]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (listChangedTimerRef.current !== null) {
+        window.clearTimeout(listChangedTimerRef.current);
+      }
+    };
+  }, []);
+
+  const {
+    job: activeJob,
+    isActive: isJobActive,
+    cancel: cancelJob,
+    refresh: refreshJob,
+    enrichingItemIds,
+  } = useWishlistJob(listId, { onListChanged: handleListChanged });
+
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -273,6 +336,12 @@ export default function WishlistDetail() {
       activeJob.Status === 'failed' ||
       activeJob.Status === 'cancelled'
     ) {
+      if (
+        activeJob.Kind === 'item-enrich' ||
+        activeJob.Kind === 'item-summarize'
+      ) {
+        markJobNotificationHandled(activeJob.Id);
+      }
       const summary = formatJobTerminalSummary(activeJob);
       if (!summary) return;
       if (!claimImportJobTerminalToast(activeJob.Id, activeJob.Status)) return;
@@ -342,21 +411,22 @@ export default function WishlistDetail() {
     return isOwner || wishlist?.Role === 'collaborator';
   }, [isOwner, wishlist?.Role]);
 
+  const isExpired = useMemo(() => isWishlistExpired(wishlist?.ExpiresAt), [wishlist]);
+  const isArchived = useMemo(() => isWishlistArchived(wishlist?.IsActive), [wishlist]);
+  const isLocked = useMemo(
+    () => isWishlistLocked(isExpired, isArchived),
+    [isExpired, isArchived]
+  );
+
   const shouldOpenItemViewer = useMemo(
     () =>
       resolveShouldOpenItemViewer({
         isOwner,
         canCollaborate,
         isPublicGuest: false,
+        isLocked,
       }),
-    [isOwner, canCollaborate]
-  );
-
-  const isExpired = useMemo(() => isWishlistExpired(wishlist?.ExpiresAt), [wishlist]);
-  const isArchived = useMemo(() => isWishlistArchived(wishlist?.IsActive), [wishlist]);
-  const isLocked = useMemo(
-    () => isWishlistLocked(isExpired, isArchived),
-    [isExpired, isArchived]
+    [isOwner, canCollaborate, isLocked]
   );
 
   const canSuggest = useMemo(() => {
@@ -393,7 +463,15 @@ export default function WishlistDetail() {
     }
   };
 
+  const clearHighlightUnlockTimeout = () => {
+    if (highlightUnlockTimeoutRef.current !== null) {
+      window.clearTimeout(highlightUnlockTimeoutRef.current);
+      highlightUnlockTimeoutRef.current = null;
+    }
+  };
+
   const clearCommentTagPeekTimeouts = () => {
+    commentTagPeekGenerationRef.current += 1;
     if (commentTagPeekTimeoutsRef.current.highlight !== null) {
       window.clearTimeout(commentTagPeekTimeoutsRef.current.highlight);
       commentTagPeekTimeoutsRef.current.highlight = null;
@@ -406,6 +484,7 @@ export default function WishlistDetail() {
 
   useEffect(() => {
     const peekTimeoutsRef = commentTagPeekTimeoutsRef;
+    const unlockTimeoutRef = highlightUnlockTimeoutRef;
     return () => {
       if (peekTimeoutsRef.current.highlight !== null) {
         window.clearTimeout(peekTimeoutsRef.current.highlight);
@@ -413,18 +492,13 @@ export default function WishlistDetail() {
       if (peekTimeoutsRef.current.reopen !== null) {
         window.clearTimeout(peekTimeoutsRef.current.reopen);
       }
+      if (unlockTimeoutRef.current !== null) {
+        window.clearTimeout(unlockTimeoutRef.current);
+      }
     };
   }, []);
 
-  const handleItemTaggedClick = useCallback((itemId: string) => {
-    const highlight = () => {
-      highlightWishlistItemCard(
-        itemId,
-        styles['item-card-wrapper-highlighted'],
-        ITEM_CARD_HIGHLIGHT_DURATION_MS
-      );
-    };
-
+  const handleItemTaggedClick = useCallback((itemId: string, returnToItemId?: string) => {
     const isMobileSheet =
       typeof window !== 'undefined' && window.matchMedia(COMMENT_SHEET_MOBILE_QUERY).matches;
     const shouldPeek = shouldPeekCommentTag({
@@ -433,29 +507,60 @@ export default function WishlistDetail() {
       isCommentTaggingActive: isTaggingModeActive || isReplyTaggingModeActive,
     });
 
-    if (!shouldPeek) {
-      highlight();
+    clearHighlightUnlockTimeout();
+    setIsHighlightInteractionLocked(true);
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const shouldReturnAfterPeek =
+      !!returnToItemId && returnToItemId !== itemId;
+
+    if (!shouldPeek && !shouldReturnAfterPeek) {
+      clearCommentTagPeekTimeouts();
+      highlightWishlistItemCard(
+        itemId,
+        styles['item-card-wrapper-highlighted'],
+        ITEM_CARD_HIGHLIGHT_DURATION_MS
+      );
+      const unlockMs = prefersReducedMotion ? 0 : ITEM_CARD_HIGHLIGHT_DURATION_MS;
+      highlightUnlockTimeoutRef.current = window.setTimeout(() => {
+        highlightUnlockTimeoutRef.current = null;
+        setIsHighlightInteractionLocked(false);
+      }, unlockMs);
       return;
     }
 
     clearCommentTagPeekTimeouts();
-    setIsCommentsOpen(false);
+    const peekGeneration = ++commentTagPeekGenerationRef.current;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const closeDelayMs = prefersReducedMotion ? 0 : COMMENT_TAG_PEEK_CLOSE_MS;
+    if (shouldPeek) {
+      setIsCommentsOpen(false);
+    }
+
+    const closeDelayMs =
+      shouldPeek && !prefersReducedMotion ? COMMENT_TAG_PEEK_CLOSE_MS : 0;
 
     commentTagPeekTimeoutsRef.current.highlight = window.setTimeout(() => {
-      highlight();
+      void (async () => {
+        try {
+          await peekHighlightWishlistItemCard(itemId, styles['item-card-wrapper-highlighted'], {
+            dwellMs: prefersReducedMotion ? 0 : COMMENT_TAG_PEEK_DWELL_MS,
+            scrollFallbackMs: prefersReducedMotion ? 0 : COMMENT_TAG_PEEK_SCROLL_FALLBACK_MS,
+            returnToItemId: shouldReturnAfterPeek ? returnToItemId : undefined,
+          });
+        } finally {
+          if (peekGeneration !== commentTagPeekGenerationRef.current) return;
+          if (shouldPeek) {
+            setIsCommentsOpen(true);
+          }
+          setIsHighlightInteractionLocked(false);
+        }
+      })();
     }, closeDelayMs);
-
-    commentTagPeekTimeoutsRef.current.reopen = window.setTimeout(() => {
-      setIsCommentsOpen(true);
-    }, closeDelayMs + ITEM_CARD_HIGHLIGHT_DURATION_MS);
   }, [isCommentsOpen, isTaggingModeActive, isReplyTaggingModeActive]);
 
   const saveDate = async (newDateStr: string) => {
     if (!wishlist) return;
-    const prevDateStr = wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString().split('T')[0] : '';
+    const prevDateStr = expiresAtIsoToDateInput(wishlist.ExpiresAt);
     if (newDateStr === prevDateStr) {
       return;
     }
@@ -596,8 +701,8 @@ export default function WishlistDetail() {
     setIsActivating(true);
     setConfirmAction(null);
     try {
-      const updated = await wishlistsApi.activateWishlist(wishlist.Id);
-      setWishlist(updated);
+      await wishlistsApi.activateWishlist(wishlist.Id);
+      navigate('/dashboard');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Reactivation failed.');
     } finally {
@@ -796,45 +901,75 @@ export default function WishlistDetail() {
           ),
         });
       }
+    }
 
-      const settingsRowCount =
-        1 + (canShowAi ? 1 : 0) + (canShowWebSearch ? 1 : 0) + (canShowAi ? 1 : 0);
-      const settingsPanelPad = 32;
-      const settingsPanelHeader = 44;
-      const settingsRowHeight = 44;
-      const settingsRowGap = 4;
-      actions.push({
-        id: 'settings',
-        label: 'Settings',
-        icon: <Settings size={18} aria-hidden />,
-        panelWidth: 260,
-        panelHeight:
-          settingsPanelPad +
-          settingsPanelHeader +
-          settingsRowCount * settingsRowHeight +
-          Math.max(0, settingsRowCount - 1) * settingsRowGap,
-        panelContent: (
-          <ListSettingsPanel
-            aiEnabled={!!wishlist.AiEnabled}
-            webSearchEnabled={!!wishlist.WebSearchEnabled}
-            manualJobBackground={wishlist.ManualJobBackground !== false}
-            autoRollover={wishlist.AutoRollover === true}
-            canShowAi={canShowAi}
-            canShowWebSearch={canShowWebSearch}
-            onToggleAi={() => {
-              void toggleAiEnabled();
-            }}
-            onToggleWebSearch={() => {
-              void toggleWebSearchEnabled();
-            }}
-            onToggleManualJobBackground={() => {
-              void toggleManualJobBackground();
-            }}
-            onToggleAutoRollover={() => {
-              void toggleAutoRollover();
-            }}
+    const listSettingsReadOnly = !isOwner || isArchived;
+    const settingsRowCount = listSettingsReadOnly
+      ? 4
+      : 1 + (canShowAi ? 1 : 0) + (canShowWebSearch ? 1 : 0) + (canShowAi ? 1 : 0);
+    const settingsPanelPad = 32;
+    const settingsPanelHeader = 44;
+    const settingsRowHeight = 44;
+    const settingsRowGap = 4;
+    actions.push({
+      id: 'settings',
+      label: 'Settings',
+      icon: <Settings size={18} aria-hidden />,
+      toolbarTone: listSettingsReadOnly ? 'default' : undefined,
+      toolbarMuted: listSettingsReadOnly,
+      panelWidth: 260,
+      panelHeight:
+        settingsPanelPad +
+        settingsPanelHeader +
+        settingsRowCount * settingsRowHeight +
+        Math.max(0, settingsRowCount - 1) * settingsRowGap,
+      panelContent: (
+        <ListSettingsPanel
+          aiEnabled={!!wishlist.AiEnabled}
+          webSearchEnabled={!!wishlist.WebSearchEnabled}
+          manualJobBackground={wishlist.ManualJobBackground !== false}
+          autoRollover={wishlist.AutoRollover === true}
+          canShowAi={canShowAi}
+          canShowWebSearch={canShowWebSearch}
+          readOnly={listSettingsReadOnly}
+          onToggleAi={() => {
+            void toggleAiEnabled();
+          }}
+          onToggleWebSearch={() => {
+            void toggleWebSearchEnabled();
+          }}
+          onToggleManualJobBackground={() => {
+            void toggleManualJobBackground();
+          }}
+          onToggleAutoRollover={() => {
+            void toggleAutoRollover();
+          }}
+        />
+      ),
+    });
+
+    if (!isOwner && wishlist.UserId) {
+      const ownerDisplayName =
+        wishlist.OwnerFirstName || wishlist.OwnerUsername || 'Registry Owner';
+      const ownerInitials = getInitialsFromDisplayName(ownerDisplayName);
+      actions.unshift({
+        id: 'owner',
+        label: `View owner: ${ownerDisplayName}`,
+        icon: (
+          <UserAvatar
+            avatar={wishlist.OwnerAvatar}
+            alt={ownerDisplayName}
+            initials={ownerInitials}
+            className={styles.fabOwnerAvatar}
+            imageClassName={styles.fabOwnerAvatarImg}
+            initialsClassName={styles.fabOwnerAvatarInitials}
           />
         ),
+        toolbarTone: 'default',
+        separateAfter: true,
+        onClick: () => {
+          navigate(`/users/${wishlist.UserId}`);
+        },
       });
     }
 
@@ -856,6 +991,7 @@ export default function WishlistDetail() {
     reloadListContent,
     isMobileFab,
     shareOwnerInfo,
+    navigate,
   ]);
 
   useRegisterPageActions(pageActions);
@@ -872,10 +1008,16 @@ export default function WishlistDetail() {
     setIsRelatingModeActive(false);
     setLinkingAudienceContext(sourceContext);
     setLinkedItemIds(
-      resolveEditorLinkedItemIds(sourceItem.Id, items).filter((id) => {
-        const target = items.find((i) => i.Id === id);
-        return target && canLinkItemsByAudience(sourceContext, target);
-      })
+      sourceItem.IsSuggestion
+        ? []
+        : resolveEditorLinkedItemIds(sourceItem.Id, items).filter((id) => {
+            const target = items.find((i) => i.Id === id);
+            return (
+              target &&
+              canLinkItemsByAudience(sourceContext, target) &&
+              itemSupportsLinkedItems(target)
+            );
+          })
     );
     setRelatedItemIds(
       resolveEditorRelatedItemIds(sourceItem.Id, items).filter((id) => {
@@ -898,10 +1040,16 @@ export default function WishlistDetail() {
     setIsCommentsOpen(false);
     setLinkingAudienceContext(sourceContext);
     setLinkedItemIds(
-      resolveEditorLinkedItemIds(sourceItem.Id, items).filter((id) => {
-        const target = items.find((i) => i.Id === id);
-        return target && canLinkItemsByAudience(sourceContext, target);
-      })
+      sourceItem.IsSuggestion
+        ? []
+        : resolveEditorLinkedItemIds(sourceItem.Id, items).filter((id) => {
+            const target = items.find((i) => i.Id === id);
+            return (
+              target &&
+              canLinkItemsByAudience(sourceContext, target) &&
+              itemSupportsLinkedItems(target)
+            );
+          })
     );
     setRelatedItemIds(
       resolveEditorRelatedItemIds(sourceItem.Id, items).filter((id) => {
@@ -912,7 +1060,7 @@ export default function WishlistDetail() {
     setViewingItem(sourceItem);
   };
 
-  const canAutoAdd = Boolean(canCollaborate && canShowAi && wishlist?.AiEnabled);
+  const canAutoAdd = Boolean(canSuggest && canShowAi && wishlist?.AiEnabled);
 
   useEffect(() => {
     if (!canAutoAdd) {
@@ -965,9 +1113,62 @@ export default function WishlistDetail() {
   }, []);
 
   const isItemLinkCompatible = useCallback(
+    (target: Item) =>
+      canLinkItemsByAudience(linkingAudienceContext, target) &&
+      itemSupportsLinkedItems(target),
+    [linkingAudienceContext]
+  );
+
+  const isItemRelateCompatible = useCallback(
     (target: Item) => canLinkItemsByAudience(linkingAudienceContext, target),
     [linkingAudienceContext]
   );
+
+  const resolveLinkingSourceItem = useCallback((): Item | null => {
+    if (editingItem) {
+      const draftMeta = editingItemDraft?.Metadata ?? null;
+      const mergedMeta = {
+        ...(editingItem.Metadata ?? {}),
+        ...(draftMeta ?? {}),
+      };
+      const draftQty =
+        editingItemDraft?.DesiredQuantity ?? draftMeta?.DesiredQuantity ?? null;
+      return {
+        ...editingItem,
+        ...(editingItemDraft ?? {}),
+        Metadata: mergedMeta,
+        DesiredQuantity:
+          draftQty != null ? Number(draftQty) || 1 : editingItem.DesiredQuantity,
+        IsMultiCount:
+          editingItemDraft?.IsMultiCount ??
+          draftMeta?.MultiCount ??
+          editingItem.IsMultiCount,
+        IsSuggestion: editingItem.IsSuggestion ?? !isOwner,
+      };
+    }
+
+    if (isAddOpen && editingItemDraft) {
+      return {
+        Id: 'draft',
+        ListId: wishlist?.Id ?? '',
+        PriorityId: null,
+        SuggestedByUserId: null,
+        Name: editingItemDraft.Name ?? 'Draft',
+        Description: editingItemDraft.Description ?? null,
+        IsHiddenIdea: false,
+        Category: editingItemDraft.Category ?? 'uncategorized',
+        Links: [],
+        Claims: [],
+        IsClaimed: false,
+        DesiredQuantity: editingItemDraft.DesiredQuantity ?? 1,
+        IsMultiCount: editingItemDraft.IsMultiCount ?? false,
+        Metadata: editingItemDraft.Metadata ?? null,
+        IsSuggestion: editingItemDraft.IsSuggestion ?? !isOwner,
+      };
+    }
+
+    return null;
+  }, [editingItem, editingItemDraft, isAddOpen, isOwner, wishlist?.Id]);
 
   const handleLinkItemToggle = useCallback(
     (itemId: string) => {
@@ -975,15 +1176,38 @@ export default function WishlistDetail() {
       if (!target || !canLinkItemsByAudience(linkingAudienceContext, target)) {
         return;
       }
+
       setLinkedItemIds((prev) => {
         if (prev.includes(itemId)) {
           return prev.filter((id) => id !== itemId);
         }
+
+        const source = resolveLinkingSourceItem();
+        const sourceBlocked =
+          !!source && !itemSupportsLinkedItems(source, source.Metadata);
+        const targetBlocked = !itemSupportsLinkedItems(target);
+        if (sourceBlocked || targetBlocked) {
+          const isSuggestionBlock =
+            source?.IsSuggestion === true || target.IsSuggestion === true;
+          showToast(
+            isSuggestionBlock
+              ? LINKED_ITEMS_SUGGESTION_UNSUPPORTED_MESSAGE
+              : LINKED_ITEMS_MULTI_COUNT_UNSUPPORTED_MESSAGE,
+            'error'
+          );
+          return prev;
+        }
+
         setRelatedItemIds((relatedPrev) => relatedPrev.filter((id) => id !== itemId));
         return [...prev, itemId];
       });
     },
-    [items, linkingAudienceContext]
+    [
+      items,
+      linkingAudienceContext,
+      resolveLinkingSourceItem,
+      showToast,
+    ]
   );
 
   const handleRelateItemToggle = useCallback(
@@ -1010,7 +1234,11 @@ export default function WishlistDetail() {
     setLinkedItemIds((prev) =>
       prev.filter((id) => {
         const target = items.find((i) => i.Id === id);
-        return target && canLinkItemsByAudience(linkingAudienceContext, target);
+        return (
+          !!target &&
+          canLinkItemsByAudience(linkingAudienceContext, target) &&
+          itemSupportsLinkedItems(target)
+        );
       })
     );
     setRelatedItemIds((prev) =>
@@ -1020,6 +1248,22 @@ export default function WishlistDetail() {
       })
     );
   }, [linkingAudienceContext, isAddOpen, editingItem, viewingItem, items]);
+
+  useEffect(() => {
+    if (!isAddOpen && !editingItem) {
+      return;
+    }
+    const source = resolveLinkingSourceItem();
+    if (source && !itemSupportsLinkedItems(source, source.Metadata)) {
+      setLinkedItemIds((prev) => (prev.length > 0 ? [] : prev));
+      setIsLinkingModeActive(false);
+    }
+  }, [
+    isAddOpen,
+    editingItem,
+    resolveLinkingSourceItem,
+    setIsLinkingModeActive,
+  ]);
 
   const resolvedLinkedItems = useMemo(
     () =>
@@ -1216,6 +1460,7 @@ export default function WishlistDetail() {
       doesAddSidebarOverlayList={doesAddSidebarOverlayList}
       handleLinkingAudienceChange={handleLinkingAudienceChange}
       isItemLinkCompatible={isItemLinkCompatible}
+      isItemRelateCompatible={isItemRelateCompatible}
       handleLinkItemToggle={handleLinkItemToggle}
       handleRelateItemToggle={handleRelateItemToggle}
       loadData={loadData}
@@ -1240,13 +1485,16 @@ export default function WishlistDetail() {
       formatDate={formatWishlistExpirationDate}
       isCommentsOpen={isCommentsOpen}
       setIsCommentsOpen={setIsCommentsOpen}
+      showDeletedComments={showDeletedComments}
+      onToggleShowDeletedComments={() => setShowDeletedComments((prev) => !prev)}
       isShareOpen={isShareOpen}
       setIsShareOpen={setIsShareOpen}
       isMobileFab={isMobileFab}
       isImportOpen={isImportOpen}
       setIsImportOpen={setIsImportOpen}
       importStripRef={importStripRef}
-      viewMode={viewMode}
+      viewMode={effectiveViewMode}
+      supportsKanbanViewMode={supportsKanbanViewMode}
       handleSetViewMode={handleSetViewMode}
       searchQuery={searchQuery}
       setSearchQuery={setSearchQuery}
@@ -1260,6 +1508,10 @@ export default function WishlistDetail() {
       displayItems={displayItems}
       listShares={listShares}
       handleItemTaggedClick={handleItemTaggedClick}
+      onLinkedItemsUnsupported={() =>
+        showToast(LINKED_ITEMS_MULTI_COUNT_UNSUPPORTED_MESSAGE, 'error')
+      }
+      isHighlightInteractionLocked={isHighlightInteractionLocked}
       isTaggingModeActive={isTaggingModeActive}
       setIsTaggingModeActive={setIsTaggingModeActive}
       taggedItemIds={taggedItemIds}

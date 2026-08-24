@@ -38,6 +38,16 @@ const PREFERENCE_ROWS: {
     title: 'Comments',
     desc: 'New comments and discussion activity on shared wishlists.',
   },
+  {
+    key: 'JobCompletions',
+    title: 'Background item jobs',
+    desc: 'Notify when AI item processing finishes while you’re away.',
+  },
+  {
+    key: 'PushAlerts',
+    title: 'Push alerts',
+    desc: 'Send notifications to your mobile devices when the app is in the background.',
+  },
 ];
 
 export const NotificationsTabTemplate: React.FC<NotificationsTabTemplateProps> = ({
