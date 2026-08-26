@@ -4,6 +4,8 @@ import { FieldDefinition } from './field-definition.interface';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import type { CustomFieldRow } from '../utils/add-item-custom-fields.util';
 import type { ItemPhotoGalleryEntry } from '../components/photo-gallery/interfaces/item-photo-gallery-props.interface';
+import type { ItemSubstitutionOption } from './item-substitution.interface';
+import type { SubstitutionEditorTemplateProps } from '../components/form/interfaces/substitution-editor-template-props.interface';
 
 export interface AddItemFormTemplateProps {
   name: string;
@@ -118,4 +120,14 @@ export interface AddItemFormTemplateProps {
   photoError: string | null;
   onPhotoError: (message: string | null) => void;
   readOnly?: boolean;
+  allowSubstitutions: boolean;
+  setAllowSubstitutions: (value: boolean) => void;
+  substitutionOptions: ItemSubstitutionOption[];
+  onOpenCreateSubstitution: () => void;
+  onOpenEditSubstitution: (option: ItemSubstitutionOption) => void;
+  onDeleteOwnerSubstitution: (substitutionId: string) => Promise<void>;
+  onReorderOwnerSubstitutions: (orderedIds: string[]) => Promise<void>;
+  /** When set, form shows product fields for a substitution child (hides manager/audience/links). */
+  substitutionEditor: SubstitutionEditorTemplateProps | null;
+  formId: string;
 }

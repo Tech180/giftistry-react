@@ -3,6 +3,8 @@ export interface ActionButtonsVisibility {
   canCollaborate: boolean;
   claimedByCurrentUser: boolean;
   isFullyClaimed: boolean;
+  /** Sibling substitution claim locks this section without claiming it. */
+  isClaimUnavailable?: boolean;
   canAdjustClaim?: boolean;
   isPublicGuest?: boolean;
   canEditItem?: boolean;

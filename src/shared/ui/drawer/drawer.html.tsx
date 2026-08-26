@@ -22,9 +22,12 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
   headerExtra,
   isOpen = false,
   onOverlayClick,
+  closeIcon,
+  closeAriaLabel,
 }) => {
   const isOverlay = variant === 'overlay';
   const isSheet = mobilePresentation === 'sheet';
+  const resolvedCloseAriaLabel = closeAriaLabel ?? (isOverlay ? 'Close sidebar' : 'Close');
 
   const header = (
     <div className={isOverlay ? styles['drawer-header-overlay'] : styles['drawer-header']}>
@@ -37,14 +40,22 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
         {headerExtra}
         {isOverlay ? (
           <IconButton
-            icon={<X size={20} />}
-            ariaLabel="Close sidebar"
+            icon={closeIcon ?? <X size={20} />}
+            ariaLabel={resolvedCloseAriaLabel}
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+          />
+        ) : closeIcon ? (
+          <IconButton
+            icon={closeIcon}
+            ariaLabel={resolvedCloseAriaLabel}
             variant="ghost"
             size="sm"
             onClick={onClose}
           />
         ) : (
-          <button onClick={onClose} className={styles['drawer-close']} aria-label="Close">
+          <button onClick={onClose} className={styles['drawer-close']} aria-label={resolvedCloseAriaLabel}>
             &times;
           </button>
         )}

@@ -39,4 +39,9 @@ export interface AddItemTemplateProps {
   onFormLoadingChange?: (loading: boolean) => void;
   onFormDirtyChange?: (dirty: boolean) => void;
   onItemTaggedClick?: (itemId: string) => void;
+  /** Bump to open claimer custom substitution create in the nested editor. */
+  autoOpenClaimerSubstitutionNonce?: number;
+  /** Bump with edit id to open claimer custom substitution edit. */
+  autoOpenClaimerSubstitutionEditNonce?: number;
+  autoOpenClaimerSubstitutionEditId?: string | null;
 }

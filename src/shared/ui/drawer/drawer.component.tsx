@@ -21,6 +21,8 @@ export const Drawer: React.FC<DrawerProps> = ({
   titleExtra,
   headerExtra,
   onOverlayClick,
+  closeIcon,
+  closeAriaLabel,
 }) => {
   const drawerRef = useRef<HTMLDivElement>(null);
   const isSheet = mobilePresentation === 'sheet';
@@ -133,6 +135,8 @@ export const Drawer: React.FC<DrawerProps> = ({
       headerExtra={headerExtra}
       isOpen={isOpen}
       onOverlayClick={onOverlayClick ?? onClose}
+      closeIcon={closeIcon}
+      closeAriaLabel={closeAriaLabel}
     >
       {children}
     </DrawerTemplate>

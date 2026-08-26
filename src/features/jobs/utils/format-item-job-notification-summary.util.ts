@@ -8,7 +8,9 @@ import type { ImportJobSummary } from '../interfaces/import-job-summary.interfac
 export function formatItemJobNotificationSummary(
   job: Pick<BackgroundJobView, 'Kind' | 'Status' | 'Error' | 'Message' | 'FileName'> & {
     Payload?: { name?: string; url?: string; linkUrl?: string } | null;
-  }
+    Result?: Record<string, unknown> | null;
+  },
+  options: { listTitle?: string | null } = {}
 ): ImportJobSummary {
   const isEnrich = job.Kind === 'item-enrich';
   const failed = job.Status === 'failed';
@@ -26,10 +28,12 @@ export function formatItemJobNotificationSummary(
     };
   }
 
+  const listTitle = options.listTitle?.trim() || null;
   const label = resolveItemLabel(job);
+
   if (isEnrich) {
     return {
-      title: 'Item ready',
+      title: listTitle || 'Item ready',
       message: label
         ? `Finished processing “${label}”.`
         : 'Finished processing your item.',
@@ -38,7 +42,7 @@ export function formatItemJobNotificationSummary(
   }
 
   return {
-    title: 'Summary ready',
+    title: listTitle || 'Summary ready',
     message: label
       ? `Notes for “${label}” are ready.`
       : 'Your item summary is ready.',
@@ -49,19 +53,16 @@ export function formatItemJobNotificationSummary(
 function resolveItemLabel(
   job: Pick<BackgroundJobView, 'FileName'> & {
     Payload?: { name?: string; url?: string; linkUrl?: string } | null;
+    Result?: Record<string, unknown> | null;
   }
 ): string | null {
+  const resultTitle = job.Result?.Title;
+  if (typeof resultTitle === 'string' && resultTitle.trim()) {
+    return resultTitle.trim();
+  }
+
   const name = job.Payload?.name?.trim();
   if (name) return name;
-
-  const url = job.Payload?.url?.trim() || job.Payload?.linkUrl?.trim();
-  if (url) {
-    try {
-      return new URL(url).hostname.replace(/^www\./, '');
-    } catch {
-      return url.slice(0, 48);
-    }
-  }
 
   return null;
 }

@@ -35,4 +35,15 @@ describe('getNotificationNavigationTarget', () => {
       )
     ).toBe('/wishlists/list-9');
   });
+
+  it('routes item_deleted to the wishlist', () => {
+    expect(
+      getNotificationNavigationTarget(
+        base({
+          Type: 'item_deleted',
+          Metadata: { ListId: 'list-77', ItemName: 'Alt Gift' },
+        })
+      )
+    ).toBe('/wishlists/list-77');
+  });
 });

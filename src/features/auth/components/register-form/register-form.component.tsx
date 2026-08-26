@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from 'app/providers/auth-context';
+import { validateUsername } from 'shared/utils/validate-username.util';
 import { RegisterFormTemplate } from './register-form.html';
 
 export const RegisterForm: React.FC = () => {
@@ -32,6 +33,12 @@ export const RegisterForm: React.FC = () => {
       return;
     }
 
+    const usernameCheck = validateUsername(username);
+    if (!usernameCheck.ok) {
+      setLocalError(usernameCheck.message);
+      return;
+    }
+
     if (email.trim() && !/\S+@\S+\.\S+/.test(email.trim())) {
       setLocalError('Please enter a valid email address, or leave it blank.');
       return;
@@ -60,7 +67,7 @@ export const RegisterForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await signup(username, email.trim() || null, password, firstName, lastName);
+      await signup(usernameCheck.value, email.trim() || null, password, firstName, lastName);
       navigate('/dashboard');
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'Registration failed. Username or email may already be taken.');

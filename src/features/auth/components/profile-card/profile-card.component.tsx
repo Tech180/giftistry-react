@@ -11,6 +11,7 @@ import {
 import { useAuth } from 'app/providers/auth-context';
 import { authApi } from '../../api/auth.api';
 import { ApiError } from 'core/api/client';
+import { validateUsername } from 'shared/utils/validate-username.util';
 import { ProfileCardTemplate } from './profile-card.html';
 import { ImageCropper } from '../image-cropper/image-cropper.component';
 
@@ -69,12 +70,23 @@ export const ProfileCard: React.FC = () => {
       return;
     }
 
+    const usernameChanged = username !== (user?.Username || '');
+    let nextUsername = username.trim();
+    if (usernameChanged) {
+      const usernameCheck = validateUsername(username);
+      if (!usernameCheck.ok) {
+        setErrorMsg(usernameCheck.message);
+        return;
+      }
+      nextUsername = usernameCheck.value;
+    }
+
     setIsLoading(true);
     setErrorMsg(null);
     setSuccessMsg(null);
 
     try {
-      const updatedUser = await updateProfile(username, firstName, lastName, bio, user?.Theme || 'default', avatar);
+      const updatedUser = await updateProfile(nextUsername, firstName, lastName, bio, user?.Theme || 'default', avatar);
       if (updatedUser) {
         setAvatar(updatedUser.Avatar ?? null);
       }

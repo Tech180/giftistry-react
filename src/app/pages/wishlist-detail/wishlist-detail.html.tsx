@@ -46,6 +46,15 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   viewingItem,
   setViewingItem,
   openItemViewer,
+  openClaimerSubstitutionCreate,
+  claimerSubstitutionCreateNonce,
+  openClaimerSubstitutionEdit,
+  claimerSubstitutionEditNonce,
+  claimerSubstitutionEditId,
+  deleteClaimerSubstitution,
+  openSubstitutionEdit,
+  deleteSubstitutionOption,
+  clearSubstitutionAutoOpen,
   shouldOpenItemViewer,
   setEditingItemDraft,
   linkedItemIds,
@@ -206,6 +215,21 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         allowGroupFunds={wishlist.AllowGroupFunds}
         itemActions={itemActions}
         onEdit={isLocked ? undefined : () => openItemEditor(item)}
+        onAddSubstitution={
+          isLocked || isOwner ? undefined : () => openClaimerSubstitutionCreate(item)
+        }
+        onEditSubstitution={
+          isLocked || isOwner ? undefined : () => openClaimerSubstitutionEdit(item)
+        }
+        onDeleteSubstitution={
+          isLocked || isOwner ? undefined : () => deleteClaimerSubstitution(item)
+        }
+        onEditSubstitutionOption={
+          isLocked ? undefined : (option) => openSubstitutionEdit(item, option.Id)
+        }
+        onDeleteSubstitutionOption={
+          isLocked ? undefined : (option) => deleteSubstitutionOption(option.Id)
+        }
         aiEnabled={wishlist.AiEnabled}
         isTaggingModeActive={
           (isAddOpen || !!editingItem)
@@ -309,6 +333,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         listManualJobBackground={wishlist.ManualJobBackground !== false}
         canUseWebSearchOnList={canUseWebSearchOnList}
         onClose={() => {
+          clearSubstitutionAutoOpen();
           setIsAddOpen(false);
           setEditingItem(null);
           setEditingItemDraft(null);
@@ -317,6 +342,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           setIsRelatingModeActive(false);
         }}
         onSuccess={() => {
+          clearSubstitutionAutoOpen();
           setIsAddOpen(false);
           setEditingItem(null);
           setEditingItemDraft(null);
@@ -330,6 +356,9 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         loadData={reloadListContent}
         listShares={listShares}
         onItemTaggedClick={handleItemTaggedClick}
+        autoOpenClaimerSubstitutionNonce={claimerSubstitutionCreateNonce}
+        autoOpenClaimerSubstitutionEditNonce={claimerSubstitutionEditNonce}
+        autoOpenClaimerSubstitutionEditId={claimerSubstitutionEditId}
       />
       )}
 
@@ -508,6 +537,31 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                         allowGroupFunds={wishlist.AllowGroupFunds}
                         itemActions={itemActions}
                         onEdit={isLocked ? undefined : () => openItemEditor(selectedItem)}
+                        onAddSubstitution={
+                          isLocked || isOwner
+                            ? undefined
+                            : () => openClaimerSubstitutionCreate(selectedItem)
+                        }
+                        onEditSubstitution={
+                          isLocked || isOwner
+                            ? undefined
+                            : () => openClaimerSubstitutionEdit(selectedItem)
+                        }
+                        onDeleteSubstitution={
+                          isLocked || isOwner
+                            ? undefined
+                            : () => deleteClaimerSubstitution(selectedItem)
+                        }
+                        onEditSubstitutionOption={
+                          isLocked
+                            ? undefined
+                            : (option) => openSubstitutionEdit(selectedItem, option.Id)
+                        }
+                        onDeleteSubstitutionOption={
+                          isLocked
+                            ? undefined
+                            : (option) => deleteSubstitutionOption(option.Id)
+                        }
                         onClose={() => setSelectedItemId(null)}
                         wishlistItems={items}
                         aiEnabled={wishlist.AiEnabled}

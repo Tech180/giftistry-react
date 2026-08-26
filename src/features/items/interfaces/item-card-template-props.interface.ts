@@ -1,9 +1,18 @@
 import React from 'react';
 import { Item } from './item.interface';
 import type { ItemActions } from './item-actions.interface';
+import type { ClaimerSubstitutionAction } from './claimer-substitution-action.interface';
+import type { ItemSubstitutionOption } from './item-substitution.interface';
 
 export interface ItemCardTemplateProps {
   item: Item;
+  /** Visual variant currently shown (parent or a substitution child overlay). Defaults to `item`. */
+  displayItem?: Item;
+  substitutionOptions?: ItemSubstitutionOption[];
+  substitutionActiveIndex?: number;
+  onSubstitutionIndexChange?: (index: number) => void;
+  /** Claimer custom substitution footer action. */
+  substitutionAction?: ClaimerSubstitutionAction | null;
   isOwner: boolean;
   isExpired: boolean;
   isArchived?: boolean;
@@ -13,6 +22,16 @@ export interface ItemCardTemplateProps {
   allowGroupFunds: boolean;
   isFullyClaimed: boolean;
   isMultiCount: boolean;
+  /**
+   * Group-aware visible claim for gray-out (active section or a claimed sibling).
+   * Badge text still uses displayItem claims.
+   */
+  hasVisibleClaimForGray?: boolean;
+  /**
+   * True when this browse section is locked because a sibling was claimed
+   * (button label: Unavailable rather than Claimed).
+   */
+  isClaimUnavailable?: boolean;
   totalExtractedPrice: number;
   totalClaimedAmount: number;
   priorityLabel?: string;

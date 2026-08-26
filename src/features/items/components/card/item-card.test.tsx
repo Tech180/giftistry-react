@@ -345,3 +345,93 @@ describe('ItemCard suggestor view vs edit', () => {
     });
   });
 });
+
+describe('ItemCard compact substitution chrome', () => {
+  const ownerApprovedOption = {
+    Id: 'sub-1',
+    Kind: 'owner_approved' as const,
+    SortOrder: 0,
+    CreatedByUserId: 'owner-1',
+    Item: {
+      Id: 'sub-item-1',
+      Name: 'Approved Alt',
+      Description: null,
+      Links: [],
+      Photos: [],
+      Claims: [],
+      IsClaimed: false,
+    },
+  };
+
+  const compactItem = {
+    ...suggestionItem,
+    IsSuggestion: false,
+    SuggestedByUserId: null,
+    AllowSubstitutions: true,
+    SubstitutionOptions: [ownerApprovedOption],
+  };
+
+  test('shows previous/next controls and Main Item counter', () => {
+    render(
+      <ItemCard
+        item={compactItem as never}
+        isOwner
+        isExpired={false}
+        canCollaborate
+        allowGroupFunds={false}
+        itemActions={itemActions as never}
+        viewMode="compact"
+      />
+    );
+
+    expect(screen.getByRole('button', { name: /next option/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /previous option/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Main Item');
+  });
+
+  test('cycles to owner-approved option and updates title', () => {
+    render(
+      <ItemCard
+        item={compactItem as never}
+        isOwner
+        isExpired={false}
+        canCollaborate
+        allowGroupFunds={false}
+        itemActions={itemActions as never}
+        viewMode="compact"
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /next option/i }));
+
+    expect(screen.getByTitle('Approved Alt')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(/Substitution/);
+    expect(screen.getByText('Owner approved')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /previous option/i })).toBeInTheDocument();
+  });
+
+  test('claimer sees add substitution control beside claim actions', () => {
+    const onAddSubstitution = vi.fn();
+
+    render(
+      <ItemCard
+        item={
+          {
+            ...compactItem,
+            SubstitutionOptions: [],
+          } as never
+        }
+        isOwner={false}
+        isExpired={false}
+        canCollaborate
+        allowGroupFunds={false}
+        itemActions={itemActions as never}
+        viewMode="compact"
+        onAddSubstitution={onAddSubstitution}
+      />
+    );
+
+    expect(screen.getByLabelText('Add substitution')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^claim$/i })).toBeInTheDocument();
+  });
+});

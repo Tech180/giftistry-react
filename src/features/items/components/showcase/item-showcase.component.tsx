@@ -36,6 +36,12 @@ import { resolveSuggestedByDisplayName } from '../../utils/resolve-suggested-by-
 import { hasUnclaimedLinkedItems } from '../../utils/has-unclaimed-linked-items.util';
 import { hasLinkedUnclaimPeers } from '../../utils/resolve-linked-unclaim-peers.util';
 import { linkGroupSupportsLinkedItems } from '../../utils/item-supports-linked-items.util';
+import { resolveDisplayVariant } from '../../utils/resolve-display-variant.util';
+import { resolveDisplayItem } from '../../utils/resolve-display-item.util';
+import { resolveClaimerSubstitutionAction } from '../../utils/resolve-claimer-substitution-action.util';
+import { resolveSectionFooterActions } from '../../utils/resolve-section-footer-actions.util';
+import { resolveSubstitutionGroupClaimChrome } from '../../utils/resolve-substitution-group-claim-chrome.util';
+import type { ClaimerSubstitutionAction } from '../../interfaces/claimer-substitution-action.interface';
 
 export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   item,
@@ -48,6 +54,11 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   allowGroupFunds,
   itemActions,
   onEdit,
+  onAddSubstitution,
+  onEditSubstitution,
+  onDeleteSubstitution,
+  onEditSubstitutionOption,
+  onDeleteSubstitutionOption,
   onClose,
   wishlistItems = [],
   aiEnabled,
@@ -56,8 +67,27 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   onLinkedItemsUnsupported,
 }) => {
   const { user } = useAuth();
-  const claims = item.Claims ?? [];
-  const claimedByCurrentUser = !!(user && claims.some((c) => c.UserId === user.Id));
+  const [substitutionBrowseIndex, setSubstitutionBrowseIndex] = useState<number | undefined>(
+    undefined
+  );
+
+  const activeSubstitution = useMemo(
+    () =>
+      resolveDisplayVariant(
+        item,
+        item.SubstitutionOptions,
+        user?.Id,
+        substitutionBrowseIndex
+      ),
+    [item, user?.Id, substitutionBrowseIndex]
+  );
+
+  const displayItem = useMemo(
+    () => resolveDisplayItem(item, activeSubstitution),
+    [item, activeSubstitution]
+  );
+
+  const claims = displayItem.Claims ?? [];
   const canEditItem = resolveCanEditItem(item, user?.Id, isOwner, isPublicGuest);
 
   const [claimAmount, setClaimAmount] = useState('');
@@ -97,8 +127,8 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   void aiEnabled;
 
   const { text: displayDescription, metadata } = useMemo(
-    () => parseItemDescription(item.Description, item.Metadata),
-    [item.Description, item.Metadata]
+    () => parseItemDescription(displayItem.Description, displayItem.Metadata),
+    [displayItem.Description, displayItem.Metadata]
   );
 
   const userDefinedEntries = useMemo(() => getUserDefinedEntries(metadata), [metadata]);
@@ -129,7 +159,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     try {
       const amount = claimAmount ? parseFloat(claimAmount) : null;
       await itemActions.claimItem({
-        itemId: item.Id,
+        itemId: displayItem.Id,
         amount,
         claimedByName: anonymous ? null : claimActorName,
         anonymous,
@@ -148,7 +178,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const handleUnclaim = async () => {
     setClaimLoading(true);
     try {
-      await itemActions.unclaimItem(item.Id, user?.Id, linkedUnclaim);
+      await itemActions.unclaimItem(displayItem.Id, user?.Id, linkedUnclaim);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to unclaim item');
     } finally {
@@ -169,29 +199,46 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   };
 
   const totalExtractedPrice =
-    item.FundingTarget != null
-      ? item.FundingTarget
-      : item.Links.reduce((acc, link) => Math.max(acc, link.ExtractedPrice || 0), 0);
+    displayItem.FundingTarget != null
+      ? displayItem.FundingTarget
+      : displayItem.Links.reduce((acc, link) => Math.max(acc, link.ExtractedPrice || 0), 0);
 
   const totalClaimedAmount =
-    item.TotalClaimedAmount != null
-      ? item.TotalClaimedAmount
+    displayItem.TotalClaimedAmount != null
+      ? displayItem.TotalClaimedAmount
       : claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
 
-  const quantitySummary = resolveItemQuantitySummary(item, metadata);
+  const quantitySummary = resolveItemQuantitySummary(displayItem, metadata);
   const canAdjustClaim = itemNeedsClaimQuantityUi(item, metadata);
   const isMultiCount = quantitySummary.isMultiCount;
   const totalClaimedQty = quantitySummary.claimedQuantity;
   const desiredQtyVal = quantitySummary.desiredQuantity;
 
-  const isFullyClaimed =
-    item.IsFullyClaimed != null
-      ? item.IsFullyClaimed
+  const activeIsFullyClaimed =
+    displayItem.IsFullyClaimed != null
+      ? displayItem.IsFullyClaimed
       : isMultiCount
         ? totalClaimedQty >= desiredQtyVal
         : allowGroupFunds && totalExtractedPrice > 0
           ? totalClaimedAmount >= totalExtractedPrice
-          : item.IsClaimed;
+          : displayItem.IsClaimed;
+
+  const groupClaimChrome = resolveSubstitutionGroupClaimChrome({
+    parent: item,
+    options: item.SubstitutionOptions,
+    active: activeSubstitution,
+    userId: user?.Id,
+    isMultiCount,
+  });
+
+  const claimedByCurrentUser = groupClaimChrome.claimedByCurrentUser;
+  const isFullyClaimed =
+    activeIsFullyClaimed || groupClaimChrome.isFullyClaimedForChrome;
+  const hasVisibleClaimForGray = groupClaimChrome.hasVisibleClaimForGray;
+  const isClaimUnavailable =
+    !claimedByCurrentUser &&
+    (groupClaimChrome.isUnavailableDueToSiblingClaim ||
+      (isFullyClaimed && !activeIsFullyClaimed));
 
   const progressPercent = isMultiCount
     ? Math.min(100, Math.round((totalClaimedQty / desiredQtyVal) * 100))
@@ -250,13 +297,84 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const showQuantityProgress = isMultiCount;
   const showVariationsProgress = variationProgress.length > 0;
 
+  const claimerSubstitutionEligibility = resolveClaimerSubstitutionAction({
+    item,
+    userId: user?.Id,
+    isOwner,
+    isPublicGuest,
+  });
+
+  const sectionFooter = resolveSectionFooterActions({
+    active: activeSubstitution,
+    canEditItem,
+    claimerEligibility: claimerSubstitutionEligibility,
+  });
+
+  const activeBrowseOption =
+    activeSubstitution.kind !== 'original' ? (activeSubstitution.option ?? null) : null;
+
+  const footerCanEditItem =
+    !!activeBrowseOption
+      ? canEditItem && !!onEditSubstitutionOption
+      : sectionFooter.showParentEditDelete && canEditItem;
+
+  const footerOnEdit = activeBrowseOption
+    ? onEditSubstitutionOption
+      ? () => onEditSubstitutionOption(activeBrowseOption)
+      : undefined
+    : sectionFooter.showParentEditDelete
+      ? onEdit
+      : undefined;
+
+  const handleFooterDelete = async () => {
+    if (activeBrowseOption && onDeleteSubstitutionOption) {
+      setDeleteLoading(true);
+      try {
+        await onDeleteSubstitutionOption(activeBrowseOption);
+        setShowDeleteConfirm(false);
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Failed to delete substitution.');
+      } finally {
+        setDeleteLoading(false);
+      }
+      return;
+    }
+    await handleDelete();
+  };
+
+  const substitutionAction: ClaimerSubstitutionAction | null = (() => {
+    const surface = sectionFooter.substitutionSurface;
+    if (!surface) return null;
+    if (surface.mode === 'manage') {
+      if (!onEditSubstitution) return null;
+      return {
+        mode: 'manage',
+        allowSubstitutions: surface.allowSubstitutions,
+        onRequest: onEditSubstitution,
+        onDelete: onDeleteSubstitution,
+        ownOption: surface.ownOption,
+      };
+    }
+    if (!onAddSubstitution) return null;
+    return {
+      mode: 'create',
+      allowSubstitutions: surface.allowSubstitutions,
+      onRequest: onAddSubstitution,
+    };
+  })();
+
   return (
     <ItemShowcaseTemplate
       item={item}
+      displayItem={displayItem}
+      substitutionOptions={item.SubstitutionOptions}
+      substitutionActiveIndex={substitutionBrowseIndex}
+      onSubstitutionIndexChange={setSubstitutionBrowseIndex}
+      substitutionAction={substitutionAction}
       isOwner={isOwner}
       canCollaborate={canCollaborate}
       isPublicGuest={isPublicGuest}
-      canEditItem={canEditItem}
+      canEditItem={footerCanEditItem}
       isArchived={isArchived}
       isExpired={isExpired}
       allowGroupFunds={allowGroupFunds}
@@ -283,14 +401,24 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       metadataBadgeEmoji={METADATA_BADGE_EMOJI}
       handleClaim={handleClaim}
       handleUnclaim={handleUnclaim}
-      handleDelete={handleDelete}
+      handleDelete={
+        activeBrowseOption
+          ? onDeleteSubstitutionOption
+            ? handleFooterDelete
+            : () => undefined
+          : sectionFooter.showParentEditDelete
+            ? handleFooterDelete
+            : () => undefined
+      }
       totalExtractedPrice={totalExtractedPrice}
       totalClaimedAmount={totalClaimedAmount}
       isMultiCount={isMultiCount}
       isFullyClaimed={isFullyClaimed}
+      hasVisibleClaimForGray={hasVisibleClaimForGray}
+      isClaimUnavailable={isClaimUnavailable}
       progressPercent={progressPercent}
       onClose={onClose}
-      onEdit={onEdit}
+      onEdit={footerOnEdit}
       getSiteName={getSiteName}
       audienceLabel={audienceLabel}
       isPrivate={isPrivate}

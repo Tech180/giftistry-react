@@ -34,4 +34,9 @@ export interface AddItemProps {
   setEditingItemDraft: (draft: any) => void;
   loadData: () => void;
   onItemTaggedClick?: (itemId: string) => void;
+  /** Bump to open claimer custom substitution create in the nested editor. */
+  autoOpenClaimerSubstitutionNonce?: number;
+  /** Bump with edit id to open claimer custom substitution edit. */
+  autoOpenClaimerSubstitutionEditNonce?: number;
+  autoOpenClaimerSubstitutionEditId?: string | null;
 }

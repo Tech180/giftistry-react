@@ -1,12 +1,12 @@
 TODO:
 
-- Improve collaborators
-- Implement substitutions
+- Overhaul collaborators
 - Improve calandar/expiration field
 - revamp group funding
-- prevent email as username
-- improve
+- put scraped photos in photo list
+- duplicate and copy buttons
 - new features
     - price comparer
     - deep research
     - reviews
+    - image to item ai processingcu

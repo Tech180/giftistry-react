@@ -19,6 +19,7 @@ import { jobsApi } from 'features/jobs/api/jobs.api';
 import type { BackgroundJobView } from 'features/jobs/interfaces/background-job.interface';
 import { Item } from '../../interfaces/item.interface';
 import { ADD_ITEM_FORM_ID } from './add-item-form.html';
+import { SUBSTITUTION_FORM_ID } from '../../constants/substitution-form.constant';
 
 vi.mock('../../api/items.api', () => ({
   itemsApi: {
@@ -1633,5 +1634,367 @@ describe('AddItemForm - linked items multi-count restriction', () => {
       );
     });
     expect(itemsApi.addItem).not.toHaveBeenCalled();
+  });
+});
+
+describe('AddItemForm - Substitution create surface', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue([]);
+  });
+
+  test('owner add-substitution starts with blank product fields', async () => {
+    const itemWithDetails: Item = {
+      ...mockEditItem,
+      Name: 'Parent Gift',
+      Description: 'Keep this on the parent only',
+      Category: 'tech',
+      Links: [
+        {
+          Id: 'link-1',
+          ItemId: 'item-1',
+          Url: 'https://example.com/parent',
+          RetailerName: 'Parent Store',
+          ExtractedPrice: 42,
+          ExtractedImageUrl: null,
+        },
+      ],
+      AllowSubstitutions: true,
+      SubstitutionOptions: [],
+    };
+
+    render(<AddItemForm {...baseFormProps} item={itemWithDetails} />);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Parent Gift')).toBeInTheDocument();
+    });
+    expect(screen.getByDisplayValue('https://example.com/parent')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Add approved substitution/i }));
+
+    await waitFor(() => {
+      expect(document.getElementById(SUBSTITUTION_FORM_ID)).toBeTruthy();
+    });
+
+    expect(screen.getByPlaceholderText('e.g. Sony WH-1000XM5')).toHaveValue('');
+    expect(screen.getByPlaceholderText('Paste product URL...')).toHaveValue('');
+    expect(screen.getByPlaceholderText('Amazon, Target')).toHaveValue('');
+    expect(screen.queryByDisplayValue('Parent Gift')).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue('https://example.com/parent')).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Parent Store')).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue('42')).not.toBeInTheDocument();
+  });
+
+  test('claimer auto-open starts with blank product fields', async () => {
+    const itemWithDetails: Item = {
+      ...mockEditItem,
+      Name: 'Parent Gift',
+      Description: 'Keep this on the parent only',
+      Category: 'tech',
+      Links: [
+        {
+          Id: 'link-1',
+          ItemId: 'item-1',
+          Url: 'https://example.com/parent',
+          RetailerName: 'Parent Store',
+          ExtractedPrice: 42,
+          ExtractedImageUrl: null,
+        },
+      ],
+      AllowSubstitutions: true,
+      SubstitutionOptions: [],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        item={itemWithDetails}
+        readOnly
+        autoOpenClaimerSubstitutionNonce={1}
+      />
+    );
+
+    await waitFor(() => {
+      expect(document.getElementById(SUBSTITUTION_FORM_ID)).toBeTruthy();
+    });
+
+    expect(screen.getByPlaceholderText('e.g. Sony WH-1000XM5')).toHaveValue('');
+    expect(screen.getByPlaceholderText('Paste product URL...')).toHaveValue('');
+    expect(screen.queryByDisplayValue('Parent Gift')).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue('https://example.com/parent')).not.toBeInTheDocument();
+  });
+
+  test('cleared auto-open nonce does not nest into leftover substitution edit', async () => {
+    const itemWithSub: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: true,
+      SubstitutionOptions: [
+        {
+          Id: 'sub-stale',
+          Kind: 'owner_approved',
+          SortOrder: 0,
+          CreatedByUserId: 'owner-id',
+          Item: {
+            Id: 'sub-item-1',
+            Name: 'Stale Substitution',
+            Description: null,
+            Links: [],
+            Photos: [],
+            Claims: [],
+            IsClaimed: false,
+          },
+        },
+      ],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={itemWithSub}
+        autoOpenClaimerSubstitutionEditId="sub-stale"
+        autoOpenClaimerSubstitutionEditNonce={0}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Headphones')).toBeInTheDocument();
+    });
+
+    expect(document.getElementById(SUBSTITUTION_FORM_ID)).toBeNull();
+    expect(screen.queryByDisplayValue('Stale Substitution')).not.toBeInTheDocument();
+  });
+});
+
+describe('AddItemForm - Substitution drawer chrome entry path', () => {
+  test('nested manager open reports nestedBack true', async () => {
+    const onSubstitutionChromeChange = vi.fn();
+    const itemWithDetails: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: true,
+      SubstitutionOptions: [],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={itemWithDetails}
+        onSubstitutionChromeChange={onSubstitutionChromeChange}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Headphones')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Add approved substitution/i }));
+
+    await waitFor(() => {
+      expect(onSubstitutionChromeChange).toHaveBeenCalledWith(
+        expect.objectContaining({ nestedBack: true, mode: 'create' })
+      );
+    });
+  });
+
+  test('nested edit from manager reports nestedBack true', async () => {
+    const onSubstitutionChromeChange = vi.fn();
+    const itemWithSub: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: true,
+      SubstitutionOptions: [
+        {
+          Id: 'sub-nested',
+          Kind: 'owner_approved',
+          SortOrder: 0,
+          CreatedByUserId: 'owner-id',
+          Item: {
+            Id: 'sub-item-nested',
+            Name: 'Nested Sub',
+            Description: null,
+            Links: [],
+            Photos: [],
+            Claims: [],
+            IsClaimed: false,
+          },
+        },
+      ],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={itemWithSub}
+        onSubstitutionChromeChange={onSubstitutionChromeChange}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Headphones')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByLabelText('Edit substitution'));
+
+    await waitFor(() => {
+      expect(onSubstitutionChromeChange).toHaveBeenCalledWith(
+        expect.objectContaining({ nestedBack: true, mode: 'edit' })
+      );
+    });
+  });
+
+  test('auto-open edit reports nestedBack false', async () => {
+    const onSubstitutionChromeChange = vi.fn();
+    const itemWithSub: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: true,
+      SubstitutionOptions: [
+        {
+          Id: 'sub-direct',
+          Kind: 'owner_approved',
+          SortOrder: 0,
+          CreatedByUserId: 'owner-id',
+          Item: {
+            Id: 'sub-item-direct',
+            Name: 'Direct Sub',
+            Description: null,
+            Links: [],
+            Photos: [],
+            Claims: [],
+            IsClaimed: false,
+          },
+        },
+      ],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={itemWithSub}
+        onSubstitutionChromeChange={onSubstitutionChromeChange}
+        autoOpenClaimerSubstitutionEditId="sub-direct"
+        autoOpenClaimerSubstitutionEditNonce={1}
+      />
+    );
+
+    await waitFor(() => {
+      expect(onSubstitutionChromeChange).toHaveBeenCalledWith(
+        expect.objectContaining({ nestedBack: false, mode: 'edit' })
+      );
+    });
+  });
+
+  test('auto-open claimer create reports nestedBack false', async () => {
+    const onSubstitutionChromeChange = vi.fn();
+    const itemWithDetails: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: true,
+      SubstitutionOptions: [],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        item={itemWithDetails}
+        readOnly
+        onSubstitutionChromeChange={onSubstitutionChromeChange}
+        autoOpenClaimerSubstitutionNonce={1}
+      />
+    );
+
+    await waitFor(() => {
+      expect(onSubstitutionChromeChange).toHaveBeenCalledWith(
+        expect.objectContaining({ nestedBack: false, mode: 'create' })
+      );
+    });
+  });
+});
+
+describe('AddItemForm - Allow substitutions toggle', () => {
+  const createdOption = {
+    Id: 'sub-new',
+    Kind: 'owner_approved' as const,
+    SortOrder: 0,
+    CreatedByUserId: 'owner-id',
+    Item: {
+      Id: 'sub-item-new',
+      Name: 'Alt Gift',
+      Description: null,
+      Links: [],
+      Photos: [],
+      Claims: [],
+      IsClaimed: false,
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue([]);
+    vi.mocked(itemsApi.updateItem).mockResolvedValue(mockEditItem);
+    (itemsApi as any).createOwnerSubstitution = vi.fn().mockResolvedValue(createdOption);
+    (itemsApi as any).listSubstitutions = vi.fn().mockResolvedValue({
+      Options: [createdOption],
+      AllowSubstitutions: false,
+    });
+  });
+
+  test('saving an owner substitution does not reset Allow toggle from API', async () => {
+    const itemWithAllowOff: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: false,
+      SubstitutionOptions: [],
+    };
+
+    render(<AddItemForm {...baseFormProps} item={itemWithAllowOff} />);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Headphones')).toBeInTheDocument();
+    });
+
+    const allowSwitch = screen.getByLabelText('Allow substitutions');
+    expect(allowSwitch).not.toBeChecked();
+    fireEvent.click(allowSwitch);
+    expect(allowSwitch).toBeChecked();
+
+    fireEvent.click(screen.getByRole('button', { name: /Add approved substitution/i }));
+
+    await waitFor(() => {
+      expect(document.getElementById(SUBSTITUTION_FORM_ID)).toBeTruthy();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('e.g. Sony WH-1000XM5'), {
+      target: { value: 'Alt Gift' },
+    });
+    fireEvent.submit(document.getElementById(SUBSTITUTION_FORM_ID)!);
+
+    await waitFor(() => {
+      expect(document.getElementById(ADD_ITEM_FORM_ID)).toBeTruthy();
+    });
+
+    expect(screen.getByLabelText('Allow substitutions')).toBeChecked();
+    expect(itemsApi.listSubstitutions).toHaveBeenCalledWith('item-1');
+  });
+
+  test('parent save persists AllowSubstitutions true when toggled on', async () => {
+    const itemWithAllowOff: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: false,
+      SubstitutionOptions: [],
+    };
+
+    render(<AddItemForm {...baseFormProps} item={itemWithAllowOff} />);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Headphones')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByLabelText('Allow substitutions'));
+    fireEvent.submit(document.getElementById(ADD_ITEM_FORM_ID)!);
+
+    await waitFor(() => {
+      expect(itemsApi.updateItem).toHaveBeenCalled();
+    });
+
+    const metadata = vi.mocked(itemsApi.updateItem).mock.calls[0]![10];
+    expect(metadata).toEqual(expect.objectContaining({ AllowSubstitutions: true }));
   });
 });

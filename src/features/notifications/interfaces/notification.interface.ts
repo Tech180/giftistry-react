@@ -6,6 +6,7 @@ export type NotificationType =
   | 'list_invite'
   | 'invite_accepted'
   | 'item_claimed'
+  | 'item_deleted'
   | 'comment'
   | 'job_completed'
   | 'job_failed'

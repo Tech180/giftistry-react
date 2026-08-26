@@ -2,6 +2,7 @@ import { Item } from './item.interface';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import { LinkingAudienceContext } from '../utils/item-audience.util';
 import type { ItemEnrichJobResult } from 'features/jobs/interfaces/item-enrich-job-result.interface';
+import type { SubstitutionDrawerChrome } from './substitution-drawer-chrome.interface';
 
 export interface AddItemFormProps {
   listId: string;
@@ -36,5 +37,14 @@ export interface AddItemFormProps {
   canUseWebSearchOnList?: boolean;
   /** When true, form fields are non-editable (View Item drawer). */
   readOnly?: boolean;
+  /** Notifies the parent drawer when the in-sidebar substitution editor is active. */
+  onSubstitutionChromeChange?: (chrome: SubstitutionDrawerChrome | null) => void;
+  /** Parent increments to request exit from substitution editor (Back / Cancel). */
+  substitutionExitNonce?: number;
+  /** Parent increments to auto-open claimer custom substitution create surface. */
+  autoOpenClaimerSubstitutionNonce?: number;
+  /** Parent bumps with edit id to auto-open a substitution edit (claimer own custom, or any option for owners). */
+  autoOpenClaimerSubstitutionEditNonce?: number;
+  autoOpenClaimerSubstitutionEditId?: string | null;
 }
 

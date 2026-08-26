@@ -9,6 +9,10 @@ import type {
   ClaimItemResult,
   UnclaimItemResult,
 } from '../interfaces/claim-mutation-result.interface';
+import type {
+  CreateSubstitutionPayload,
+  ItemSubstitutionOption,
+} from '../interfaces/item-substitution.interface';
 
 export type {
   ExtractMetadataCustomFields,
@@ -143,5 +147,46 @@ export const itemsApi = {
 
   getFieldDefinitions: (category: string) =>
     apiClient.get<FieldDefinition[]>(`/api/items/field-definitions?category=${category}`),
+
+  listSubstitutions: (itemId: string) =>
+    apiClient.get<{ Options: ItemSubstitutionOption[]; AllowSubstitutions: boolean }>(
+      `/api/items/${itemId}/substitutions`
+    ),
+
+  createOwnerSubstitution: (itemId: string, payload: CreateSubstitutionPayload) =>
+    apiClient.post<ItemSubstitutionOption>(
+      `/api/items/${itemId}/substitutions/owner`,
+      payload,
+      'Items'
+    ),
+
+  createClaimerSubstitution: (itemId: string, payload: CreateSubstitutionPayload) =>
+    apiClient.post<ItemSubstitutionOption>(
+      `/api/items/${itemId}/substitutions/custom`,
+      payload,
+      'Items'
+    ),
+
+  updateSubstitution: (substitutionId: string, payload: CreateSubstitutionPayload) =>
+    apiClient.put<ItemSubstitutionOption>(
+      `/api/items/${substitutionId}/substitution`,
+      payload,
+      'Items'
+    ),
+
+  deleteSubstitution: (substitutionId: string) =>
+    apiClient.delete<void>(`/api/items/${substitutionId}/substitution`),
+
+  reorderOwnerSubstitutions: (itemId: string, orderedIds: string[]) =>
+    apiClient.patch<void>(
+      `/api/items/${itemId}/substitutions/reorder`,
+      { OrderedIds: orderedIds },
+      'Items'
+    ),
 };
 export type { ItemLink, Claim, Item, FieldDefinition };
+export type {
+  ItemSubstitutionOption,
+  ItemSubstitutionKind,
+  CreateSubstitutionPayload,
+} from '../interfaces/item-substitution.interface';

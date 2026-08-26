@@ -101,6 +101,7 @@ export function normalizeItemDescriptionMetadata(
     MultiCount: raw.MultiCount,
     IsFavorite: raw.IsFavorite === true,
     IsPinned: raw.IsPinned === true,
+    AllowSubstitutions: raw.AllowSubstitutions,
   };
 }
 

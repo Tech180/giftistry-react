@@ -3,6 +3,7 @@ import { Claim } from './item-claim.interface';
 import { ItemAudienceUser } from './item-audience-user.interface';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
 import type { ItemPhoto } from './item-photo.interface';
+import type { ItemSubstitutionOption } from './item-substitution.interface';
 
 export interface Item {
   Id: string;
@@ -34,4 +35,7 @@ export interface Item {
   DesiredQuantity?: number | null;
   RemainingQuantity?: number | null;
   FundingTarget?: number;
+  AllowSubstitutions?: boolean;
+  SubstitutionOptions?: ItemSubstitutionOption[];
+  ActiveSubstitutionId?: string | null;
 }

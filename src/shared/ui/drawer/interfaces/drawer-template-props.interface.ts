@@ -21,4 +21,6 @@ export interface DrawerTemplateProps {
   headerExtra?: React.ReactNode;
   isOpen?: boolean;
   onOverlayClick?: () => void;
+  closeIcon?: React.ReactNode;
+  closeAriaLabel?: string;
 }

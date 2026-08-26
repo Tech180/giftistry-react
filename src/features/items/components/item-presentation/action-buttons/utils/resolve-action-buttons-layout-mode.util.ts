@@ -6,6 +6,7 @@ export function resolveActionButtonsLayoutMode({
   canCollaborate,
   claimedByCurrentUser,
   isFullyClaimed,
+  isClaimUnavailable = false,
   canAdjustClaim = false,
   isPublicGuest = false,
   canEditItem,
@@ -30,6 +31,9 @@ export function resolveActionButtonsLayoutMode({
   }
   if (claimedByCurrentUser) {
     return 'unclaim';
+  }
+  if (isClaimUnavailable) {
+    return 'unavailable';
   }
   if (isFullyClaimed) {
     return 'claimed';

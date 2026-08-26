@@ -27,11 +27,14 @@ import styles from './kanban-item-view.module.css';
 export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
   const {
     item,
+    displayItem = item,
     isOwner,
     canCollaborate,
     allowGroupFunds,
     isFullyClaimed,
     isMultiCount,
+    hasVisibleClaimForGray,
+    isClaimUnavailable,
     totalExtractedPrice,
     totalClaimedAmount,
     showClaimForm,
@@ -72,10 +75,15 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
 
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
   const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
-  const primaryPrice = item.Links[0]?.ExtractedPrice;
-  const showQuantity = resolveItemQuantitySummary(item, metadata).shouldDisplay;
+  const primaryPrice = displayItem.Links[0]?.ExtractedPrice;
+  const showQuantity = resolveItemQuantitySummary(displayItem, metadata).shouldDisplay;
   const { entries: claimBadgeEntries, showClaimBadge, hasVisibleClaim } =
-    resolveItemClaimBadgeState(item.Claims, claimUserId, claimedByCurrentUser, claimActorName);
+    resolveItemClaimBadgeState(
+      displayItem.Claims,
+      claimUserId,
+      claimedByCurrentUser,
+      claimActorName
+    );
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -91,7 +99,7 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
   );
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
-    hasVisibleClaim,
+    hasVisibleClaimForGray ?? hasVisibleClaim,
     claimedByCurrentUser,
     styles,
     props.isArchived,
@@ -148,7 +156,7 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
           {isRelatedToItems && (
             <Layers2 size={12} className={styles['linked-icon']} aria-label="Related to other items" />
           )}
-          {item.Name}
+          {displayItem.Name}
         </h4>
         {hasPriorityValue(item.Priority) && (
           <PriorityDisplay priority={item.Priority} variant="meta" />
@@ -254,6 +262,7 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
             isExpired={props.isExpired}
             claimedByCurrentUser={claimedByCurrentUser}
             isFullyClaimed={isFullyClaimed}
+            isClaimUnavailable={isClaimUnavailable}
             canAdjustClaim={canAdjustClaim}
             claimLoading={claimLoading}
             showDeleteConfirm={showDeleteConfirm}
@@ -267,6 +276,7 @@ export const KanbanItemView: React.FC<ItemViewProps> = (props) => {
             onDeleteCancel={() => setShowDeleteConfirm(false)}
             compact
             hasLinkedUnclaimPeers={hasLinkedUnclaimPeers}
+            substitutionAction={props.substitutionAction}
           />
         </div>
       )}

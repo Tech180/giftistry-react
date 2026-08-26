@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { itemsApi, FieldDefinition } from '../../api/items.api';
 import { Item } from '../../interfaces/item.interface';
+import type {
+  CreateSubstitutionPayload,
+  ItemSubstitutionOption,
+} from '../../interfaces/item-substitution.interface';
 import { AddItemFormProps } from '../../interfaces/add-item-form-props.interface';
-import { AddItemFormTemplate } from './add-item-form.html';
+import { AddItemFormTemplate, ADD_ITEM_FORM_ID } from './add-item-form.html';
 import { useAuth } from 'app/providers/auth-context';
 import { getFriendlyCategoryLabel } from '../../utils/category-label.util';
 import { STANDARD_CATEGORIES } from '../../constants/standard-categories';
@@ -58,8 +62,45 @@ import { abandonPendingManualJob } from '../../utils/abandon-pending-manual-job.
 import type { PendingManualJob } from '../../interfaces/pending-manual-job.interface';
 import type { ExtractMetadataResult } from '../../interfaces/extract-metadata-result.interface';
 import type { ItemPhotoGalleryEntry } from '../photo-gallery/interfaces/item-photo-gallery-props.interface';
+import type { SubstitutionDrawerChrome } from '../../interfaces/substitution-drawer-chrome.interface';
+import { SUBSTITUTION_FORM_ID } from '../../constants/substitution-form.constant';
+import type { ItemSubstitutionSummary } from '../../interfaces/item-substitution.interface';
 
 type ExtractedMetadataResponse = ExtractMetadataResult;
+
+type SubstitutionEditorState =
+  | { mode: 'create'; kind: 'claimer_custom' | 'owner_approved' }
+  | { mode: 'edit'; option: ItemSubstitutionOption };
+
+type ParentFormSnapshot = {
+  name: string;
+  description: string;
+  priorityWeight: string;
+  linkUrl: string;
+  websiteName: string;
+  category: string;
+  price: string;
+  isFavorite: boolean;
+  desiredQuantity: number | '';
+  variations: { name: string; quantity: number }[];
+  customFields: CustomFieldRow[];
+  dynamicValues: Record<string, string>;
+  showExtraFields: boolean;
+  photoEntries: ItemPhotoGalleryEntry[];
+  initialPhotosSnapshot: string;
+  photoError: string | null;
+  otherUsersCanSee: boolean;
+  isHiddenIdea: boolean;
+  claimOnCreate: boolean;
+  allowSubstitutions: boolean;
+  substitutionOptions: ItemSubstitutionOption[];
+  errorMsg: string | null;
+  hasScraped: boolean;
+  loadedMetadata: {
+    predefined: Record<string, string | null>;
+    userDefined: Record<string, string>;
+  } | null;
+};
 
 export const AddItemForm: React.FC<AddItemFormProps> = ({
   listId,
@@ -91,6 +132,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   listManualJobBackground = true,
   canUseWebSearchOnList = false,
   readOnly = false,
+  onSubstitutionChromeChange,
+  substitutionExitNonce = 0,
+  autoOpenClaimerSubstitutionNonce = 0,
+  autoOpenClaimerSubstitutionEditNonce = 0,
+  autoOpenClaimerSubstitutionEditId = null,
 }) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
@@ -98,6 +144,19 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const [priorityWeight, setPriorityWeight] = useState('');
   const [isHiddenIdea, setIsHiddenIdea] = useState(!isOwner);
   const [otherUsersCanSee, setOtherUsersCanSee] = useState(true);
+  const [allowSubstitutions, setAllowSubstitutions] = useState(true);
+  const [substitutionOptions, setSubstitutionOptions] = useState<ItemSubstitutionOption[]>([]);
+  const [substitutionEditor, setSubstitutionEditor] = useState<SubstitutionEditorState | null>(
+    null
+  );
+  const [subSaving, setSubSaving] = useState(false);
+  const parentFormSnapshotRef = useRef<ParentFormSnapshot | null>(null);
+  const substitutionEditorRef = useRef<SubstitutionEditorState | null>(null);
+  substitutionEditorRef.current = substitutionEditor;
+  const substitutionEntryNestedRef = useRef(true);
+  const lastSubstitutionExitNonceRef = useRef(substitutionExitNonce);
+  const lastAutoOpenClaimerNonceRef = useRef(0);
+  const lastAutoOpenClaimerEditNonceRef = useRef(0);
   const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
   const [visibilityMode, setVisibilityMode] = useState<'everyone' | 'restricted' | 'private'>('everyone');
   const [claimOnCreate, setClaimOnCreate] = useState(false);
@@ -279,6 +338,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       visibilityMode,
       sharedWithUserIds: comparableSharedWith,
       otherUsersCanSee,
+      allowSubstitutions,
       isHiddenIdea,
       linkedItemIds: [...linkedItemIds].sort(),
       relatedItemIds: [...relatedItemIds].sort(),
@@ -297,6 +357,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     dynamicValues,
     desiredQuantity,
     variations,
+    allowSubstitutions,
     visibilityMode,
     sharedWithUserIds,
     otherUsersCanSee,
@@ -348,8 +409,12 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       onDirtyChange?.(false);
       return;
     }
+    if (substitutionEditor) {
+      onDirtyChange?.(true);
+      return;
+    }
     onDirtyChange?.(!item || isEditDirty);
-  }, [item, isEditDirty, onDirtyChange, readOnly]);
+  }, [item, isEditDirty, onDirtyChange, readOnly, substitutionEditor]);
 
   const mapCategoryForDefinitions = (cat: string): string => {
     const c = cat.toLowerCase();
@@ -381,6 +446,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   }, [category, canShowAi]);
 
   useEffect(() => {
+    // Substitution create/edit owns its own field state — do not re-apply parent metadata.
+    if (substitutionEditorRef.current) return;
     if (canShowAi || !loadedMetadataRef.current || !item || loadedItemId !== item.Id) return;
     if (definitions.length === 0) return;
 
@@ -500,13 +567,18 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         JSON.stringify(photoEntries.map((p) => p.dataUrl)) !== initialPhotosSnapshotRef.current;
       const includePhotos = photoEntries.length > 0 || photosChanged;
 
+      const loadedAllowSubstitutions = item?.AllowSubstitutions !== false;
+      const allowSubstitutionsDirty =
+        options.isOwner && allowSubstitutions !== loadedAllowSubstitutions;
+
       const shouldSerialize = !!(
         hasVisibleDynamic ||
         hasExtraFields ||
         description.trim() ||
         !options.isOwner ||
         options.isFavorite ||
-        includePhotos
+        includePhotos ||
+        allowSubstitutionsDirty
       );
 
       if (!shouldSerialize) {
@@ -533,6 +605,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         OtherUsersCanSee: options.isOwner ? true : otherUsersCanSee,
         IsFavorite: options.isOwner ? options.isFavorite || undefined : undefined,
         IsPinned: !options.isOwner ? options.isFavorite || undefined : undefined,
+        AllowSubstitutions: options.isOwner ? allowSubstitutions : undefined,
       });
 
       // Always send Photos when gallery is available and there are photos,
@@ -555,11 +628,14 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       desiredQuantity,
       variations,
       otherUsersCanSee,
+      allowSubstitutions,
       photoEntries,
+      item?.AllowSubstitutions,
     ]
   );
 
   useEffect(() => {
+    if (substitutionEditorRef.current) return;
     if (item) {
       resetOptionalFields();
       setName(item.Name || '');
@@ -620,6 +696,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         setVariations([]);
       }
 
+      setAllowSubstitutions(item.AllowSubstitutions !== false);
+      setSubstitutionOptions(item.SubstitutionOptions ?? []);
       setIsFavorite(getItemFavoriteFlag(item.Description, item.Metadata));
       setPriorityWeight(item.Priority !== undefined && item.Priority !== null ? item.Priority.toString() : '');
       setIsHiddenIdea(item.IsHiddenIdea || false);
@@ -669,6 +747,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setCategory('uncategorized');
       setPrice('');
       setIsFavorite(false);
+      setAllowSubstitutions(true);
+      setSubstitutionOptions([]);
       resetOptionalFields();
       setPhotoEntries([]);
       initialPhotosSnapshotRef.current = '[]';
@@ -692,6 +772,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setCategory('uncategorized');
       setPrice('');
       setIsFavorite(false);
+      setAllowSubstitutions(true);
+      setSubstitutionOptions([]);
       resetOptionalFields();
       setPhotoEntries([]);
       initialPhotosSnapshotRef.current = '[]';
@@ -717,6 +799,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   // Trigger draft change callback for live item preview + linking qty gates
   useEffect(() => {
     if (!onDraftChange) {
+      return;
+    }
+
+    if (substitutionEditor) {
       return;
     }
 
@@ -796,6 +882,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     listShares,
     user?.Id,
     photoEntries,
+    substitutionEditor,
   ]);
 
   useEffect(() => {
@@ -1426,6 +1513,468 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setVarQty(1);
   };
 
+  const refreshLocalSubstitutions = useCallback(async (parentItemId: string) => {
+    const result = await itemsApi.listSubstitutions(parentItemId);
+    setSubstitutionOptions(result.Options);
+    return result;
+  }, []);
+
+  const captureParentFormSnapshot = useCallback((): ParentFormSnapshot => {
+    return {
+      name,
+      description,
+      priorityWeight,
+      linkUrl,
+      websiteName,
+      category,
+      price,
+      isFavorite,
+      desiredQuantity,
+      variations,
+      customFields,
+      dynamicValues,
+      showExtraFields,
+      photoEntries,
+      initialPhotosSnapshot: initialPhotosSnapshotRef.current,
+      photoError,
+      otherUsersCanSee,
+      isHiddenIdea,
+      claimOnCreate,
+      allowSubstitutions,
+      substitutionOptions,
+      errorMsg,
+      hasScraped,
+      loadedMetadata: loadedMetadataRef.current,
+    };
+  }, [
+    name,
+    description,
+    priorityWeight,
+    linkUrl,
+    websiteName,
+    category,
+    price,
+    isFavorite,
+    desiredQuantity,
+    variations,
+    customFields,
+    dynamicValues,
+    showExtraFields,
+    photoEntries,
+    photoError,
+    otherUsersCanSee,
+    isHiddenIdea,
+    claimOnCreate,
+    allowSubstitutions,
+    substitutionOptions,
+    errorMsg,
+    hasScraped,
+  ]);
+
+  const restoreParentFormSnapshot = useCallback((snap: ParentFormSnapshot) => {
+    setName(snap.name);
+    setDescription(snap.description);
+    setPriorityWeight(snap.priorityWeight);
+    setLinkUrl(snap.linkUrl);
+    setWebsiteName(snap.websiteName);
+    setCategory(snap.category);
+    setPrice(snap.price);
+    setIsFavorite(snap.isFavorite);
+    setDesiredQuantityState(snap.desiredQuantity);
+    setVariations(snap.variations);
+    setCustomFields(snap.customFields);
+    setDynamicValues(snap.dynamicValues);
+    setShowExtraFields(snap.showExtraFields);
+    setPhotoEntries(snap.photoEntries);
+    initialPhotosSnapshotRef.current = snap.initialPhotosSnapshot;
+    setPhotoError(snap.photoError);
+    setOtherUsersCanSee(snap.otherUsersCanSee);
+    setIsHiddenIdea(snap.isHiddenIdea);
+    setClaimOnCreate(snap.claimOnCreate);
+    setAllowSubstitutions(snap.allowSubstitutions);
+    setSubstitutionOptions(snap.substitutionOptions);
+    setErrorMsg(snap.errorMsg);
+    setHasScraped(snap.hasScraped);
+    loadedMetadataRef.current = snap.loadedMetadata;
+  }, []);
+
+  const resetProductFieldsForSubstitution = useCallback(() => {
+    setName('');
+    setDescription('');
+    setPriorityWeight('');
+    setLinkUrl('');
+    setWebsiteName('');
+    setCategory('uncategorized');
+    setPrice('');
+    setIsFavorite(false);
+    setOtherUsersCanSee(true);
+    setIsHiddenIdea(true);
+    setClaimOnCreate(false);
+    resetOptionalFields();
+    setPhotoEntries([]);
+    initialPhotosSnapshotRef.current = '[]';
+    setPhotoError(null);
+    setHasScraped(false);
+    setErrorMsg(null);
+    setUndoDescription(null);
+  }, []);
+
+  const hydrateFromSubstitutionSummary = useCallback(
+    (summary: ItemSubstitutionSummary) => {
+      resetOptionalFields();
+      setName(summary.Name || '');
+      setDescription(summary.Description || '');
+      setPriorityWeight(
+        summary.Priority != null && Number.isFinite(summary.Priority)
+          ? String(summary.Priority)
+          : ''
+      );
+      setCategory(summary.Category || 'uncategorized');
+      setIsFavorite(summary.IsFavorite === true);
+      setIsHiddenIdea(summary.IsHiddenIdea === true);
+      setClaimOnCreate(false);
+
+      const predefined = summary.CustomFields?.Predefined ?? {};
+      const userDefined = summary.CustomFields?.UserDefined ?? {};
+      loadedMetadataRef.current = { predefined, userDefined };
+
+      if (canShowAi) {
+        setCustomFields(rowsFromItemMetadataAi(predefined, userDefined));
+        setDynamicValues({});
+      } else if (definitions.length > 0) {
+        const { fieldKeys, labels } = definitionFieldKeysFromDefinitions(definitions);
+        const mapped = rowsFromItemMetadata(predefined, userDefined, fieldKeys, labels);
+        setDynamicValues(mapped.dynamicValues);
+        setCustomFields(mapped.customFieldRows);
+      } else {
+        setCustomFields(rowsFromItemMetadataAi(predefined, userDefined));
+        setDynamicValues({});
+      }
+
+      const qty = summary.DesiredQuantity;
+      if (summary.MultiCount) {
+        setDesiredQuantityState(qty != null && (qty === 0 || qty > 1) ? qty : 2);
+      } else {
+        setDesiredQuantityState(qty != null ? qty : 1);
+      }
+      setVariations(
+        (summary.Variations ?? []).map((v) => ({
+          name: v.Name,
+          quantity: v.Quantity,
+        }))
+      );
+      setShowExtraFields(
+        Object.keys(predefined).length > 0 || Object.keys(userDefined).length > 0
+      );
+
+      const sortedPhotos = [...(summary.Photos ?? [])].sort((a, b) => a.SortOrder - b.SortOrder);
+      const loadedPhotos: ItemPhotoGalleryEntry[] = sortedPhotos.map((p) => ({
+        localId: p.Id,
+        id: p.Id,
+        dataUrl: p.Url,
+      }));
+      setPhotoEntries(loadedPhotos);
+      initialPhotosSnapshotRef.current = JSON.stringify(loadedPhotos.map((p) => p.dataUrl));
+      setPhotoError(null);
+
+      if (summary.Links && summary.Links.length > 0) {
+        setLinkUrl(summary.Links[0]!.Url || '');
+        setWebsiteName(summary.Links[0]!.RetailerName || '');
+        setPrice(
+          summary.Links[0]!.ExtractedPrice != null
+            ? String(summary.Links[0]!.ExtractedPrice)
+            : ''
+        );
+      } else {
+        setLinkUrl('');
+        setWebsiteName('');
+        setPrice('');
+      }
+
+      setHasScraped(false);
+      setErrorMsg(null);
+      setUndoDescription(null);
+    },
+    [canShowAi, definitions]
+  );
+
+  const openCreateSubstitution = () => {
+    if (!item?.Id) return;
+    substitutionEntryNestedRef.current = true;
+    parentFormSnapshotRef.current = captureParentFormSnapshot();
+    const next: SubstitutionEditorState = { mode: 'create', kind: 'owner_approved' };
+    substitutionEditorRef.current = next;
+    resetProductFieldsForSubstitution();
+    setSubstitutionEditor(next);
+  };
+
+  const openCreateClaimerSubstitution = useCallback(
+    (nested = true) => {
+      if (!item?.Id || isOwner) return;
+      substitutionEntryNestedRef.current = nested;
+      parentFormSnapshotRef.current = captureParentFormSnapshot();
+      const next: SubstitutionEditorState = { mode: 'create', kind: 'claimer_custom' };
+      substitutionEditorRef.current = next;
+      resetProductFieldsForSubstitution();
+      setSubstitutionEditor(next);
+    },
+    [item, isOwner, captureParentFormSnapshot, resetProductFieldsForSubstitution]
+  );
+
+  useEffect(() => {
+    if (autoOpenClaimerSubstitutionNonce === 0) return;
+    if (autoOpenClaimerSubstitutionNonce === lastAutoOpenClaimerNonceRef.current) return;
+    if (!item?.Id || isOwner) return;
+    const timerId = window.setTimeout(() => {
+      lastAutoOpenClaimerNonceRef.current = autoOpenClaimerSubstitutionNonce;
+      openCreateClaimerSubstitution(false);
+    }, 0);
+    return () => window.clearTimeout(timerId);
+  }, [autoOpenClaimerSubstitutionNonce, item?.Id, isOwner, openCreateClaimerSubstitution]);
+
+  const openEditSubstitution = useCallback(
+    (option: ItemSubstitutionOption, nested = true) => {
+      substitutionEntryNestedRef.current = nested;
+      parentFormSnapshotRef.current = captureParentFormSnapshot();
+      const next: SubstitutionEditorState = { mode: 'edit', option };
+      substitutionEditorRef.current = next;
+      hydrateFromSubstitutionSummary(option.Item);
+      setSubstitutionEditor(next);
+    },
+    [captureParentFormSnapshot, hydrateFromSubstitutionSummary]
+  );
+
+  useEffect(() => {
+    if (autoOpenClaimerSubstitutionEditNonce === 0) return;
+    if (autoOpenClaimerSubstitutionEditNonce === lastAutoOpenClaimerEditNonceRef.current) return;
+    if (!item?.Id || !autoOpenClaimerSubstitutionEditId) return;
+
+    const option = (item.SubstitutionOptions ?? []).find(
+      (entry) => entry.Id === autoOpenClaimerSubstitutionEditId
+    );
+    if (!option) return;
+
+    if (
+      !isOwner &&
+      (option.Kind !== 'claimer_custom' ||
+        !user?.Id ||
+        option.CreatedByUserId !== user.Id)
+    ) {
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      lastAutoOpenClaimerEditNonceRef.current = autoOpenClaimerSubstitutionEditNonce;
+      openEditSubstitution(option, false);
+    }, 0);
+    return () => window.clearTimeout(timerId);
+  }, [
+    autoOpenClaimerSubstitutionEditNonce,
+    autoOpenClaimerSubstitutionEditId,
+    item?.Id,
+    item?.SubstitutionOptions,
+    isOwner,
+    user?.Id,
+    openEditSubstitution,
+  ]);
+
+  const closeSubstitutionEditor = useCallback(() => {
+    const snap = parentFormSnapshotRef.current;
+    parentFormSnapshotRef.current = null;
+    substitutionEditorRef.current = null;
+    setSubstitutionEditor(null);
+    setSubSaving(false);
+    if (snap) {
+      restoreParentFormSnapshot(snap);
+    }
+  }, [restoreParentFormSnapshot]);
+
+  useEffect(() => {
+    if (substitutionExitNonce === lastSubstitutionExitNonceRef.current) return;
+    lastSubstitutionExitNonceRef.current = substitutionExitNonce;
+    if (substitutionExitNonce === 0) return;
+    closeSubstitutionEditor();
+  }, [substitutionExitNonce, closeSubstitutionEditor]);
+
+  useEffect(() => {
+    if (!onSubstitutionChromeChange) return;
+    if (!substitutionEditor) {
+      onSubstitutionChromeChange(null);
+      return;
+    }
+    const chrome: SubstitutionDrawerChrome = {
+      mode: substitutionEditor.mode,
+      isSaving: subSaving,
+      canSubmit: !!name.trim() && !subSaving,
+      nestedBack: substitutionEntryNestedRef.current,
+    };
+    onSubstitutionChromeChange(chrome);
+  }, [substitutionEditor, subSaving, name, onSubstitutionChromeChange]);
+
+  const handleCreateClaimerSubstitution = async (payload: CreateSubstitutionPayload) => {
+    if (!item?.Id) {
+      throw new Error('Item is required before adding a substitution.');
+    }
+    const option = await itemsApi.createClaimerSubstitution(item.Id, payload);
+    if (claimOnCreate && option.Item?.Id) {
+      try {
+        const claimerName = user
+          ? `${user.FirstName} ${user.LastName}`.trim() || user.Username
+          : null;
+        await itemsApi.claimItem(option.Item.Id, null, claimerName, false);
+      } catch {
+        // Ignore claim error; substitution was created.
+      }
+    }
+    return refreshLocalSubstitutions(item.Id);
+  };
+
+  const handleCreateOwnerSubstitution = async (payload: CreateSubstitutionPayload) => {
+    if (!item?.Id) {
+      throw new Error('Save the item before adding substitutions.');
+    }
+    await itemsApi.createOwnerSubstitution(item.Id, payload);
+    return refreshLocalSubstitutions(item.Id);
+  };
+
+  const handleUpdateOwnerSubstitution = async (
+    substitutionId: string,
+    payload: CreateSubstitutionPayload
+  ) => {
+    if (!item?.Id) {
+      throw new Error('Save the item before editing substitutions.');
+    }
+    await itemsApi.updateSubstitution(substitutionId, payload);
+    return refreshLocalSubstitutions(item.Id);
+  };
+
+  const handleDeleteOwnerSubstitution = async (substitutionId: string) => {
+    if (!item?.Id) {
+      throw new Error('Save the item before deleting substitutions.');
+    }
+    await itemsApi.deleteSubstitution(substitutionId);
+    await refreshLocalSubstitutions(item.Id);
+  };
+
+  const handleReorderOwnerSubstitutions = async (orderedIds: string[]) => {
+    if (!item?.Id) {
+      throw new Error('Save the item before reordering substitutions.');
+    }
+    await itemsApi.reorderOwnerSubstitutions(item.Id, orderedIds);
+    await refreshLocalSubstitutions(item.Id);
+  };
+
+  const buildSubstitutionMetadata = useCallback((): ItemDescriptionMetadata => {
+    const visibleDynamicValues: Record<string, string> = {};
+    definitions.forEach((def) => {
+      if (isFieldVisible(def)) {
+        const val = dynamicValues[def.FieldKey];
+        if (val?.trim()) {
+          visibleDynamicValues[def.FieldKey] = val.trim();
+        }
+      }
+    });
+    const { predefined: rowPredefined, userDefined: rowUserDefined } =
+      splitCustomFieldRowsForSave(customFields);
+
+    const payload = normalizeItemDescriptionMetadata({
+      Text: description.trim() || null,
+      CustomFields: {
+        Predefined: {
+          ...visibleDynamicValues,
+          ...rowPredefined,
+        },
+        UserDefined: rowUserDefined,
+      },
+      MultiCount: isMultiCount || undefined,
+      DesiredQuantity: isMultiCount ? (desiredQuantity as number) : undefined,
+      Variations:
+        typeof desiredQuantity === 'number' && desiredQuantity > 1
+          ? variations.map((v) => ({ Name: v.name, Quantity: v.quantity }))
+          : undefined,
+      IsFavorite: isFavorite || undefined,
+    });
+
+    payload.Photos = photoEntries.map((p) => ({ DataUrl: p.dataUrl }));
+    return payload;
+  }, [
+    definitions,
+    isFieldVisible,
+    dynamicValues,
+    customFields,
+    description,
+    isMultiCount,
+    desiredQuantity,
+    variations,
+    isFavorite,
+    photoEntries,
+  ]);
+
+  const handleSubstitutionSubmit = async (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    if (!substitutionEditor) return;
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setErrorMsg('Name is required.');
+      return;
+    }
+    const payload: CreateSubstitutionPayload = {
+      Name: trimmed,
+      Description: description.trim() || null,
+      LinkUrl: linkUrl.trim() || null,
+      WebsiteName: websiteName.trim() || null,
+      Price: price.trim() ? Number(price) : null,
+      Category: category || 'uncategorized',
+      PriorityId: null,
+      Priority: priorityWeight.trim() ? parseInt(priorityWeight, 10) : null,
+      Metadata: buildSubstitutionMetadata(),
+    };
+    const isClaimerCustomSurface =
+      substitutionEditor.mode === 'create'
+        ? substitutionEditor.kind === 'claimer_custom'
+        : substitutionEditor.option.Kind === 'claimer_custom';
+    if (isClaimerCustomSurface) {
+      payload.IsHiddenIdea = isHiddenIdea;
+    }
+    setSubSaving(true);
+    setErrorMsg(null);
+    try {
+      let refreshed: Awaited<ReturnType<typeof refreshLocalSubstitutions>> | undefined;
+      if (substitutionEditor.mode === 'create') {
+        if (substitutionEditor.kind === 'claimer_custom') {
+          refreshed = await handleCreateClaimerSubstitution(payload);
+        } else {
+          refreshed = await handleCreateOwnerSubstitution(payload);
+        }
+      } else {
+        refreshed = await handleUpdateOwnerSubstitution(substitutionEditor.option.Id, payload);
+      }
+      if (refreshed && parentFormSnapshotRef.current) {
+        parentFormSnapshotRef.current = {
+          ...parentFormSnapshotRef.current,
+          substitutionOptions: refreshed.Options,
+        };
+      }
+      closeSubstitutionEditor();
+      if (
+        substitutionEditor.mode === 'create' &&
+        substitutionEditor.kind === 'claimer_custom'
+      ) {
+        onItemEnriched?.();
+      }
+      if (
+        substitutionEditor.mode === 'edit' &&
+        substitutionEditor.option.Kind === 'claimer_custom'
+      ) {
+        onItemEnriched?.();
+      }
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to save substitution.');
+    } finally {
+      setSubSaving(false);
+    }
+  };
+
   return (
     <AddItemFormTemplate
       name={name}
@@ -1437,10 +1986,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       isHiddenIdea={isHiddenIdea}
       setIsHiddenIdea={setIsHiddenIdea}
       isOwner={isOwner}
-      isLoading={isLoading}
+      isLoading={isLoading || subSaving}
       errorMsg={errorMsg}
       warningMsg={warningMsg}
-      handleSubmit={handleSubmit}
+      handleSubmit={substitutionEditor ? handleSubstitutionSubmit : handleSubmit}
+      formId={substitutionEditor ? SUBSTITUTION_FORM_ID : ADD_ITEM_FORM_ID}
       linkUrl={linkUrl}
       setLinkUrl={setLinkUrl}
       websiteName={websiteName}
@@ -1527,7 +2077,16 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       onPhotoEntriesChange={setPhotoEntries}
       photoError={photoError}
       onPhotoError={setPhotoError}
-      readOnly={readOnly}
+      readOnly={readOnly && !substitutionEditor}
+      allowSubstitutions={allowSubstitutions}
+      setAllowSubstitutions={setAllowSubstitutions}
+      substitutionOptions={substitutionOptions}
+      onOpenCreateSubstitution={openCreateSubstitution}
+      onOpenEditSubstitution={openEditSubstitution}
+      onDeleteOwnerSubstitution={handleDeleteOwnerSubstitution}
+      onReorderOwnerSubstitutions={handleReorderOwnerSubstitutions}
+      substitutionEditor={substitutionEditor}
     />
   );
 };
+

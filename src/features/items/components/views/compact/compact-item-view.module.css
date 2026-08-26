@@ -7,6 +7,26 @@
   background: var(--surface);
 }
 
+.v-compact-card-with-subs {
+  overflow: hidden;
+}
+
+.v-compact-switcher {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  align-self: stretch;
+}
+
+.v-compact-sub-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .v-compact-card.is-selected {
   background: color-mix(in srgb, var(--primary) 8%, var(--surface));
 }

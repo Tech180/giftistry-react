@@ -19,6 +19,7 @@ export interface ItemDescriptionMetadata {
   RelatedItemIds?: string[];
   OtherUsersCanSee?: boolean;
   MultiCount?: boolean;
+  AllowSubstitutions?: boolean;
   /** Ordered photo data URLs for create/update. Omit on edit when unchanged. */
   Photos?: Array<{ DataUrl: string }> | null;
 }

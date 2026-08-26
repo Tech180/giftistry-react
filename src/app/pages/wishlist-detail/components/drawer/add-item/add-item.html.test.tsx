@@ -4,35 +4,81 @@ import { describe, expect, test, vi } from 'vitest';
 
 vi.mock('features/items', () => ({
   ADD_ITEM_FORM_ID: 'add-item-form',
+  SUBSTITUTION_FORM_ID: 'substitution-item-form',
   AddItemForm: ({
     isOpen,
     isLinkingModeActive,
     setIsLinkingModeActive,
     readOnly,
+    onSubstitutionChromeChange,
+    substitutionExitNonce = 0,
   }: {
     isOpen: boolean;
     isLinkingModeActive: boolean;
     setIsLinkingModeActive: React.Dispatch<React.SetStateAction<boolean>>;
     readOnly?: boolean;
-  }) => (
-    <div
-      data-testid="add-item-form"
-      data-form-open={String(isOpen)}
-      data-read-only={String(!!readOnly)}
-    >
-      {!readOnly && (
+    onSubstitutionChromeChange?: (
+      chrome: {
+        mode: 'create' | 'edit';
+        isSaving: boolean;
+        canSubmit: boolean;
+        nestedBack: boolean;
+      } | null
+    ) => void;
+    substitutionExitNonce?: number;
+  }) => {
+    React.useEffect(() => {
+      if (substitutionExitNonce > 0) {
+        onSubstitutionChromeChange?.(null);
+      }
+    }, [substitutionExitNonce, onSubstitutionChromeChange]);
+
+    return (
+      <div
+        data-testid="add-item-form"
+        data-form-open={String(isOpen)}
+        data-read-only={String(!!readOnly)}
+      >
+        {!readOnly && (
+          <button
+            type="button"
+            title="Select Items from Wishlist"
+            onClick={() => setIsLinkingModeActive(true)}
+          >
+            Link
+          </button>
+        )}
         <button
           type="button"
-          title="Select Items from Wishlist"
-          onClick={() => setIsLinkingModeActive(true)}
+          onClick={() =>
+            onSubstitutionChromeChange?.({
+              mode: 'create',
+              isSaving: false,
+              canSubmit: true,
+              nestedBack: true,
+            })
+          }
         >
-          Link
+          Open nested substitution editor
         </button>
-      )}
-      <span data-testid="linking-active">{String(isLinkingModeActive)}</span>
-      <input aria-label="Item name" readOnly={readOnly} defaultValue="Gift" />
-    </div>
-  ),
+        <button
+          type="button"
+          onClick={() =>
+            onSubstitutionChromeChange?.({
+              mode: 'edit',
+              isSaving: false,
+              canSubmit: true,
+              nestedBack: false,
+            })
+          }
+        >
+          Open direct substitution editor
+        </button>
+        <span data-testid="linking-active">{String(isLinkingModeActive)}</span>
+        <input aria-label="Item name" readOnly={readOnly} defaultValue="Gift" />
+      </div>
+    );
+  },
 }));
 
 vi.mock('shared/ui', async () => {
@@ -45,15 +91,22 @@ vi.mock('shared/ui', async () => {
       children,
       isOpen,
       footer,
+      onClose,
+      closeAriaLabel,
     }: {
       headerExtra?: React.ReactNode;
       title: string;
       children: React.ReactNode;
       isOpen: boolean;
       footer?: React.ReactNode;
+      onClose?: () => void;
+      closeAriaLabel?: string;
     }) => (
       <div data-testid="drawer" data-drawer-open={String(isOpen)}>
         <h1>{title}</h1>
+        <button type="button" aria-label={closeAriaLabel ?? 'Dismiss'} data-testid="drawer-close" onClick={onClose}>
+          close-affordance
+        </button>
         <div data-testid="header-extra">{headerExtra}</div>
         {children}
         <div data-testid="drawer-footer">{footer}</div>
@@ -173,6 +226,65 @@ describe('AddItemTemplate suggestion banner', () => {
     render(<AddItemTemplate {...baseProps} isOwner={true} />);
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+});
+
+describe('AddItemTemplate substitution editor chrome', () => {
+  test('nested editor uses Back; Back clears mode without closing drawer', () => {
+    const onClose = vi.fn();
+    render(<AddItemTemplate {...baseProps} onClose={onClose} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open nested substitution editor' }));
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Add Substitution Item');
+    expect(screen.getByRole('status')).toHaveTextContent('Substitution item');
+    expect(screen.getByRole('button', { name: 'Back' })).toBeInTheDocument();
+    expect(screen.getByTestId('drawer-close')).toHaveAttribute('aria-label', 'Back');
+    expect(screen.getByRole('button', { name: 'Save' })).toHaveAttribute(
+      'form',
+      'substitution-item-form'
+    );
+
+    fireEvent.click(screen.getByTestId('drawer-close'));
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Add New Item');
+    expect(screen.queryByText('Substitution item')).not.toBeInTheDocument();
+  });
+
+  test('nested footer Cancel returns from substitution mode without calling onClose', () => {
+    const onClose = vi.fn();
+    render(<AddItemTemplate {...baseProps} onClose={onClose} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open nested substitution editor' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Add New Item');
+  });
+
+  test('direct substitution editor uses Close and dismisses the whole drawer', () => {
+    const onClose = vi.fn();
+    render(<AddItemTemplate {...baseProps} onClose={onClose} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open direct substitution editor' }));
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Edit Substitution Item');
+    expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('drawer-close')).toHaveAttribute('aria-label', 'Dismiss');
+
+    fireEvent.click(screen.getByTestId('drawer-close'));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  test('direct footer Cancel closes the drawer', () => {
+    const onClose = vi.fn();
+    render(<AddItemTemplate {...baseProps} onClose={onClose} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open direct substitution editor' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
 

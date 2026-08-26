@@ -5,6 +5,7 @@ import type { AdminUserListItem } from 'features/admin';
 import { AdminTabProps } from '../interfaces/admin-tab-props.interface';
 import { AdminUsersTabTemplate } from './admin-users-tab.html';
 import type { CreateUserFormState } from './interfaces/admin-users-tab-template-props.interface';
+import { validateUsername } from 'shared/utils/validate-username.util';
 
 const INITIAL_CREATE_FORM: CreateUserFormState = {
   username: '',
@@ -46,10 +47,16 @@ export const AdminUsersTab: React.FC<AdminTabProps> = ({ showToast }) => {
 
   const handleCreate = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const usernameCheck = validateUsername(createForm.username);
+    if (!usernameCheck.ok) {
+      showToast(usernameCheck.message, 'error');
+      return;
+    }
     const email = createForm.email.trim();
     try {
       await adminApi.createUser({
         ...createForm,
+        username: usernameCheck.value,
         email,
         emailVerified: !!email,
         policy: DEFAULT_USER_POLICY,

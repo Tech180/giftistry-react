@@ -8,6 +8,7 @@ import {
   useItemController,
   Item,
 } from 'features/items';
+import { itemsApi } from 'features/items/api/items.api';
 import type { ImportStripHandle } from 'features/items/components/import/import-strip/interfaces/import-strip-handle.interface';
 import { ImportMenuPanel } from 'features/items/components/import/import-menu-panel/import-menu-panel.component';
 import {
@@ -102,6 +103,9 @@ export default function WishlistDetail() {
   const [isHighlightInteractionLocked, setIsHighlightInteractionLocked] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [viewingItem, setViewingItem] = useState<Item | null>(null);
+  const [claimerSubstitutionCreateNonce, setClaimerSubstitutionCreateNonce] = useState(0);
+  const [claimerSubstitutionEditNonce, setClaimerSubstitutionEditNonce] = useState(0);
+  const [claimerSubstitutionEditId, setClaimerSubstitutionEditId] = useState<string | null>(null);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const isMobileFab = useIsMobileFab();
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
@@ -998,7 +1002,14 @@ export default function WishlistDetail() {
 
   const [editingItemDraft, setEditingItemDraft] = useState<Partial<Item> | null>(null);
 
+  const clearSubstitutionAutoOpen = () => {
+    setClaimerSubstitutionEditId(null);
+    setClaimerSubstitutionEditNonce(0);
+    setClaimerSubstitutionCreateNonce(0);
+  };
+
   const openItemEditor = (item: Item) => {
+    clearSubstitutionAutoOpen();
     const sourceItem = items.find((i) => i.Id === item.Id) ?? item;
     const sourceContext = linkingContextFromItem(sourceItem);
     setIsAddOpen(false);
@@ -1029,6 +1040,7 @@ export default function WishlistDetail() {
   };
 
   const openItemViewer = (item: Item) => {
+    clearSubstitutionAutoOpen();
     const sourceItem = items.find((i) => i.Id === item.Id) ?? item;
     const sourceContext = linkingContextFromItem(sourceItem);
     setIsAddOpen(false);
@@ -1060,6 +1072,44 @@ export default function WishlistDetail() {
     setViewingItem(sourceItem);
   };
 
+  const openClaimerSubstitutionCreate = (item: Item) => {
+    openItemViewer(item);
+    setClaimerSubstitutionCreateNonce((n) => n + 1);
+  };
+
+  const openSubstitutionEdit = (item: Item, substitutionId: string) => {
+    const option = (item.SubstitutionOptions ?? []).find((entry) => entry.Id === substitutionId);
+    if (!option) return;
+    if (isOwner) {
+      openItemEditor(item);
+    } else {
+      openItemViewer(item);
+    }
+    setClaimerSubstitutionEditId(option.Id);
+    setClaimerSubstitutionEditNonce((n) => n + 1);
+  };
+
+  const openClaimerSubstitutionEdit = (item: Item) => {
+    const option = (item.SubstitutionOptions ?? []).find(
+      (entry) => entry.Kind === 'claimer_custom' && entry.CreatedByUserId === user?.Id
+    );
+    if (!option) return;
+    openSubstitutionEdit(item, option.Id);
+  };
+
+  const deleteSubstitutionOption = async (substitutionId: string) => {
+    await itemsApi.deleteSubstitution(substitutionId);
+    await loadData();
+  };
+
+  const deleteClaimerSubstitution = async (item: Item) => {
+    const option = (item.SubstitutionOptions ?? []).find(
+      (entry) => entry.Kind === 'claimer_custom' && entry.CreatedByUserId === user?.Id
+    );
+    if (!option) return;
+    await deleteSubstitutionOption(option.Id);
+  };
+
   const canAutoAdd = Boolean(canSuggest && canShowAi && wishlist?.AiEnabled);
 
   useEffect(() => {
@@ -1069,6 +1119,7 @@ export default function WishlistDetail() {
   }, [canAutoAdd]);
 
   const openAddDrawer = () => {
+    clearSubstitutionAutoOpen();
     setEditingItem(null);
     setViewingItem(null);
     setEditingItemDraft(null);
@@ -1443,6 +1494,15 @@ export default function WishlistDetail() {
       openItemEditor={openItemEditor}
       viewingItem={viewingItem}
       openItemViewer={openItemViewer}
+      openClaimerSubstitutionCreate={openClaimerSubstitutionCreate}
+      claimerSubstitutionCreateNonce={claimerSubstitutionCreateNonce}
+      openClaimerSubstitutionEdit={openClaimerSubstitutionEdit}
+      claimerSubstitutionEditNonce={claimerSubstitutionEditNonce}
+      claimerSubstitutionEditId={claimerSubstitutionEditId}
+      deleteClaimerSubstitution={deleteClaimerSubstitution}
+      openSubstitutionEdit={openSubstitutionEdit}
+      deleteSubstitutionOption={deleteSubstitutionOption}
+      clearSubstitutionAutoOpen={clearSubstitutionAutoOpen}
       shouldOpenItemViewer={shouldOpenItemViewer}
       setViewingItem={setViewingItem}
       setEditingItemDraft={setEditingItemDraft}

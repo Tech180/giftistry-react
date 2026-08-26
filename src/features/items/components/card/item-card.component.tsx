@@ -25,6 +25,12 @@ import { resolveCanEditItem } from '../../utils/resolve-can-edit-item.util';
 import { hasUnclaimedLinkedItems } from '../../utils/has-unclaimed-linked-items.util';
 import { hasLinkedUnclaimPeers } from '../../utils/resolve-linked-unclaim-peers.util';
 import { linkGroupSupportsLinkedItems } from '../../utils/item-supports-linked-items.util';
+import { resolveDisplayVariant } from '../../utils/resolve-display-variant.util';
+import { resolveDisplayItem } from '../../utils/resolve-display-item.util';
+import { resolveClaimerSubstitutionAction } from '../../utils/resolve-claimer-substitution-action.util';
+import { resolveSectionFooterActions } from '../../utils/resolve-section-footer-actions.util';
+import { resolveSubstitutionGroupClaimChrome } from '../../utils/resolve-substitution-group-claim-chrome.util';
+import type { ClaimerSubstitutionAction } from '../../interfaces/claimer-substitution-action.interface';
 
 export const ItemCard: React.FC<ItemCardProps> = ({
   item,
@@ -37,6 +43,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   itemActions,
   priorityLabel,
   onEdit,
+  onAddSubstitution,
+  onEditSubstitution,
+  onDeleteSubstitution,
+  onEditSubstitutionOption,
+  onDeleteSubstitutionOption,
   isTaggingModeActive,
   isTaggedSelection,
   onSelectTag,
@@ -53,8 +64,27 @@ export const ItemCard: React.FC<ItemCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { user, canShowAi } = useAuth();
-  const claims = item.Claims ?? [];
-  const claimedByCurrentUser = !!(user && claims.some((c) => c.UserId === user.Id));
+  const [substitutionBrowseIndex, setSubstitutionBrowseIndex] = useState<number | undefined>(
+    undefined
+  );
+
+  const activeSubstitution = useMemo(
+    () =>
+      resolveDisplayVariant(
+        item,
+        item.SubstitutionOptions,
+        user?.Id,
+        substitutionBrowseIndex
+      ),
+    [item, user?.Id, substitutionBrowseIndex]
+  );
+
+  const displayItem = useMemo(
+    () => resolveDisplayItem(item, activeSubstitution),
+    [item, activeSubstitution]
+  );
+
+  const claims = displayItem.Claims ?? [];
   const canEditItem = resolveCanEditItem(item, user?.Id, isOwner, isPublicGuest);
 
   const [urlInput, setUrlInput] = useState('');
@@ -166,17 +196,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     ? `${user.FirstName} ${user.LastName}`.trim() || user.Username
     : null;
 
-  const { text: displayDescription, metadata } = useMemo(
-    () => parseItemDescription(item.Description, item.Metadata),
-    [item.Description, item.Metadata]
-  );
-
   const executeSimpleClaim = useCallback(
     async (includeLinked?: boolean) => {
       const amount = claimAmount ? parseFloat(claimAmount) : null;
       const claimerName = anonymous ? null : claimActorName;
       await itemActions.claimItem({
-        itemId: item.Id,
+        itemId: displayItem.Id,
         amount,
         claimedByName: claimerName,
         anonymous,
@@ -187,7 +212,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       setAnonymous(false);
       setShowClaimFormState(false);
     },
-    [claimAmount, anonymous, claimActorName, itemActions, item.Id]
+    [claimAmount, anonymous, claimActorName, itemActions, displayItem.Id]
   );
 
   const handleClaim = async (e?: React.SyntheticEvent<HTMLFormElement>) => {
@@ -223,7 +248,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const handleUnclaim = async () => {
     setClaimLoading(true);
     try {
-      await itemActions.unclaimItem(item.Id, user?.Id, linkedUnclaim);
+      await itemActions.unclaimItem(displayItem.Id, user?.Id, linkedUnclaim);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to unclaim item');
     } finally {
@@ -232,28 +257,54 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   };
 
   const totalExtractedPrice =
-    item.FundingTarget != null
-      ? item.FundingTarget
-      : item.Links.reduce((acc, link) => Math.max(acc, link.ExtractedPrice || 0), 0);
+    displayItem.FundingTarget != null
+      ? displayItem.FundingTarget
+      : displayItem.Links.reduce((acc, link) => Math.max(acc, link.ExtractedPrice || 0), 0);
 
   const totalClaimedAmount =
-    item.TotalClaimedAmount != null
-      ? item.TotalClaimedAmount
+    displayItem.TotalClaimedAmount != null
+      ? displayItem.TotalClaimedAmount
       : claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
 
-  const quantitySummary = useMemo(
-    () => resolveItemQuantitySummary(item, metadata),
-    [item, metadata]
+  const { text: displayDescription, metadata } = useMemo(
+    () => parseItemDescription(displayItem.Description, displayItem.Metadata),
+    [displayItem.Description, displayItem.Metadata]
   );
 
-  const isFullyClaimed =
-    item.IsFullyClaimed != null
-      ? item.IsFullyClaimed
+  const quantitySummary = useMemo(
+    () => resolveItemQuantitySummary(displayItem, metadata),
+    [displayItem, metadata]
+  );
+
+  const activeIsFullyClaimed =
+    displayItem.IsFullyClaimed != null
+      ? displayItem.IsFullyClaimed
       : quantitySummary.isMultiCount
         ? quantitySummary.claimedQuantity >= quantitySummary.desiredQuantity
         : allowGroupFunds && totalExtractedPrice > 0
           ? totalClaimedAmount >= totalExtractedPrice
-          : item.IsClaimed;
+          : displayItem.IsClaimed;
+
+  const groupClaimChrome = useMemo(
+    () =>
+      resolveSubstitutionGroupClaimChrome({
+        parent: item,
+        options: item.SubstitutionOptions,
+        active: activeSubstitution,
+        userId: user?.Id,
+        isMultiCount: quantitySummary.isMultiCount,
+      }),
+    [item, activeSubstitution, user?.Id, quantitySummary.isMultiCount]
+  );
+
+  const claimedByCurrentUser = groupClaimChrome.claimedByCurrentUser;
+  const isFullyClaimed =
+    activeIsFullyClaimed || groupClaimChrome.isFullyClaimedForChrome;
+  const hasVisibleClaimForGray = groupClaimChrome.hasVisibleClaimForGray;
+  const isClaimUnavailable =
+    !claimedByCurrentUser &&
+    (groupClaimChrome.isUnavailableDueToSiblingClaim ||
+      (isFullyClaimed && !activeIsFullyClaimed));
 
   const canAdjustClaim = itemNeedsClaimQuantityUi(item, metadata);
 
@@ -302,19 +353,92 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     [item, wishlistItems]
   );
 
+  const claimerSubstitutionEligibility = resolveClaimerSubstitutionAction({
+    item,
+    userId: user?.Id,
+    isOwner,
+    isPublicGuest,
+  });
+
+  const sectionFooter = resolveSectionFooterActions({
+    active: activeSubstitution,
+    canEditItem,
+    claimerEligibility: claimerSubstitutionEligibility,
+  });
+
+  const activeBrowseOption =
+    activeSubstitution.kind !== 'original' ? (activeSubstitution.option ?? null) : null;
+
+  const footerCanEditItem =
+    !!activeBrowseOption
+      ? canEditItem && !!onEditSubstitutionOption
+      : sectionFooter.showParentEditDelete && canEditItem;
+
+  const footerOnEdit = activeBrowseOption
+    ? onEditSubstitutionOption
+      ? () => onEditSubstitutionOption(activeBrowseOption)
+      : undefined
+    : sectionFooter.showParentEditDelete
+      ? onEdit
+      : undefined;
+
+  const handleFooterDelete = async () => {
+    if (activeBrowseOption && onDeleteSubstitutionOption) {
+      setDeleteLoading(true);
+      try {
+        await onDeleteSubstitutionOption(activeBrowseOption);
+        setShowDeleteConfirm(false);
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Failed to delete substitution.');
+      } finally {
+        setDeleteLoading(false);
+      }
+      return;
+    }
+    await handleDelete();
+  };
+
+  const substitutionAction: ClaimerSubstitutionAction | null = (() => {
+    const surface = sectionFooter.substitutionSurface;
+    if (!surface) return null;
+    if (surface.mode === 'manage') {
+      if (!onEditSubstitution) return null;
+      return {
+        mode: 'manage',
+        allowSubstitutions: surface.allowSubstitutions,
+        onRequest: onEditSubstitution,
+        onDelete: onDeleteSubstitution,
+        ownOption: surface.ownOption,
+      };
+    }
+    if (!onAddSubstitution) return null;
+    return {
+      mode: 'create',
+      allowSubstitutions: surface.allowSubstitutions,
+      onRequest: onAddSubstitution,
+    };
+  })();
+
   return (
     <>
       <ItemCardRouter
         item={item}
+        displayItem={displayItem}
+        substitutionOptions={item.SubstitutionOptions}
+        substitutionActiveIndex={substitutionBrowseIndex}
+        onSubstitutionIndexChange={setSubstitutionBrowseIndex}
+        substitutionAction={substitutionAction}
         isOwner={isOwner}
         isExpired={isExpired}
         isArchived={isArchived}
         canCollaborate={canCollaborate}
         isPublicGuest={isPublicGuest}
-        canEditItem={canEditItem}
+        canEditItem={footerCanEditItem}
         allowGroupFunds={allowGroupFunds}
         isFullyClaimed={isFullyClaimed}
         isMultiCount={quantitySummary.isMultiCount}
+        hasVisibleClaimForGray={hasVisibleClaimForGray}
+        isClaimUnavailable={isClaimUnavailable}
         totalExtractedPrice={totalExtractedPrice}
         totalClaimedAmount={totalClaimedAmount}
         priorityLabel={priorityLabel}
@@ -345,10 +469,18 @@ export const ItemCard: React.FC<ItemCardProps> = ({
         showDeleteConfirm={showDeleteConfirm}
         setShowDeleteConfirm={setShowDeleteConfirm}
         deleteLoading={deleteLoading}
-        handleDelete={handleDelete}
+        handleDelete={
+          activeBrowseOption
+            ? onDeleteSubstitutionOption
+              ? handleFooterDelete
+              : () => undefined
+            : sectionFooter.showParentEditDelete
+              ? handleFooterDelete
+              : () => undefined
+        }
         isFavorite={localIsFavorite}
         toggleFavorite={toggleFavorite}
-        onEdit={onEdit}
+        onEdit={footerOnEdit}
         claimedByCurrentUser={claimedByCurrentUser}
         handleUnclaim={handleUnclaim}
         isPinned={isPinned}
@@ -369,7 +501,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
               }
             : undefined
         }
-        onView={canEditItem && onEdit ? undefined : onView}
+        onView={footerCanEditItem && footerOnEdit ? undefined : onView}
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
         displayDescription={displayDescription}

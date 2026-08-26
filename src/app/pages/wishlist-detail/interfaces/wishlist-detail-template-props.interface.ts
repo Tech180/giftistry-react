@@ -32,6 +32,17 @@ export interface WishlistDetailTemplateProps {
   viewingItem: Item | null;
   setViewingItem: (item: Item | null) => void;
   openItemViewer: (item: Item) => void;
+  openClaimerSubstitutionCreate: (item: Item) => void;
+  claimerSubstitutionCreateNonce: number;
+  openClaimerSubstitutionEdit: (item: Item) => void;
+  claimerSubstitutionEditNonce: number;
+  claimerSubstitutionEditId: string | null;
+  deleteClaimerSubstitution: (item: Item) => Promise<void>;
+  /** Open parent editor/viewer and nest into a specific substitution edit surface. */
+  openSubstitutionEdit: (item: Item, substitutionId: string) => void;
+  deleteSubstitutionOption: (substitutionId: string) => Promise<void>;
+  /** Clears substitution create/edit auto-open intent (drawer dismiss / plain parent open). */
+  clearSubstitutionAutoOpen: () => void;
   shouldOpenItemViewer: boolean;
   setEditingItemDraft: (draft: Partial<Item> | null) => void;
   linkedItemIds: string[];

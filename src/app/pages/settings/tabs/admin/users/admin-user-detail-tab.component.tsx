@@ -10,6 +10,7 @@ import type {
   AdminUserPolicyFlagsState,
   AdminUserProfileFormState,
 } from './interfaces/admin-user-detail-tab-template-props.interface';
+import { validateUsername } from 'shared/utils/validate-username.util';
 
 export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
   const { userId } = useParams<{ userId: string }>();
@@ -74,9 +75,21 @@ export const AdminUserDetailTab: React.FC<AdminTabProps> = ({ showToast }) => {
 
   const saveProfile = async () => {
     if (!userId || !isSelf || isOwnerReadOnly) return;
+
+    const usernameChanged = profileForm.username !== (user?.Username || '');
+    let nextUsername = profileForm.username.trim();
+    if (usernameChanged) {
+      const usernameCheck = validateUsername(profileForm.username);
+      if (!usernameCheck.ok) {
+        showToast(usernameCheck.message, 'error');
+        return;
+      }
+      nextUsername = usernameCheck.value;
+    }
+
     try {
       await adminApi.updateUser(userId, {
-        username: profileForm.username,
+        username: nextUsername,
         email: profileForm.email,
         firstName: profileForm.firstName,
         lastName: profileForm.lastName,

@@ -2,6 +2,10 @@ import { Claim } from './item-claim.interface';
 import { Item } from './item.interface';
 import { ItemLink } from './item-link.interface';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
+import type {
+  CreateSubstitutionPayload,
+  ItemSubstitutionOption,
+} from './item-substitution.interface';
 
 export interface ClaimItemParams {
   itemId: string;
@@ -37,4 +41,22 @@ export interface ItemActions {
     includeLinked?: boolean
   ) => Promise<void>;
   deleteItem: (itemId: string) => Promise<void>;
+  createOwnerSubstitution?: (
+    parentItemId: string,
+    payload: CreateSubstitutionPayload
+  ) => Promise<ItemSubstitutionOption>;
+  createClaimerSubstitution?: (
+    parentItemId: string,
+    payload: CreateSubstitutionPayload
+  ) => Promise<ItemSubstitutionOption>;
+  updateSubstitution?: (
+    parentItemId: string,
+    substitutionId: string,
+    payload: CreateSubstitutionPayload
+  ) => Promise<ItemSubstitutionOption>;
+  deleteSubstitution?: (parentItemId: string, substitutionId: string) => Promise<void>;
+  reorderOwnerSubstitutions?: (
+    parentItemId: string,
+    orderedIds: string[]
+  ) => Promise<void>;
 }

@@ -1,6 +1,7 @@
 export * from './components/card/item-card.component';
 export * from './components/form/add-item-form.component';
 export { ADD_ITEM_FORM_ID } from './components/form/add-item-form.html';
+export { SUBSTITUTION_FORM_ID } from './constants/substitution-form.constant';
 export * from './interfaces/item-actions.interface';
 export * from './hooks/use-item-controller';
 export * from './api/items.api';

@@ -40,6 +40,17 @@ describe('resolveActionButtonsLayoutMode', () => {
     ).toBe('claimed');
   });
 
+  it('disables Unavailable when a sibling substitution claim locks the section', () => {
+    expect(
+      resolveActionButtonsLayoutMode({
+        ...guest,
+        isFullyClaimed: true,
+        isClaimUnavailable: true,
+        canAdjustClaim: true,
+      })
+    ).toBe('unavailable');
+  });
+
   it('shows Claim for an available multi-count item', () => {
     expect(
       resolveActionButtonsLayoutMode({

@@ -8,6 +8,7 @@ import { Button, Chip, Switch, AiStatusBadge, NumberSelector } from 'shared/ui';
 import { AddItemFormTemplateProps } from '../../interfaces/add-item-form-template-props.interface';
 import { AudiencePicker } from '../audience-picker';
 import { ItemPhotoGallery } from '../photo-gallery/item-photo-gallery.component';
+import { SubstitutionManager } from '../item-presentation/substitution';
 import styles from './add-item-form.module.css';
 
 export const ADD_ITEM_FORM_ID = 'add-item-form';
@@ -109,7 +110,17 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   photoError,
   onPhotoError,
   readOnly = false,
+  allowSubstitutions,
+  setAllowSubstitutions,
+  substitutionOptions,
+  onOpenCreateSubstitution,
+  onOpenEditSubstitution,
+  onDeleteOwnerSubstitution,
+  onReorderOwnerSubstitutions,
+  substitutionEditor,
+  formId,
 }) => {
+  const isSubstitutionSurface = !!substitutionEditor;
   const hasPeerItems = wishlistItems.filter((i) => i.Id !== itemId).length > 0;
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -128,7 +139,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   };
 
   return (
-    <form id={ADD_ITEM_FORM_ID} onSubmit={handleSubmit} className={styles.form}>
+    <form id={formId} onSubmit={handleSubmit} className={styles.form}>
       <fieldset disabled={readOnly} className={styles['form-fieldset']}>
       {errorMsg && (
         <div className={`${styles.alert} animate-slide-up`} role="alert">
@@ -281,6 +292,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
               className={styles['qty-selector']}
             />
           </div>
+          {!isSubstitutionSurface ? (
           <div className={styles['form-group']}>
             <label className={`${styles.label} ${styles['label-center']}`}>
               {isOwner ? 'Favorite' : 'Pin'}
@@ -302,6 +314,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
               )}
             </button>
           </div>
+          ) : null}
         </div>
       </div>
 
@@ -309,6 +322,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
 
       {/* Section 2: Metadata & notes */}
       <div className={styles.section}>
+        {!isSubstitutionSurface ? (
         <div className={styles['form-group']}>
           <label className={styles.label}>Category</label>
           {canShowAi &&
@@ -400,7 +414,9 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             </div>
           )}
         </div>
+        ) : null}
 
+        {!isSubstitutionSurface ? (
         <div className={styles['form-group']}>
           <label className={styles.label}>
             Priority <span className={styles['label-hint']}>(1 is highest)</span>
@@ -421,6 +437,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             )}
           </div>
         </div>
+        ) : null}
 
         <div className={styles['form-group']}>
           <div className={styles['notes-label-row']}>
@@ -618,7 +635,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           </div>
         )}
 
-        {hasPeerItems && !readOnly && !isMultiCount && !isSuggestion && (
+        {hasPeerItems && !readOnly && !isMultiCount && !isSuggestion && !isSubstitutionSurface && (
           <div className={styles['form-group']}>
             <label className={styles.label}>Linked Items</label>
             <div className={styles['linked-row']}>
@@ -641,7 +658,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           </div>
         )}
 
-        {hasPeerItems && !readOnly && (
+        {hasPeerItems && !readOnly && !isSubstitutionSurface && (
           <div className={styles['form-group']}>
             <label className={styles.label}>Related Items</label>
             <div className={styles['linked-row']}>
@@ -665,10 +682,26 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
         )}
       </div>
 
+      {!isSubstitutionSurface ? (
+        <>
       <div className={styles.divider} />
 
       {/* Section 3: Visibility & sharing */}
       <div className={styles.section}>
+        {isOwner && !isSuggestion && (
+          <SubstitutionManager
+            parentItemId={itemId}
+            options={substitutionOptions}
+            allowSubstitutions={allowSubstitutions}
+            onAllowSubstitutionsChange={setAllowSubstitutions}
+            onOpenCreate={onOpenCreateSubstitution}
+            onOpenEdit={onOpenEditSubstitution}
+            onDelete={onDeleteOwnerSubstitution}
+            onReorder={onReorderOwnerSubstitutions}
+            disabled={isLoading || readOnly}
+          />
+        )}
+
         <AudiencePicker
           listShares={listShares}
           selectedUserIds={sharedWithUserIds}
@@ -722,6 +755,44 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           </>
         )}
       </div>
+        </>
+      ) : !isOwner &&
+        (substitutionEditor?.mode === 'create'
+          ? substitutionEditor.kind === 'claimer_custom'
+          : substitutionEditor?.option.Kind === 'claimer_custom') ? (
+        <>
+          <div className={styles.divider} />
+          <div className={styles.section}>
+            <div className={styles['switch-row']}>
+              <label htmlFor="sub-visible-to-list-owner" className={styles['switch-label']}>
+                Visible to list owner
+              </label>
+              <Switch
+                id="sub-visible-to-list-owner"
+                checked={!isHiddenIdea}
+                onChange={(visible) => setIsHiddenIdea(!visible)}
+                size="sm"
+                aria-label="Visible to list owner"
+              />
+            </div>
+
+            {substitutionEditor.mode === 'create' ? (
+              <div className={styles['switch-row']}>
+                <label htmlFor="sub-claim-this-item-immediately" className={styles['switch-label']}>
+                  Claim this Item Immediately
+                </label>
+                <Switch
+                  id="sub-claim-this-item-immediately"
+                  checked={claimOnCreate}
+                  onChange={setClaimOnCreate}
+                  size="sm"
+                  aria-label="Claim this Item Immediately"
+                />
+              </div>
+            ) : null}
+          </div>
+        </>
+      ) : null}
       </fieldset>
     </form>
   );

@@ -1,3 +1,5 @@
+import type { ClaimerSubstitutionAction } from '../../../../interfaces/claimer-substitution-action.interface';
+
 export interface ActionButtonsProps {
   isOwner: boolean;
   canCollaborate: boolean;
@@ -7,6 +9,8 @@ export interface ActionButtonsProps {
   isExpired?: boolean;
   claimedByCurrentUser: boolean;
   isFullyClaimed: boolean;
+  /** Sibling substitution claim locks this section (label: Unavailable). */
+  isClaimUnavailable?: boolean;
   canAdjustClaim?: boolean;
   claimLoading: boolean;
   showDeleteConfirm: boolean;
@@ -24,4 +28,6 @@ export interface ActionButtonsProps {
   unclaimDisabled?: boolean;
   /** When true, simple unclaim button reads "Unclaim all" (linked claim group). */
   hasLinkedUnclaimPeers?: boolean;
+  /** Claimer custom substitution entry. */
+  substitutionAction?: ClaimerSubstitutionAction | null;
 }

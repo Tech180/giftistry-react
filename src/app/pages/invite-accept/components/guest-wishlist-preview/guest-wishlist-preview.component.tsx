@@ -137,7 +137,16 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       viewingItem={viewingItem}
       setViewingItem={setViewingItem}
       openItemViewer={openItemViewer}
-      shouldOpenItemViewer
+      openClaimerSubstitutionCreate={noop}
+      claimerSubstitutionCreateNonce={0}
+      openClaimerSubstitutionEdit={noop}
+      claimerSubstitutionEditNonce={0}
+      claimerSubstitutionEditId={null}
+      deleteClaimerSubstitution={async () => undefined}
+      openSubstitutionEdit={noop}
+      deleteSubstitutionOption={async () => undefined}
+      clearSubstitutionAutoOpen={noop}
+      shouldOpenItemViewer={false}
       setEditingItemDraft={noop}
       linkedItemIds={linkedItemIds}
       setLinkedItemIds={setLinkedItemIds}

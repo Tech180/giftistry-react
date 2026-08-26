@@ -16,3 +16,12 @@ export { TaggingOverlay, TaggingSelect } from './tagging-controls/tagging-contro
 export { ActionButtons } from './action-buttons/action-buttons.component';
 export { shouldShowActionButtons } from './action-buttons/utils/resolve-action-buttons-layout-mode.util';
 export { QuantityBadge } from './quantity-badge/quantity-badge.html';
+export {
+  SubstitutionBadge,
+  SubstitutionCounterBadge,
+  SubstitutionSwitcher,
+  SubstitutionManager,
+  SubstitutionForm,
+  SubstitutionViewer,
+  SubstitutionClaimButton,
+} from './substitution';

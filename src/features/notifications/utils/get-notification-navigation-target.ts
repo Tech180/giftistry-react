@@ -21,6 +21,7 @@ export function getNotificationNavigationTarget(notification: Notification): str
     case 'list_invite':
     case 'invite_accepted':
     case 'item_claimed':
+    case 'item_deleted':
     case 'comment':
     case 'job_completed':
     case 'job_failed':

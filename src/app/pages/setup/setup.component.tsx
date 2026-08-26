@@ -9,6 +9,7 @@ import {
   formatApiErrorMessage,
   mapValidationErrorsToFields,
 } from 'shared/utils/format-api-error-message.util';
+import { validateUsername } from 'shared/utils/validate-username.util';
 
 const INITIAL_INSTALL_TASKS: SetupInstallTask[] = [
   { id: 't-db', label: 'Connecting to database...', status: 'pending' },
@@ -97,6 +98,11 @@ export const Setup: React.FC = () => {
     if (step === 2) {
       if (!adminUsername.trim()) {
         stepErrors.adminUsername = 'Username is required';
+      } else {
+        const usernameCheck = validateUsername(adminUsername);
+        if (!usernameCheck.ok) {
+          stepErrors.adminUsername = usernameCheck.message;
+        }
       }
       if (!adminFirstName.trim()) {
         stepErrors.adminFirstName = 'First name is required';
@@ -179,6 +185,15 @@ export const Setup: React.FC = () => {
     setStep(3);
 
     try {
+      const usernameCheck = validateUsername(adminUsername);
+      if (!usernameCheck.ok) {
+        setStep(2);
+        setErrors({ adminUsername: usernameCheck.message });
+        showToast(usernameCheck.message, 'error');
+        setIsSubmitting(false);
+        return;
+      }
+
       const apiPromise = apiClient.post('/api/system/setup', {
         Giftistry: {
           Setup: {
@@ -186,7 +201,7 @@ export const Setup: React.FC = () => {
             DbUrl: dbType === 'remote' ? dbUrl : undefined,
             SetupToken: setupToken,
             Admin: {
-              Username: adminUsername,
+              Username: usernameCheck.value,
               Password: adminPassword,
               FirstName: adminFirstName,
               LastName: adminLastName,

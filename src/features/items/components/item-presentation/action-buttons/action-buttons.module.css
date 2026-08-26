@@ -4,11 +4,24 @@
   flex-wrap: wrap;
 }
 
+.leading-actions,
 .editor-actions {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
   flex-shrink: 0;
+}
+
+/* Keep Add substitution immediately left of claim/unclaim controls. */
+.claim-actions {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-inline-start: auto;
 }
 
 .actions-stack {
@@ -21,6 +34,11 @@
   margin-inline: auto;
 }
 
+.actions-stack .claim-actions {
+  margin-inline-start: 0;
+  flex: 0 1 auto;
+}
+
 .actions-stack-split {
   display: flex;
   flex-direction: row;
@@ -31,8 +49,8 @@
   gap: var(--spacing-sm);
 }
 
-/* Owner-only edit cluster: keep pencil + trash together (not split across the footer). */
-.actions-stack-split:has(> .editor-actions:only-child) {
+/* Icon-only footer (view / edit / trash): keep the cluster on the trailing edge. */
+.actions-stack-split:has(> .leading-actions:only-child) {
   justify-content: flex-end;
 }
 
@@ -41,7 +59,6 @@
   align-items: center;
   justify-content: flex-end;
   gap: var(--spacing-sm);
-  width: 100%;
 }
 
 .unclaim-all-btn {
@@ -68,7 +85,7 @@
   }
 }
 
-/* Phone: full-width claim/unclaim; keep the same split as tablet. */
+/* Phone: claim fills remaining row space beside icon controls. */
 @media (max-width: 48rem) {
   .actions-row,
   .actions-stack {
@@ -81,12 +98,27 @@
     flex-wrap: nowrap;
   }
 
+  .claim-actions {
+    margin-inline-start: 0;
+    align-items: stretch;
+  }
+
   .claim-action-btn {
     flex: 1 1 auto;
-    width: 100%;
+    min-width: 0;
+    width: auto;
     min-height: 3.5rem;
+    align-self: stretch;
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
+  }
+
+  /* Solo claim/unclaim (no icon siblings) still spans the footer. */
+  .actions-stack-split > .claim-action-btn:only-child,
+  .actions-stack-split > .claim-actions:only-child,
+  .actions-stack-split > .actions-update:only-child {
+    width: 100%;
+    margin-inline-start: 0;
   }
 
   .claim-icon-btn {
@@ -111,6 +143,8 @@
   }
 
   .actions-update {
+    flex: 1 1 auto;
+    min-width: 0;
     flex-direction: column-reverse;
     align-items: stretch;
   }

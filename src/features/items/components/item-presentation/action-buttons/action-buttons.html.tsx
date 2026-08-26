@@ -2,6 +2,7 @@ import React from 'react';
 import { Pencil, Trash2, Eye } from 'lucide-react';
 import { Button } from 'shared/ui';
 import { ActionButtonsTemplateProps } from './interfaces/action-buttons-template-props.interface';
+import { SubstitutionClaimButton } from '../substitution/claim-button/claim-button.component';
 import styles from './action-buttons.module.css';
 
 function ViewAction({
@@ -97,6 +98,49 @@ function EditorActions({
   return actions;
 }
 
+function SubstitutionAction({
+  size,
+  substitutionAction,
+  disabled,
+}: {
+  size: ActionButtonsTemplateProps['size'];
+  substitutionAction: NonNullable<ActionButtonsTemplateProps['substitutionAction']>;
+  disabled: boolean;
+}) {
+  return (
+    <SubstitutionClaimButton
+      mode={substitutionAction.mode}
+      allowSubstitutions={substitutionAction.allowSubstitutions}
+      onOpenEditor={substitutionAction.onRequest}
+      onDelete={substitutionAction.onDelete}
+      appearance="ghost-text"
+      size={size === 'sm' ? 'sm' : 'md'}
+      disabled={disabled}
+      className={
+        substitutionAction.mode === 'manage' ? styles['claim-icon-btn'] : undefined
+      }
+    />
+  );
+}
+
+function ClaimActionsCluster({
+  substitutionControl,
+  claimControl,
+}: {
+  substitutionControl: React.ReactNode;
+  claimControl: React.ReactNode;
+}) {
+  if (!substitutionControl) {
+    return <>{claimControl}</>;
+  }
+  return (
+    <div className={styles['claim-actions']}>
+      {substitutionControl}
+      {claimControl}
+    </div>
+  );
+}
+
 export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
   layoutMode,
   size,
@@ -115,11 +159,23 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
   onDeleteCancel,
   unclaimDisabled,
   hasLinkedUnclaimPeers = false,
+  substitutionAction = null,
 }) => {
   const viewAction = onView ? <ViewAction size={size} onView={onView} /> : null;
+  const substitutionControl = substitutionAction ? (
+    <SubstitutionAction
+      size={size}
+      substitutionAction={substitutionAction}
+      disabled={claimLoading || unclaimDisabled || showDeleteConfirm}
+    />
+  ) : null;
 
   if (layoutMode == null) {
-    return viewAction ? <div className={stackClassName}>{viewAction}</div> : null;
+    return viewAction ? (
+      <div className={stackClassName}>
+        <div className={styles['leading-actions']}>{viewAction}</div>
+      </div>
+    ) : null;
   }
 
   const editorActions = showSuggesterEditActions ? (
@@ -136,21 +192,31 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
     />
   ) : null;
 
+  const leadingActions =
+    viewAction || editorActions ? (
+      <div className={styles['leading-actions']}>
+        {viewAction}
+        {editorActions}
+      </div>
+    ) : null;
+
   if (layoutMode === 'owner-edit') {
     return (
       <div className={stackClassName}>
-        {viewAction}
-        <EditorActions
-          size={size}
-          confirmClassName={confirmClassName}
-          showDeleteConfirm={showDeleteConfirm}
-          deleteLoading={deleteLoading}
-          onEdit={onEdit}
-          onDeleteRequest={onDeleteRequest}
-          onDeleteConfirm={onDeleteConfirm}
-          onDeleteCancel={onDeleteCancel}
-          grouped
-        />
+        <div className={styles['leading-actions']}>
+          {viewAction}
+          <EditorActions
+            size={size}
+            confirmClassName={confirmClassName}
+            showDeleteConfirm={showDeleteConfirm}
+            deleteLoading={deleteLoading}
+            onEdit={onEdit}
+            onDeleteRequest={onDeleteRequest}
+            onDeleteConfirm={onDeleteConfirm}
+            onDeleteCancel={onDeleteCancel}
+            grouped
+          />
+        </div>
       </div>
     );
   }
@@ -168,32 +234,36 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
         Unclaim{hasLinkedUnclaimPeers ? ' all' : ''}
       </Button>
     );
-    if (!showSuggesterEditActions && !viewAction) {
+    if (!leadingActions && !substitutionControl) {
       return claimControl;
     }
     return (
       <div className={stackClassName}>
-        {viewAction}
-        {editorActions}
-        {claimControl}
+        {leadingActions}
+        <ClaimActionsCluster
+          substitutionControl={substitutionControl}
+          claimControl={claimControl}
+        />
       </div>
     );
   }
 
-  if (layoutMode === 'claimed') {
+  if (layoutMode === 'claimed' || layoutMode === 'unavailable') {
     const claimControl = (
       <Button variant="secondary" size={size} disabled className={styles['claim-action-btn']}>
-        Claimed
+        {layoutMode === 'unavailable' ? 'Unavailable' : 'Claimed'}
       </Button>
     );
-    if (!showSuggesterEditActions && !viewAction) {
+    if (!leadingActions && !substitutionControl) {
       return claimControl;
     }
     return (
       <div className={stackClassName}>
-        {viewAction}
-        {editorActions}
-        {claimControl}
+        {leadingActions}
+        <ClaimActionsCluster
+          substitutionControl={substitutionControl}
+          claimControl={claimControl}
+        />
       </div>
     );
   }
@@ -221,14 +291,16 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
         </Button>
       </div>
     );
-    if (!showSuggesterEditActions && !viewAction) {
+    if (!leadingActions && !substitutionControl) {
       return claimControl;
     }
     return (
       <div className={stackClassName}>
-        {viewAction}
-        {editorActions}
-        {claimControl}
+        {leadingActions}
+        <ClaimActionsCluster
+          substitutionControl={substitutionControl}
+          claimControl={claimControl}
+        />
       </div>
     );
   }
@@ -244,14 +316,16 @@ export const ActionButtonsTemplate: React.FC<ActionButtonsTemplateProps> = ({
       Claim Item
     </Button>
   );
-  if (!showSuggesterEditActions && !viewAction) {
+  if (!leadingActions && !substitutionControl) {
     return claimControl;
   }
   return (
     <div className={stackClassName}>
-      {viewAction}
-      {editorActions}
-      {claimControl}
+      {leadingActions}
+      <ClaimActionsCluster
+        substitutionControl={substitutionControl}
+        claimControl={claimControl}
+      />
     </div>
   );
 };

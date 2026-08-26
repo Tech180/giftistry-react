@@ -16,6 +16,10 @@ import {
   TaggingSelect,
   QuantityBadge,
   PriorityDisplay,
+  SubstitutionSwitcher,
+  SubstitutionCounterBadge,
+  SubstitutionBadge,
+  SubstitutionClaimButton,
 } from '../../item-presentation';
 import { CLAIM_FORM_PROMPT_CLAIM_LINKED } from '../../item-presentation/claim-form/constants/claim-form-copy.constant';
 import { Tags } from 'features/comments';
@@ -26,6 +30,7 @@ import { resolveItemClaimBadgeState } from '../../../utils/resolve-item-claim-ba
 import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import { resolveSuggestedByDisplayName } from '../../../utils/resolve-suggested-by-display-name.util';
 import { resolveItemQuantitySummary } from '../../../utils/resolve-item-quantity.util';
+import type { SubstitutionBrowseOption } from '../../../utils/resolve-item-substitution-options.util';
 import { useCompactColumnSyncContext } from './compact-category-list';
 import styles from './compact-item-view.module.css';
 
@@ -51,6 +56,11 @@ function buildCompactColClass(
 export const CompactItemView: React.FC<ItemViewProps> = (props) => {
   const {
     item,
+    displayItem = item,
+    substitutionOptions,
+    substitutionActiveIndex,
+    onSubstitutionIndexChange,
+    substitutionAction = null,
     isOwner,
     canCollaborate,
     isPublicGuest = false,
@@ -58,6 +68,8 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     allowGroupFunds,
     isFullyClaimed,
     isMultiCount,
+    hasVisibleClaimForGray,
+    isClaimUnavailable,
     totalExtractedPrice,
     totalClaimedAmount,
     showClaimForm,
@@ -109,13 +121,20 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
   const { columnPresence, isSyncEnabled } = useCompactColumnSyncContext();
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
   const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
-  const primaryLink = item.Links[0];
+  const primaryLink = displayItem.Links[0];
   const primaryPrice = primaryLink?.ExtractedPrice;
-  const primaryImageUrl = getItemPrimaryImageUrl(item);
+  const primaryImageUrl = getItemPrimaryImageUrl(displayItem);
   const showSharingAvatars = shouldShowSharingAvatars(item, isOwner, user?.Id);
   const sharingUsers = item.SharedWith ?? [];
   const { entries: claimBadgeEntries, showClaimBadge, hasVisibleClaim } =
-    resolveItemClaimBadgeState(item.Claims, claimUserId, claimedByCurrentUser, claimActorName);
+    resolveItemClaimBadgeState(displayItem.Claims, claimUserId, claimedByCurrentUser, claimActorName);
+
+  const hasSubstitutionBrowse = (substitutionOptions?.length ?? 0) > 0;
+  const substitutionTotal = (substitutionOptions?.length ?? 0) + 1;
+  const substitutionIndex = Math.min(
+    Math.max(substitutionActiveIndex ?? 0, 0),
+    Math.max(substitutionTotal - 1, 0)
+  );
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -131,7 +150,7 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
   );
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
-    hasVisibleClaim,
+    hasVisibleClaimForGray ?? hasVisibleClaim,
     claimedByCurrentUser,
     styles,
     props.isArchived,
@@ -252,17 +271,7 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     dividerBefore: hasTrailingContent,
   });
 
-  return (
-    <div
-      className={`${styles['v-compact-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass} ${isExpanded ? styles.expanded : ''} ${isSelected ? styles['is-selected'] : ''}`}
-      aria-expanded={hasExpandableContent ? isExpanded : undefined}
-    >
-      <TaggingOverlay
-        isTaggingModeActive={isTaggingModeActive}
-        isTaggedSelection={isTaggedSelection}
-        onSelectTag={onSelectTag}
-      />
-
+  const renderCardBody = (active: SubstitutionBrowseOption) => (
       <div className={styles['v-compact-card-inner']}>
         <div className={styles['v-compact-card-body']}>
       <div
@@ -338,9 +347,24 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
 
           <div className={titleCol.className}>
             <div className={styles['v-compact-main']}>
-              <span className={styles['v-compact-title']} title={item.Name}>
-                {item.Name}
+              <span className={styles['v-compact-title']} title={displayItem.Name}>
+                {displayItem.Name}
               </span>
+              {hasSubstitutionBrowse ? (
+                <div className={styles['v-compact-sub-badges']}>
+                  {active.kind !== 'original' ? (
+                    <SubstitutionBadge
+                      kind={active.kind}
+                      createdByUserId={active.option?.CreatedByUserId}
+                    />
+                  ) : null}
+                  <SubstitutionCounterBadge
+                    activeIndex={substitutionIndex}
+                    total={substitutionTotal}
+                    isOriginal={active.kind === 'original'}
+                  />
+                </div>
+              ) : null}
               <div className={styles['v-compact-meta-sub']}>
                 <Badges
                   item={item}
@@ -530,6 +554,18 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
                         ? { 'data-compact-col-measure': 'claimActions' }
                         : {})}
                     >
+                    {substitutionAction ? (
+                      <SubstitutionClaimButton
+                        mode={substitutionAction.mode}
+                        allowSubstitutions={substitutionAction.allowSubstitutions}
+                        onOpenEditor={substitutionAction.onRequest}
+                        onDelete={substitutionAction.onDelete}
+                        appearance="ghost-text"
+                        size="sm"
+                        disabled={claimLoading || showClaimForm}
+                        className={styles['v-compact-action-btn']}
+                      />
+                    ) : null}
                     {claimedByCurrentUser && !canAdjustClaim ? (
                       <button
                         type="button"
@@ -566,6 +602,14 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
                           Update
                         </button>
                       </>
+                    ) : isClaimUnavailable ? (
+                      <button
+                        type="button"
+                        className={styles['v-compact-action-btn']}
+                        disabled
+                      >
+                        Unavailable
+                      </button>
                     ) : isFullyClaimed ? (
                       <button
                         type="button"
@@ -663,8 +707,8 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
           className={styles['confirm-extension-stack']}
         >
           <ClaimForm
-            item={item}
-            metadata={item.Metadata}
+            item={displayItem}
+            metadata={displayItem.Metadata}
             userId={claimUserId}
             claimedByName={claimActorName ?? null}
             itemActions={itemActions}
@@ -758,6 +802,29 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
       )}
         </div>
       </div>
+  );
+
+  return (
+    <div
+      className={`${styles['v-compact-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass} ${isExpanded ? styles.expanded : ''} ${isSelected ? styles['is-selected'] : ''} ${hasSubstitutionBrowse ? styles['v-compact-card-with-subs'] : ''}`}
+      aria-expanded={hasExpandableContent ? isExpanded : undefined}
+    >
+      <TaggingOverlay
+        isTaggingModeActive={isTaggingModeActive}
+        isTaggedSelection={isTaggedSelection}
+        onSelectTag={onSelectTag}
+      />
+
+      <SubstitutionSwitcher
+        parent={item}
+        options={substitutionOptions}
+        userId={claimUserId}
+        activeIndex={substitutionActiveIndex}
+        onActiveIndexChange={onSubstitutionIndexChange}
+        className={styles['v-compact-switcher']}
+      >
+        {(active) => renderCardBody(active)}
+      </SubstitutionSwitcher>
     </div>
   );
 };

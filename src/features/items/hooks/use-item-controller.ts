@@ -6,6 +6,10 @@ import type { ClaimItemParams, ItemActions } from '../interfaces/item-actions.in
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
 import type { ItemClaimMutationProjection } from '../interfaces/claim-mutation-result.interface';
 import type { ItemListGroup } from '../interfaces/item-list-result.interface';
+import type {
+  CreateSubstitutionPayload,
+  ItemSubstitutionOption,
+} from '../interfaces/item-substitution.interface';
 
 function normalizeListPayload(data: unknown): { items: Item[]; groups: ItemListGroup[] | null } {
   if (Array.isArray(data)) {
@@ -19,6 +23,122 @@ function normalizeListPayload(data: unknown): { items: Item[]; groups: ItemListG
     };
   }
   return { items: [], groups: null };
+}
+
+function applyProjectionToItem(
+  item: Item,
+  projection: ItemClaimMutationProjection
+): Item {
+  return {
+    ...item,
+    Claims: projection.Claims,
+    IsClaimed: projection.IsClaimed,
+    IsFullyClaimed: projection.IsFullyClaimed,
+    IsMultiCount: projection.IsMultiCount,
+    TotalClaimedAmount: projection.TotalClaimedAmount,
+    TotalClaimedQuantity: projection.TotalClaimedQuantity,
+    DesiredQuantity: projection.DesiredQuantity,
+    RemainingQuantity: projection.RemainingQuantity,
+    FundingTarget: projection.FundingTarget,
+  };
+}
+
+/** Patch parent and nested substitution claim state after claim/unclaim. */
+function patchItemWithClaimProjections(
+  item: Item,
+  byId: Map<string, ItemClaimMutationProjection>
+): Item {
+  let next = item;
+  const parentProjection = byId.get(item.Id);
+  if (parentProjection) {
+    next = applyProjectionToItem(next, parentProjection);
+  }
+
+  const options = next.SubstitutionOptions;
+  if (!options?.length) {
+    return next;
+  }
+
+  let optionsChanged = false;
+  const patchedOptions = options.map((option) => {
+    const childProjection = byId.get(option.Item.Id);
+    if (!childProjection) {
+      return option;
+    }
+    optionsChanged = true;
+    return {
+      ...option,
+      Item: {
+        ...option.Item,
+        Claims: childProjection.Claims,
+        IsClaimed: childProjection.IsClaimed,
+        IsFullyClaimed: childProjection.IsFullyClaimed,
+      },
+    };
+  });
+
+  if (!optionsChanged && !parentProjection) {
+    return next;
+  }
+
+  const claimedUserIds = new Set<string>();
+  for (const projection of byId.values()) {
+    for (const claim of projection.Claims) {
+      if (claim.UserId) claimedUserIds.add(claim.UserId);
+    }
+  }
+
+  const clearSiblingClaims = (claims: Claim[], itemId: string): Claim[] => {
+    if (!byId.has(itemId) && claimedUserIds.size > 0) {
+      return claims.filter((c) => !c.UserId || !claimedUserIds.has(c.UserId));
+    }
+    return claims;
+  };
+
+  if (claimedUserIds.size > 0) {
+    if (!parentProjection) {
+      const cleared = clearSiblingClaims(next.Claims ?? [], next.Id);
+      if (cleared !== next.Claims) {
+        next = {
+          ...next,
+          Claims: cleared,
+          IsClaimed: cleared.length > 0,
+        };
+      }
+    }
+
+    const withClearedSiblings = patchedOptions.map((option) => {
+      if (byId.has(option.Item.Id)) {
+        return option;
+      }
+      const cleared = clearSiblingClaims(option.Item.Claims ?? [], option.Item.Id);
+      if (cleared === option.Item.Claims) {
+        return option;
+      }
+      return {
+        ...option,
+        Item: {
+          ...option.Item,
+          Claims: cleared,
+          IsClaimed: cleared.length > 0,
+        },
+      };
+    });
+
+    return {
+      ...next,
+      SubstitutionOptions: withClearedSiblings,
+      ActiveSubstitutionId:
+        [...byId.keys()].find((id) =>
+          withClearedSiblings.some((o) => o.Item.Id === id)
+        ) ?? (parentProjection ? next.Id : next.ActiveSubstitutionId),
+    };
+  }
+
+  return {
+    ...next,
+    SubstitutionOptions: optionsChanged ? patchedOptions : options,
+  };
 }
 
 export function useItemController() {
@@ -36,6 +156,8 @@ export function useItemController() {
               ...updated,
               Links: updated.Links ?? item.Links,
               Claims: updated.Claims ?? item.Claims,
+              SubstitutionOptions:
+                updated.SubstitutionOptions ?? item.SubstitutionOptions,
             }
           : item
       )
@@ -51,6 +173,8 @@ export function useItemController() {
                 ...updated,
                 Links: updated.Links ?? item.Links,
                 Claims: updated.Claims ?? item.Claims,
+                SubstitutionOptions:
+                  updated.SubstitutionOptions ?? item.SubstitutionOptions,
               }
             : item
         ),
@@ -71,29 +195,49 @@ export function useItemController() {
     });
   }, []);
 
+  const patchSubstitutionOptions = useCallback(
+    (
+      parentItemId: string,
+      options: ItemSubstitutionOption[],
+      allowSubstitutions?: boolean
+    ) => {
+      const patch = (item: Item): Item => {
+        if (item.Id !== parentItemId) return item;
+        return {
+          ...item,
+          SubstitutionOptions: options,
+          ...(allowSubstitutions !== undefined
+            ? { AllowSubstitutions: allowSubstitutions }
+            : {}),
+        };
+      };
+      setItems((prev) => prev.map(patch));
+      setItemGroups((prev) => {
+        if (!prev) return prev;
+        return prev.map((group) => ({
+          ...group,
+          Items: group.Items.map(patch),
+        }));
+      });
+    },
+    []
+  );
+
+  const refreshSubstitutions = useCallback(
+    async (parentItemId: string) => {
+      const result = await itemsApi.listSubstitutions(parentItemId);
+      patchSubstitutionOptions(parentItemId, result.Options, result.AllowSubstitutions);
+      return result;
+    },
+    [patchSubstitutionOptions]
+  );
+
   const applyClaimProjections = useCallback((projections: ItemClaimMutationProjection[]) => {
     if (projections.length === 0) {
       return;
     }
     const byId = new Map(projections.map((projection) => [projection.Id, projection]));
-    const patch = (item: Item): Item => {
-      const projection = byId.get(item.Id);
-      if (!projection) {
-        return item;
-      }
-      return {
-        ...item,
-        Claims: projection.Claims,
-        IsClaimed: projection.IsClaimed,
-        IsFullyClaimed: projection.IsFullyClaimed,
-        IsMultiCount: projection.IsMultiCount,
-        TotalClaimedAmount: projection.TotalClaimedAmount,
-        TotalClaimedQuantity: projection.TotalClaimedQuantity,
-        DesiredQuantity: projection.DesiredQuantity,
-        RemainingQuantity: projection.RemainingQuantity,
-        FundingTarget: projection.FundingTarget,
-      };
-    };
+    const patch = (item: Item): Item => patchItemWithClaimProjections(item, byId);
     setItems((prev) => prev.map(patch));
     setItemGroups((prev) => {
       if (!prev) return prev;
@@ -275,6 +419,77 @@ export function useItemController() {
     }
   };
 
+  const createOwnerSubstitution = async (
+    parentItemId: string,
+    payload: CreateSubstitutionPayload
+  ) => {
+    setError(null);
+    try {
+      const option = await itemsApi.createOwnerSubstitution(parentItemId, payload);
+      await refreshSubstitutions(parentItemId);
+      return option;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create substitution.');
+      throw err;
+    }
+  };
+
+  const createClaimerSubstitution = async (
+    parentItemId: string,
+    payload: CreateSubstitutionPayload
+  ) => {
+    setError(null);
+    try {
+      const option = await itemsApi.createClaimerSubstitution(parentItemId, payload);
+      await refreshSubstitutions(parentItemId);
+      return option;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create substitution.');
+      throw err;
+    }
+  };
+
+  const updateSubstitution = async (
+    parentItemId: string,
+    substitutionId: string,
+    payload: CreateSubstitutionPayload
+  ) => {
+    setError(null);
+    try {
+      const option = await itemsApi.updateSubstitution(substitutionId, payload);
+      await refreshSubstitutions(parentItemId);
+      return option;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update substitution.');
+      throw err;
+    }
+  };
+
+  const deleteSubstitution = async (parentItemId: string, substitutionId: string) => {
+    setError(null);
+    try {
+      await itemsApi.deleteSubstitution(substitutionId);
+      await refreshSubstitutions(parentItemId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete substitution.');
+      throw err;
+    }
+  };
+
+  const reorderOwnerSubstitutions = async (
+    parentItemId: string,
+    orderedIds: string[]
+  ) => {
+    setError(null);
+    try {
+      await itemsApi.reorderOwnerSubstitutions(parentItemId, orderedIds);
+      await refreshSubstitutions(parentItemId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reorder substitutions.');
+      throw err;
+    }
+  };
+
   const itemActions: ItemActions = {
     updateItem,
     addItemLink,
@@ -282,6 +497,11 @@ export function useItemController() {
     claimItems,
     unclaimItem,
     deleteItem,
+    createOwnerSubstitution,
+    createClaimerSubstitution,
+    updateSubstitution,
+    deleteSubstitution,
+    reorderOwnerSubstitutions,
   };
 
   return {
@@ -299,6 +519,13 @@ export function useItemController() {
     deleteItem,
     replaceItem,
     removeItem,
+    patchSubstitutionOptions,
+    refreshSubstitutions,
+    createOwnerSubstitution,
+    createClaimerSubstitution,
+    updateSubstitution,
+    deleteSubstitution,
+    reorderOwnerSubstitutions,
     itemActions,
   };
 }

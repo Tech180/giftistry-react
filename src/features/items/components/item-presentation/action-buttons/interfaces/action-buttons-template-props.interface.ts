@@ -1,9 +1,11 @@
 import type { ButtonProps } from 'shared/ui';
+import type { ClaimerSubstitutionAction } from '../../../../interfaces/claimer-substitution-action.interface';
 
 export type ActionButtonsLayoutMode =
   | 'owner-edit'
   | 'unclaim'
   | 'claimed'
+  | 'unavailable'
   | 'claim'
   | 'update-claim';
 
@@ -28,4 +30,5 @@ export interface ActionButtonsTemplateProps {
   onDeleteCancel: () => void;
   unclaimDisabled: boolean;
   hasLinkedUnclaimPeers?: boolean;
+  substitutionAction?: ClaimerSubstitutionAction | null;
 }

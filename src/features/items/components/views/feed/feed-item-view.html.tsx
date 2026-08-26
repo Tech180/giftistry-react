@@ -29,11 +29,14 @@ import styles from './feed-item-view.module.css';
 export const FeedItemView: React.FC<ItemViewProps> = (props) => {
   const {
     item,
+    displayItem = item,
     isOwner,
     canCollaborate,
     allowGroupFunds,
     isFullyClaimed,
     isMultiCount,
+    hasVisibleClaimForGray,
+    isClaimUnavailable,
     totalExtractedPrice,
     totalClaimedAmount,
     showClaimForm,
@@ -79,12 +82,17 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
 
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
   const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
-  const primaryLink = item.Links[0];
+  const primaryLink = displayItem.Links[0];
   const primaryPrice = primaryLink?.ExtractedPrice;
-  const primaryImageUrl = getItemPrimaryImageUrl(item);
-  const showQuantity = resolveItemQuantitySummary(item, metadata).shouldDisplay;
+  const primaryImageUrl = getItemPrimaryImageUrl(displayItem);
+  const showQuantity = resolveItemQuantitySummary(displayItem, metadata).shouldDisplay;
   const { entries: claimBadgeEntries, showClaimBadge, hasVisibleClaim } =
-    resolveItemClaimBadgeState(item.Claims, claimUserId, claimedByCurrentUser, claimActorName);
+    resolveItemClaimBadgeState(
+      displayItem.Claims,
+      claimUserId,
+      claimedByCurrentUser,
+      claimActorName
+    );
 
   const modifierClass = buildItemCardModifierClasses(
     {
@@ -100,7 +108,7 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
   );
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
-    hasVisibleClaim,
+    hasVisibleClaimForGray ?? hasVisibleClaim,
     claimedByCurrentUser,
     styles,
     props.isArchived,
@@ -166,7 +174,7 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
                 {isRelatedToItems && (
                   <Layers2 size={16} className={styles['linked-icon']} aria-label="Related to other items" />
                 )}
-                {item.Name}
+                {displayItem.Name}
               </h3>
             </div>
             <div className={styles['v-feed-badges']}>
@@ -292,6 +300,7 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
               isExpired={props.isExpired}
               claimedByCurrentUser={claimedByCurrentUser}
               isFullyClaimed={isFullyClaimed}
+              isClaimUnavailable={isClaimUnavailable}
               canAdjustClaim={canAdjustClaim}
               claimLoading={claimLoading}
               showDeleteConfirm={showDeleteConfirm}
@@ -304,6 +313,7 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
               onDeleteConfirm={handleDelete}
               onDeleteCancel={() => setShowDeleteConfirm(false)}
               hasLinkedUnclaimPeers={hasLinkedUnclaimPeers}
+              substitutionAction={props.substitutionAction}
             />
           )}
         </footer>

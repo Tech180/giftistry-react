@@ -20,4 +20,7 @@ export interface DrawerProps {
   titleExtra?: React.ReactNode;
   headerExtra?: React.ReactNode;
   onOverlayClick?: () => void;
+  /** Replaces the default close control (e.g. back arrow). */
+  closeIcon?: React.ReactNode;
+  closeAriaLabel?: string;
 }

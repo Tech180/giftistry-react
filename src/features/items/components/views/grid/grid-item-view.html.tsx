@@ -15,9 +15,11 @@ import styles from './grid-item-view.module.css';
 export const GridItemView: React.FC<ItemViewProps> = (props) => {
   const {
     item,
+    displayItem = item,
     isOwner,
     isFullyClaimed,
     isMultiCount,
+    hasVisibleClaimForGray,
     isFavorite,
     toggleFavorite,
     claimedByCurrentUser,
@@ -40,9 +42,9 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
   const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
   const primaryPrice = item.Links[0]?.ExtractedPrice;
-  const primaryImageUrl = getItemPrimaryImageUrl(item);
+  const primaryImageUrl = getItemPrimaryImageUrl(displayItem);
   const { hasVisibleClaim } = resolveItemClaimBadgeState(
-    item.Claims,
+    displayItem.Claims,
     claimUserId,
     claimedByCurrentUser
   );
@@ -62,7 +64,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
   );
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
-    hasVisibleClaim,
+    hasVisibleClaimForGray ?? hasVisibleClaim,
     claimedByCurrentUser,
     styles,
     props.isArchived,
@@ -170,7 +172,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
           {isRelatedToItems && (
             <Layers2 size={12} className={styles['linked-icon']} aria-label="Related to other items" />
           )}
-          {item.Name}
+          {displayItem.Name}
         </h4>
         <div className={styles['card-price-row']}>
           <QuantityBadge item={item} metadata={metadata} isOwner={isOwner} />

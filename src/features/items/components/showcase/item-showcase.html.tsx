@@ -3,15 +3,24 @@ import { Star, Link2, Edit2, Trash2, Tag, Layers2 } from 'lucide-react';
 import { Button, Card } from 'shared/ui';
 // Future: AI item reviews — re-enable AiReviewsPanel when shipping the feature.
 // import { LinksWidget, FundingWidget, AiReviewsPanel, ClaimPrompt } from '../item-presentation';
-import { LinksWidget, FundingWidget, ClaimPrompt, ClaimForm, QuantityBadge, PriorityDisplay } from '../item-presentation';
+import { LinksWidget, FundingWidget, ClaimPrompt, ClaimForm, QuantityBadge, PriorityDisplay, SubstitutionSwitcher, SubstitutionBadge, SubstitutionClaimButton } from '../item-presentation';
 import { CLAIM_FORM_PROMPT_CLAIM_LINKED } from '../item-presentation/claim-form/constants/claim-form-copy.constant';
 import { Tags } from 'features/comments';
 import type { ItemShowcaseTemplateProps } from '../../interfaces/item-showcase-template-props.interface';
 import { getItemPrimaryImageUrl } from '../../utils/item-primary-image.util';
+import {
+  getClaimedGrayOutClass,
+  getUserClaimedHighlightClass,
+} from '../views/shared/item-card-modifiers.util';
 import styles from './item-showcase.module.css';
 
 export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   item,
+  displayItem = item,
+  substitutionOptions,
+  substitutionActiveIndex,
+  onSubstitutionIndexChange,
+  substitutionAction = null,
   isOwner,
   canCollaborate,
   isPublicGuest = false,
@@ -45,8 +54,10 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   handleDelete,
   totalExtractedPrice,
   totalClaimedAmount,
-  isMultiCount: _isMultiCount,
+  isMultiCount,
   isFullyClaimed,
+  hasVisibleClaimForGray = false,
+  isClaimUnavailable = false,
   progressPercent,
   onClose,
   onEdit,
@@ -78,12 +89,12 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   wishlistItemsForLinkedClaim = [],
   onLinkedClaimItemClick,
 }) => {
-  const primaryImageUrl = getItemPrimaryImageUrl(item);
+  const primaryImageUrl = getItemPrimaryImageUrl(displayItem);
   const hasLinkedBundle = linkedClaimPeers.length > 0;
 
   const quantityClaimForm = (
     <ClaimForm
-      item={item}
+      item={displayItem}
       metadata={metadata}
       userId={claimUserId}
       claimedByName={claimActorName}
@@ -183,21 +194,48 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
     </div>
   );
 
+  const substitutionManageIconClass =
+    substitutionAction?.mode === 'manage' ? styles['claim-icon-btn'] : undefined;
+
   const guestActions =
     isArchived || isExpired || isPublicGuest ? null : !isOwner ? (
     <>
       {(canEditItem ?? canCollaborate) && ownerActions}
       {canAdjustClaim ? (
         isFullyClaimed && !claimedByCurrentUser ? (
-          <Button variant="secondary" className={styles['claim-button']} disabled>
-            Already Claimed
-          </Button>
+          <div className={styles['claim-footer-actions']}>
+            {substitutionAction ? (
+              <SubstitutionClaimButton
+                mode={substitutionAction.mode}
+                allowSubstitutions={substitutionAction.allowSubstitutions}
+                onOpenEditor={substitutionAction.onRequest}
+                onDelete={substitutionAction.onDelete}
+                appearance="ghost-text"
+                disabled={claimLoading}
+                className={substitutionManageIconClass}
+              />
+            ) : null}
+            <Button variant="secondary" className={styles['claim-button']} disabled>
+              {isClaimUnavailable ? 'Unavailable' : 'Already Claimed'}
+            </Button>
+          </div>
         ) : (
           <div className={styles['claim-widget']}>
             {showClaimForm ? (
               claimSectionContent
             ) : (
               <div className={styles['claim-footer-actions']}>
+                {substitutionAction ? (
+                  <SubstitutionClaimButton
+                    mode={substitutionAction.mode}
+                    allowSubstitutions={substitutionAction.allowSubstitutions}
+                    onOpenEditor={substitutionAction.onRequest}
+                    onDelete={substitutionAction.onDelete}
+                    appearance="ghost-text"
+                    disabled={claimLoading}
+                    className={substitutionManageIconClass}
+                  />
+                ) : null}
                 {claimedByCurrentUser && (
                   <Button
                     variant="ghost"
@@ -220,30 +258,69 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
           </div>
         )
       ) : claimedByCurrentUser ? (
-        <Button
-          variant="secondary"
-          className={styles['claim-button']}
-          onClick={handleUnclaim}
-          isLoading={claimLoading}
-        >
-          Unclaim Item
-        </Button>
+        <div className={styles['claim-footer-actions']}>
+          {substitutionAction ? (
+            <SubstitutionClaimButton
+              mode={substitutionAction.mode}
+              allowSubstitutions={substitutionAction.allowSubstitutions}
+              onOpenEditor={substitutionAction.onRequest}
+              onDelete={substitutionAction.onDelete}
+              appearance="ghost-text"
+              disabled={claimLoading}
+              className={substitutionManageIconClass}
+            />
+          ) : null}
+          <Button
+            variant="secondary"
+            className={styles['claim-button']}
+            onClick={handleUnclaim}
+            isLoading={claimLoading}
+          >
+            Unclaim Item
+          </Button>
+        </div>
       ) : isFullyClaimed ? (
-        <Button variant="secondary" className={styles['claim-button']} disabled>
-          Already Claimed
-        </Button>
+        <div className={styles['claim-footer-actions']}>
+          {substitutionAction ? (
+            <SubstitutionClaimButton
+              mode={substitutionAction.mode}
+              allowSubstitutions={substitutionAction.allowSubstitutions}
+              onOpenEditor={substitutionAction.onRequest}
+              onDelete={substitutionAction.onDelete}
+              appearance="ghost-text"
+              disabled={claimLoading}
+              className={substitutionManageIconClass}
+            />
+          ) : null}
+          <Button variant="secondary" className={styles['claim-button']} disabled>
+            {isClaimUnavailable ? 'Unavailable' : 'Already Claimed'}
+          </Button>
+        </div>
       ) : (
         <div className={styles['claim-widget']}>
           {showClaimForm ? (
             claimSectionContent
           ) : (
-            <Button
-              variant="primary"
-              className={styles['claim-button']}
-              onClick={() => setShowClaimForm(true)}
-            >
-              Claim Item
-            </Button>
+            <div className={styles['claim-footer-actions']}>
+              {substitutionAction ? (
+                <SubstitutionClaimButton
+                  mode={substitutionAction.mode}
+                  allowSubstitutions={substitutionAction.allowSubstitutions}
+                  onOpenEditor={substitutionAction.onRequest}
+                  onDelete={substitutionAction.onDelete}
+                  appearance="ghost-text"
+                  disabled={claimLoading}
+                  className={substitutionManageIconClass}
+                />
+              ) : null}
+              <Button
+                variant="primary"
+                className={styles['claim-button']}
+                onClick={() => setShowClaimForm(true)}
+              >
+                Claim Item
+              </Button>
+            </div>
           )}
         </div>
       )}
@@ -252,177 +329,211 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
     ownerActions
   );
 
+  const claimedGrayClass = getClaimedGrayOutClass(
+    isFullyClaimed,
+    hasVisibleClaimForGray,
+    claimedByCurrentUser,
+    styles,
+    isArchived,
+    isMultiCount
+  );
+  const userClaimedHighlightClass = getUserClaimedHighlightClass(
+    claimedByCurrentUser,
+    styles
+  );
+  const claimChromeClass = [claimedGrayClass, userClaimedHighlightClass]
+    .filter(Boolean)
+    .join(' ');
+
   if (variant === 'inline') {
     return (
       <div
-        className={`${styles['showcase-inline']} ${isPrivate ? styles['private-item'] : ''} ${isArchived ? styles['archived-item'] : ''}`}
+        className={`${styles['showcase-inline']} ${isPrivate ? styles['private-item'] : ''} ${isArchived ? styles['archived-item'] : ''} ${claimChromeClass}`}
       >
-        {primaryImageUrl && (
-          <div className={styles['detail-photo']}>
-            <img src={primaryImageUrl} alt="" className={styles['detail-photo-img']} />
-          </div>
-        )}
-        <div className={styles['detail-hero']}>
-          <h2 className={styles['detail-title']}>
-            {isLinkedToItems && (
-              <Link2 size={16} className={styles['linked-item-icon']} aria-hidden="true" />
-            )}
-            {isRelatedToItems && (
-              <Layers2 size={16} className={styles['linked-item-icon']} aria-label="Related to other items" />
-            )}
-            {item.Name}
-          </h2>
-          <div className={styles['detail-price-row']}>
-            <QuantityBadge item={item} metadata={metadata} isOwner={isOwner} />
-            <span className={styles['detail-price']}>{bestPriceDisplay}</span>
-          </div>
-          {showHeroMeta && (
-            <div className={styles['detail-hero-meta']}>
-              {showSuggestionBadge && (
-                <span className={styles['status-badge']}>{suggestionLabel}</span>
+        <SubstitutionSwitcher
+          parent={item}
+          options={substitutionOptions}
+          userId={claimUserId}
+          activeIndex={substitutionActiveIndex}
+          onActiveIndexChange={onSubstitutionIndexChange}
+        >
+          {(active) => (
+            <>
+              {primaryImageUrl && (
+                <div className={styles['detail-photo']}>
+                  <img src={primaryImageUrl} alt="" className={styles['detail-photo-img']} />
+                </div>
               )}
-              {showHiddenSuggestionBadge && (
-                <span className={styles['status-badge']}>Hidden suggestion</span>
-              )}
-              {audienceLabel && (
-                <span
-                  className={`${styles['audience-badge']} ${isPrivate ? styles['private-audience-badge'] : ''}`}
-                >
-                  {audienceLabel}
-                </span>
-              )}
-              {localIsFavorite && (
-                <span className={styles['detail-star-icon']} title="Favorite">
-                  <Star size={14} fill="currentColor" aria-hidden />
-                  Favorite
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+              <div className={styles['detail-hero']}>
+                <h2 className={styles['detail-title']}>
+                  {isLinkedToItems && (
+                    <Link2 size={16} className={styles['linked-item-icon']} aria-hidden="true" />
+                  )}
+                  {isRelatedToItems && (
+                    <Layers2 size={16} className={styles['linked-item-icon']} aria-label="Related to other items" />
+                  )}
+                  {displayItem.Name}
+                  {active.kind !== 'original' ? (
+                    <SubstitutionBadge
+                      kind={active.kind}
+                      createdByUserId={active.option?.CreatedByUserId}
+                    />
+                  ) : null}
+                </h2>
+                <div className={styles['detail-price-row']}>
+                  <QuantityBadge item={displayItem} metadata={metadata} isOwner={isOwner} />
+                  <span className={styles['detail-price']}>{bestPriceDisplay}</span>
+                </div>
+                {showHeroMeta && (
+                  <div className={styles['detail-hero-meta']}>
+                    {showSuggestionBadge && (
+                      <span className={styles['status-badge']}>{suggestionLabel}</span>
+                    )}
+                    {showHiddenSuggestionBadge && (
+                      <span className={styles['status-badge']}>Hidden suggestion</span>
+                    )}
+                    {audienceLabel && (
+                      <span
+                        className={`${styles['audience-badge']} ${isPrivate ? styles['private-audience-badge'] : ''}`}
+                      >
+                        {audienceLabel}
+                      </span>
+                    )}
+                    {localIsFavorite && (
+                      <span className={styles['detail-star-icon']} title="Favorite">
+                        <Star size={14} fill="currentColor" aria-hidden />
+                        Favorite
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
 
-        <div className={styles['inspector-body']}>
-          {(hasNumericPriority || audienceLabel) && (
-            <div className={styles['detail-section']}>
-              <span className={styles['section-label']}>Properties</span>
-              <div className={styles['property-grid']}>
-                {hasNumericPriority && priorityDisplay != null && (
-                  <div className={styles['prop-card']}>
-                    <PriorityDisplay
-                      priority={priorityDisplay}
-                      variant="stacked"
-                      showHint
-                      className={styles['prop-card-priority']}
+              <div className={styles['inspector-body']}>
+                {(hasNumericPriority || audienceLabel) && (
+                  <div className={styles['detail-section']}>
+                    <span className={styles['section-label']}>Properties</span>
+                    <div className={styles['property-grid']}>
+                      {hasNumericPriority && priorityDisplay != null && (
+                        <div className={styles['prop-card']}>
+                          <PriorityDisplay
+                            priority={priorityDisplay}
+                            variant="stacked"
+                            showHint
+                            className={styles['prop-card-priority']}
+                          />
+                        </div>
+                      )}
+                      {audienceLabel && (
+                        <div className={styles['prop-card']}>
+                          <div className={styles['prop-label']}>Visibility</div>
+                          <div className={styles['prop-value']}>{audienceLabel}</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className={styles['detail-section']}>
+                  <span className={styles['section-label']}>Notes & Description</span>
+                  {displayDescription ? (
+                    <p className={styles['detail-text']}>{displayDescription}</p>
+                  ) : (
+                    <p className={styles['description-box-empty']}>No description provided for this item.</p>
+                  )}
+                </div>
+
+                {predefinedDisplayEntries.length > 0 && (
+                  <div className={styles['detail-section']}>
+                    <span className={styles['section-label']}>Details / Sizing</span>
+                    <div className={styles['meta-badges']}>
+                      {predefinedDisplayEntries.map((entry) => (
+                        <span key={entry.label} className={styles['meta-badge']}>
+                          {metadataBadgeEmoji[entry.label] ? `${metadataBadgeEmoji[entry.label]} ` : ''}
+                          {entry.label}: {entry.value}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {userDefinedEntries.map((field) => (
+                  <div key={field.name} className={styles['detail-section']}>
+                    <span className={styles['section-label']}>{field.name}</span>
+                    <p className={styles['detail-text']}>{field.value}</p>
+                  </div>
+                ))}
+
+                {showGroupFunding && (
+                  <div className={styles['detail-section']}>
+                    <FundingWidget
+                      totalExtractedPrice={totalExtractedPrice}
+                      totalClaimedAmount={totalClaimedAmount}
+                      label="Group funding"
                     />
                   </div>
                 )}
-                {audienceLabel && (
-                  <div className={styles['prop-card']}>
-                    <div className={styles['prop-label']}>Visibility</div>
-                    <div className={styles['prop-value']}>{audienceLabel}</div>
+
+                {showVariationsProgress && (
+                  <div className={styles['detail-section']}>
+                    <span className={styles['section-label']}>Variations</span>
+                    <div className={styles['variations-progress-list']}>
+                      {variationProgress.map((variation) => (
+                        <div key={variation.name} className={styles['variation-progress-card']}>
+                          <div className={styles['variation-progress-header']}>
+                            <span className={styles['variation-name']}>{variation.name}</span>
+                            <span className={styles['variation-qty']}>{variation.qtyLabel}</span>
+                          </div>
+                          <div className={styles['progress-bar-bg-mini']}>
+                            <div
+                              className={styles['progress-bar-fill-mini']}
+                              style={{ width: `${variation.percent}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {displayItem.Links.length > 0 && (
+                  <div className={styles['detail-section']}>
+                    <span className={styles['section-label']}>Purchase links</span>
+                    <LinksWidget links={displayItem.Links} getSiteName={getSiteName} />
+                  </div>
+                )}
+
+                {isLinkedToItems && (
+                  <div className={styles['detail-section']}>
+                    <span className={styles['section-label']}>Linked items</span>
+                    <ul className={styles['relation-list']}>
+                      {linkedRelationItems.map((linked) => (
+                        <li key={linked.id} className={styles['relation-list-item']}>
+                          <span>{linked.name}</span>
+                          <span className={styles['relation-list-status']}>{linked.statusLabel}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {isRelatedToItems && (
+                  <div className={styles['detail-section']}>
+                    <span className={styles['section-label']}>Related items</span>
+                    <ul className={styles['relation-list']}>
+                      {relatedRelationItems.map((related) => (
+                        <li key={related.id} className={styles['relation-list-item']}>
+                          <span>{related.name}</span>
+                          <span className={styles['relation-list-status']}>{related.statusLabel}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>
-            </div>
+            </>
           )}
-
-          <div className={styles['detail-section']}>
-            <span className={styles['section-label']}>Notes & Description</span>
-            {displayDescription ? (
-              <p className={styles['detail-text']}>{displayDescription}</p>
-            ) : (
-              <p className={styles['description-box-empty']}>No description provided for this item.</p>
-            )}
-          </div>
-
-          {predefinedDisplayEntries.length > 0 && (
-            <div className={styles['detail-section']}>
-              <span className={styles['section-label']}>Details / Sizing</span>
-              <div className={styles['meta-badges']}>
-                {predefinedDisplayEntries.map((entry) => (
-                  <span key={entry.label} className={styles['meta-badge']}>
-                    {metadataBadgeEmoji[entry.label] ? `${metadataBadgeEmoji[entry.label]} ` : ''}
-                    {entry.label}: {entry.value}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {userDefinedEntries.map((field) => (
-            <div key={field.name} className={styles['detail-section']}>
-              <span className={styles['section-label']}>{field.name}</span>
-              <p className={styles['detail-text']}>{field.value}</p>
-            </div>
-          ))}
-
-          {showGroupFunding && (
-            <div className={styles['detail-section']}>
-              <FundingWidget
-                totalExtractedPrice={totalExtractedPrice}
-                totalClaimedAmount={totalClaimedAmount}
-                label="Group funding"
-              />
-            </div>
-          )}
-
-          {showVariationsProgress && (
-            <div className={styles['detail-section']}>
-              <span className={styles['section-label']}>Variations</span>
-              <div className={styles['variations-progress-list']}>
-                {variationProgress.map((variation) => (
-                  <div key={variation.name} className={styles['variation-progress-card']}>
-                    <div className={styles['variation-progress-header']}>
-                      <span className={styles['variation-name']}>{variation.name}</span>
-                      <span className={styles['variation-qty']}>{variation.qtyLabel}</span>
-                    </div>
-                    <div className={styles['progress-bar-bg-mini']}>
-                      <div
-                        className={styles['progress-bar-fill-mini']}
-                        style={{ width: `${variation.percent}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {item.Links.length > 0 && (
-            <div className={styles['detail-section']}>
-              <span className={styles['section-label']}>Purchase links</span>
-              <LinksWidget links={item.Links} getSiteName={getSiteName} />
-            </div>
-          )}
-
-          {isLinkedToItems && (
-            <div className={styles['detail-section']}>
-              <span className={styles['section-label']}>Linked items</span>
-              <ul className={styles['relation-list']}>
-                {linkedRelationItems.map((linked) => (
-                  <li key={linked.id} className={styles['relation-list-item']}>
-                    <span>{linked.name}</span>
-                    <span className={styles['relation-list-status']}>{linked.statusLabel}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {isRelatedToItems && (
-            <div className={styles['detail-section']}>
-              <span className={styles['section-label']}>Related items</span>
-              <ul className={styles['relation-list']}>
-                {relatedRelationItems.map((related) => (
-                  <li key={related.id} className={styles['relation-list-item']}>
-                    <span>{related.name}</span>
-                    <span className={styles['relation-list-status']}>{related.statusLabel}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+        </SubstitutionSwitcher>
 
         <div className={styles['inspector-footer']}>
           <div className={styles['action-btn-row']}>{guestActions}</div>
@@ -432,153 +543,171 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   }
 
   return (
-    <Card className={`${styles['showcase-card']} ${isPrivate ? styles['private-item'] : ''} ${isArchived ? styles['archived-item'] : ''}`} padding="none" glass={true}>
-      {primaryImageUrl && (
-        <div className={styles['detail-photo']}>
-          <img src={primaryImageUrl} alt="" className={styles['detail-photo-img']} />
-        </div>
-      )}
-      <div className={styles['showcase-header']}>
-        <div className={styles['showcase-title-area']}>
-          <div className={styles['showcase-meta-line']}>
-            <span className={styles['showcase-category']}>
-              <Tag size={12} className={styles['action-icon']} />
-              {displayCategory}
-            </span>
-          </div>
-          <h3 className={styles['showcase-title']}>
-            {isLinkedToItems && (
-              <Link2 size={16} className={styles['linked-item-icon']} aria-hidden="true" />
-            )}
-            {isRelatedToItems && (
-              <Layers2 size={16} className={styles['linked-item-icon']} aria-label="Related to other items" />
-            )}
-            {item.Name}
-          </h3>
-          {showHiddenSuggestionBadge && (
-            <span className={styles['status-badge']}>
-              Collaborator Suggestion (Hidden from list owner)
-            </span>
-          )}
-          {showSuggestionBadge && (
-            <span className={styles['status-badge']}>{suggestionLabel}</span>
-          )}
-          {audienceLabel && (
-            <span
-              className={`${styles['audience-badge']} ${isPrivate ? styles['private-audience-badge'] : ''}`}
-            >
-              {audienceLabel}
-            </span>
-          )}
-        </div>
-        <div className={styles['showcase-header-actions']}>
-          {localIsFavorite && (
-            <span className={styles['detail-star-icon']} title="Favorite Item">
-              <Star size={18} fill="currentColor" />
-            </span>
-          )}
-          <button type="button" onClick={onClose} className={styles['close-btn']} title="Close Preview">
-            &times;
-          </button>
-        </div>
-      </div>
-
-      <div className={styles['showcase-body']}>
-        <div className={styles['showcase-grid']}>
-          <div className={styles['info-col']}>
-            {displayDescription ? (
-              <div className={styles['description-box']}>
-                <h4 className={styles['section-title']}>Description</h4>
-                <p className={styles['description-text']}>{displayDescription}</p>
-              </div>
-            ) : (
-              <div className={styles['description-box-empty']}>
-                <p>No description provided for this item.</p>
+    <Card className={`${styles['showcase-card']} ${isPrivate ? styles['private-item'] : ''} ${isArchived ? styles['archived-item'] : ''} ${claimChromeClass}`} padding="none" glass={true}>
+      <SubstitutionSwitcher
+        parent={item}
+        options={substitutionOptions}
+        userId={claimUserId}
+        activeIndex={substitutionActiveIndex}
+        onActiveIndexChange={onSubstitutionIndexChange}
+      >
+        {(active) => (
+          <>
+            {primaryImageUrl && (
+              <div className={styles['detail-photo']}>
+                <img src={primaryImageUrl} alt="" className={styles['detail-photo-img']} />
               </div>
             )}
-
-            {predefinedDisplayEntries.length > 0 && (
-              <div className={styles['meta-section']}>
-                <h4 className={styles['section-title']}>Details / Sizing</h4>
-                <div className={styles['meta-badges']}>
-                  {predefinedDisplayEntries.map((entry) => (
-                    <span key={entry.label} className={styles['meta-badge']}>
-                      {metadataBadgeEmoji[entry.label] ? `${metadataBadgeEmoji[entry.label]} ` : ''}
-                      {entry.label}: {entry.value}
-                    </span>
-                  ))}
+            <div className={styles['showcase-header']}>
+              <div className={styles['showcase-title-area']}>
+                <div className={styles['showcase-meta-line']}>
+                  <span className={styles['showcase-category']}>
+                    <Tag size={12} className={styles['action-icon']} />
+                    {displayCategory}
+                  </span>
                 </div>
+                <h3 className={styles['showcase-title']}>
+                  {isLinkedToItems && (
+                    <Link2 size={16} className={styles['linked-item-icon']} aria-hidden="true" />
+                  )}
+                  {isRelatedToItems && (
+                    <Layers2 size={16} className={styles['linked-item-icon']} aria-label="Related to other items" />
+                  )}
+                  {displayItem.Name}
+                  {active.kind !== 'original' ? (
+                    <SubstitutionBadge
+                      kind={active.kind}
+                      createdByUserId={active.option?.CreatedByUserId}
+                    />
+                  ) : null}
+                </h3>
+                {showHiddenSuggestionBadge && (
+                  <span className={styles['status-badge']}>
+                    Collaborator Suggestion (Hidden from list owner)
+                  </span>
+                )}
+                {showSuggestionBadge && (
+                  <span className={styles['status-badge']}>{suggestionLabel}</span>
+                )}
+                {audienceLabel && (
+                  <span
+                    className={`${styles['audience-badge']} ${isPrivate ? styles['private-audience-badge'] : ''}`}
+                  >
+                    {audienceLabel}
+                  </span>
+                )}
               </div>
-            )}
-
-            {userDefinedEntries.map((field) => (
-              <div key={field.name} className={styles['description-box']}>
-                <h4 className={styles['section-title']}>{field.name}</h4>
-                <p className={styles['description-text']}>{field.value}</p>
+              <div className={styles['showcase-header-actions']}>
+                {localIsFavorite && (
+                  <span className={styles['detail-star-icon']} title="Favorite Item">
+                    <Star size={18} fill="currentColor" />
+                  </span>
+                )}
+                <button type="button" onClick={onClose} className={styles['close-btn']} title="Close Preview">
+                  &times;
+                </button>
               </div>
-            ))}
+            </div>
 
-            {showVariationsProgress && (
-              <div className={styles['variations-section']}>
-                <h4 className={styles['section-title']}>Variations Progress</h4>
-                <div className={styles['variations-progress-list']}>
-                  {variationProgress.map((variation) => (
-                    <div key={variation.name} className={styles['variation-progress-card']}>
-                      <div className={styles['variation-progress-header']}>
-                        <span className={styles['variation-name']}>{variation.name}</span>
-                        <span className={styles['variation-qty']}>{variation.qtyLabel}</span>
+            <div className={styles['showcase-body']}>
+              <div className={styles['showcase-grid']}>
+                <div className={styles['info-col']}>
+                  {displayDescription ? (
+                    <div className={styles['description-box']}>
+                      <h4 className={styles['section-title']}>Description</h4>
+                      <p className={styles['description-text']}>{displayDescription}</p>
+                    </div>
+                  ) : (
+                    <div className={styles['description-box-empty']}>
+                      <p>No description provided for this item.</p>
+                    </div>
+                  )}
+
+                  {predefinedDisplayEntries.length > 0 && (
+                    <div className={styles['meta-section']}>
+                      <h4 className={styles['section-title']}>Details / Sizing</h4>
+                      <div className={styles['meta-badges']}>
+                        {predefinedDisplayEntries.map((entry) => (
+                          <span key={entry.label} className={styles['meta-badge']}>
+                            {metadataBadgeEmoji[entry.label] ? `${metadataBadgeEmoji[entry.label]} ` : ''}
+                            {entry.label}: {entry.value}
+                          </span>
+                        ))}
                       </div>
-                      <div className={styles['progress-bar-bg-mini']}>
+                    </div>
+                  )}
+
+                  {userDefinedEntries.map((field) => (
+                    <div key={field.name} className={styles['description-box']}>
+                      <h4 className={styles['section-title']}>{field.name}</h4>
+                      <p className={styles['description-text']}>{field.value}</p>
+                    </div>
+                  ))}
+
+                  {showVariationsProgress && (
+                    <div className={styles['variations-section']}>
+                      <h4 className={styles['section-title']}>Variations Progress</h4>
+                      <div className={styles['variations-progress-list']}>
+                        {variationProgress.map((variation) => (
+                          <div key={variation.name} className={styles['variation-progress-card']}>
+                            <div className={styles['variation-progress-header']}>
+                              <span className={styles['variation-name']}>{variation.name}</span>
+                              <span className={styles['variation-qty']}>{variation.qtyLabel}</span>
+                            </div>
+                            <div className={styles['progress-bar-bg-mini']}>
+                              <div
+                                className={styles['progress-bar-fill-mini']}
+                                style={{ width: `${variation.percent}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className={styles['action-col']}>
+                  <div className={styles['price-container']}>
+                    <span className={styles['price-label']}>Price</span>
+                    <span className={styles['price-value']}>{bestPriceDisplay}</span>
+                  </div>
+
+                  {showQuantityProgress ? (
+                    <div className={styles['funding-section']}>
+                      <div className={styles['funding-header']}>
+                        <span>Quantities Claimed</span>
+                        <span>{quantityProgressMetric}</span>
+                      </div>
+                      <div className={styles['progress-bar-bg']}>
                         <div
-                          className={styles['progress-bar-fill-mini']}
-                          style={{ width: `${variation.percent}%` }}
+                          className={styles['progress-bar-fill']}
+                          style={{ width: `${progressPercent}%` }}
                         />
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    showGroupFunding && (
+                      <FundingWidget
+                        totalExtractedPrice={totalExtractedPrice}
+                        totalClaimedAmount={totalClaimedAmount}
+                        label="Group Funding Progress"
+                      />
+                    )
+                  )}
+
+                  <div className={styles['links-section']}>
+                    <h4 className={styles['section-title']}>Purchase Links</h4>
+                    <LinksWidget links={displayItem.Links} getSiteName={getSiteName} />
+                  </div>
+
+                  <div className={styles['actions-area']}>{guestActions}</div>
                 </div>
               </div>
-            )}
-          </div>
-
-          <div className={styles['action-col']}>
-            <div className={styles['price-container']}>
-              <span className={styles['price-label']}>Price</span>
-              <span className={styles['price-value']}>{bestPriceDisplay}</span>
             </div>
-
-            {showQuantityProgress ? (
-              <div className={styles['funding-section']}>
-                <div className={styles['funding-header']}>
-                  <span>Quantities Claimed</span>
-                  <span>{quantityProgressMetric}</span>
-                </div>
-                <div className={styles['progress-bar-bg']}>
-                  <div
-                    className={styles['progress-bar-fill']}
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-              </div>
-            ) : (
-              showGroupFunding && (
-                <FundingWidget
-                  totalExtractedPrice={totalExtractedPrice}
-                  totalClaimedAmount={totalClaimedAmount}
-                  label="Group Funding Progress"
-                />
-              )
-            )}
-
-            <div className={styles['links-section']}>
-              <h4 className={styles['section-title']}>Purchase Links</h4>
-              <LinksWidget links={item.Links} getSiteName={getSiteName} />
-            </div>
-
-            <div className={styles['actions-area']}>{guestActions}</div>
-          </div>
-        </div>
-      </div>
+          </>
+        )}
+      </SubstitutionSwitcher>
     </Card>
   );
 };

@@ -2,11 +2,20 @@ import type { ComponentType, CSSProperties, SyntheticEvent } from 'react';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
 import type { Item } from './item.interface';
 import type { ItemActions } from './item-actions.interface';
+import type { ClaimerSubstitutionAction } from './claimer-substitution-action.interface';
+import type { ItemSubstitutionOption } from './item-substitution.interface';
 import type { ShowcaseRelationItem } from './showcase-relation-item.interface';
 import type { ShowcaseVariationProgress } from './showcase-variation-progress.interface';
 
 export interface ItemShowcaseTemplateProps {
   item: Item;
+  /** Visual variant currently shown (parent or a substitution child overlay). Defaults to `item`. */
+  displayItem?: Item;
+  substitutionOptions?: ItemSubstitutionOption[];
+  substitutionActiveIndex?: number;
+  onSubstitutionIndexChange?: (index: number) => void;
+  /** Claimer custom substitution footer action. */
+  substitutionAction?: ClaimerSubstitutionAction | null;
   isOwner: boolean;
   canCollaborate: boolean;
   isPublicGuest?: boolean;
@@ -42,6 +51,15 @@ export interface ItemShowcaseTemplateProps {
   totalClaimedAmount: number;
   isMultiCount: boolean;
   isFullyClaimed: boolean;
+  /**
+   * Group-aware visible claim for gray-out (active section or a claimed sibling).
+   */
+  hasVisibleClaimForGray?: boolean;
+  /**
+   * True when this browse section is locked because a sibling was claimed
+   * (button label: Unavailable rather than Already Claimed).
+   */
+  isClaimUnavailable?: boolean;
   progressPercent: number;
   onClose: () => void;
   onEdit?: () => void;

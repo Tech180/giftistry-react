@@ -14,6 +14,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   isExpired = false,
   claimedByCurrentUser,
   isFullyClaimed,
+  isClaimUnavailable = false,
   canAdjustClaim = false,
   claimLoading,
   showDeleteConfirm,
@@ -29,12 +30,14 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   splitOnMobile = false,
   unclaimDisabled = false,
   hasLinkedUnclaimPeers = false,
+  substitutionAction = null,
 }) => {
   const layoutMode = resolveActionButtonsLayoutMode({
     isOwner,
     canCollaborate,
     claimedByCurrentUser,
     isFullyClaimed,
+    isClaimUnavailable,
     canAdjustClaim,
     isPublicGuest,
     canEditItem,
@@ -75,6 +78,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       onDeleteCancel={onDeleteCancel}
       unclaimDisabled={unclaimDisabled}
       hasLinkedUnclaimPeers={hasLinkedUnclaimPeers}
+      substitutionAction={substitutionAction}
     />
   );
 };
