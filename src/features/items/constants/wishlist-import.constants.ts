@@ -1,6 +1,6 @@
 export const WISHLIST_IMPORT_MAX_BYTES = 5 * 1024 * 1024;
 
-export const WISHLIST_IMPORT_BASE_EXTENSIONS = ['csv', 'xlsx', 'txt', 'json'] as const;
+export const WISHLIST_IMPORT_BASE_EXTENSIONS = ['csv', 'xlsx', 'txt', 'json', 'md'] as const;
 export const WISHLIST_IMPORT_AI_EXTENSIONS = ['pdf'] as const;
 
 export type WishlistImportBaseExtension =
@@ -27,8 +27,8 @@ export function getWishlistImportAccept(allowAi: boolean): string {
 
 export function getWishlistImportTypeError(allowAi: boolean): string {
   return allowAi
-    ? 'Unsupported file type. Use CSV, XLSX, TXT, JSON, or PDF.'
-    : 'Unsupported file type. Use CSV, XLSX, TXT, or JSON.';
+    ? 'Unsupported file type. Use CSV, XLSX, TXT, JSON, MD, or PDF.'
+    : 'Unsupported file type. Use CSV, XLSX, TXT, JSON, or MD.';
 }
 
 export const WISHLIST_IMPORT_SIZE_ERROR =

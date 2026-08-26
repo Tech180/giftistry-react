@@ -54,6 +54,9 @@ export const wishlistsApi = {
   activateWishlist: (listId: string) =>
     apiClient.put<Wishlist>(`/api/wishlists/${listId}/activate`, {}),
 
+  duplicateWishlist: (listId: string) =>
+    apiClient.post<Wishlist>(`/api/wishlists/${listId}/duplicate`, {}, 'Lists'),
+
   deleteWishlist: (listId: string) =>
     apiClient.delete<Record<string, never>>(`/api/wishlists/${listId}`),
 

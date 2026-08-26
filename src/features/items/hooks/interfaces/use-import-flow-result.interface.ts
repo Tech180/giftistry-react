@@ -33,6 +33,7 @@ export interface UseImportFlowResult {
   successMessage: string | null;
   successTone: CollapsibleStripStatus['tone'];
   handleFileSelected: (file: File) => void;
+  acceptPastedText: (text: string) => void;
   handleConfirm: () => void;
   resetState: () => void;
   handleGrabInfoChange: (checked: boolean) => void;

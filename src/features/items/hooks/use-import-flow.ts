@@ -17,6 +17,10 @@ import {
   type ReadImportFileResult,
 } from 'features/items/utils/read-import-file.util';
 import { filenameStemAsTitle } from 'features/items/utils/detect-import-format.util';
+import {
+  detectPasteImportFormat,
+  pasteFileNameForFormat,
+} from 'features/items/utils/detect-paste-import-format.util';
 import { useToast } from 'app/providers/toast-context';
 import { useUserSocket } from 'app/providers/user-socket-context';
 import type { ImportTimelineStep } from 'features/items/components/import/import-strip/interfaces/import-timeline-step.interface';
@@ -216,6 +220,52 @@ export function useImportFlow({
     }
   };
 
+  const acceptPastedText = (raw: string) => {
+    const text = raw.trim();
+    if (!text) {
+      setDropzoneError('Paste some wishlist text first.');
+      setErrorMessage('Paste some wishlist text first.');
+      setPhase('error');
+      return;
+    }
+
+    stopImportPolling();
+    handedOffRef.current = false;
+    setDropzoneError(null);
+    setErrorMessage(null);
+    setGrabInfoArmed(allowAi);
+    setOptimizeCategoriesArmed(false);
+    setTimelineSteps([]);
+    setTimelineStreams([]);
+    setStreamsCaption(null);
+    setSuccessMessage(null);
+
+    const format = detectPasteImportFormat(text);
+    if (format === 'unknown' && !allowAi) {
+      const message =
+        'Could not recognize Giftistry JSON, TXT, CSV, or Markdown. Enable AI or paste a supported export.';
+      setDropzoneError(message);
+      setErrorMessage(message);
+      setPendingRead(null);
+      setPhase('error');
+      return;
+    }
+
+    const fileName = pasteFileNameForFormat(format);
+    const read: ReadImportFileResult = {
+      fileName,
+      format,
+      content: text,
+      contentEncoding: 'text',
+    };
+    setFileName(fileName);
+    setWishlistTitle(filenameStemAsTitle(fileName));
+    setUploadPercent(100);
+    setUploadLabel('Paste ready');
+    setPendingRead(read);
+    setPhase('ready');
+  };
+
   const handleConfirm = async () => {
     if (!pendingRead || !canConfirm) {
       setErrorMessage(
@@ -360,6 +410,7 @@ export function useImportFlow({
     handleFileSelected: (file: File) => {
       void handleFileSelected(file);
     },
+    acceptPastedText,
     handleConfirm: () => {
       void handleConfirm();
     },

@@ -21,6 +21,7 @@ export const FabConfirmPanel: React.FC<FabConfirmPanelProps> = ({
             styles.btn,
             styles.yes,
             tone === 'warning' ? styles['yes--warning'] : '',
+            tone === 'primary' ? styles['yes--primary'] : '',
           ]
             .filter(Boolean)
             .join(' ')}

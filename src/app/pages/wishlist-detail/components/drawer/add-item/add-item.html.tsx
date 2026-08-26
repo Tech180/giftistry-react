@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { PlusCircle, Pencil, Eye, ArrowLeft } from 'lucide-react';
+import { PlusCircle, Pencil, Eye, ArrowLeft, Copy } from 'lucide-react';
 import { Drawer, MiniDrawer, Button, AiStatusBadge } from 'shared/ui';
 import { AddItemForm, ADD_ITEM_FORM_ID, SUBSTITUTION_FORM_ID } from 'features/items';
+import { formatItemAsGiftistryMarkdown } from 'features/items/utils/format-item-as-giftistry-markdown.util';
 import type { SubstitutionDrawerChrome } from 'features/items/interfaces/substitution-drawer-chrome.interface';
 import {
   VIEW_MODE_BANNER_DESCRIPTION,
 } from 'features/items/constants/view-mode-banner.constant';
+import { useToast } from 'app/providers/toast-context';
 import { AddItemTemplateProps } from './interfaces/add-item-template-props.interface';
 import styles from './add-item.module.css';
 
@@ -112,6 +114,7 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
   autoOpenClaimerSubstitutionEditNonce = 0,
   autoOpenClaimerSubstitutionEditId = null,
 }) => {
+  const { showToast } = useToast();
   const [substitutionChrome, setSubstitutionChrome] = useState<SubstitutionDrawerChrome | null>(
     null
   );
@@ -132,6 +135,16 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
   const formItem = viewingItem ?? editingItem;
   const isDrawerOpen = isOpen && !collapseDrawerWhileLinking;
   const isSubstitutionMode = !!substitutionChrome;
+
+  const handleCopyMarkdown = async () => {
+    if (!formItem) return;
+    try {
+      await navigator.clipboard.writeText(formatItemAsGiftistryMarkdown(formItem));
+      showToast('Copied to clipboard', 'success');
+    } catch {
+      showToast('Could not copy to clipboard', 'error');
+    }
+  };
 
   const title = isSubstitutionMode
     ? substitutionChrome.mode === 'edit'
@@ -188,14 +201,29 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
       closeIcon={substitutionUsesBack ? <ArrowLeft size={20} /> : undefined}
       closeAriaLabel={substitutionUsesBack ? 'Back' : undefined}
       headerExtra={
-        canShowAi && !isSubstitutionMode ? (
-          <AiStatusBadge
-            size="compact"
-            enabled={listAiEnabled}
-            ariaLabelEnabled="AI reviews enabled for this list"
-            ariaLabelDisabled="AI reviews disabled for this list"
-          />
-        ) : undefined
+        <>
+          {canShowAi && !isSubstitutionMode ? (
+            <AiStatusBadge
+              size="compact"
+              enabled={listAiEnabled}
+              ariaLabelEnabled="AI reviews enabled for this list"
+              ariaLabelDisabled="AI reviews disabled for this list"
+            />
+          ) : null}
+          {formItem && !isSubstitutionMode ? (
+            <button
+              type="button"
+              className={styles['copy-markdown-btn']}
+              onClick={() => {
+                void handleCopyMarkdown();
+              }}
+              title="Copy item as Markdown"
+              aria-label="Copy item as Markdown"
+            >
+              <Copy size={16} />
+            </button>
+          ) : null}
+        </>
       }
       onClose={handleDrawerClose}
       overflowVisible={true}

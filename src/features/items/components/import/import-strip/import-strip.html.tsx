@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+import React, { useId, useState } from 'react';
 import { CollapsibleStrip, Button, Badge, Switch } from 'shared/ui';
 import { Timeline } from 'features/jobs';
 import { ImportDropzone } from '../import-dropzone/import-dropzone.component';
@@ -33,6 +33,7 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
   confirmLabel,
   className,
   onFileSelected,
+  onPasteText,
   onReset,
   onConfirm,
   onGrabInfoChange,
@@ -40,9 +41,12 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
 }) => {
   const grabSwitchId = `import-grab-info-${useId().replace(/:/g, '')}`;
   const optimizeSwitchId = `import-optimize-categories-${useId().replace(/:/g, '')}`;
+  const pasteId = `import-paste-${useId().replace(/:/g, '')}`;
+  const [pasteDraft, setPasteDraft] = useState('');
   const aiPanelActive = grabInfoActive || optimizeCategoriesActive;
   const showDropzone =
     phase === 'idle' || phase === 'uploading' || phase === 'ready' || phase === 'error';
+  const showPaste = phase === 'idle' || (phase === 'error' && !fileName);
   const showProgress = phase === 'creating' || phase === 'success' || phase === 'enriching';
   const showTimeline = timelineSteps.length > 0;
   const showActions =
@@ -119,6 +123,37 @@ export const ImportStripTemplate: React.FC<ImportStripTemplateProps> = ({
               </div>
             ) : null}
           </ImportDropzone>
+        ) : null}
+
+        {showPaste ? (
+          <div className={styles.pasteBlock}>
+            <label className={styles.pasteLabel} htmlFor={pasteId}>
+              Or paste JSON, TXT, CSV, or Markdown
+            </label>
+            <textarea
+              id={pasteId}
+              className={styles.pasteInput}
+              value={pasteDraft}
+              onChange={(event) => setPasteDraft(event.target.value)}
+              placeholder="# Item name&#10;- Category: Toys&#10;- Link: https://…"
+              rows={5}
+              disabled={isBusy}
+              spellCheck={false}
+            />
+            <div className={styles.pasteActions}>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={isBusy || !pasteDraft.trim()}
+                onClick={() => {
+                  onPasteText(pasteDraft);
+                  setPasteDraft('');
+                }}
+              >
+                Use pasted text
+              </Button>
+            </div>
+          </div>
         ) : null}
 
         {showProgress || showTimeline ? (

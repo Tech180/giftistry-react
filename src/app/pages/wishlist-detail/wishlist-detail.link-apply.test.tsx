@@ -171,6 +171,8 @@ const baseProps: WishlistDetailTemplateProps = {
   handleDeactivateConfirm: vi.fn(),
   handleActivateConfirm: vi.fn(),
   handleDeleteConfirm: vi.fn(),
+  handleDuplicate: vi.fn(),
+  isDuplicating: false,
   saveTitle: vi.fn(async () => undefined),
   saveDate: vi.fn(async () => undefined),
   formatDate: () => '',

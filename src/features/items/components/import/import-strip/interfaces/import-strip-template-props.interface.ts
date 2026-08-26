@@ -31,6 +31,7 @@ export interface ImportStripTemplateProps {
   confirmLabel: string;
   className?: string;
   onFileSelected: (file: File) => void;
+  onPasteText: (text: string) => void;
   onReset: () => void;
   onConfirm: () => void;
   onGrabInfoChange: (checked: boolean) => void;

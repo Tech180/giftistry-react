@@ -1,7 +1,7 @@
 import styles from './wishlist-detail.module.css';
 import { useEffect, useState, useCallback, useMemo, useRef, type SetStateAction } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Archive, ArchiveRestore, Download, MessageSquare, Settings, Share2, Trash2, Upload } from 'lucide-react';
+import { Archive, ArchiveRestore, BookCopy, Download, MessageSquare, Settings, Share2, Trash2, Upload } from 'lucide-react';
 import { wishlistsApi, Wishlist, Priority, ShareFabPanel } from 'features/wishlists';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import {
@@ -130,7 +130,8 @@ export default function WishlistDetail() {
   const [isDeactivating, setIsDeactivating] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<'deactivate' | 'activate' | 'delete' | null>(null);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'deactivate' | 'activate' | 'delete' | 'duplicate' | null>(null);
 
   const [viewMode, setViewMode] = useState<ItemViewMode>(() =>
     normalizeStoredViewMode(localStorage.getItem(ITEM_VIEW_MODE_STORAGE_KEY))
@@ -729,6 +730,23 @@ export default function WishlistDetail() {
     }
   };
 
+  const handleDuplicate = useCallback(async () => {
+    if (!wishlist || isDuplicating) return;
+    setIsDuplicating(true);
+    setConfirmAction(null);
+    try {
+      await wishlistsApi.duplicateWishlist(wishlist.Id);
+      showToast(
+        'This list has been duplicated.\nPlease head back to the dashboard to check out your new list.',
+        'success'
+      );
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Duplication failed.', 'error');
+    } finally {
+      setIsDuplicating(false);
+    }
+  }, [wishlist, isDuplicating, showToast]);
+
   const pageActions = useMemo((): FloatingAction[] => {
     if (!wishlist) return [];
 
@@ -740,6 +758,27 @@ export default function WishlistDetail() {
     };
 
     const actions: FloatingAction[] = [];
+
+    actions.push({
+      id: 'duplicate',
+      label: isDuplicating ? 'Duplicating…' : 'Duplicate',
+      icon: <BookCopy size={18} aria-hidden />,
+      disabled: isDuplicating,
+      panelWidth: 280,
+      panelHeight: 220,
+      panelContent: ({ closeMenu }) => (
+        <FabConfirmPanel
+          tone="primary"
+          message="Duplicate this list for yourself?"
+          yesDisabled={isDuplicating}
+          onYes={() => {
+            closeMenu();
+            void handleDuplicate();
+          }}
+          onNo={closeMenu}
+        />
+      ),
+    });
 
     if (canCollaborate && !isLocked) {
       actions.push({
@@ -992,6 +1031,8 @@ export default function WishlistDetail() {
     isDeactivating,
     isActivating,
     isDeleting,
+    isDuplicating,
+    handleDuplicate,
     reloadListContent,
     isMobileFab,
     shareOwnerInfo,
@@ -1535,6 +1576,8 @@ export default function WishlistDetail() {
       handleDeactivateConfirm={handleDeactivateConfirm}
       handleActivateConfirm={handleActivateConfirm}
       handleDeleteConfirm={handleDeleteConfirm}
+      handleDuplicate={handleDuplicate}
+      isDuplicating={isDuplicating}
       saveTitle={saveTitle}
       saveDate={saveDate}
       toggleAiEnabled={toggleAiEnabled}

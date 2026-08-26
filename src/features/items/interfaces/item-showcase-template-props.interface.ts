@@ -62,6 +62,8 @@ export interface ItemShowcaseTemplateProps {
   isClaimUnavailable?: boolean;
   progressPercent: number;
   onClose: () => void;
+  /** Copies the active display item as Giftistry Markdown. */
+  onCopyMarkdown?: () => void;
   onEdit?: () => void;
   getSiteName: (url: string, retailerName?: string | null) => string;
   audienceLabel: string | null;

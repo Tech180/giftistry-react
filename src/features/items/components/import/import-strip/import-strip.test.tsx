@@ -23,7 +23,7 @@ vi.mock('features/items/utils/read-import-file.util', () => ({
     options?.onProgress?.(40);
     options?.onProgress?.(100);
     if (!options?.allowAi && file.name.toLowerCase().endsWith('.pdf')) {
-      throw new Error('Unsupported file type. Use CSV, XLSX, TXT, or JSON.');
+      throw new Error('Unsupported file type. Use CSV, XLSX, TXT, JSON, or MD.');
     }
     return {
       fileName: file.name,
@@ -222,7 +222,7 @@ describe('ImportStrip', () => {
     const inputs = container.querySelectorAll('input[type="file"]');
     expect(inputs.length).toBeGreaterThan(0);
     for (const input of Array.from(inputs)) {
-      expect((input as HTMLInputElement).accept).toBe('.csv,.xlsx,.txt,.json');
+      expect((input as HTMLInputElement).accept).toBe('.csv,.xlsx,.txt,.json,.md');
       expect((input as HTMLInputElement).accept).not.toContain('pdf');
     }
 
@@ -246,7 +246,7 @@ describe('ImportStrip', () => {
 
     await waitFor(() => {
       expect(
-        screen.getAllByText(/Unsupported file type\. Use CSV, XLSX, TXT, or JSON\./i).length
+        screen.getAllByText(/Unsupported file type\. Use CSV, XLSX, TXT, JSON, or MD\./i).length
       ).toBeGreaterThan(0);
     });
     expect(jobsApi.startWishlistImport).not.toHaveBeenCalled();
@@ -272,7 +272,7 @@ describe('ImportStrip', () => {
     const { container } = renderStrip();
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     expect(input.accept).toContain('.pdf');
-    expect(screen.getByText(/CSV, XLSX, TXT, JSON, or PDF/i)).toBeInTheDocument();
+    expect(screen.getByText(/CSV, XLSX, TXT, JSON, MD, or PDF/i)).toBeInTheDocument();
 
     await selectFile(container);
     await waitFor(() => {

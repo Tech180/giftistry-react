@@ -73,6 +73,11 @@
   border-color: var(--warning-border);
 }
 
+.confirm-banner--primary{
+  background-color: var(--primary-subtle, color-mix(in srgb, var(--primary) 8%, var(--surface)));
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+}
+
 .confirm-text{
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -108,6 +113,12 @@
 .yes-btn--warning{
   background-color: var(--warning);
   border-color: var(--warning);
+}
+
+.yes-btn--primary{
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-text, var(--color-white));
 }
 
 .no-btn{

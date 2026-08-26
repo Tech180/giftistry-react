@@ -4,9 +4,8 @@ TODO:
 - Improve calandar/expiration field
 - revamp group funding
 - put scraped photos in photo list
-- duplicate and copy buttons
 - new features
     - price comparer
     - deep research
     - reviews
-    - image to item ai processingcu
+    - image to item ai processing

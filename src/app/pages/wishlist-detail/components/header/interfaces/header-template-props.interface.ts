@@ -13,8 +13,8 @@ export interface HeaderTemplateProps {
   isDeactivating: boolean;
   isActivating: boolean;
   isDeleting: boolean;
-  confirmAction: 'deactivate' | 'activate' | 'delete' | null;
-  setConfirmAction: (val: 'deactivate' | 'activate' | 'delete' | null) => void;
+  confirmAction: 'deactivate' | 'activate' | 'delete' | 'duplicate' | null;
+  setConfirmAction: (val: 'deactivate' | 'activate' | 'delete' | 'duplicate' | null) => void;
   handleDeactivateConfirm: () => void;
   handleActivateConfirm: () => void;
   handleDeleteConfirm: () => void;
@@ -33,6 +33,8 @@ export interface HeaderTemplateProps {
   canImport: boolean;
   isImportOpen: boolean;
   onImportToggle: () => void;
+  onDuplicate: () => void;
+  isDuplicating: boolean;
   isEditingTitle: boolean;
   setIsEditingTitle: (val: boolean) => void;
   tempTitle: string;

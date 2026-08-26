@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Share2,
   Settings,
+  BookCopy,
 } from 'lucide-react';
 import { EnterPanel } from 'shared/ui';
 import { OwnerBadge } from 'features/items/components/item-presentation';
@@ -51,6 +52,8 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   canImport,
   isImportOpen,
   onImportToggle,
+  onDuplicate,
+  isDuplicating,
   isEditingTitle,
   setIsEditingTitle,
   tempTitle,
@@ -76,14 +79,16 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
       {confirmAction && (
         <EnterPanel
           animation="slide-down"
-          className={`${styles['confirm-banner']}${confirmAction === 'activate' || confirmAction === 'deactivate' ? ` ${styles['confirm-banner--warning']}` : ''}`}
+          className={`${styles['confirm-banner']}${confirmAction === 'activate' || confirmAction === 'deactivate' ? ` ${styles['confirm-banner--warning']}` : ''}${confirmAction === 'duplicate' ? ` ${styles['confirm-banner--primary']}` : ''}`}
         >
           <span className={styles['confirm-text']}>
             {confirmAction === 'deactivate'
               ? 'Are you sure you want to deactivate and archive this wishlist?'
               : confirmAction === 'activate'
                 ? 'Are you sure you want to restore this wishlist from the archive?'
-                : 'Are you sure you want to permanently delete this wishlist and all of its items?'}
+                : confirmAction === 'duplicate'
+                  ? 'Duplicate this list for yourself?'
+                  : 'Are you sure you want to permanently delete this wishlist and all of its items?'}
           </span>
           <div className={styles['confirm-buttons']}>
             <button
@@ -92,9 +97,11 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                   ? handleDeactivateConfirm
                   : confirmAction === 'activate'
                     ? handleActivateConfirm
-                    : handleDeleteConfirm
+                    : confirmAction === 'duplicate'
+                      ? onDuplicate
+                      : handleDeleteConfirm
               }
-              className={`${styles['confirm-btn']} ${styles['yes-btn']}${confirmAction === 'activate' || confirmAction === 'deactivate' ? ` ${styles['yes-btn--warning']}` : ''}`}
+              className={`${styles['confirm-btn']} ${styles['yes-btn']}${confirmAction === 'activate' || confirmAction === 'deactivate' ? ` ${styles['yes-btn--warning']}` : ''}${confirmAction === 'duplicate' ? ` ${styles['yes-btn--primary']}` : ''}`}
             >
               Yes
             </button>
@@ -312,6 +319,20 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                     </EnterPanel>
                   )}
                 </div>
+              )}
+              {wishlist && !isPublicGuest && (
+                <button
+                  type="button"
+                  className={styles['action-pill']}
+                  onClick={() => setConfirmAction('duplicate')}
+                  disabled={isDuplicating}
+                  aria-label="Duplicate wishlist"
+                >
+                  <BookCopy size={16} aria-hidden />
+                  <span className={styles['action-pill-label']}>
+                    {isDuplicating ? 'Duplicating…' : 'Duplicate'}
+                  </span>
+                </button>
               )}
               {canImport && (
                 <button

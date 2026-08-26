@@ -67,14 +67,16 @@ export interface WishlistDetailTemplateProps {
   reloadListContent: () => Promise<void>;
   onItemsChange: () => void | Promise<void>;
   itemActions: ItemActions;
-  confirmAction: 'deactivate' | 'activate' | 'delete' | null;
-  setConfirmAction: (action: 'deactivate' | 'activate' | 'delete' | null) => void;
+  confirmAction: 'deactivate' | 'activate' | 'delete' | 'duplicate' | null;
+  setConfirmAction: (action: 'deactivate' | 'activate' | 'delete' | 'duplicate' | null) => void;
   isDeactivating: boolean;
   isActivating: boolean;
   isDeleting: boolean;
   handleDeactivateConfirm: () => void;
   handleActivateConfirm: () => void;
   handleDeleteConfirm: () => void;
+  handleDuplicate: () => void;
+  isDuplicating: boolean;
   saveTitle: (title: string) => Promise<void>;
   saveDate: (date: string) => Promise<void>;
   toggleAiEnabled?: () => void;

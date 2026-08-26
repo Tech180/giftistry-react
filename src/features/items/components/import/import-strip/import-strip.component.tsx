@@ -134,6 +134,7 @@ export const ImportStrip = forwardRef<ImportStripHandle, ImportStripProps>(funct
         confirmLabel={flow.confirmLabel}
         className={className}
         onFileSelected={flow.handleFileSelected}
+        onPasteText={flow.acceptPastedText}
         onReset={flow.resetState}
         onConfirm={flow.handleConfirm}
         onGrabInfoChange={flow.handleGrabInfoChange}

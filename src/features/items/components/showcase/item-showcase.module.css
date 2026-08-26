@@ -164,6 +164,27 @@
   transition: all var(--transition-normal);
 }
 
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  line-height: 1;
+  border-radius: var(--radius-full);
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-normal), color var(--transition-normal);
+}
+
+.copy-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
 .close-btn:hover{
   background: var(--surface-hover);
   color: var(--text);

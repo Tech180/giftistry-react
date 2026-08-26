@@ -50,6 +50,12 @@
   border-color: var(--warning);
 }
 
+.yes--primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-text, var(--color-white));
+}
+
 .yes:hover:not(:disabled) {
   filter: brightness(0.9);
 }

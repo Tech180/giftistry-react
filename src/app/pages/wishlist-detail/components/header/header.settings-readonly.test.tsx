@@ -72,6 +72,8 @@ const baseProps: HeaderProps = {
   canImport: true,
   isImportOpen: false,
   onImportToggle: vi.fn(),
+  onDuplicate: vi.fn(),
+  isDuplicating: false,
 };
 
 describe('Header list settings read-only', () => {

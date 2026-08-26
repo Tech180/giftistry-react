@@ -1,6 +1,6 @@
 export interface FabConfirmPanelProps {
   message: string;
-  tone?: 'danger' | 'warning';
+  tone?: 'danger' | 'warning' | 'primary';
   yesLabel?: string;
   noLabel?: string;
   yesDisabled?: boolean;

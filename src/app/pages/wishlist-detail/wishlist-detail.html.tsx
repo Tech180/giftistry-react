@@ -86,6 +86,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   handleDeactivateConfirm,
   handleActivateConfirm,
   handleDeleteConfirm,
+  handleDuplicate,
+  isDuplicating,
   saveTitle,
   saveDate,
   toggleAiEnabled,
@@ -395,6 +397,8 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           canImport={canCollaborate && !isLocked}
           isImportOpen={isImportOpen}
           onImportToggle={() => setIsImportOpen(!isImportOpen)}
+          onDuplicate={handleDuplicate}
+          isDuplicating={isDuplicating}
         />
 
         {!isPublicGuest && wishlist?.Id && canCollaborate && !isLocked ? (

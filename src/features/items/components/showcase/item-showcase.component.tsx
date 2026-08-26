@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from 'app/providers/auth-context';
+import { useToast } from 'app/providers/toast-context';
 import { ItemShowcaseProps } from '../../interfaces/item-showcase-props.interface';
 import { ItemShowcaseTemplate } from './item-showcase.html';
+import { formatItemAsGiftistryMarkdown } from '../../utils/format-item-as-giftistry-markdown.util';
 import { getSiteName } from 'shared/utils/get-site-name.util';
 import {
   getItemFavoriteFlag,
@@ -67,6 +69,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   onLinkedItemsUnsupported,
 }) => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [substitutionBrowseIndex, setSubstitutionBrowseIndex] = useState<number | undefined>(
     undefined
   );
@@ -418,6 +421,14 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
       isClaimUnavailable={isClaimUnavailable}
       progressPercent={progressPercent}
       onClose={onClose}
+      onCopyMarkdown={async () => {
+        try {
+          await navigator.clipboard.writeText(formatItemAsGiftistryMarkdown(displayItem));
+          showToast('Copied to clipboard', 'success');
+        } catch {
+          showToast('Could not copy to clipboard', 'error');
+        }
+      }}
       onEdit={footerOnEdit}
       getSiteName={getSiteName}
       audienceLabel={audienceLabel}

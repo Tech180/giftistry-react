@@ -68,6 +68,8 @@ const baseProps: HeaderTemplateProps = {
   canImport: true,
   isImportOpen: false,
   onImportToggle: vi.fn(),
+  onDuplicate: vi.fn(),
+  isDuplicating: false,
   isEditingTitle: false,
   setIsEditingTitle: vi.fn(),
   tempTitle: 'Party List',

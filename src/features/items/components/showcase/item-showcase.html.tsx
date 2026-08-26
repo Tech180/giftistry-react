@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Link2, Edit2, Trash2, Tag, Layers2 } from 'lucide-react';
+import { Star, Link2, Edit2, Trash2, Tag, Layers2, Copy } from 'lucide-react';
 import { Button, Card } from 'shared/ui';
 // Future: AI item reviews — re-enable AiReviewsPanel when shipping the feature.
 // import { LinksWidget, FundingWidget, AiReviewsPanel, ClaimPrompt } from '../item-presentation';
@@ -60,6 +60,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   isClaimUnavailable = false,
   progressPercent,
   onClose,
+  onCopyMarkdown,
   onEdit,
   getSiteName,
   audienceLabel,
@@ -603,6 +604,17 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
                     <Star size={18} fill="currentColor" />
                   </span>
                 )}
+                {onCopyMarkdown ? (
+                  <button
+                    type="button"
+                    onClick={onCopyMarkdown}
+                    className={styles['copy-btn']}
+                    title="Copy item as Markdown"
+                    aria-label="Copy item as Markdown"
+                  >
+                    <Copy size={16} />
+                  </button>
+                ) : null}
                 <button type="button" onClick={onClose} className={styles['close-btn']} title="Close Preview">
                   &times;
                 </button>

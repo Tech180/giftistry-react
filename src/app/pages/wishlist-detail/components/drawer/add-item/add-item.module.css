@@ -48,3 +48,23 @@
   letter-spacing: normal;
   font-weight: var(--font-weight-normal);
 }
+
+.copy-markdown-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition-normal), color var(--transition-normal);
+}
+
+.copy-markdown-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}

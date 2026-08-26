@@ -331,3 +331,40 @@
     font-size: 0.65rem;
   }
 }
+
+.paste-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.paste-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+}
+
+.paste-input {
+  width: 100%;
+  min-height: 7rem;
+  resize: vertical;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+}
+
+.paste-input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.paste-actions {
+  display: flex;
+  justify-content: flex-end;
+}
