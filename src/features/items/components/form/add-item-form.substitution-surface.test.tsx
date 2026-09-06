@@ -100,9 +100,11 @@ const baseProps = {
   setVarName: vi.fn(),
   varQty: 1 as const,
   setVarQty: vi.fn(),
+  variationQtyMax: undefined,
+  variationQtyDisabled: false,
+  variationQtyAllowInfinity: false,
   varError: null,
   handleAddVariation: vi.fn(),
-  handleVarQtyChange: vi.fn(),
   listShares: [],
   sharedWithUserIds: [],
   setSharedWithUserIds: vi.fn(),
@@ -126,6 +128,10 @@ const baseProps = {
   onDeleteOwnerSubstitution: vi.fn(),
   onReorderOwnerSubstitutions: vi.fn(),
   substitutionEditor: null,
+  readOnlyMetadataPredefined: [],
+  readOnlyMetadataUserDefined: [],
+  hasReadOnlyMetadata: false,
+  metadataBadgeEmoji: {},
 } satisfies AddItemFormTemplateProps;
 
 describe('AddItemFormTemplate substitution surface', () => {
@@ -147,6 +153,8 @@ describe('AddItemFormTemplate substitution surface', () => {
     expect(screen.queryByText('Allow substitutions')).not.toBeInTheDocument();
     expect(screen.queryByText('Category')).not.toBeInTheDocument();
     expect(screen.queryByText('Favorite')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Decrease priority')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Increase priority')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Priority weight')).not.toBeInTheDocument();
   });
 
@@ -205,5 +213,12 @@ describe('AddItemFormTemplate substitution surface', () => {
     expect(document.getElementById(ADD_ITEM_FORM_ID)).toBeTruthy();
     expect(screen.getByTestId('substitution-manager')).toBeInTheDocument();
     expect(screen.getByTestId('audience-picker')).toBeInTheDocument();
+  });
+
+  it('hides audience picker in read-only view mode', () => {
+    render(<AddItemFormTemplate {...baseProps} readOnly substitutionEditor={null} />);
+
+    expect(screen.queryByTestId('audience-picker')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('substitution-manager')).not.toBeInTheDocument();
   });
 });

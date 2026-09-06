@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 import { CreateListFormTemplate } from './create-list-form.html';
 import type { CreateListFormTemplateProps } from '../../interfaces/create-list-form-template-props.interface';
@@ -33,5 +33,25 @@ describe('CreateListFormTemplate', () => {
     render(<CreateListFormTemplate {...baseProps} />);
     expect(screen.queryByText('Reveal Suggestions')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Reveal Suggestions')).not.toBeInTheDocument();
+  });
+
+  test('advanced options are collapsed by default', () => {
+    render(<CreateListFormTemplate {...baseProps} />);
+    expect(screen.getByRole('button', { name: 'Advanced Options' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    expect(screen.queryByLabelText('Group Funding')).not.toBeInTheDocument();
+  });
+
+  test('expanding advanced options reveals toggles', () => {
+    render(<CreateListFormTemplate {...baseProps} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Options' }));
+    expect(screen.getByRole('button', { name: 'Advanced Options' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    expect(screen.getByLabelText('Group Funding')).toBeInTheDocument();
+    expect(screen.getByLabelText('Auto Rollover')).toBeInTheDocument();
   });
 });

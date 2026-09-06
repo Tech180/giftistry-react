@@ -6,7 +6,8 @@ import {
   QuantityBadge,
   SuggestionBadge,
 } from '../../item-presentation';
-import { buildItemCardModifierClasses, getClaimedGrayOutClass, getUserClaimedHighlightClass } from '../shared/item-card-modifiers.util';
+import { buildItemCardModifierClasses, getClaimedGrayOutClass, getGroupFundingInProgressClass, getUserClaimedHighlightClass } from '../shared/item-card-modifiers.util';
+import { isItemGroupFundingInProgress } from '../../../utils/is-item-group-funding-active.util';
 import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import { resolveItemClaimBadgeState } from '../../../utils/resolve-item-claim-badge-state.util';
 import { resolveSuggestedByDisplayName } from '../../../utils/resolve-suggested-by-display-name.util';
@@ -20,6 +21,9 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
     isFullyClaimed,
     isMultiCount,
     hasVisibleClaimForGray,
+    allowGroupFunds,
+    totalExtractedPrice,
+    totalClaimedAmount,
     isFavorite,
     toggleFavorite,
     claimedByCurrentUser,
@@ -41,7 +45,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
 
   const isLinkedToItems = linkedItems.length > 0 || (isLinkingContext && isTaggedSelection);
   const isRelatedToItems = relatedItems.length > 0 || (isRelatingContext && isTaggedSelection);
-  const primaryPrice = item.Links[0]?.ExtractedPrice;
+  const primaryPrice = displayItem.Links[0]?.ExtractedPrice;
   const primaryImageUrl = getItemPrimaryImageUrl(displayItem);
   const { hasVisibleClaim } = resolveItemClaimBadgeState(
     displayItem.Claims,
@@ -62,14 +66,22 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
     },
     styles
   );
+  const isGroupFundingInProgress = isItemGroupFundingInProgress({
+    allowGroupFunds,
+    fundingTarget: totalExtractedPrice,
+    totalClaimedAmount,
+    isFullyClaimed,
+  });
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
     hasVisibleClaimForGray ?? hasVisibleClaim,
     claimedByCurrentUser,
     styles,
     props.isArchived,
-    isMultiCount
+    isMultiCount,
+    isGroupFundingInProgress
   );
+  const groupFundingClass = getGroupFundingInProgressClass(isGroupFundingInProgress, styles);
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
     styles
@@ -77,7 +89,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
 
   return (
     <div
-      className={`${styles['gift-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass} ${isSelected ? styles['is-selected'] : ''} ${isSelectable ? styles['is-selectable'] : ''}`}
+      className={`${styles['gift-card']} ${modifierClass} ${claimedGrayClass} ${groupFundingClass} ${userClaimedHighlightClass} ${isSelected ? styles['is-selected'] : ''} ${isSelectable ? styles['is-selectable'] : ''}`}
       onClick={isSelectable ? onSelect : undefined}
       role={isSelectable ? 'button' : undefined}
       tabIndex={isSelectable ? 0 : undefined}

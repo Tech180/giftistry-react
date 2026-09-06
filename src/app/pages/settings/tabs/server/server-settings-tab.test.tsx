@@ -126,6 +126,7 @@ const defaultSettings = {
   AiIntelligentModel: 'llama3',
   AiRateLimitEnabled: false,
   AiCompletionTimeoutMs: 600000,
+  AiConnectTimeoutMs: 5000,
   ScrapeFetchTimeoutMs: 8000,
   ScrapePlaywrightTimeoutMs: 25000,
   GrabInfoConcurrency: 3,
@@ -391,6 +392,39 @@ describe('ServerSettingsTab local AI validation', () => {
     expect(postCall).toBeDefined();
     expect(postCall![1]).toMatchObject({
       AiCompletionTimeoutMs: 900000,
+    });
+  });
+
+  test('loads and saves AI connect timeout setting', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({
+      ...defaultSettings,
+      AiConnectTimeoutMs: 3000,
+    });
+
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('AI connect timeout in milliseconds')).toHaveValue(3000);
+    });
+
+    fireEvent.change(screen.getByLabelText('AI connect timeout in milliseconds'), {
+      target: { value: '8000' },
+    });
+
+    const form = screen.getByLabelText('Save changes').closest('form');
+    expect(form).toBeTruthy();
+    fireEvent.submit(form!);
+
+    await waitFor(() => {
+      expect(apiClient.post).toHaveBeenCalled();
+    });
+
+    const postCall = vi.mocked(apiClient.post).mock.calls.find(
+      (call) => call[0] === '/api/system/settings'
+    );
+    expect(postCall).toBeDefined();
+    expect(postCall![1]).toMatchObject({
+      AiConnectTimeoutMs: 8000,
     });
   });
 

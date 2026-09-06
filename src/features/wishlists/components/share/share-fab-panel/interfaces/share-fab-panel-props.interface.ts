@@ -19,6 +19,7 @@ export interface ShareFabPanelTemplateProps {
   activeTab: ShareFabPanelTab;
   setActiveTab: (tab: ShareFabPanelTab) => void;
   onClose: () => void;
+  hideTabs?: boolean;
   linkTab: React.ReactNode;
   inviteTab: React.ReactNode;
   accessTab: React.ReactNode;

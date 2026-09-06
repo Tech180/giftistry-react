@@ -2,10 +2,12 @@ TODO:
 
 - Overhaul collaborators
 - Improve calandar/expiration field
-- revamp group funding
-- put scraped photos in photo list
+- fix greying for fully funded items that other users haven't contributed to
+- when a user selects anonymous for an item (group funding), it should be anonymous for any users except those who contribute.
+- hide/prevent login on invite only (not a error warning, rather prevent the ability too).
 - new features
     - price comparer
     - deep research
     - reviews
     - image to item ai processing
+    - list history changes

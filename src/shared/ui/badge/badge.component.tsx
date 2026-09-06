@@ -3,7 +3,12 @@ import { BadgeProps } from './interfaces/badge-props.interface';
 import { BadgeTemplate } from './badge.html';
 import styles from './badge.module.css';
 
-export type { BadgeProps, BadgeSize, BadgeEffect } from './interfaces/badge-props.interface';
+export type {
+  BadgeProps,
+  BadgeSize,
+  BadgeEffect,
+  BadgeTone,
+} from './interfaces/badge-props.interface';
 
 export const Badge: React.FC<BadgeProps> = ({
   children,
@@ -11,6 +16,7 @@ export const Badge: React.FC<BadgeProps> = ({
   iconInactive,
   active = false,
   effect = 'none',
+  tone = 'default',
   size = 'md',
   onClick,
   disabled = false,
@@ -26,6 +32,7 @@ export const Badge: React.FC<BadgeProps> = ({
   const rootClass = [
     styles.root,
     styles[`size-${size}`],
+    tone !== 'default' ? styles[`tone-${tone}`] : '',
     active ? styles.active : '',
     effect === 'rainbow' ? styles['effect-rainbow'] : '',
     onClick ? styles.interactive : '',

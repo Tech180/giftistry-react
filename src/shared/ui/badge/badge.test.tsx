@@ -46,6 +46,17 @@ describe('Badge', () => {
     expect(el.className).toMatch(/active/);
   });
 
+  test('applies success tone class', () => {
+    render(
+      <Badge tone="success" ariaLabel="success badge">
+        Funded
+      </Badge>
+    );
+
+    const el = screen.getByLabelText('success badge');
+    expect(el.className).toMatch(/tone-success|toneSuccess/);
+  });
+
   test('applies rainbow effect class', () => {
     render(
       <Badge effect="rainbow" active ariaLabel="ai badge">

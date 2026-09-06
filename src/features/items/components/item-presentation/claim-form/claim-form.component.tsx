@@ -3,6 +3,10 @@ import { parseItemDescription } from 'shared/utils/parse-item-description.util';
 import type { ClaimQuantityDraft } from '../../../interfaces/claim-quantity-draft.interface';
 import { buildClaimMutations } from '../../../utils/build-claim-mutations.util';
 import {
+  claimGroupFundLeftover,
+  resolveClaimGroupFundAmount,
+} from '../../../utils/resolve-claim-group-fund-amount.util';
+import {
   buildInitialClaimDraft,
   clampClaimQuantity,
   isClaimQuantityLineVisible,
@@ -23,6 +27,11 @@ import {
   CLAIM_FORM_TITLE_CLAIM,
   CLAIM_FORM_TITLE_UPDATE,
 } from './constants/claim-form-copy.constant';
+import {
+  CLAIM_GF_AMOUNT_EXCEEDS,
+  CLAIM_GF_AMOUNT_REQUIRED,
+  CLAIM_GF_CONFIRM_CONTRIBUTE,
+} from '../claim-prompt/constants/claim-group-fund-copy.constant';
 import type { ClaimFormProps } from './interfaces/claim-form-props.interface';
 
 export const ClaimForm: React.FC<ClaimFormProps> = ({
@@ -40,6 +49,9 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
   linkedItems = [],
   wishlistItems = [],
   onLinkedItemClick,
+  allowGroupFunds = false,
+  fundingTarget = 0,
+  totalClaimedAmount = 0,
 }) => {
   const idPrefix = useId();
   const resolvedMetadata =
@@ -50,6 +62,9 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
   const lines = resolveClaimQuantityLines(item, resolvedMetadata, userId);
   const [draft, setDraft] = useState<ClaimQuantityDraft[]>(() => buildInitialClaimDraft(lines));
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const priorGroupFunding = totalClaimedAmount > 0;
+  const [groupFundingEnabled, setGroupFundingEnabled] = useState(priorGroupFunding);
+  const [claimAmount, setClaimAmount] = useState('');
 
   const userHasClaims = lines.some((line) => line.claimedByUser > 0);
   const submitName = anonymous ? null : claimedByName;
@@ -61,7 +76,22 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
     anonymous,
     includeLinked: hasLinkedBundle,
   });
-  const confirmDisabled = showQuantityUi && plan.type === 'noop';
+  const showGroupFunding =
+    !showQuantityUi &&
+    !hasLinkedBundle &&
+    allowGroupFunds &&
+    fundingTarget > 0 &&
+    !resolvedMetadata?.MultiCount;
+  const remainingAmount = claimGroupFundLeftover(fundingTarget, totalClaimedAmount);
+  const gfPathActive = showGroupFunding && (priorGroupFunding || groupFundingEnabled);
+  const parsedAmount = claimAmount.trim() ? parseFloat(claimAmount) : null;
+  const amountInvalid =
+    gfPathActive &&
+    (parsedAmount == null ||
+      !Number.isFinite(parsedAmount) ||
+      parsedAmount <= 0 ||
+      (remainingAmount > 0 && parsedAmount > remainingAmount + 1e-9));
+  const confirmDisabled = (showQuantityUi && plan.type === 'noop') || amountInvalid;
   const visibleLines = lines.filter(isClaimQuantityLineVisible);
   const showVariationList = visibleLines.some((line) => line.selection != null);
 
@@ -125,6 +155,17 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
       return;
     }
 
+    if (gfPathActive) {
+      if (parsedAmount == null || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+        alert(CLAIM_GF_AMOUNT_REQUIRED);
+        return;
+      }
+      if (remainingAmount > 0 && parsedAmount > remainingAmount + 1e-9) {
+        alert(CLAIM_GF_AMOUNT_EXCEEDS);
+        return;
+      }
+    }
+
     if (!hasLinkedBundle && onBeforeSubmit) {
       const allowed = await onBeforeSubmit(draft);
       if (!allowed) {
@@ -132,10 +173,19 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
       }
     }
 
+    const amount = resolveClaimGroupFundAmount({
+      allowGroupFunds: showGroupFunding,
+      fundingTarget,
+      totalClaimedAmount,
+      groupFundingEnabled: priorGroupFunding || groupFundingEnabled,
+      amount: parsedAmount,
+    });
+
     setConfirmLoading(true);
     try {
       await itemActions.claimItem({
         itemId: item.Id,
+        amount,
         claimedByName: submitName,
         anonymous,
         includeLinked: hasLinkedBundle,
@@ -154,19 +204,21 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
       ? CLAIM_FORM_PROMPT_CLAIM_LINKED
       : CLAIM_FORM_PROMPT_CLAIM;
 
+  const confirmLabel = showQuantityUi
+    ? userHasClaims
+      ? CLAIM_FORM_CONFIRM_UPDATE
+      : CLAIM_FORM_CONFIRM_CLAIM
+    : hasLinkedBundle
+      ? CLAIM_FORM_CONFIRM_LINKED
+      : priorGroupFunding || groupFundingEnabled
+        ? CLAIM_GF_CONFIRM_CONTRIBUTE
+        : CLAIM_FORM_CONFIRM_FALLBACK;
+
   return (
     <ClaimFormTemplate
       prompt={prompt}
       title={userHasClaims ? CLAIM_FORM_TITLE_UPDATE : CLAIM_FORM_TITLE_CLAIM}
-      confirmLabel={
-        showQuantityUi
-          ? userHasClaims
-            ? CLAIM_FORM_CONFIRM_UPDATE
-            : CLAIM_FORM_CONFIRM_CLAIM
-          : hasLinkedBundle
-            ? CLAIM_FORM_CONFIRM_LINKED
-            : CLAIM_FORM_CONFIRM_FALLBACK
-      }
+      confirmLabel={confirmLabel}
       anonymous={anonymous}
       onAnonymousChange={onAnonymousChange}
       compact={compact}
@@ -182,6 +234,14 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
       linkedItems={linkedItems}
       wishlistItems={wishlistItems}
       onLinkedItemClick={onLinkedItemClick}
+      showGroupFunding={showGroupFunding}
+      groupFundingStarted={priorGroupFunding}
+      groupFundingEnabled={groupFundingEnabled}
+      onGroupFundingEnabledChange={setGroupFundingEnabled}
+      claimAmount={claimAmount}
+      onClaimAmountChange={setClaimAmount}
+      remainingAmount={remainingAmount}
+      amountInputId={`${idPrefix}-gf-amount`}
     />
   );
 };

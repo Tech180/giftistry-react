@@ -18,7 +18,8 @@ import {
 } from '../../item-presentation';
 import { CLAIM_FORM_PROMPT_CLAIM_LINKED } from '../../item-presentation/claim-form/constants/claim-form-copy.constant';
 import { Tags } from 'features/comments';
-import { buildItemCardModifierClasses, getClaimedGrayOutClass, getUserClaimedHighlightClass } from '../shared/item-card-modifiers.util';
+import { buildItemCardModifierClasses, getClaimedGrayOutClass, getGroupFundingInProgressClass, getUserClaimedHighlightClass } from '../shared/item-card-modifiers.util';
+import { isItemGroupFundingActive, isItemGroupFundingInProgress } from '../../../utils/is-item-group-funding-active.util';
 import { resolveItemQuantitySummary } from '../../../utils/resolve-item-quantity.util';
 import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import { resolveItemClaimBadgeState } from '../../../utils/resolve-item-claim-badge-state.util';
@@ -106,14 +107,22 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
     },
     styles
   );
+  const isGroupFundingInProgress = isItemGroupFundingInProgress({
+    allowGroupFunds,
+    fundingTarget: totalExtractedPrice,
+    totalClaimedAmount,
+    isFullyClaimed,
+  });
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
     hasVisibleClaimForGray ?? hasVisibleClaim,
     claimedByCurrentUser,
     styles,
     props.isArchived,
-    isMultiCount
+    isMultiCount,
+    isGroupFundingInProgress
   );
+  const groupFundingClass = getGroupFundingInProgressClass(isGroupFundingInProgress, styles);
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
     styles
@@ -122,7 +131,7 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
   return (
     <article className={styles['v-feed-item']}>
       <div
-        className={`${styles['v-feed-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass}`}
+        className={`${styles['v-feed-card']} ${modifierClass} ${claimedGrayClass} ${groupFundingClass} ${userClaimedHighlightClass}`}
         onClick={
           onSelect
             ? (e) => {
@@ -229,7 +238,11 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
           metadataBadgeEmoji={metadataBadgeEmoji}
         />
 
-        {allowGroupFunds && totalExtractedPrice > 0 && (
+        {isItemGroupFundingActive({
+          allowGroupFunds,
+          fundingTarget: totalExtractedPrice,
+          totalClaimedAmount,
+        }) && (
           <FundingWidget
             totalExtractedPrice={totalExtractedPrice}
             totalClaimedAmount={totalClaimedAmount}
@@ -241,8 +254,8 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
             <EnterPanel animation="dropdown" className={styles['claim-form-panel']}>
               {itemActions ? (
                 <ClaimForm
-                  item={item}
-                  metadata={item.Metadata}
+                  item={displayItem}
+                  metadata={displayItem.Metadata}
                   userId={claimUserId}
                   claimedByName={claimActorName ?? null}
                   itemActions={itemActions}
@@ -254,6 +267,9 @@ export const FeedItemView: React.FC<ItemViewProps> = (props) => {
                   wishlistItems={wishlistItemsForLinkedClaim}
                   onLinkedItemClick={onLinkedClaimItemClick}
                   compact
+                  allowGroupFunds={allowGroupFunds}
+                  fundingTarget={totalExtractedPrice}
+                  totalClaimedAmount={totalClaimedAmount}
                 />
               ) : (
                 <>

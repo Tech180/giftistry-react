@@ -7,6 +7,8 @@ export interface ResolveSectionFooterActionsInput {
   /** Owner or suggester may edit/delete the parent item (any browse section). */
   canEditItem: boolean;
   claimerEligibility: ResolveClaimerSubstitutionActionResult;
+  /** GF-aware fully-claimed for the active browse section (original or substitution). */
+  activeSectionFullyClaimed?: boolean;
 }
 
 export interface SectionFooterSubstitutionSurface {
@@ -32,6 +34,7 @@ export function resolveSectionFooterActions({
   active,
   canEditItem,
   claimerEligibility,
+  activeSectionFullyClaimed = false,
 }: ResolveSectionFooterActionsInput): ResolveSectionFooterActionsResult {
   const showParentEditDelete = canEditItem;
 
@@ -39,7 +42,11 @@ export function resolveSectionFooterActions({
     return { showParentEditDelete, substitutionSurface: null };
   }
 
-  if (active.kind === 'original' && claimerEligibility.mode === 'create') {
+  if (
+    active.kind === 'original' &&
+    claimerEligibility.mode === 'create' &&
+    !activeSectionFullyClaimed
+  ) {
     return {
       showParentEditDelete,
       substitutionSurface: {

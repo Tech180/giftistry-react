@@ -26,8 +26,10 @@ import { Tags } from 'features/comments';
 import {
   buildItemCardModifierClasses,
   getClaimedGrayOutClass,
+  getGroupFundingInProgressClass,
   getUserClaimedHighlightClass,
 } from '../shared/item-card-modifiers.util';
+import { isItemGroupFundingActive, isItemGroupFundingInProgress } from '../../../utils/is-item-group-funding-active.util';
 import { hasPriorityValue } from '../../../utils/item-priority.util';
 import { shouldShowSharingAvatars } from '../../../utils/item-audience.util';
 import { useAuth } from 'app/providers/auth-context';
@@ -125,7 +127,11 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
       isArchived: props.isArchived,
       isExpired: props.isExpired,
     });
-  const showFundingWidget = allowGroupFunds && totalExtractedPrice > 0;
+  const showFundingWidget = isItemGroupFundingActive({
+    allowGroupFunds,
+    fundingTarget: totalExtractedPrice,
+    totalClaimedAmount,
+  });
   const hasSubstitutionBrowse = (substitutionOptions?.length ?? 0) > 0;
   const substitutionTotal = (substitutionOptions?.length ?? 0) + 1;
   const substitutionIndex = Math.min(
@@ -176,14 +182,22 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
     },
     styles
   );
+  const isGroupFundingInProgress = isItemGroupFundingInProgress({
+    allowGroupFunds,
+    fundingTarget: totalExtractedPrice,
+    totalClaimedAmount,
+    isFullyClaimed,
+  });
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
     hasVisibleClaimForGray ?? hasVisibleClaim,
     claimedByCurrentUser,
     styles,
     props.isArchived,
-    isMultiCount
+    isMultiCount,
+    isGroupFundingInProgress
   );
+  const groupFundingClass = getGroupFundingInProgressClass(isGroupFundingInProgress, styles);
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
     styles
@@ -207,7 +221,7 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
 
   return (
     <div
-      className={`${styles['v-detailed-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass}`}
+      className={`${styles['v-detailed-card']} ${modifierClass} ${claimedGrayClass} ${groupFundingClass} ${userClaimedHighlightClass}`}
       onClick={
         onSelect
           ? (e) => {
@@ -445,6 +459,9 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
                 linkedItems={linkedClaimPeers}
                 wishlistItems={wishlistItemsForLinkedClaim}
                 onLinkedItemClick={onLinkedClaimItemClick}
+                allowGroupFunds={allowGroupFunds}
+                fundingTarget={totalExtractedPrice}
+                totalClaimedAmount={totalClaimedAmount}
               />
             ) : (
               <div className={styles['claim-fallback']}>

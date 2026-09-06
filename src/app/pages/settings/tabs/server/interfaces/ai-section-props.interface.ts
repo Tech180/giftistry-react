@@ -14,6 +14,8 @@ export interface AiSectionProps {
   setAiWebSearchEnabled: (value: boolean) => void;
   aiRateLimitEnabled: boolean;
   setAiRateLimitEnabled: (value: boolean) => void;
+  aiConnectTimeoutMs: number;
+  setAiConnectTimeoutMs: (value: number) => void;
   aiCompletionTimeoutMs: number;
   setAiCompletionTimeoutMs: (value: number) => void;
   aiFastProvider: AiSlotProvider;

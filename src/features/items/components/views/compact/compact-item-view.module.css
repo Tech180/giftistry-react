@@ -5,6 +5,7 @@
   border-bottom: 1px solid var(--border);
   transition: background var(--transition-normal);
   background: var(--surface);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .v-compact-card-with-subs {
@@ -39,6 +40,10 @@
 .is-claimed {
   border-left: 3px solid var(--success);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 35%, transparent);
+}
+
+.group-funding-in-progress {
+  box-shadow: inset 0 0 0 2px var(--success-border);
 }
 
 .v-compact-card-inner {
@@ -77,6 +82,7 @@
   display: flex;
   align-items: stretch;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .v-compact-row-expandable {
@@ -189,29 +195,46 @@
   border-right: none;
 }
 
-.v-compact-card:hover .v-compact-card-inner,
 .expanded .v-compact-card-inner {
   background: var(--surface-hover);
 }
 
-.v-compact-card:hover .v-compact-priority-inline,
 .expanded .v-compact-priority-inline {
   background: transparent;
 }
 
-.v-compact-card:hover .v-compact-trailing,
 .expanded .v-compact-trailing {
   background: color-mix(in srgb, var(--primary) 4%, var(--surface-hover));
 }
 
-.v-compact-card:hover .confirm-buttons,
 .expanded .confirm-buttons {
   background: color-mix(in srgb, var(--primary) 4%, var(--surface-hover));
 }
 
-.v-compact-card:hover .v-compact-primary,
 .expanded .v-compact-primary {
   background: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .v-compact-card:hover .v-compact-card-inner {
+    background: var(--surface-hover);
+  }
+
+  .v-compact-card:hover .v-compact-priority-inline {
+    background: transparent;
+  }
+
+  .v-compact-card:hover .v-compact-trailing {
+    background: color-mix(in srgb, var(--primary) 4%, var(--surface-hover));
+  }
+
+  .v-compact-card:hover .confirm-buttons {
+    background: color-mix(in srgb, var(--primary) 4%, var(--surface-hover));
+  }
+
+  .v-compact-card:hover .v-compact-primary {
+    background: transparent;
+  }
 }
 
 .v-compact-star {
@@ -696,16 +719,24 @@
   background: transparent;
 }
 
-.is-user-claimed .v-compact-card:hover .v-compact-card-inner,
 .is-user-claimed.expanded .v-compact-card-inner {
   background: color-mix(in srgb, var(--success) 12%, var(--surface-hover)) !important;
 }
 
-.is-user-claimed .v-compact-card:hover .v-compact-trailing,
 .is-user-claimed.expanded .v-compact-trailing,
-.is-user-claimed .v-compact-card:hover .confirm-buttons,
 .is-user-claimed.expanded .confirm-buttons {
   background: color-mix(in srgb, var(--success) 16%, var(--surface-hover));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .is-user-claimed .v-compact-card:hover .v-compact-card-inner {
+    background: color-mix(in srgb, var(--success) 12%, var(--surface-hover)) !important;
+  }
+
+  .is-user-claimed .v-compact-card:hover .v-compact-trailing,
+  .is-user-claimed .v-compact-card:hover .confirm-buttons {
+    background: color-mix(in srgb, var(--success) 16%, var(--surface-hover));
+  }
 }
 
 .claimed-gray-out {

@@ -216,6 +216,70 @@ describe('resolveClaimBadgeEntries', () => {
     ]);
   });
 
+  it('shows fellow group-fund contributors by full name when both are anonymous', () => {
+    expect(
+      resolveClaimBadgeEntries(
+        [
+          {
+            Id: '1',
+            UserId: 'user-1',
+            ClaimedByName: 'Alice',
+            Anonymous: true,
+            Amount: 30,
+          },
+          {
+            Id: '2',
+            UserId: 'user-2',
+            ClaimedByName: 'Bob',
+            Anonymous: true,
+            Amount: 19.99,
+          },
+        ],
+        'user-2',
+        'Bob'
+      )
+    ).toEqual([
+      {
+        key: 'user-1',
+        userId: 'user-1',
+        displayName: 'Alice',
+        anonymous: false,
+      },
+      {
+        key: 'user-2',
+        userId: 'user-2',
+        displayName: 'Bob',
+        anonymous: false,
+        anonymousMarker: true,
+      },
+    ]);
+  });
+
+  it('keeps exclusive anonymous claims hidden from non-self viewers', () => {
+    expect(
+      resolveClaimBadgeEntries(
+        [
+          {
+            Id: '1',
+            UserId: 'user-1',
+            ClaimedByName: 'Anonymous',
+            Anonymous: true,
+            Amount: null,
+          },
+        ],
+        'user-2',
+        'Alex Kim'
+      )
+    ).toEqual([
+      {
+        key: 'anonymous',
+        userId: null,
+        displayName: 'Anonymous',
+        anonymous: true,
+      },
+    ]);
+  });
+
   it('returns empty array when there are no claims', () => {
     expect(resolveClaimBadgeEntries([])).toEqual([]);
   });

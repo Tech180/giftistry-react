@@ -4,6 +4,7 @@ import {
   leftoverExtractedRows,
   partitionExtractedCustomFields,
   rowsFromExtractedMetadata,
+  rowsFromItemMetadata,
   splitCustomFieldRowsForSave,
 } from './add-item-custom-fields.util';
 
@@ -140,5 +141,49 @@ describe('add-item-custom-fields.util', () => {
       predefined: { ShirtSize: 'L' },
       userDefined: { Brand: 'Acme' },
     });
+  });
+
+  test('rowsFromExtractedMetadata collapses Form Factor and FormFactor in UserDefined', () => {
+    const rows = rowsFromExtractedMetadata({
+      Title: 'CPU',
+      Price: null,
+      Description: null,
+      Category: 'tech',
+      ImageUrl: null,
+      CustomFields: {
+        Predefined: {},
+        UserDefined: {
+          'Form Factor': 'Desktop',
+          FormFactor: 'Desktops',
+        },
+      },
+    });
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.name).toBe('Form Factor');
+    expect(rows[0]?.value).toBe('Desktops');
+  });
+
+  test('rowsFromItemMetadata collapses label-equivalent userDefined keys', () => {
+    const { customFieldRows } = rowsFromItemMetadata(
+      {},
+      { 'Form Factor': 'Desktop', FormFactor: 'Desktops' },
+      []
+    );
+
+    expect(customFieldRows).toHaveLength(1);
+    expect(customFieldRows[0]?.name).toBe('Form Factor');
+  });
+
+  test('rowsFromItemMetadata drops userDefined when predefined label matches', () => {
+    const { customFieldRows } = rowsFromItemMetadata(
+      { FormFactor: 'Desktop' },
+      { 'Form Factor': 'Desktops', Brand: 'AMD' },
+      []
+    );
+
+    expect(customFieldRows).toHaveLength(2);
+    expect(customFieldRows.some((row) => row.bucket === 'predefined')).toBe(true);
+    expect(customFieldRows.find((row) => row.bucket === 'userDefined')?.name).toBe('Brand');
   });
 });

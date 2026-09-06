@@ -6,6 +6,7 @@ export interface ManagementProps {
   isOwner: boolean;
   variant?: 'classic' | 'compact';
   ownerInfo?: ShareFabPanelOwnerInfo;
+  onCautionModeChange?: (active: boolean) => void;
 }
 
 export interface ManagementTemplateProps {
@@ -17,7 +18,13 @@ export interface ManagementTemplateProps {
   error: string | null;
   updatingId: string | null;
   removingId: string | null;
+  pendingDemotionShareId: string | null;
+  cautionTitle: string;
+  cautionDescription: string;
+  cautionProceedPrompt: string;
   onRoleChange: (shareId: string, role: 'viewer' | 'collaborator') => void;
   onRemove: (shareId: string) => void;
+  onConfirmDemotion: () => void;
+  onCancelDemotion: () => void;
   getDisplayName: (share: ListShare) => string;
 }

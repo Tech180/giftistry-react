@@ -107,18 +107,34 @@ export function partitionExtractedCustomFields(
 
 export function rowsFromExtractedMetadata(data: ExtractMetadataResult): CustomFieldRow[] {
   const rows: CustomFieldRow[] = [];
-  const seenPredefined = new Set<string>();
+  const seenLabels = new Set<string>();
+
+  const preferSpacedName = (existing: string, incoming: string): string => {
+    if (/\s/.test(incoming) && !/\s/.test(existing)) return incoming;
+    return existing;
+  };
 
   const addPredefined = (rawKey: string, value: string) => {
     const trimmed = value.trim();
     if (!trimmed) return;
     const storageKey = toStorageKey(rawKey);
-    const dedupeKey = storageKey.toLowerCase();
-    if (seenPredefined.has(dedupeKey)) return;
-    seenPredefined.add(dedupeKey);
+    const label = formatPredefinedKeyToLabel(rawKey);
+    const dedupeKey = normalizeLabel(label);
+    if (!dedupeKey) return;
+    if (seenLabels.has(dedupeKey)) {
+      const existing = rows.find(
+        (row) => row.bucket === 'predefined' && normalizeLabel(row.name) === dedupeKey
+      );
+      if (existing) {
+        existing.value = trimmed;
+        existing.name = preferSpacedName(existing.name, label);
+      }
+      return;
+    }
+    seenLabels.add(dedupeKey);
     rows.push(
       createCustomFieldRow({
-        name: formatPredefinedKeyToLabel(rawKey),
+        name: label,
         value: trimmed,
         bucket: 'predefined',
         storageKey,
@@ -135,12 +151,17 @@ export function rowsFromExtractedMetadata(data: ExtractMetadataResult): CustomFi
   for (const [name, value] of Object.entries(data.CustomFields?.UserDefined ?? {})) {
     const trimmed = typeof value === 'string' ? value.trim() : '';
     if (!trimmed) continue;
-    if (rows.some((row) => row.bucket === 'predefined' && normalizeLabel(row.name) === normalizeLabel(name))) {
+    const dedupeKey = normalizeLabel(name);
+    if (!dedupeKey) continue;
+    if (seenLabels.has(dedupeKey)) {
+      const existing = rows.find((row) => normalizeLabel(row.name) === dedupeKey);
+      if (existing?.bucket === 'userDefined') {
+        existing.value = trimmed;
+        existing.name = preferSpacedName(existing.name, name);
+      }
       continue;
     }
-    const dedupeKey = `ud:${normalizeLabel(name)}`;
-    if (seenPredefined.has(dedupeKey)) continue;
-    seenPredefined.add(dedupeKey);
+    seenLabels.add(dedupeKey);
     rows.push(
       createCustomFieldRow({
         name,
@@ -193,9 +214,13 @@ export function leftoverExtractedRows(
   for (const [key, value] of Object.entries(data.CustomFields?.Predefined ?? {})) {
     if (typeof value !== 'string' || !value.trim()) continue;
     if (resolveDefinitionFieldKey(key, definitionFieldKeys)) continue;
+    const label = formatPredefinedKeyToLabel(key);
+    const labelKey = normalizeLabel(label);
+    if (labelKey && absorbedLabels.has(labelKey)) continue;
+    if (labelKey) absorbedLabels.add(labelKey);
     rows.push(
       createCustomFieldRow({
-        name: formatPredefinedKeyToLabel(key),
+        name: label,
         value: value.trim(),
         bucket: 'predefined',
         storageKey: toStorageKey(key),
@@ -207,6 +232,8 @@ export function leftoverExtractedRows(
     if (typeof value !== 'string' || !value.trim()) continue;
     if (resolveDefinitionFieldKey(name, definitionFieldKeys)) continue;
     if (isDuplicateUserDefinedName(name, absorbedDefinitionKeys, absorbedLabels)) continue;
+    const labelKey = normalizeLabel(name);
+    if (labelKey) absorbedLabels.add(labelKey);
     rows.push(
       createCustomFieldRow({
         name,
@@ -243,16 +270,21 @@ export function rowsFromItemMetadata(
     const defKey = resolveDefinitionFieldKey(key, definitionFieldKeys);
     if (defKey) {
       dynamicValues[defKey] = val;
-    } else {
-      customFieldRows.push(
-        createCustomFieldRow({
-          name: formatPredefinedKeyToLabel(key),
-          value: val,
-          bucket: 'predefined',
-          storageKey: toStorageKey(key),
-        })
-      );
+      absorbedLabels.add(normalizeLabel(definitionLabels[defKey] ?? formatPredefinedKeyToLabel(defKey)));
+      continue;
     }
+    const label = formatPredefinedKeyToLabel(key);
+    const labelKey = normalizeLabel(label);
+    if (labelKey && absorbedLabels.has(labelKey)) continue;
+    if (labelKey) absorbedLabels.add(labelKey);
+    customFieldRows.push(
+      createCustomFieldRow({
+        name: label,
+        value: val,
+        bucket: 'predefined',
+        storageKey: toStorageKey(key),
+      })
+    );
   }
 
   for (const [name, value] of Object.entries(userDefined)) {
@@ -263,9 +295,11 @@ export function rowsFromItemMetadata(
       continue;
     }
     if (isDuplicateUserDefinedName(name, absorbedDefinitionKeys, absorbedLabels)) continue;
+    const labelKey = normalizeLabel(name);
+    if (labelKey) absorbedLabels.add(labelKey);
     customFieldRows.push(
       createCustomFieldRow({
-        name,
+        name: /\s/.test(name) ? name : formatPredefinedKeyToLabel(name),
         value: value.trim(),
         bucket: 'userDefined',
       })

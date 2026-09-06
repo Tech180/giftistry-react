@@ -94,6 +94,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
   toggleWebSearchEnabled,
   toggleManualJobBackground,
   toggleAutoRollover,
+  toggleAllowGroupFunds,
   canUseWebSearchOnList = false,
   formatDate,
   isCommentsOpen,
@@ -391,6 +392,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
           toggleWebSearchEnabled={toggleWebSearchEnabled || (() => {})}
           toggleManualJobBackground={toggleManualJobBackground || (() => {})}
           toggleAutoRollover={toggleAutoRollover || (() => {})}
+          toggleAllowGroupFunds={toggleAllowGroupFunds || (() => {})}
           isCommentsOpen={isCommentsOpen}
           setIsCommentsOpen={setIsCommentsOpen}
           setIsShareOpen={setIsShareOpen}
@@ -687,9 +689,10 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                                     }
                                     isOwner={isOwner}
                                     canShowTrailingActions={
-                                      !isPublicGuest &&
-                                      (canCollaborate || !isOwner) &&
-                                      !isLocked
+                                      (isPublicGuest && shouldOpenItemViewer) ||
+                                      (!isPublicGuest &&
+                                        (canCollaborate || !isOwner) &&
+                                        !isLocked)
                                     }
                                     className={styles['items-container-compact']}
                                   >

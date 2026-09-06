@@ -19,4 +19,7 @@ export interface ClaimFormProps {
   linkedItems?: Item[];
   wishlistItems?: Item[];
   onLinkedItemClick?: (itemId: string) => void;
+  allowGroupFunds?: boolean;
+  fundingTarget?: number;
+  totalClaimedAmount?: number;
 }

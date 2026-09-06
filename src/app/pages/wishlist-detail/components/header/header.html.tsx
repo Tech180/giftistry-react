@@ -7,7 +7,6 @@ import {
   Trash2,
   Edit2,
   Calendar,
-  Users,
   Download,
   Upload,
   MessageSquare,
@@ -44,6 +43,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   toggleWebSearchEnabled,
   toggleManualJobBackground,
   toggleAutoRollover,
+  toggleAllowGroupFunds,
   canShowAi,
   canShowWebSearch,
   isCommentsOpen,
@@ -202,12 +202,6 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                 {isExpired && <span className={styles['expired-label']}>(Expired)</span>}
               </div>
             )}
-            {wishlist.AllowGroupFunds && (
-              <div className={`${styles['meta-item']} ${styles.chip}`}>
-                <Users size={14} aria-hidden />
-                <span>Group Funding Enabled</span>
-              </div>
-            )}
           </div>
         </div>
 
@@ -308,6 +302,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                         webSearchEnabled={!!wishlist.WebSearchEnabled}
                         manualJobBackground={wishlist.ManualJobBackground !== false}
                         autoRollover={wishlist.AutoRollover === true}
+                        allowGroupFunds={wishlist.AllowGroupFunds === true}
                         canShowAi={canShowAi}
                         canShowWebSearch={canShowWebSearch}
                         readOnly={listSettingsReadOnly}
@@ -315,6 +310,7 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
                         onToggleWebSearch={toggleWebSearchEnabled}
                         onToggleManualJobBackground={toggleManualJobBackground}
                         onToggleAutoRollover={toggleAutoRollover}
+                        onToggleAllowGroupFunds={toggleAllowGroupFunds}
                       />
                     </EnterPanel>
                   )}

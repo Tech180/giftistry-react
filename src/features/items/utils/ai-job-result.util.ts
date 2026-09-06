@@ -72,6 +72,7 @@ export function toExtractMetadataResult(raw: unknown): ExtractMetadataResult | n
     CategoryAlternatives: categoryAlternatives,
     ImageUrl: toStringOrNull(source.ImageUrl),
     WebsiteName: toStringOrNull(source.WebsiteName),
+    ResolvedUrl: toStringOrNull(source.ResolvedUrl),
     CustomFields: normalizeExtractCustomFields(source.CustomFields),
     Diagnostics: (source.Diagnostics as ExtractMetadataDiagnostics | undefined) ?? undefined,
   };

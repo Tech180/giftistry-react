@@ -17,12 +17,14 @@ export async function bootstrapApp(): Promise<void> {
   document.documentElement.setAttribute('data-theme', effectiveTheme);
   document.documentElement.setAttribute('data-appearance', effectiveAppearance);
 
+  const fontsUrl = `${env.apiUrl}/api/themes/core/fonts.css`;
   const coreUrl = `${env.apiUrl}/api/themes/core/css`;
   const themeUrl = `${env.apiUrl}/api/themes/${effectiveTheme}/${effectiveAppearance}/css`;
 
   try {
     await Promise.race([
       Promise.all([
+        loadStylesheet('core-fonts-stylesheet', fontsUrl),
         loadStylesheet('core-theme-stylesheet', coreUrl),
         loadStylesheet('theme-stylesheet', themeUrl),
       ]),

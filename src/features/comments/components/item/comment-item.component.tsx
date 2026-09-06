@@ -5,7 +5,7 @@ import { ReplyInput } from './components/reply-input';
 import { ReactionPicker } from './components/reaction-picker';
 import { parseCommentContent, stripItemTagsFromSegments } from '../../utils/comment-content.util';
 import { CommentReactionGroup } from '../../interfaces/comment-reaction-group.interface';
-import { ANONYMOUS_COMMENTER_NAME } from '../../constants/comment-settings';
+import { ANONYMOUS_COMMENTER_NAME, SYSTEM_COMMENTER_NAME } from '../../constants/comment-settings';
 import { useAuth } from 'app/providers/auth-context';
 import styles from './comment-item.module.css';
 
@@ -49,11 +49,18 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     }
   }, [isReplying]);
 
-  const isAnonymousComment = comment.CommenterName.trim().toLowerCase() === ANONYMOUS_COMMENTER_NAME.toLowerCase();
-  const isOnline = !isAnonymousComment && comment.UserId
-    ? onlineUsers.some((onlineUser) => onlineUser.userId === comment.UserId)
-    : false;
-  const isListOwnerComment = !isAnonymousComment && !!(listOwnerId && comment.UserId && comment.UserId === listOwnerId);
+  const commenterName = comment.CommenterName.trim();
+  const isAnonymousComment =
+    commenterName.toLowerCase() === ANONYMOUS_COMMENTER_NAME.toLowerCase();
+  const isSystemComment = commenterName.toLowerCase() === SYSTEM_COMMENTER_NAME.toLowerCase();
+  const isOnline =
+    !isAnonymousComment && !isSystemComment && comment.UserId
+      ? onlineUsers.some((onlineUser) => onlineUser.userId === comment.UserId)
+      : false;
+  const isListOwnerComment =
+    !isAnonymousComment &&
+    !isSystemComment &&
+    !!(listOwnerId && comment.UserId && comment.UserId === listOwnerId);
 
   const authorParticipant = useMemo(
     () => (comment.UserId ? participants.find((p) => p.userId === comment.UserId) : undefined),
@@ -61,16 +68,29 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   );
 
   const authorUsername = useMemo(() => {
-    if (isAnonymousComment || !comment.UserId) return null;
+    if (isAnonymousComment || isSystemComment || !comment.UserId) return null;
     return authorParticipant?.username ?? comment.CommenterName;
-  }, [authorParticipant, comment.UserId, comment.CommenterName, isAnonymousComment]);
+  }, [
+    authorParticipant,
+    comment.UserId,
+    comment.CommenterName,
+    isAnonymousComment,
+    isSystemComment,
+  ]);
 
   const authorAvatar = useMemo(() => {
-    if (!comment.UserId || isAnonymousComment) return null;
+    if (!comment.UserId || isAnonymousComment || isSystemComment) return null;
     if (authorParticipant?.avatar) return authorParticipant.avatar;
     if (comment.UserId === user?.Id) return user.Avatar ?? null;
     return null;
-  }, [authorParticipant, comment.UserId, isAnonymousComment, user?.Id, user?.Avatar]);
+  }, [
+    authorParticipant,
+    comment.UserId,
+    isAnonymousComment,
+    isSystemComment,
+    user?.Id,
+    user?.Avatar,
+  ]);
 
   const reactionsMap = useMemo(() => {
     const map: Record<string, CommentReactionGroup> = {};
@@ -177,6 +197,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       toggleReaction={toggleReaction}
       handleReplySubmit={handleReplySubmit}
       isAnonymousComment={isAnonymousComment}
+      isSystemComment={isSystemComment}
       isOnline={isOnline}
       isListOwnerComment={isListOwnerComment}
       authorUsername={authorUsername}

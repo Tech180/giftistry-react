@@ -92,4 +92,86 @@ describe('resolveDisplayItem', () => {
     expect(text).toBeNull();
     expect(getMetadataDisplayEntries(metadata)).toEqual([]);
   });
+
+  it('uses child funding aggregates instead of parent values', () => {
+    const source: Item = {
+      ...parent(),
+      FundingTarget: 100,
+      TotalClaimedAmount: 50,
+      Links: [
+        {
+          Id: 'l-parent',
+          ItemId: 'parent-1',
+          Url: 'https://example.com/parent',
+          RetailerName: null,
+          ExtractedPrice: 100,
+          ExtractedImageUrl: null,
+        },
+      ],
+    };
+    const fundedChild: ItemSubstitutionOption = {
+      ...option(),
+      Item: {
+        ...option().Item,
+        FundingTarget: 30,
+        TotalClaimedAmount: 10,
+        Links: [
+          {
+            Id: 'l-child',
+            ItemId: 'child-1',
+            Url: 'https://example.com/alt',
+            RetailerName: null,
+            ExtractedPrice: 30,
+            ExtractedImageUrl: null,
+          },
+        ],
+      },
+    };
+    const browse = resolveItemSubstitutionOptions(source, [fundedChild]);
+    const display = resolveDisplayItem(source, browse[1]!);
+
+    expect(display.FundingTarget).toBe(30);
+    expect(display.TotalClaimedAmount).toBe(10);
+  });
+
+  it('does not inherit parent funding when child has only links and claims', () => {
+    const source: Item = {
+      ...parent(),
+      FundingTarget: 100,
+      TotalClaimedAmount: 50,
+    };
+    const derivedChild: ItemSubstitutionOption = {
+      ...option(),
+      Item: {
+        ...option().Item,
+        Links: [
+          {
+            Id: 'l-child',
+            ItemId: 'child-1',
+            Url: 'https://example.com/alt',
+            RetailerName: null,
+            ExtractedPrice: 40,
+            ExtractedImageUrl: null,
+          },
+        ],
+        Claims: [
+          {
+            Id: 'c-child',
+            ItemId: 'child-1',
+            UserId: 'u2',
+            Amount: 15,
+            ClaimedByName: 'Pat',
+          },
+        ],
+        IsClaimed: true,
+      },
+    };
+    const browse = resolveItemSubstitutionOptions(source, [derivedChild]);
+    const display = resolveDisplayItem(source, browse[1]!);
+
+    expect(display.FundingTarget).toBeUndefined();
+    expect(display.TotalClaimedAmount).toBeUndefined();
+    expect(display.Links[0]?.ExtractedPrice).toBe(40);
+    expect(display.Claims[0]?.Amount).toBe(15);
+  });
 });

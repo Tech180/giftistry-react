@@ -202,6 +202,87 @@ describe('useItemController', () => {
     expect(result.current.items[0].IsFullyClaimed).toBe(true);
   });
 
+  test('claimItem patches funding aggregates onto substitution children', async () => {
+    const childClaim: Claim = {
+      Id: 'claim-child',
+      ItemId: 'child-1',
+      UserId: 'user-1',
+      Amount: 10,
+      ClaimedByName: 'Test',
+    };
+    const existing = baseItem({
+      FundingTarget: 100,
+      TotalClaimedAmount: 0,
+      SubstitutionOptions: [
+        {
+          Id: 'sub-1',
+          Kind: 'owner_approved',
+          SortOrder: 0,
+          CreatedByUserId: 'owner-1',
+          Item: {
+            Id: 'child-1',
+            Name: 'Alt gift',
+            Description: null,
+            Links: [
+              {
+                Id: 'l-child',
+                ItemId: 'child-1',
+                Url: 'https://example.com/alt',
+                RetailerName: null,
+                ExtractedPrice: 30,
+                ExtractedImageUrl: null,
+              },
+            ],
+            Photos: [],
+            Claims: [],
+            IsClaimed: false,
+            FundingTarget: 30,
+            TotalClaimedAmount: 0,
+          },
+        },
+      ],
+    });
+    vi.mocked(itemsApi.listItems).mockResolvedValue([existing]);
+    vi.mocked(itemsApi.claimItem).mockResolvedValue({
+      Claims: childClaim,
+      Items: [
+        {
+          Id: 'child-1',
+          Claims: [childClaim],
+          IsClaimed: true,
+          IsFullyClaimed: false,
+          TotalClaimedAmount: 10,
+          TotalClaimedQuantity: 1,
+          DesiredQuantity: null,
+          RemainingQuantity: null,
+          FundingTarget: 30,
+        },
+      ],
+    });
+
+    const { result } = renderHook(() => useItemController());
+
+    await act(async () => {
+      await result.current.fetchItems('list-1', { silent: true });
+    });
+
+    await act(async () => {
+      await result.current.claimItem({
+        itemId: 'child-1',
+        amount: 10,
+        claimedByName: 'Test',
+        anonymous: false,
+      });
+    });
+
+    const child = result.current.items[0].SubstitutionOptions?.[0]?.Item;
+    expect(child?.Claims).toEqual([childClaim]);
+    expect(child?.IsClaimed).toBe(true);
+    expect(child?.FundingTarget).toBe(30);
+    expect(child?.TotalClaimedAmount).toBe(10);
+    expect(result.current.items[0].TotalClaimedAmount).toBe(0);
+  });
+
   test('claimItem forwards quantity and selection to the API', async () => {
     const existing = baseItem();
     const claim: Claim = {

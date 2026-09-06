@@ -10,7 +10,7 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess, onCan
 
   const [title, setTitle] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
-  const [allowGroupFunds, setAllowGroupFunds] = useState(false);
+  const [allowGroupFunds, setAllowGroupFunds] = useState(true);
   const [category, setCategory] = useState('generic');
   const [customCategory, setCustomCategory] = useState('');
   const [aiEnabled, setAiEnabled] = useState(canShowAi);
@@ -66,7 +66,7 @@ export const CreateListForm: React.FC<CreateListFormProps> = ({ onSuccess, onCan
       );
       setTitle('');
       setExpiresAt('');
-      setAllowGroupFunds(false);
+      setAllowGroupFunds(true);
       setCategory('generic');
       setCustomCategory('');
       setAiEnabled(canShowAi);

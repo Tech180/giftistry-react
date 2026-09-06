@@ -83,6 +83,7 @@ export interface WishlistDetailTemplateProps {
   toggleWebSearchEnabled?: () => void;
   toggleManualJobBackground?: () => void;
   toggleAutoRollover?: () => void;
+  toggleAllowGroupFunds?: () => void;
   canUseWebSearchOnList?: boolean;
   formatDate: (dateStr: string | null) => string;
   isCommentsOpen: boolean;

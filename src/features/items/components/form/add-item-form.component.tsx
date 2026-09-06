@@ -14,11 +14,16 @@ import { getItemFavoriteFlag, parseItemDescription } from 'shared/utils/parse-it
 import {
   buildSummarizeCustomFields,
   getMetadataText,
+  METADATA_BADGE_EMOJI,
   normalizeItemDescriptionMetadata,
 } from 'shared/utils/item-custom-fields.util';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
 import { isValidUrl } from 'shared/utils/is-valid-url.util';
 import { getSiteName } from 'shared/utils/get-site-name.util';
+import {
+  hasItemMetadataDisplay,
+  resolveItemMetadataDisplay,
+} from '../../utils/resolve-item-metadata-display.util';
 import { syncBidirectionalItemLinks, resolveEditorLinkedItemIds } from '../../utils/item-links-sync.util';
 import {
   syncBidirectionalItemRelated,
@@ -28,6 +33,7 @@ import {
   LINKED_ITEMS_MULTI_COUNT_UNSUPPORTED_MESSAGE,
   LINKED_ITEMS_SUGGESTION_UNSUPPORTED_MESSAGE,
 } from '../../constants/linked-items-messages.constant';
+import { parsePriorityWeight } from '../../utils/parse-priority-weight.util';
 import {
   itemSupportsLinkedItems,
   linkGroupSupportsLinkedItems,
@@ -429,6 +435,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       return;
     }
 
+    if (readOnly && !substitutionEditor) {
+      setDefinitions([]);
+      return;
+    }
+
     const fetchDefinitions = async () => {
       const mappedCat = mapCategoryForDefinitions(category);
       try {
@@ -443,7 +454,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     } else {
       setDefinitions([]);
     }
-  }, [category, canShowAi]);
+  }, [category, canShowAi, readOnly, substitutionEditor]);
 
   useEffect(() => {
     // Substitution create/edit owns its own field state — do not re-apply parent metadata.
@@ -597,7 +608,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         MultiCount: isMultiCount || undefined,
         DesiredQuantity: isMultiCount ? (desiredQuantity as number) : undefined,
         Variations:
-          typeof desiredQuantity === 'number' && desiredQuantity > 1
+          isMultiCount && typeof desiredQuantity === 'number'
             ? variations.map((v) => ({ Name: v.name, Quantity: v.quantity }))
             : undefined,
         LinkedItemIds: linkedItemIds.length > 0 ? linkedItemIds : undefined,
@@ -688,7 +699,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           }))
         );
         setOtherUsersCanSee(meta.OtherUsersCanSee !== undefined ? meta.OtherUsersCanSee : true);
-        setShowExtraFields(hasOptionalMetadata(meta));
+        setShowExtraFields(!readOnly && hasOptionalMetadata(meta));
       } else {
         setDescription(parsed.text || item.Description || '');
         setOtherUsersCanSee(true);
@@ -834,7 +845,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       })),
       Category: category === 'uncategorized' ? '' : category,
       PriorityId: null,
-      Priority: priorityWeight ? parseInt(priorityWeight, 10) : null,
+      Priority: parsePriorityWeight(priorityWeight),
       SharedWith: buildDraftSharedWithUsers(
         visibilityMode,
         sharedWithUserIds,
@@ -928,10 +939,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         websiteName: websiteName.trim() || undefined,
         price: price.trim() ? parseFloat(price) : null,
         category: category === 'uncategorized' ? undefined : category,
-        priority: priorityWeight.trim() ? parseInt(priorityWeight, 10) : null,
+        priority: parsePriorityWeight(priorityWeight),
         customFields: summarizeCustomFields,
         variations:
-          typeof desiredQuantity === 'number' && desiredQuantity > 1
+          isMultiCount && typeof desiredQuantity === 'number'
             ? variations.map((variation) => ({
               Name: variation.name,
               Quantity: variation.quantity,
@@ -1038,8 +1049,12 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setName(data.Title || '');
     setPrice(data.Price !== null && data.Price !== undefined ? data.Price.toString() : '');
     setDescription(data.Description || '');
+    const resolvedLink = data.ResolvedUrl?.trim();
+    if (resolvedLink) {
+      setLinkUrl(resolvedLink);
+    }
     const resolvedWebsiteName =
-      data.WebsiteName?.trim() || getSiteName(linkUrl.trim()) || '';
+      data.WebsiteName?.trim() || getSiteName((resolvedLink || linkUrl).trim()) || '';
     if (resolvedWebsiteName) {
       setWebsiteName(resolvedWebsiteName);
     }
@@ -1135,8 +1150,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       desiredQuantity === 0
         ? Number.POSITIVE_INFINITY
         : Number(desiredQuantity) || 1;
-    const varTotal = variations.reduce((sum, v) => sum + v.quantity, 0);
-    if (typeof desiredQuantity === 'number' && desiredQuantity > 1 && varTotal > limit) {
+    const varTotal = variations.reduce(
+      (sum, variation) => sum + (variation.quantity > 0 ? variation.quantity : 0),
+      0
+    );
+    if (isMultiCount && varTotal > limit) {
       setErrorMsg('Cannot exceed the total limit.');
       return;
     }
@@ -1232,7 +1250,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     try {
       const metadataPayload = buildDescriptionPayload({ isOwner, isFavorite });
 
-      const priorityVal = priorityWeight.trim() ? parseInt(priorityWeight, 10) : null;
+      const priorityVal = parsePriorityWeight(priorityWeight);
 
       let savedItemId: string;
       let createdItem: Item | null = null;
@@ -1467,48 +1485,94 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const isScrapeButtonPulsing = isValidUrl(linkUrl) && !hasScraped && !isAutopopulating && !isSummarizingNotes;
 
   const [varName, setVarName] = useState('');
-  const [varQty, setVarQty] = useState<number | ''>(1);
+  const [varQty, setVarQty] = useState(1);
   const [varError, setVarError] = useState<string | null>(null);
+  const variationFiniteTotal = variations.reduce(
+    (sum, variation) => sum + (variation.quantity > 0 ? variation.quantity : 0),
+    0
+  );
+  const variationQtyRemaining =
+    typeof desiredQuantity === 'number' && desiredQuantity === 0
+      ? null
+      : typeof desiredQuantity === 'number'
+        ? Math.max(0, desiredQuantity - variationFiniteTotal)
+        : 0;
+  const variationQtyMax = variationQtyRemaining === null ? undefined : variationQtyRemaining;
+  const variationQtyDisabled = variationQtyRemaining !== null && variationQtyRemaining <= 0;
+  const variationQtyAllowInfinity = typeof desiredQuantity === 'number' && desiredQuantity === 0;
   const showOptionalSizing = (category && category !== 'uncategorized') || hasScraped;
-  const showFieldDefinitions = showOptionalSizing && !canShowAi && definitions.length > 0;
+  const showFieldDefinitions =
+    showOptionalSizing && !canShowAi && definitions.length > 0 && !(readOnly && !substitutionEditor);
+
+  const readOnlyMetadataDisplay = useMemo(() => {
+    if (!readOnly || substitutionEditor || !item) {
+      return { predefinedDisplayEntries: [], userDefinedEntries: [] };
+    }
+    const parsed = parseItemDescription(item.Description, item.Metadata);
+    const meta =
+      parsed.isJson && parsed.metadata
+        ? normalizeItemDescriptionMetadata(parsed.metadata)
+        : null;
+    return resolveItemMetadataDisplay(meta);
+  }, [readOnly, substitutionEditor, item]);
+
+  const hasReadOnlyMetadata = hasItemMetadataDisplay(readOnlyMetadataDisplay);
 
   useEffect(() => {
     setVarError(null);
   }, [desiredQuantity, variations]);
 
-  const handleVarQtyChange = (val: string) => {
-    if (val === '') {
-      setVarQty('');
-    } else {
-      const num = parseInt(val, 10);
-      if (!isNaN(num)) {
-        setVarQty(Math.max(1, num));
-      }
+  useEffect(() => {
+    if (variationQtyAllowInfinity) {
+      return;
     }
-  };
+    if (varQty === 0) {
+      setVarQty(1);
+    }
+    if (variations.some((variation) => variation.quantity === 0)) {
+      setVariations((prev) =>
+        prev.map((variation) =>
+          variation.quantity === 0 ? { ...variation, quantity: 1 } : variation
+        )
+      );
+    }
+  }, [variationQtyAllowInfinity, varQty, variations]);
+
+  useEffect(() => {
+    if (variationQtyRemaining === null) {
+      return;
+    }
+    if (variationQtyRemaining <= 0) {
+      if (varQty !== 1) {
+        setVarQty(1);
+      }
+      return;
+    }
+    if (varQty > variationQtyRemaining) {
+      setVarQty(variationQtyRemaining);
+    }
+  }, [variationQtyRemaining, varQty]);
 
   const handleAddVariation = () => {
     if (!varName.trim()) return;
-    if (varQty === '') {
-      setVarError('Please enter a quantity for the variation.');
-      return;
-    }
-    const limit = Number(desiredQuantity) || 1;
-    const currentVarTotal = variations.reduce((sum, v) => sum + v.quantity, 0);
-    const remaining = limit - currentVarTotal;
-
-    if (remaining <= 0) {
+    if (variationQtyDisabled) {
       setVarError('Cannot exceed the total quantity limit.');
       return;
     }
+    if (varQty === 0 && !variationQtyAllowInfinity) {
+      setVarError('Unlimited variation quantity requires unlimited item quantity.');
+      return;
+    }
+    const remaining = variationQtyRemaining ?? Number.POSITIVE_INFINITY;
 
-    if (Number(varQty) > remaining) {
+    // Infinity (0) is allowed only when item qty is unlimited; finite qty must fit remaining.
+    if (varQty > 0 && varQty > remaining) {
       setVarError('Cannot exceed the total quantity limit.');
       return;
     }
 
     setVarError(null);
-    setVariations((prev) => [...prev, { name: varName.trim(), quantity: Number(varQty) }]);
+    setVariations((prev) => [...prev, { name: varName.trim(), quantity: varQty }]);
     setVarName('');
     setVarQty(1);
   };
@@ -1889,7 +1953,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       MultiCount: isMultiCount || undefined,
       DesiredQuantity: isMultiCount ? (desiredQuantity as number) : undefined,
       Variations:
-        typeof desiredQuantity === 'number' && desiredQuantity > 1
+        isMultiCount && typeof desiredQuantity === 'number'
           ? variations.map((v) => ({ Name: v.name, Quantity: v.quantity }))
           : undefined,
       IsFavorite: isFavorite || undefined,
@@ -1926,7 +1990,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       Price: price.trim() ? Number(price) : null,
       Category: category || 'uncategorized',
       PriorityId: null,
-      Priority: priorityWeight.trim() ? parseInt(priorityWeight, 10) : null,
+      Priority: parsePriorityWeight(priorityWeight),
       Metadata: buildSubstitutionMetadata(),
     };
     const isClaimerCustomSurface =
@@ -2057,9 +2121,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setVarName={setVarName}
       varQty={varQty}
       setVarQty={setVarQty}
+      variationQtyMax={variationQtyMax && variationQtyMax > 0 ? variationQtyMax : undefined}
+      variationQtyDisabled={variationQtyDisabled}
+      variationQtyAllowInfinity={variationQtyAllowInfinity}
       varError={varError}
       handleAddVariation={handleAddVariation}
-      handleVarQtyChange={handleVarQtyChange}
       listShares={listShares}
       sharedWithUserIds={sharedWithUserIds}
       setSharedWithUserIds={setSharedWithUserIds}
@@ -2072,12 +2138,18 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       canUndoSummarize={undoDescription !== null}
       onSummarizeNotes={handleSummarizeNotes}
       onUndoSummarize={handleUndoSummarize}
-      showPhotoGallery={user?.Policy?.CanUploadImages !== false}
+      showPhotoGallery={
+        user?.Policy?.CanUploadImages !== false || photoEntries.length > 0
+      }
       photoEntries={photoEntries}
       onPhotoEntriesChange={setPhotoEntries}
       photoError={photoError}
       onPhotoError={setPhotoError}
       readOnly={readOnly && !substitutionEditor}
+      readOnlyMetadataPredefined={readOnlyMetadataDisplay.predefinedDisplayEntries}
+      readOnlyMetadataUserDefined={readOnlyMetadataDisplay.userDefinedEntries}
+      hasReadOnlyMetadata={hasReadOnlyMetadata}
+      metadataBadgeEmoji={METADATA_BADGE_EMOJI}
       allowSubstitutions={allowSubstitutions}
       setAllowSubstitutions={setAllowSubstitutions}
       substitutionOptions={substitutionOptions}

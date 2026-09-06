@@ -9,11 +9,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.v-kanban-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+@media (hover: hover) and (pointer: fine) {
+  .v-kanban-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
 }
 
 .is-private {
@@ -22,6 +25,11 @@
 
 .is-claimed {
   border-left: 4px solid var(--success);
+}
+
+.group-funding-in-progress {
+  border-color: var(--success-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--success) 35%, transparent);
 }
 
 .v-kanban-card.is-suggestion {
@@ -110,7 +118,9 @@
   .v-kanban-card {
     transition: none;
   }
+}
 
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: reduce) {
   .v-kanban-card:hover {
     transform: none;
   }

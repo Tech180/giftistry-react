@@ -20,6 +20,8 @@ export const AiSectionTemplate: React.FC<AiSectionProps> = ({
   setAiWebSearchEnabled,
   aiRateLimitEnabled,
   setAiRateLimitEnabled,
+  aiConnectTimeoutMs,
+  setAiConnectTimeoutMs,
   aiCompletionTimeoutMs,
   setAiCompletionTimeoutMs,
   aiFastProvider,
@@ -331,6 +333,27 @@ export const AiSectionTemplate: React.FC<AiSectionProps> = ({
                   onChange={setAiRateLimitEnabled}
                   disabled={!aiEnabled}
                   aria-label="Enable AI rate limiting"
+                />
+              </div>
+
+              <div className={styles['input-wrapper']}>
+                <label className={styles['input-label']} htmlFor="ai-connect-timeout-ms">
+                  AI connect timeout (ms)
+                </label>
+                <p className={styles['ai-subtitle']}>
+                  How long to wait when establishing a connection to the AI server before failing.
+                </p>
+                <input
+                  id="ai-connect-timeout-ms"
+                  type="number"
+                  min={1000}
+                  max={30000}
+                  step={500}
+                  className={styles['input-field']}
+                  value={aiConnectTimeoutMs}
+                  onChange={(e) => setAiConnectTimeoutMs(Number(e.target.value))}
+                  disabled={!aiEnabled}
+                  aria-label="AI connect timeout in milliseconds"
                 />
               </div>
 

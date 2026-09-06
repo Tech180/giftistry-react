@@ -169,9 +169,11 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
     const DIVIDER = 9; // 1px line + 4px margin × 2
     const PAD = 20; // 10px top + 10px bottom
 
-    const dividerCount = actions.filter(
+    const precedingPanelDividers = actions.filter(
       (a, i) => actionOpensPanel(a) && i > 0 && !a.hideToolbarDivider
     ).length;
+    const separateAfterDividers = actions.filter((a) => a.separateAfter).length;
+    const dividerCount = precedingPanelDividers + separateAfterDividers;
 
     const actionGroupHeight =
       actions.length * BTN +

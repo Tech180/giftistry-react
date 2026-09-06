@@ -1,6 +1,7 @@
 import {
   getClaimedByDisplayName,
   getClaimedGrayOutClass,
+  getGroupFundingInProgressClass,
   getUserClaimedHighlightClass,
 } from './item-card-modifiers.util';
 
@@ -55,6 +56,38 @@ describe('item-card-modifiers.util', () => {
       expect(getClaimedGrayOutClass(true, false, false, sharedStyles, true)).toBe(
         'claimed-gray-out'
       );
+    });
+
+    it('does not gray partial GF in progress', () => {
+      expect(
+        getClaimedGrayOutClass(false, true, false, sharedStyles, false, false, true)
+      ).toBe('');
+    });
+
+    it('still grays fully claimed GF even if in-progress flag is set', () => {
+      expect(
+        getClaimedGrayOutClass(true, true, false, sharedStyles, false, false, true)
+      ).toBe('claimed-gray-out');
+    });
+
+    it('grays when fully claimed even without visible claim flag from chrome', () => {
+      expect(getClaimedGrayOutClass(true, false, false, sharedStyles)).toBe(
+        'claimed-gray-out'
+      );
+    });
+  });
+
+  describe('getGroupFundingInProgressClass', () => {
+    const sharedStyles = { 'group-funding-in-progress': 'group-funding-in-progress' };
+
+    it('returns class when GF is in progress', () => {
+      expect(getGroupFundingInProgressClass(true, sharedStyles)).toBe(
+        'group-funding-in-progress'
+      );
+    });
+
+    it('returns empty string otherwise', () => {
+      expect(getGroupFundingInProgressClass(false, sharedStyles)).toBe('');
     });
   });
 

@@ -16,7 +16,8 @@ export const CUSTOM_THEME_VARS = [
   '--shadow-sm',
   '--shadow',
   '--shadow-lg',
-  '--font-family',
+  '--font-family-body',
+  '--font-family-display',
   '--radius',
 ] as const;
 
@@ -39,7 +40,8 @@ export function applyCustomTheme(profile: CustomThemeInput): void {
     if (advanced.shadows.lg) root.style.setProperty('--shadow-lg', advanced.shadows.lg);
   }
   if (advanced?.fonts?.sans) {
-    root.style.setProperty('--font-family', advanced.fonts.sans);
+    root.style.setProperty('--font-family-body', advanced.fonts.sans);
+    root.style.setProperty('--font-family-display', advanced.fonts.sans);
   }
   if (advanced?.radius?.default) {
     root.style.setProperty('--radius', advanced.radius.default);

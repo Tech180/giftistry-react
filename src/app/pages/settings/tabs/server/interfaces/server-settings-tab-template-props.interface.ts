@@ -68,6 +68,8 @@ export interface ServerSettingsTabTemplateProps {
   setAiWebSearchEnabled: (val: boolean) => void;
   aiRateLimitEnabled: boolean;
   setAiRateLimitEnabled: (val: boolean) => void;
+  aiConnectTimeoutMs: number;
+  setAiConnectTimeoutMs: (val: number) => void;
   aiCompletionTimeoutMs: number;
   setAiCompletionTimeoutMs: (val: number) => void;
   scrapeFetchTimeoutMs: number;

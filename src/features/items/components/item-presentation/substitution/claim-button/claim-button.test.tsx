@@ -28,6 +28,17 @@ describe('SubstitutionClaimButton', () => {
     expect(onOpenEditor).toHaveBeenCalledTimes(1);
   });
 
+  it('does not open the editor when disabled', () => {
+    const onOpenEditor = vi.fn();
+    render(
+      <SubstitutionClaimButton allowSubstitutions disabled onOpenEditor={onOpenEditor} />
+    );
+
+    expect(screen.getByRole('button', { name: 'Add custom substitution' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Add custom substitution' }));
+    expect(onOpenEditor).not.toHaveBeenCalled();
+  });
+
   it('renders ghost-text appearance with the footer label', () => {
     const onOpenEditor = vi.fn();
     render(

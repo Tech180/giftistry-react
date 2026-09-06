@@ -2,13 +2,18 @@ import React, { useState } from 'react';
 import {
   Link, Globe, DollarSign, Star, Plus, Trash2, Pin,
   Wand2, ChevronDown, AlertTriangle, Check, Undo2, Pencil, Sparkles, Search,
-  Layers2, Infinity,
+  Layers2,
 } from 'lucide-react';
 import { Button, Chip, Switch, AiStatusBadge, NumberSelector } from 'shared/ui';
 import { AddItemFormTemplateProps } from '../../interfaces/add-item-form-template-props.interface';
+import {
+  decodePrioritySelectorValue,
+  encodePrioritySelectorValue,
+} from '../../utils/parse-priority-weight.util';
 import { AudiencePicker } from '../audience-picker';
 import { ItemPhotoGallery } from '../photo-gallery/item-photo-gallery.component';
 import { SubstitutionManager } from '../item-presentation/substitution';
+import { MetadataGrid } from '../item-presentation/metadata-grid/metadata-grid.html';
 import styles from './add-item-form.module.css';
 
 export const ADD_ITEM_FORM_ID = 'add-item-form';
@@ -90,9 +95,12 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   varName,
   setVarName,
   varQty,
+  setVarQty,
+  variationQtyMax,
+  variationQtyDisabled = false,
+  variationQtyAllowInfinity = false,
   varError,
   handleAddVariation,
-  handleVarQtyChange,
   listShares,
   sharedWithUserIds,
   setSharedWithUserIds,
@@ -119,6 +127,10 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   onReorderOwnerSubstitutions,
   substitutionEditor,
   formId,
+  readOnlyMetadataPredefined,
+  readOnlyMetadataUserDefined,
+  hasReadOnlyMetadata,
+  metadataBadgeEmoji,
 }) => {
   const isSubstitutionSurface = !!substitutionEditor;
   const hasPeerItems = wishlistItems.filter((i) => i.Id !== itemId).length > 0;
@@ -140,19 +152,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
 
   return (
     <form id={formId} onSubmit={handleSubmit} className={styles.form}>
-      <fieldset disabled={readOnly} className={styles['form-fieldset']}>
-      {errorMsg && (
-        <div className={`${styles.alert} animate-slide-up`} role="alert">
-          <span>{errorMsg}</span>
-        </div>
-      )}
-      {warningMsg && (
-        <div className={`${styles['alert-warning']} animate-slide-up`} role="status">
-          <AlertTriangle size={16} className={styles['alert-warning-icon']} aria-hidden />
-          <span>{warningMsg}</span>
-        </div>
-      )}
-
+      {/* Photos stay outside disabled fieldsets so download works in view mode */}
       {showPhotoGallery && (
         <>
           <ItemPhotoGallery
@@ -165,7 +165,18 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           <div className={styles.divider} />
         </>
       )}
-      </fieldset>
+
+      {errorMsg && (
+        <div className={`${styles.alert} animate-slide-up`} role="alert">
+          <span>{errorMsg}</span>
+        </div>
+      )}
+      {warningMsg && (
+        <div className={`${styles['alert-warning']} animate-slide-up`} role="status">
+          <AlertTriangle size={16} className={styles['alert-warning-icon']} aria-hidden />
+          <span>{warningMsg}</span>
+        </div>
+      )}
 
       {/* Item link: copy button stays outside disabled fieldsets in view mode */}
       <div className={styles.section}>
@@ -421,21 +432,17 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           <label className={styles.label}>
             Priority <span className={styles['label-hint']}>(1 is highest)</span>
           </label>
-          <div className={styles['priority-input-wrap']}>
-            <input
-              type="number"
-              className={`${styles.input} ${styles['input-narrow']}`}
-              min="1"
-              aria-label="Priority weight"
-              value={priorityWeight}
-              onChange={(e) => setPriorityWeight(e.target.value)}
-            />
-            {!priorityWeight && (
-              <span className={styles['priority-placeholder']} aria-hidden="true">
-                1–<Infinity size={14} />
-              </span>
-            )}
-          </div>
+          <NumberSelector
+            value={encodePrioritySelectorValue(priorityWeight)}
+            min={-1}
+            dashValue={0}
+            infinityValue={-1}
+            onChange={(next) => setPriorityWeight(decodePrioritySelectorValue(next))}
+            decreaseLabel="Decrease priority"
+            increaseLabel="Increase priority"
+            editLabel="Edit priority"
+            className={styles['qty-selector']}
+          />
         </div>
         ) : null}
 
@@ -478,6 +485,19 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           />
         </div>
 
+        {readOnly && hasReadOnlyMetadata && (
+          <div className={styles.section}>
+            <h4 className={styles['panel-title']}>Details</h4>
+            <MetadataGrid
+              predefinedDisplayEntries={readOnlyMetadataPredefined}
+              userDefinedEntries={readOnlyMetadataUserDefined}
+              metadataBadgeEmoji={metadataBadgeEmoji}
+              variant="badges"
+            />
+          </div>
+        )}
+
+        {!readOnly && (
         <div className={`${styles['expandable-section']} ${showExtraFields ? styles['expandable-open'] : ''}`}>
           <button
             type="button"
@@ -599,11 +619,17 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
             </button>
           </div>
         </div>
+        )}
 
-        {typeof desiredQuantity === 'number' && desiredQuantity > 1 && (
+        {isMultiCount && typeof desiredQuantity === 'number' && (
           <div className={styles['variations-block']}>
             <span className={styles['variation-badge']}>
-              {variations.reduce((sum, v) => sum + v.quantity, 0)}/{desiredQuantity}
+              {variations.reduce(
+                (sum, variation) => sum + (variation.quantity > 0 ? variation.quantity : 0),
+                0
+              )}
+              {variations.some((variation) => variation.quantity === 0) ? '+∞' : ''}/
+              {desiredQuantity === 0 ? '∞' : desiredQuantity}
             </span>
             <label className={styles.label}>Item Variations</label>
             {varError && <div className={styles.alert}><span>{varError}</span></div>}
@@ -615,19 +641,33 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
                 value={varName}
                 onChange={(e) => setVarName(e.target.value)}
               />
-              <input
-                type="number"
-                min="1"
-                className={`${styles.input} ${styles['variation-qty']}`}
+              <NumberSelector
                 value={varQty}
-                onChange={(e) => handleVarQtyChange(e.target.value)}
+                min={variationQtyAllowInfinity ? 0 : 1}
+                max={variationQtyMax}
+                onChange={setVarQty}
+                disabled={variationQtyDisabled}
+                zeroAsInfinity={variationQtyAllowInfinity}
+                decreaseLabel="Decrease variation quantity"
+                increaseLabel="Increase variation quantity"
+                editLabel="Edit variation quantity"
+                className={styles['qty-selector']}
               />
-              <Button type="button" variant="secondary" size="sm" className={styles['add-btn-sm']} onClick={handleAddVariation}>Add</Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className={styles['add-btn-sm']}
+                onClick={handleAddVariation}
+                disabled={variationQtyDisabled}
+              >
+                Add
+              </Button>
             </div>
             <div className={styles['variations-list']}>
               {variations.map((v, idx) => (
                 <span key={idx} className={styles['variation-chip']}>
-                  {v.name} ({v.quantity})
+                  {v.name} ({v.quantity === 0 ? '∞' : v.quantity})
                   <button type="button" onClick={() => setVariations((prev) => prev.filter((_, i) => i !== idx))} className={styles['remove-variation-btn']}>&times;</button>
                 </span>
               ))}
@@ -683,6 +723,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       </div>
 
       {!isSubstitutionSurface ? (
+        !readOnly && (
         <>
       <div className={styles.divider} />
 
@@ -756,6 +797,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
         )}
       </div>
         </>
+        )
       ) : !isOwner &&
         (substitutionEditor?.mode === 'create'
           ? substitutionEditor.kind === 'claimer_custom'

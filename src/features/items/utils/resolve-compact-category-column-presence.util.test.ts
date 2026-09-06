@@ -106,7 +106,7 @@ describe('resolveCompactCategoryColumnPresence', () => {
     ).toBe(true);
   });
 
-  it('reserves funding when group funds are on and an item has a price target', () => {
+  it('reserves funding when group funds are on and an item has active contributions', () => {
     expect(
       resolveCompactCategoryColumnPresence(
         [
@@ -119,6 +119,96 @@ describe('resolveCompactCategoryColumnPresence', () => {
                 RetailerName: null,
                 ExtractedPrice: 20,
                 ExtractedImageUrl: null,
+              },
+            ],
+          }),
+        ],
+        { ...defaultOptions, allowGroupFunds: true }
+      ).funding
+    ).toBe(false);
+
+    expect(
+      resolveCompactCategoryColumnPresence(
+        [
+          baseItem({
+            Links: [
+              {
+                Id: 'l1',
+                ItemId: 'item-1',
+                Url: 'https://example.com',
+                RetailerName: null,
+                ExtractedPrice: 20,
+                ExtractedImageUrl: null,
+              },
+            ],
+            Claims: [
+              {
+                Id: 'c1',
+                ItemId: 'item-1',
+                UserId: 'u2',
+                Amount: 5,
+                ClaimedByName: 'Pat',
+              },
+            ],
+            TotalClaimedAmount: 5,
+          }),
+        ],
+        { ...defaultOptions, allowGroupFunds: true }
+      ).funding
+    ).toBe(true);
+  });
+
+  it('reserves funding when only a substitution child has active contributions', () => {
+    expect(
+      resolveCompactCategoryColumnPresence(
+        [
+          baseItem({
+            Links: [
+              {
+                Id: 'l1',
+                ItemId: 'item-1',
+                Url: 'https://example.com',
+                RetailerName: null,
+                ExtractedPrice: 100,
+                ExtractedImageUrl: null,
+              },
+            ],
+            FundingTarget: 100,
+            TotalClaimedAmount: 0,
+            SubstitutionOptions: [
+              {
+                Id: 'sub-1',
+                Kind: 'owner_approved',
+                SortOrder: 0,
+                CreatedByUserId: 'u1',
+                Item: {
+                  Id: 'child-1',
+                  Name: 'Alt',
+                  Description: null,
+                  Links: [
+                    {
+                      Id: 'l-child',
+                      ItemId: 'child-1',
+                      Url: 'https://example.com/alt',
+                      RetailerName: null,
+                      ExtractedPrice: 30,
+                      ExtractedImageUrl: null,
+                    },
+                  ],
+                  Photos: [],
+                  Claims: [
+                    {
+                      Id: 'c-child',
+                      ItemId: 'child-1',
+                      UserId: 'u2',
+                      Amount: 10,
+                      ClaimedByName: 'Pat',
+                    },
+                  ],
+                  IsClaimed: true,
+                  FundingTarget: 30,
+                  TotalClaimedAmount: 10,
+                },
               },
             ],
           }),

@@ -56,6 +56,11 @@
   border-left: 4px solid var(--success);
 }
 
+.group-funding-in-progress {
+  border-color: var(--success-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--success) 35%, transparent);
+}
+
 .v-feed-card.is-suggestion {
   border-color: var(--warning, #eab308);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--warning, #eab308) 45%, transparent);

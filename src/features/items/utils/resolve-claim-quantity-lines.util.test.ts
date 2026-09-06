@@ -209,6 +209,26 @@ describe('resolveClaimQuantityLines', () => {
       maxForUser: 3,
     });
   });
+
+  it('treats variation Quantity 0 as unlimited capacity', () => {
+    const lines = resolveClaimQuantityLines(
+      {
+        ...baseItem,
+        DesiredQuantity: 0,
+        IsMultiCount: true,
+      },
+      {
+        Variations: [{ Name: 'Red', Quantity: 0 }],
+      },
+      'u1'
+    );
+    expect(lines[0]).toMatchObject({
+      selection: 'Red',
+      name: 'Red',
+      capacity: Number.MAX_SAFE_INTEGER,
+      maxForUser: Number.MAX_SAFE_INTEGER,
+    });
+  });
 });
 
 describe('buildInitialClaimDraft', () => {

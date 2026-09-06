@@ -1,5 +1,5 @@
 import React, { useId, type ReactNode } from 'react';
-import { Layers, RefreshCw, Search } from 'lucide-react';
+import { Layers, RefreshCw, Search, Users } from 'lucide-react';
 import { Switch } from 'shared/ui';
 import { AiDisabledIcon, AiSparklesIcon } from 'shared/ui/badge/icons/ai-badge-icons';
 import styles from './list-settings-panel.module.css';
@@ -9,12 +9,14 @@ export interface ListSettingsPanelProps {
   webSearchEnabled: boolean;
   manualJobBackground: boolean;
   autoRollover: boolean;
+  allowGroupFunds: boolean;
   canShowAi: boolean;
   canShowWebSearch: boolean;
   onToggleAi: () => void;
   onToggleWebSearch: () => void;
   onToggleManualJobBackground: () => void;
   onToggleAutoRollover: () => void;
+  onToggleAllowGroupFunds: () => void;
   /** When true, settings are visible but not editable (viewers / collaborators / archived). */
   readOnly?: boolean;
 }
@@ -112,12 +114,14 @@ export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
   webSearchEnabled,
   manualJobBackground,
   autoRollover,
+  allowGroupFunds,
   canShowAi,
   canShowWebSearch,
   onToggleAi,
   onToggleWebSearch,
   onToggleManualJobBackground,
   onToggleAutoRollover,
+  onToggleAllowGroupFunds,
   readOnly = false,
 }) => {
   const aiGradientId = `list-settings-ai-${useId().replace(/:/g, '')}`;
@@ -130,6 +134,23 @@ export const ListSettingsPanel: React.FC<ListSettingsPanelProps> = ({
       role="group"
       aria-label="List settings"
     >
+      <SettingsRow
+        label="Group Funding"
+        checked={allowGroupFunds}
+        readOnly={readOnly}
+        icon={<Users size={16} />}
+        onToggle={onToggleAllowGroupFunds}
+        viewLabel={
+          allowGroupFunds
+            ? 'Group funding is on for this list'
+            : 'Group funding is off for this list'
+        }
+        editEnableLabel="Group funding disabled for this list. Click to enable."
+        editDisableLabel="Group funding enabled for this list. Click to disable."
+        switchEnableLabel="Enable group funding"
+        switchDisableLabel="Disable group funding"
+      />
+
       <SettingsRow
         label="Rollover"
         checked={autoRollover}

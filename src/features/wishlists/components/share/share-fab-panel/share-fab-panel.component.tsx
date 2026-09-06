@@ -16,6 +16,7 @@ export const ShareFabPanel: React.FC<ShareFabPanelProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'link' | 'invite' | 'access'>('link');
   const [shares, setShares] = useState<ListShare[]>([]);
+  const [hideTabs, setHideTabs] = useState(false);
 
   const loadShares = async () => {
     try {
@@ -40,6 +41,7 @@ export const ShareFabPanel: React.FC<ShareFabPanelProps> = ({
       activeTab={activeTab}
       setActiveTab={setActiveTab}
       onClose={onClose}
+      hideTabs={hideTabs}
       linkTab={<LinkTab listId={listId} isOwner={isOwner} variant="compact" />}
       inviteTab={
         <FriendsTab listId={listId} shares={shares} onSuccess={handleSuccess} variant="compact" />
@@ -50,6 +52,7 @@ export const ShareFabPanel: React.FC<ShareFabPanelProps> = ({
           isOwner={isOwner}
           variant="compact"
           ownerInfo={ownerInfo}
+          onCautionModeChange={setHideTabs}
         />
       }
     />

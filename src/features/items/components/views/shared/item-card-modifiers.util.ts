@@ -30,7 +30,8 @@ export function getClaimedGrayOutClass(
   claimedByCurrentUser: boolean,
   sharedStyles: Record<string, string>,
   _isArchived = false,
-  isMultiCount = false
+  isMultiCount = false,
+  isGroupFundingInProgress = false
 ): string {
   if (claimedByCurrentUser) {
     return '';
@@ -40,9 +41,21 @@ export function getClaimedGrayOutClass(
   }
   // Partial multi-count claims stay full color; single-qty claims still gray.
   if (hasVisibleClaim && !isMultiCount) {
+    if (isGroupFundingInProgress) {
+      return '';
+    }
     return sharedStyles['claimed-gray-out'] ?? '';
   }
   return '';
+}
+
+export function getGroupFundingInProgressClass(
+  isGroupFundingInProgress: boolean,
+  sharedStyles: Record<string, string>
+): string {
+  return isGroupFundingInProgress
+    ? (sharedStyles['group-funding-in-progress'] ?? '')
+    : '';
 }
 
 export function getUserClaimedHighlightClass(

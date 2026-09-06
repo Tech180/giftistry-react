@@ -60,6 +60,7 @@ const baseProps: HeaderTemplateProps = {
   toggleWebSearchEnabled: vi.fn(),
   toggleManualJobBackground: vi.fn(),
   toggleAutoRollover: vi.fn(),
+  toggleAllowGroupFunds: vi.fn(),
   canShowAi: false,
   canShowWebSearch: false,
   isCommentsOpen: false,

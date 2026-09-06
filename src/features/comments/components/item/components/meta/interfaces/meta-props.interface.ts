@@ -4,6 +4,7 @@ import { ListParticipant } from '../../../../../interfaces/list-participant.inte
 export interface MetaProps {
   comment: Comment;
   isAnonymousComment: boolean;
+  isSystemComment?: boolean;
   authorUsername: string | null;
   authorAvatar: string | null;
   authorParticipant?: ListParticipant;

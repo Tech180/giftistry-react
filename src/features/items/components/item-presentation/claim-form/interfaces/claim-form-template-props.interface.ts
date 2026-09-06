@@ -20,4 +20,12 @@ export interface ClaimFormTemplateProps {
   linkedItems?: Item[];
   wishlistItems?: Item[];
   onLinkedItemClick?: (itemId: string) => void;
+  showGroupFunding?: boolean;
+  groupFundingStarted?: boolean;
+  groupFundingEnabled?: boolean;
+  onGroupFundingEnabledChange?: (enabled: boolean) => void;
+  claimAmount?: string;
+  onClaimAmountChange?: (value: string) => void;
+  remainingAmount?: number;
+  amountInputId?: string;
 }

@@ -9,13 +9,7 @@ import { getRelatedItemIds } from './item-related-sync.util';
 import { resolveItemClaimBadgeState } from './resolve-item-claim-badge-state.util';
 import { itemNeedsClaimQuantityUi } from './resolve-claim-quantity-lines.util';
 import { resolveItemQuantitySummary } from './resolve-item-quantity.util';
-
-function itemHasFundingTarget(item: Item): boolean {
-  if (item.FundingTarget != null && item.FundingTarget > 0) {
-    return true;
-  }
-  return item.Links.some((link) => (link.ExtractedPrice || 0) > 0);
-}
+import { isItemGroupFundingActiveOnItemTree } from './is-item-group-funding-active.util';
 
 function itemShowsQuantity(item: Item, isOwner: boolean): boolean {
   const quantity = resolveItemQuantitySummary(item);
@@ -87,7 +81,7 @@ export function resolveCompactCategoryColumnPresence(
     ),
     quantity: items.some((item) => itemShowsQuantity(item, isOwner)),
     price: true,
-    funding: allowGroupFunds && items.some((item) => itemHasFundingTarget(item)),
+    funding: allowGroupFunds && items.some((item) => isItemGroupFundingActiveOnItemTree(item, true)),
     trailing: items.some((item) => itemShowsTrailing(item, canShowTrailingActions)),
     claimActions: !isOwner && canShowTrailingActions,
     wideClaimActions: items.some((item) => itemShowsWideClaimActions(item, options)),

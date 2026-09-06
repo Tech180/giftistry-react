@@ -21,6 +21,7 @@ export * from './tab-item/tab-item.component';
 export * from './top-bar/top-bar.component';
 export * from './search-input/search-input.component';
 export * from './dropdown-menu/dropdown-menu.component';
+export * from './select-menu/select-menu.component';
 export * from './menu-item/menu-item.component';
 export * from './toast/toast.component';
 export * from './enter-panel/enter-panel.component';

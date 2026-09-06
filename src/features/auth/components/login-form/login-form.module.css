@@ -2,8 +2,8 @@
 
 .page-wrapper-outer {
   position: relative;
-  min-height: calc(100dvh - var(--spacing-2xl));
   width: 100%;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;

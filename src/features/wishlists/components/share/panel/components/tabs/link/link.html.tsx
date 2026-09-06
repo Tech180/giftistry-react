@@ -1,6 +1,10 @@
 import React from 'react';
 import { AlertCircle, Check, Copy, Link2, Lock } from 'lucide-react';
-import { Button, Switch } from 'shared/ui';
+import { Button, SelectMenu, Switch } from 'shared/ui';
+import {
+  SHARE_ROLE_MENU_TITLE,
+  SHARE_ROLE_OPTIONS,
+} from 'features/wishlists/constants/share-role-options.constant';
 import styles from '../../../panel.module.css';
 import fabStyles from '../../../../share-fab-panel/share-fab-panel.module.css';
 import { LinkTabTemplateProps } from './interfaces/link.interface';
@@ -184,14 +188,14 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
 
           <div className={styles.row}>
             <span className={styles['row-label']}>Access Level</span>
-            <select
+            <SelectMenu
               value={role}
-              onChange={(e) => setRole(e.target.value as 'viewer' | 'collaborator')}
-              className={styles['minimal-select']}
-            >
-              <option value="viewer">Can view</option>
-              <option value="collaborator">Can edit</option>
-            </select>
+              options={SHARE_ROLE_OPTIONS}
+              onChange={(next) => setRole(next as 'viewer' | 'collaborator')}
+              variant="field"
+              menuTitle={SHARE_ROLE_MENU_TITLE}
+              aria-label="Access Level"
+            />
           </div>
 
           <div className={styles.row} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.25rem' }}>

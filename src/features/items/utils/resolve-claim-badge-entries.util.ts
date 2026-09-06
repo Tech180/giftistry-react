@@ -1,17 +1,23 @@
 import type { Claim } from '../interfaces/item-claim.interface';
 import type { ClaimBadgeEntry } from '../interfaces/claim-badge-entry.interface';
 import { isAnonymousClaim } from './is-anonymous-claim.util';
+import {
+  getGroupFundContributorUserIds,
+  shouldRevealAnonymousClaimToViewer,
+} from './group-fund-anonymous-visibility.util';
 
 /**
  * Build claim-box entries: one per named UserId, plus a single consolidated anonymous chip.
  * The current user’s anonymous claim is shown as their own avatar with an “a” marker instead
  * of being folded into the Anonymous chip (other viewers still see only the chip).
+ * Fellow group-fund contributors see each other's full names even when marked anonymous.
  */
 export function resolveClaimBadgeEntries(
-  claims: Pick<Claim, 'Id' | 'UserId' | 'ClaimedByName' | 'Anonymous'>[],
+  claims: Pick<Claim, 'Id' | 'UserId' | 'ClaimedByName' | 'Anonymous' | 'Amount'>[],
   currentUserId?: string | null,
   claimActorName?: string | null
 ): ClaimBadgeEntry[] {
+  const contributorUserIds = getGroupFundContributorUserIds(claims);
   const entries: ClaimBadgeEntry[] = [];
   const seenUserIds = new Set<string>();
   let hasOtherAnonymous = false;
@@ -29,6 +35,23 @@ export function resolveClaimBadgeEntries(
           displayName: claimActorName?.trim() || 'You',
           anonymous: false,
           anonymousMarker: true,
+        });
+        continue;
+      }
+
+      if (
+        shouldRevealAnonymousClaimToViewer(claim, currentUserId, contributorUserIds) &&
+        claim.UserId
+      ) {
+        if (seenUserIds.has(claim.UserId)) {
+          continue;
+        }
+        seenUserIds.add(claim.UserId);
+        entries.push({
+          key: claim.UserId,
+          userId: claim.UserId,
+          displayName: claim.ClaimedByName?.trim() || 'Someone',
+          anonymous: false,
         });
         continue;
       }

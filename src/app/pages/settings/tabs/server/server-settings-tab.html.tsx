@@ -78,6 +78,8 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   setAiWebSearchEnabled,
   aiRateLimitEnabled,
   setAiRateLimitEnabled,
+  aiConnectTimeoutMs,
+  setAiConnectTimeoutMs,
   aiCompletionTimeoutMs,
   setAiCompletionTimeoutMs,
   scrapeFetchTimeoutMs,
@@ -377,6 +379,8 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
           setAiWebSearchEnabled={setAiWebSearchEnabled}
           aiRateLimitEnabled={aiRateLimitEnabled}
           setAiRateLimitEnabled={setAiRateLimitEnabled}
+          aiConnectTimeoutMs={aiConnectTimeoutMs}
+          setAiConnectTimeoutMs={setAiConnectTimeoutMs}
           aiCompletionTimeoutMs={aiCompletionTimeoutMs}
           setAiCompletionTimeoutMs={setAiCompletionTimeoutMs}
           aiFastProvider={aiFastProvider}

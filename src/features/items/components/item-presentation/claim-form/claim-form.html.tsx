@@ -26,6 +26,14 @@ export const ClaimFormTemplate: React.FC<ClaimFormTemplateProps> = ({
   linkedItems = [],
   wishlistItems = [],
   onLinkedItemClick,
+  showGroupFunding = false,
+  groupFundingStarted = false,
+  groupFundingEnabled = false,
+  onGroupFundingEnabledChange,
+  claimAmount = '',
+  onClaimAmountChange,
+  remainingAmount = 0,
+  amountInputId,
 }) => {
   const formClass = [
     styles['claim-form'],
@@ -139,6 +147,14 @@ export const ClaimFormTemplate: React.FC<ClaimFormTemplateProps> = ({
             anonymous={anonymous}
             onAnonymousChange={onAnonymousChange}
             prompt={prompt}
+            showGroupFunding={showGroupFunding}
+            groupFundingStarted={groupFundingStarted}
+            groupFundingEnabled={groupFundingEnabled}
+            onGroupFundingEnabledChange={onGroupFundingEnabledChange}
+            claimAmount={claimAmount}
+            onClaimAmountChange={onClaimAmountChange}
+            remainingAmount={remainingAmount}
+            amountInputId={amountInputId}
           />
           {showLinkedTags && (
             <div className={styles['claim-linked-tags']}>

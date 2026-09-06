@@ -39,3 +39,32 @@ export function readItemPhotoFileAsDataUrl(file: File): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
+
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+};
+
+/** Extension for a `data:image/...` URL; defaults to `jpg`. */
+export function itemPhotoExtensionFromDataUrl(dataUrl: string): string {
+  const match = /^data:(image\/[a-z0-9.+-]+);/i.exec(dataUrl.trim());
+  const mime = match?.[1]?.toLowerCase() ?? '';
+  return MIME_TO_EXT[mime] ?? 'jpg';
+}
+
+/** Triggers a browser download for an item photo data URL. */
+export function downloadItemPhotoDataUrl(dataUrl: string, filename: string): void {
+  const trimmed = dataUrl.trim();
+  if (!trimmed.startsWith('data:image/')) return;
+
+  const link = document.createElement('a');
+  link.href = trimmed;
+  link.download = filename;
+  link.rel = 'noopener';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}

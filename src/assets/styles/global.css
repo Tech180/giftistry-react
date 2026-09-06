@@ -95,6 +95,14 @@
 
   /* Spacing fallback until engine rebuild includes --spacing-base */
   --spacing-base: 0.75rem;
+
+  /* Select / command-palette dropdown surface */
+  --dropdown-bg: color-mix(in srgb, var(--surface) 85%, transparent);
+  --dropdown-border: var(--border);
+  --dropdown-shadow: var(--shadow-lg, var(--shadow));
+  --dropdown-item-hover: color-mix(in srgb, var(--text) 4%, transparent);
+  --dropdown-item-active: color-mix(in srgb, var(--accent) 8%, transparent);
+  --zindex-dropdown: 9999;
 }
 
 /* Transparent bordered panel — matches gift category section */
@@ -158,6 +166,22 @@
   transition: background-color var(--transition-slow), border-color var(--transition-slow), color var(--transition-fast);
 }
 
+a,
+button,
+input,
+select,
+textarea,
+label,
+summary,
+[role='button'],
+[role='tab'],
+[role='menuitem'],
+[role='option'],
+[role='switch'],
+[tabindex]:not([tabindex='-1']) {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html,
 #root {
   background-color: var(--bg, #000);
@@ -165,8 +189,6 @@ html,
 
 body {
   font-family: var(--font-family-body);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg);
   color: var(--text);
   line-height: var(--line-height-normal);

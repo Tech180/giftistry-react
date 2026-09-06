@@ -23,19 +23,25 @@ export const NumberSelector: React.FC<NumberSelectorProps> = ({
   className = '',
   editable = true,
   zeroAsInfinity = false,
+  infinityValue,
+  dashValue,
+  editLabel: editLabelProp,
 }) => {
   const hasMax = typeof max === 'number';
   const clamped = clampValue(value, min, max);
   const atMin = clamped <= min;
   const atMax = hasMax && clamped >= max;
+  const infinityAt = infinityValue ?? (zeroAsInfinity ? 0 : undefined);
+  const showInfinity = infinityAt !== undefined && clamped === infinityAt;
+  const showDash = dashValue !== undefined && clamped === dashValue;
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(String(clamped));
 
   useEffect(() => {
     if (!isEditing) {
-      setDraft(String(clamped));
+      setDraft(showInfinity || showDash ? '' : String(clamped));
     }
-  }, [clamped, isEditing]);
+  }, [clamped, isEditing, showInfinity, showDash]);
 
   const onDecrease = () => {
     if (disabled || atMin) {
@@ -55,18 +61,25 @@ export const NumberSelector: React.FC<NumberSelectorProps> = ({
     if (disabled || !editable) {
       return;
     }
-    setDraft(String(clamped));
+    setDraft(showInfinity || showDash ? '' : String(clamped));
     setIsEditing(true);
   };
 
   const onCancelEdit = () => {
-    setDraft(String(clamped));
+    setDraft(showInfinity || showDash ? '' : String(clamped));
     setIsEditing(false);
   };
 
   const onCommitEdit = () => {
     const trimmed = draft.trim();
     if (trimmed === '') {
+      if (dashValue !== undefined) {
+        if (clamped !== dashValue) {
+          onChange(dashValue);
+        }
+        setIsEditing(false);
+        return;
+      }
       onCancelEdit();
       return;
     }
@@ -88,17 +101,23 @@ export const NumberSelector: React.FC<NumberSelectorProps> = ({
     }
   };
 
-  const displayValue =
-    zeroAsInfinity && clamped === 0 ? (
-      <Infinity className={styles['infinity-icon']} aria-hidden="true" />
-    ) : (
-      clamped
-    );
+  const displayValue = showInfinity ? (
+    <Infinity className={styles['infinity-icon']} aria-hidden="true" />
+  ) : showDash ? (
+    <span className={styles['dash-value']} aria-hidden="true">
+      –
+    </span>
+  ) : (
+    clamped
+  );
 
   const editLabel =
-    zeroAsInfinity && clamped === 0
+    editLabelProp ??
+    (showInfinity
       ? 'Edit quantity (0 is unlimited)'
-      : 'Edit quantity';
+      : showDash
+        ? 'Edit value'
+        : 'Edit quantity');
 
   return (
     <NumberSelectorTemplate

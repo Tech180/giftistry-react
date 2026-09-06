@@ -6,7 +6,7 @@ import {
 } from './resolve-claim-badge-entries.util';
 
 export function resolveItemClaimBadgeState(
-  claims: Pick<Claim, 'Id' | 'UserId' | 'ClaimedByName' | 'Anonymous'>[],
+  claims: Pick<Claim, 'Id' | 'UserId' | 'ClaimedByName' | 'Anonymous' | 'Amount'>[],
   currentUserId: string | null | undefined,
   claimedByCurrentUser: boolean,
   claimActorName?: string | null

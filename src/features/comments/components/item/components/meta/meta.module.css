@@ -71,6 +71,18 @@
   border-color: transparent;
 }
 
+.system-author{
+  color: var(--text-muted);
+  font-style: italic;
+  cursor: default;
+  pointer-events: none;
+}
+
+.system-author:hover{
+  color: var(--text-muted);
+  border-color: transparent;
+}
+
 .date-badge{
   flex-shrink: 0;
   margin-left: auto;

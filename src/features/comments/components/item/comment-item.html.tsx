@@ -24,6 +24,7 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
   toggleReaction,
   handleReplySubmit,
   isAnonymousComment,
+  isSystemComment = false,
   isOnline,
   isListOwnerComment,
   authorUsername,
@@ -106,6 +107,7 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
             <Meta
               comment={comment}
               isAnonymousComment={isAnonymousComment}
+              isSystemComment={isSystemComment}
               authorUsername={authorUsername}
               authorAvatar={authorAvatar}
               authorParticipant={authorParticipant}

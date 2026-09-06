@@ -429,6 +429,40 @@ describe('AddItemForm - Auto populate', () => {
     });
   });
 
+  test('rewrites short link to ResolvedUrl from enrich result', async () => {
+    mockEnrichJob({
+      Title: 'Dyson V11',
+      Price: 599,
+      Description: 'Cordless vacuum',
+      Category: 'home',
+      CategoryAlternatives: [],
+      ImageUrl: null,
+      WebsiteName: 'Amazon',
+      ResolvedUrl: 'https://www.amazon.com/dp/B0TEST123',
+      CustomFields: { Predefined: {}, UserDefined: {} },
+    });
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://a.co/d/0d2Xk8eG' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Paste product URL...')).toHaveValue(
+        'https://www.amazon.com/dp/B0TEST123'
+      );
+    });
+    expect(screen.getByDisplayValue('Amazon')).toBeInTheDocument();
+  });
+
   test('starts an update-item enrich job and notifies the parent when editing', async () => {
     const onItemEnriched = vi.fn();
     mockEnrichJob({
@@ -1507,6 +1541,187 @@ describe('AddItemForm readOnly view mode', () => {
     expect(
       screen.queryByRole('button', { name: /auto-fill details from link/i })
     ).not.toBeInTheDocument();
+  });
+
+  test('keeps photo download enabled in view mode', async () => {
+    const itemWithPhoto: Item = {
+      ...mockEditItem,
+      Photos: [
+        {
+          Id: 'photo-1',
+          Url: 'data:image/png;base64,iVBORw0KGgo=',
+          SortOrder: 0,
+        },
+      ],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={itemWithPhoto}
+        readOnly
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /download photo/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('button', { name: /download photo/i })).toBeEnabled();
+  });
+
+  test('shows filled metadata in Details and hides sizing template for apparel item', async () => {
+    const apparelDefinitions = [
+      {
+        Id: '1',
+        Category: 'clothing',
+        FieldKey: 'PantsSize',
+        Label: 'Pants Size',
+        Placeholder: '32x30',
+        DisplayOrder: 1,
+        Dependencies: [],
+      },
+      {
+        Id: '2',
+        Category: 'clothing',
+        FieldKey: 'ShirtSize',
+        Label: 'Shirt Size',
+        Placeholder: 'M',
+        DisplayOrder: 2,
+        Dependencies: [],
+      },
+    ];
+
+    vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue(apparelDefinitions);
+
+    const apparelItem: Item = {
+      ...mockEditItem,
+      Name: 'Classic Clog',
+      Category: 'apparel_accessories',
+      Metadata: {
+        Text: null,
+        CustomFields: {
+          Predefined: { ModelNumber: '10001' },
+          UserDefined: { Brand: 'Crocs', Material: 'Foam' },
+        },
+      },
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={apparelItem}
+        readOnly
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Details')).toBeInTheDocument();
+      expect(screen.getByText(/Model Number:/)).toBeInTheDocument();
+      expect(screen.getByText(/10001/)).toBeInTheDocument();
+      expect(screen.getByText(/Brand:/)).toBeInTheDocument();
+      expect(screen.getByText(/Crocs/)).toBeInTheDocument();
+      expect(screen.getByText(/Material:/)).toBeInTheDocument();
+      expect(screen.getByText(/Foam/)).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText(/Sizing \/ Options/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('Pants Size')).not.toBeInTheDocument();
+    expect(screen.queryByText('Shirt Size')).not.toBeInTheDocument();
+    expect(screen.queryByText('Custom Fields')).not.toBeInTheDocument();
+    expect(itemsApi.getFieldDefinitions).not.toHaveBeenCalled();
+  });
+
+  test('omits Custom Fields and Details when metadata is empty', async () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={mockEditItem}
+        readOnly
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('https://amazon.com/old-product')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Custom Fields')).not.toBeInTheDocument();
+    expect(screen.queryByText('Details')).not.toBeInTheDocument();
+    expect(itemsApi.getFieldDefinitions).not.toHaveBeenCalled();
+  });
+
+  test('hides Visibility and Sharing for guest viewing owner item', async () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        item={mockEditItem}
+        readOnly
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('https://amazon.com/old-product')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Visibility & Sharing')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Visible to list owner')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Visible to Other Collaborators')).not.toBeInTheDocument();
+  });
+
+  test('hides Visibility and Sharing and Substitutions for owner in view mode', async () => {
+    const itemWithSubstitutions: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: true,
+      SubstitutionOptions: [
+        {
+          Id: 'sub-1',
+          Kind: 'owner_approved',
+          SortOrder: 0,
+          CreatedByUserId: 'test-user-id',
+          Item: {
+            Id: 'sub-item-1',
+            Name: 'Alt option',
+            Description: null,
+            Links: [],
+            Photos: [],
+            Claims: [],
+            IsClaimed: false,
+          },
+        },
+      ],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner
+        item={itemWithSubstitutions}
+        readOnly
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('https://amazon.com/old-product')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Visibility & Sharing')).not.toBeInTheDocument();
+    expect(screen.queryByText('Substitutions')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Allow substitutions')).not.toBeInTheDocument();
+  });
+
+  test('still shows Visibility and Sharing in edit mode', async () => {
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner
+        item={mockEditItem}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Visibility & Sharing')).toBeInTheDocument();
+    });
   });
 });
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Users, ArrowRight, Archive, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { Calendar, ArrowRight, Archive, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { UserAvatar } from 'shared/ui';
 import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { WishlistCardTemplateProps } from '../../interfaces/wishlist-card-template-props.interface';
@@ -80,13 +80,6 @@ export const WishlistCardTemplate: React.FC<WishlistCardTemplateProps> = ({
               {isArchived ? <Archive className={styles['meta-icon']} /> : <Calendar className={styles['meta-icon']} />}
               <span>{isArchived ? `Ended ${formattedDate.replace(/^(Expired |Expires )/, '')}` : formattedDate}</span>
             </div>
-
-            {wishlist.AllowGroupFunds && !isArchived && (
-              <div className={styles['meta-item']}>
-                <Users className={styles['meta-icon']} />
-                <span>Group Funding Enabled</span>
-              </div>
-            )}
           </div>
         </div>
 

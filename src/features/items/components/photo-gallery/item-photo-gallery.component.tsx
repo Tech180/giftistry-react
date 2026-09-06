@@ -4,13 +4,14 @@ import {
   ITEM_PHOTO_MAX_COUNT,
   ITEM_PHOTO_MAX_COUNT_ERROR,
 } from '../../constants/item-photo-attachment';
-import { readItemPhotoFileAsDataUrl } from '../../utils/item-photo-file.util';
+import { readItemPhotoFileAsDataUrl, downloadItemPhotoDataUrl, itemPhotoExtensionFromDataUrl } from '../../utils/item-photo-file.util';
+import { createClientLocalId } from 'shared/utils/client-local-id.util';
 import type { ItemPhotoGalleryProps } from './interfaces/item-photo-gallery-props.interface';
 import type { ItemPhotoGalleryEntry } from './interfaces/item-photo-gallery-props.interface';
 import { ItemPhotoGalleryTemplate } from './item-photo-gallery.html';
 
 function newLocalId(): string {
-  return `photo-${crypto.randomUUID()}`;
+  return createClientLocalId('photo');
 }
 
 export const ItemPhotoGallery: React.FC<ItemPhotoGalleryProps> = ({
@@ -69,6 +70,13 @@ export const ItemPhotoGallery: React.FC<ItemPhotoGalleryProps> = ({
 
   const handleMainAreaClick = () => {
     if (photos.length === 0) openPicker();
+  };
+
+  const handleDownloadActive = () => {
+    const photo = photos[activeIndex];
+    if (!photo?.dataUrl) return;
+    const ext = itemPhotoExtensionFromDataUrl(photo.dataUrl);
+    downloadItemPhotoDataUrl(photo.dataUrl, `item-photo-${activeIndex + 1}.${ext}`);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,6 +160,7 @@ export const ItemPhotoGallery: React.FC<ItemPhotoGalleryProps> = ({
       fileInputRef={fileInputRef}
       accept={ITEM_PHOTO_ACCEPT}
       onMainAreaClick={handleMainAreaClick}
+      onDownloadActive={handleDownloadActive}
       onAddClick={openPicker}
       onFileChange={handleFileChange}
       onSelectThumb={setActiveIndex}

@@ -49,6 +49,7 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [aiWebSearchEnabled, setAiWebSearchEnabled] = useState(false);
   const [aiRateLimitEnabled, setAiRateLimitEnabled] = useState(false);
   const [aiCompletionTimeoutMs, setAiCompletionTimeoutMs] = useState(600000);
+  const [aiConnectTimeoutMs, setAiConnectTimeoutMs] = useState(5000);
   const [scrapeFetchTimeoutMs, setScrapeFetchTimeoutMs] = useState(8000);
   const [scrapePlaywrightTimeoutMs, setScrapePlaywrightTimeoutMs] = useState(25000);
   const [grabInfoConcurrency, setGrabInfoConcurrency] = useState(3);
@@ -184,6 +185,9 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     setAiRateLimitEnabled(!!s.AiRateLimitEnabled);
     setAiCompletionTimeoutMs(
       Number.isFinite(s.AiCompletionTimeoutMs) ? Number(s.AiCompletionTimeoutMs) : 600000
+    );
+    setAiConnectTimeoutMs(
+      Number.isFinite(s.AiConnectTimeoutMs) ? Number(s.AiConnectTimeoutMs) : 5000
     );
     setScrapeFetchTimeoutMs(
       Number.isFinite(s.ScrapeFetchTimeoutMs) ? Number(s.ScrapeFetchTimeoutMs) : 8000
@@ -519,6 +523,7 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       AiWebSearchEnabled: aiWebSearchEnabled,
       AiRateLimitEnabled: aiRateLimitEnabled,
       AiCompletionTimeoutMs: aiCompletionTimeoutMs,
+      AiConnectTimeoutMs: aiConnectTimeoutMs,
       ScrapeFetchTimeoutMs: scrapeFetchTimeoutMs,
       ScrapePlaywrightTimeoutMs: scrapePlaywrightTimeoutMs,
       GrabInfoConcurrency: grabInfoConcurrency,
@@ -720,6 +725,8 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       setAiRateLimitEnabled={setAiRateLimitEnabled}
       aiCompletionTimeoutMs={aiCompletionTimeoutMs}
       setAiCompletionTimeoutMs={setAiCompletionTimeoutMs}
+      aiConnectTimeoutMs={aiConnectTimeoutMs}
+      setAiConnectTimeoutMs={setAiConnectTimeoutMs}
       scrapeFetchTimeoutMs={scrapeFetchTimeoutMs}
       setScrapeFetchTimeoutMs={setScrapeFetchTimeoutMs}
       scrapePlaywrightTimeoutMs={scrapePlaywrightTimeoutMs}

@@ -10,6 +10,7 @@ export interface ItemPhotoGalleryTemplateProps {
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   accept: string;
   onMainAreaClick: () => void;
+  onDownloadActive: () => void;
   onAddClick: () => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectThumb: (index: number) => void;

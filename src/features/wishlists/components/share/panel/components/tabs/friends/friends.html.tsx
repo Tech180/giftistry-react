@@ -1,6 +1,10 @@
 import React from 'react';
 import { Search, AlertCircle, Check } from 'lucide-react';
-import { Button } from 'shared/ui';
+import { Button, SelectMenu } from 'shared/ui';
+import {
+  SHARE_ROLE_MENU_TITLE,
+  SHARE_ROLE_OPTIONS,
+} from 'features/wishlists/constants/share-role-options.constant';
 import styles from '../../../panel.module.css';
 import fabStyles from '../../../../share-fab-panel/share-fab-panel.module.css';
 import { FriendsTabTemplateProps } from './interfaces/friends.interface';
@@ -124,15 +128,15 @@ export const FriendsTabTemplate: React.FC<FriendsTabTemplateProps> = ({
                   </div>
                 </div>
                 <div className={styles['item-actions']}>
-                  <select
+                  <SelectMenu
                     value={friendRole}
-                    onChange={(e) => setRole(friend.UserId, e.target.value as 'viewer' | 'collaborator')}
-                    className={styles['minimal-select']}
+                    options={SHARE_ROLE_OPTIONS}
+                    onChange={(next) => setRole(friend.UserId, next as 'viewer' | 'collaborator')}
                     disabled={loadingIds[friend.UserId]}
-                  >
-                    <option value="viewer">Can view</option>
-                    <option value="collaborator">Can edit</option>
-                  </select>
+                    variant="compact"
+                    menuTitle={SHARE_ROLE_MENU_TITLE}
+                    aria-label={`Role for ${displayName}`}
+                  />
                   <Button
                     variant="secondary"
                     size="sm"

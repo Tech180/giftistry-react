@@ -7,9 +7,18 @@
 .funding-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   font-weight: var(--font-weight-medium);
+}
+
+.funding-amount-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .progress-bg {
@@ -23,4 +32,9 @@
   height: 100%;
   background: var(--primary);
   border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.progress-fill-complete {
+  background: var(--success);
 }

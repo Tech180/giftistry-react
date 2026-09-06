@@ -9,6 +9,7 @@ import type { ItemListGroup } from '../interfaces/item-list-result.interface';
 import type {
   CreateSubstitutionPayload,
   ItemSubstitutionOption,
+  ItemSubstitutionSummary,
 } from '../interfaces/item-substitution.interface';
 
 function normalizeListPayload(data: unknown): { items: Item[]; groups: ItemListGroup[] | null } {
@@ -43,6 +44,28 @@ function applyProjectionToItem(
   };
 }
 
+function applyProjectionToSubstitutionSummary(
+  child: ItemSubstitutionSummary,
+  projection: ItemClaimMutationProjection
+): ItemSubstitutionSummary {
+  return {
+    ...child,
+    Claims: projection.Claims,
+    IsClaimed: projection.IsClaimed,
+    IsFullyClaimed: projection.IsFullyClaimed,
+    MultiCount: projection.IsMultiCount ?? child.MultiCount,
+    TotalClaimedAmount: projection.TotalClaimedAmount,
+    TotalClaimedQuantity: projection.TotalClaimedQuantity,
+    DesiredQuantity: projection.DesiredQuantity ?? child.DesiredQuantity,
+    RemainingQuantity: projection.RemainingQuantity,
+    FundingTarget: projection.FundingTarget,
+  };
+}
+
+function sumClaimedAmount(claims: Claim[]): number {
+  return claims.reduce((sum, claim) => sum + (claim.Amount || 0), 0);
+}
+
 /** Patch parent and nested substitution claim state after claim/unclaim. */
 function patchItemWithClaimProjections(
   item: Item,
@@ -68,12 +91,7 @@ function patchItemWithClaimProjections(
     optionsChanged = true;
     return {
       ...option,
-      Item: {
-        ...option.Item,
-        Claims: childProjection.Claims,
-        IsClaimed: childProjection.IsClaimed,
-        IsFullyClaimed: childProjection.IsFullyClaimed,
-      },
+      Item: applyProjectionToSubstitutionSummary(option.Item, childProjection),
     };
   });
 
@@ -103,6 +121,7 @@ function patchItemWithClaimProjections(
           ...next,
           Claims: cleared,
           IsClaimed: cleared.length > 0,
+          TotalClaimedAmount: sumClaimedAmount(cleared),
         };
       }
     }
@@ -121,6 +140,7 @@ function patchItemWithClaimProjections(
           ...option.Item,
           Claims: cleared,
           IsClaimed: cleared.length > 0,
+          TotalClaimedAmount: sumClaimedAmount(cleared),
         },
       };
     });

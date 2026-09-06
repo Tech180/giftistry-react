@@ -20,6 +20,8 @@ export interface ExtractMetadataResult {
   CategoryAlternatives: string[];
   ImageUrl: string | null;
   WebsiteName: string | null;
+  /** Canonical URL after redirects; present when scrape resolved a short link. */
+  ResolvedUrl?: string | null;
   CustomFields: ExtractMetadataCustomFields;
   Diagnostics?: ExtractMetadataDiagnostics;
 }

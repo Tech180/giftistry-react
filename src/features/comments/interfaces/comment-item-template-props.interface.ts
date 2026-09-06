@@ -29,6 +29,7 @@ export interface CommentItemTemplateProps {
     replyImageUrl?: string | null
   ) => Promise<void>;
   isAnonymousComment: boolean;
+  isSystemComment?: boolean;
   isOnline: boolean;
   isListOwnerComment: boolean;
   authorUsername: string | null;

@@ -89,6 +89,16 @@ describe('resolveSectionFooterActions', () => {
     });
   });
 
+  it('hides Add substitution on Main Item when the active section is fully claimed', () => {
+    const result = resolveSectionFooterActions({
+      active: { kind: 'original' },
+      canEditItem: false,
+      claimerEligibility: createEligible(),
+      activeSectionFullyClaimed: true,
+    });
+    expect(result.substitutionSurface).toBeNull();
+  });
+
   it('on Main Item hides parent edit for claimers and still allows Add substitution', () => {
     const result = resolveSectionFooterActions({
       active: { kind: 'original' },

@@ -674,6 +674,27 @@ export default function WishlistDetail() {
     }
   };
 
+  const toggleAllowGroupFunds = async () => {
+    if (!wishlist) return;
+    try {
+      const updated = await wishlistsApi.updateWishlist(
+        wishlist.Id,
+        wishlist.Title,
+        wishlist.ExpiresAt ? new Date(wishlist.ExpiresAt).toISOString() : null,
+        !wishlist.AllowGroupFunds,
+        wishlist.Category,
+        undefined,
+        wishlist.AiEnabled,
+        wishlist.WebSearchEnabled,
+        wishlist.ManualJobBackground !== false,
+        wishlist.AutoRollover === true
+      );
+      setWishlist(updated);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to toggle group funding');
+    }
+  };
+
   const shareOwnerInfo = useMemo(() => {
     if (!user) return undefined;
     const displayName =
@@ -785,6 +806,7 @@ export default function WishlistDetail() {
         id: 'import',
         label: 'Import',
         icon: <Upload size={18} aria-hidden />,
+        hideToolbarDivider: true,
         panelWidth: 288,
         panelHeight: 268,
         hidePanelHeader: true,
@@ -809,6 +831,8 @@ export default function WishlistDetail() {
       id: 'export',
       label: 'Export',
       icon: <Download size={18} aria-hidden />,
+      hideToolbarDivider: true,
+      separateAfter: true,
       children: [
         {
           id: 'csv',
@@ -948,8 +972,8 @@ export default function WishlistDetail() {
 
     const listSettingsReadOnly = !isOwner || isArchived;
     const settingsRowCount = listSettingsReadOnly
-      ? 4
-      : 1 + (canShowAi ? 1 : 0) + (canShowWebSearch ? 1 : 0) + (canShowAi ? 1 : 0);
+      ? 5
+      : 2 + (canShowAi ? 1 : 0) + (canShowWebSearch ? 1 : 0) + (canShowAi ? 1 : 0);
     const settingsPanelPad = 32;
     const settingsPanelHeader = 44;
     const settingsRowHeight = 44;
@@ -972,6 +996,7 @@ export default function WishlistDetail() {
           webSearchEnabled={!!wishlist.WebSearchEnabled}
           manualJobBackground={wishlist.ManualJobBackground !== false}
           autoRollover={wishlist.AutoRollover === true}
+          allowGroupFunds={wishlist.AllowGroupFunds === true}
           canShowAi={canShowAi}
           canShowWebSearch={canShowWebSearch}
           readOnly={listSettingsReadOnly}
@@ -986,6 +1011,9 @@ export default function WishlistDetail() {
           }}
           onToggleAutoRollover={() => {
             void toggleAutoRollover();
+          }}
+          onToggleAllowGroupFunds={() => {
+            void toggleAllowGroupFunds();
           }}
         />
       ),
@@ -1009,7 +1037,6 @@ export default function WishlistDetail() {
           />
         ),
         toolbarTone: 'default',
-        separateAfter: true,
         onClick: () => {
           navigate(`/users/${wishlist.UserId}`);
         },
@@ -1584,6 +1611,7 @@ export default function WishlistDetail() {
       toggleWebSearchEnabled={toggleWebSearchEnabled}
       toggleManualJobBackground={toggleManualJobBackground}
       toggleAutoRollover={toggleAutoRollover}
+      toggleAllowGroupFunds={toggleAllowGroupFunds}
       canUseWebSearchOnList={canUseWebSearchOnList}
       formatDate={formatWishlistExpirationDate}
       isCommentsOpen={isCommentsOpen}

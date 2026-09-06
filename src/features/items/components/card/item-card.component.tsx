@@ -30,6 +30,8 @@ import { resolveDisplayItem } from '../../utils/resolve-display-item.util';
 import { resolveClaimerSubstitutionAction } from '../../utils/resolve-claimer-substitution-action.util';
 import { resolveSectionFooterActions } from '../../utils/resolve-section-footer-actions.util';
 import { resolveSubstitutionGroupClaimChrome } from '../../utils/resolve-substitution-group-claim-chrome.util';
+import { resolveItemFundingSnapshot } from '../../utils/is-item-group-funding-active.util';
+import { resolveDisplayItemFullyClaimed } from '../../utils/resolve-item-section-fully-claimed.util';
 import type { ClaimerSubstitutionAction } from '../../interfaces/claimer-substitution-action.interface';
 
 export const ItemCard: React.FC<ItemCardProps> = ({
@@ -256,15 +258,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     }
   };
 
-  const totalExtractedPrice =
-    displayItem.FundingTarget != null
-      ? displayItem.FundingTarget
-      : displayItem.Links.reduce((acc, link) => Math.max(acc, link.ExtractedPrice || 0), 0);
-
-  const totalClaimedAmount =
-    displayItem.TotalClaimedAmount != null
-      ? displayItem.TotalClaimedAmount
-      : claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
+  const { fundingTarget: totalExtractedPrice, totalClaimedAmount } =
+    resolveItemFundingSnapshot(displayItem);
 
   const { text: displayDescription, metadata } = useMemo(
     () => parseItemDescription(displayItem.Description, displayItem.Metadata),
@@ -276,14 +271,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     [displayItem, metadata]
   );
 
-  const activeIsFullyClaimed =
-    displayItem.IsFullyClaimed != null
-      ? displayItem.IsFullyClaimed
-      : quantitySummary.isMultiCount
-        ? quantitySummary.claimedQuantity >= quantitySummary.desiredQuantity
-        : allowGroupFunds && totalExtractedPrice > 0
-          ? totalClaimedAmount >= totalExtractedPrice
-          : displayItem.IsClaimed;
+  const activeIsFullyClaimed = resolveDisplayItemFullyClaimed(
+    displayItem,
+    allowGroupFunds,
+    metadata
+  );
 
   const groupClaimChrome = useMemo(
     () =>
@@ -292,9 +284,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({
         options: item.SubstitutionOptions,
         active: activeSubstitution,
         userId: user?.Id,
-        isMultiCount: quantitySummary.isMultiCount,
+        allowGroupFunds,
       }),
-    [item, activeSubstitution, user?.Id, quantitySummary.isMultiCount]
+    [item, activeSubstitution, user?.Id, allowGroupFunds]
   );
 
   const claimedByCurrentUser = groupClaimChrome.claimedByCurrentUser;
@@ -364,6 +356,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     active: activeSubstitution,
     canEditItem,
     claimerEligibility: claimerSubstitutionEligibility,
+    activeSectionFullyClaimed: activeIsFullyClaimed,
   });
 
   const activeBrowseOption =

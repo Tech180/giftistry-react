@@ -12,3 +12,80 @@
   color: var(--text);
   font-weight: var(--font-weight-medium);
 }
+
+.claim-gf-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+  margin-block-start: var(--spacing-2xs);
+}
+
+.claim-gf-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+.claim-gf-toggle-label {
+  font-size: var(--font-size-sm);
+  color: var(--text);
+  font-weight: var(--font-weight-medium);
+}
+
+.claim-gf-amount {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+  width: 100%;
+}
+
+.claim-gf-amount-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.claim-gf-amount-field {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  min-height: 2.75rem;
+  padding-inline: var(--spacing-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.claim-gf-amount-icon {
+  display: inline-flex;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.claim-gf-amount-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--font-size-sm);
+  min-height: 2.5rem;
+}
+
+.claim-gf-amount-input:focus {
+  outline: none;
+}
+
+.claim-gf-amount-field:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.claim-gf-amount-hint {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}

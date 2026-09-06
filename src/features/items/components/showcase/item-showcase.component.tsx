@@ -22,6 +22,7 @@ import {
   itemNeedsClaimQuantityUi,
 } from '../../utils/resolve-claim-quantity-lines.util';
 import { resolveItemQuantitySummary } from '../../utils/resolve-item-quantity.util';
+import { isItemGroupFundingActive, resolveItemFundingSnapshot } from '../../utils/is-item-group-funding-active.util';
 import {
   buildShowcaseRelationItems,
   buildShowcaseVariationProgress,
@@ -43,6 +44,7 @@ import { resolveDisplayItem } from '../../utils/resolve-display-item.util';
 import { resolveClaimerSubstitutionAction } from '../../utils/resolve-claimer-substitution-action.util';
 import { resolveSectionFooterActions } from '../../utils/resolve-section-footer-actions.util';
 import { resolveSubstitutionGroupClaimChrome } from '../../utils/resolve-substitution-group-claim-chrome.util';
+import { resolveDisplayItemFullyClaimed } from '../../utils/resolve-item-section-fully-claimed.util';
 import type { ClaimerSubstitutionAction } from '../../interfaces/claimer-substitution-action.interface';
 
 export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
@@ -201,15 +203,8 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     }
   };
 
-  const totalExtractedPrice =
-    displayItem.FundingTarget != null
-      ? displayItem.FundingTarget
-      : displayItem.Links.reduce((acc, link) => Math.max(acc, link.ExtractedPrice || 0), 0);
-
-  const totalClaimedAmount =
-    displayItem.TotalClaimedAmount != null
-      ? displayItem.TotalClaimedAmount
-      : claims.reduce((acc, claim) => acc + (claim.Amount || 0), 0);
+  const { fundingTarget: totalExtractedPrice, totalClaimedAmount } =
+    resolveItemFundingSnapshot(displayItem);
 
   const quantitySummary = resolveItemQuantitySummary(displayItem, metadata);
   const canAdjustClaim = itemNeedsClaimQuantityUi(item, metadata);
@@ -217,21 +212,18 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const totalClaimedQty = quantitySummary.claimedQuantity;
   const desiredQtyVal = quantitySummary.desiredQuantity;
 
-  const activeIsFullyClaimed =
-    displayItem.IsFullyClaimed != null
-      ? displayItem.IsFullyClaimed
-      : isMultiCount
-        ? totalClaimedQty >= desiredQtyVal
-        : allowGroupFunds && totalExtractedPrice > 0
-          ? totalClaimedAmount >= totalExtractedPrice
-          : displayItem.IsClaimed;
+  const activeIsFullyClaimed = resolveDisplayItemFullyClaimed(
+    displayItem,
+    allowGroupFunds,
+    metadata
+  );
 
   const groupClaimChrome = resolveSubstitutionGroupClaimChrome({
     parent: item,
     options: item.SubstitutionOptions,
     active: activeSubstitution,
     userId: user?.Id,
-    isMultiCount,
+    allowGroupFunds,
   });
 
   const claimedByCurrentUser = groupClaimChrome.claimedByCurrentUser;
@@ -296,7 +288,13 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const suggestionLabel = formatShowcaseSuggestionLabel(resolveSuggestedByDisplayName(item));
   const showHeroMeta =
     showSuggestionBadge || showHiddenSuggestionBadge || !!audienceLabel || localIsFavorite;
-  const showGroupFunding = !canAdjustClaim && allowGroupFunds && totalExtractedPrice > 0;
+  const showGroupFunding =
+    !canAdjustClaim &&
+    isItemGroupFundingActive({
+      allowGroupFunds,
+      fundingTarget: totalExtractedPrice,
+      totalClaimedAmount,
+    });
   const showQuantityProgress = isMultiCount;
   const showVariationsProgress = variationProgress.length > 0;
 
@@ -311,6 +309,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
     active: activeSubstitution,
     canEditItem,
     claimerEligibility: claimerSubstitutionEligibility,
+    activeSectionFullyClaimed: activeIsFullyClaimed,
   });
 
   const activeBrowseOption =

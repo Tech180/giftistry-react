@@ -121,6 +121,12 @@
   stroke-width: 2.5;
 }
 
+.dash-value {
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--text-muted);
+  line-height: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btn {
     transition: none;

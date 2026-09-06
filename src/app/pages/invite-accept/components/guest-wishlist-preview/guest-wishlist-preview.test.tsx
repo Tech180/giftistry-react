@@ -82,4 +82,14 @@ describe('GuestWishlistPreview', () => {
     expect(screen.queryByRole('link', { name: /back to dashboard/i })).not.toBeInTheDocument();
     expect(screen.queryByText('Suggestion')).not.toBeInTheDocument();
   });
+
+  test('shows View Item for guests', () => {
+    render(
+      <MemoryRouter>
+        <GuestWishlistPreview wishlist={wishlist} items={[item]} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('button', { name: /view item/i })).toBeInTheDocument();
+  });
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ImagePlus, Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, ImagePlus, Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ItemPhotoGalleryTemplateProps } from './interfaces/item-photo-gallery-template-props.interface';
 import styles from './item-photo-gallery.module.css';
 
@@ -13,6 +13,7 @@ export const ItemPhotoGalleryTemplate: React.FC<ItemPhotoGalleryTemplateProps> =
   fileInputRef,
   accept,
   onMainAreaClick,
+  onDownloadActive,
   onAddClick,
   onFileChange,
   onSelectThumb,
@@ -40,32 +41,50 @@ export const ItemPhotoGalleryTemplate: React.FC<ItemPhotoGalleryTemplateProps> =
         <span className={styles['photo-count']}>{countLabel}</span>
       </div>
 
-      <button
-        type="button"
-        className={[
-          styles['main-photo-area'],
-          hasPhotos ? styles['main-photo-filled'] : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        title={hasPhotos ? 'Main photo' : 'Click to upload main photo'}
-        onClick={onMainAreaClick}
-        disabled={disabled || hasPhotos}
-        aria-label={hasPhotos ? 'Main item photo' : 'Add photos'}
-      >
+      <div className={styles['main-photo-frame']}>
         {!hasPhotos ? (
-          <div className={styles['main-photo-empty']}>
-            <ImagePlus size={28} aria-hidden />
-            <span>Add Photos</span>
-          </div>
+          <button
+            type="button"
+            className={styles['main-photo-area']}
+            title="Click to upload main photo"
+            onClick={onMainAreaClick}
+            disabled={disabled}
+            aria-label="Add photos"
+          >
+            <div className={styles['main-photo-empty']}>
+              <ImagePlus size={28} aria-hidden />
+              <span>Add Photos</span>
+            </div>
+          </button>
         ) : (
-          <img
-            className={styles['main-photo-image']}
-            src={activePhoto?.dataUrl}
-            alt="Main item photo"
-          />
+          <div
+            className={`${styles['main-photo-area']} ${styles['main-photo-filled']}`}
+            role="img"
+            aria-label="Main item photo"
+          >
+            <img
+              className={styles['main-photo-image']}
+              src={activePhoto?.dataUrl}
+              alt="Main item photo"
+            />
+          </div>
         )}
-      </button>
+
+        {hasPhotos && activePhoto?.dataUrl && (
+          <button
+            type="button"
+            className={styles['download-photo-btn']}
+            title="Download"
+            aria-label="Download photo"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDownloadActive();
+            }}
+          >
+            <Download size={16} aria-hidden />
+          </button>
+        )}
+      </div>
 
       {hasPhotos && (
         <div className={styles['thumbnails-wrapper']}>

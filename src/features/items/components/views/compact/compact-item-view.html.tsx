@@ -23,13 +23,14 @@ import {
 } from '../../item-presentation';
 import { CLAIM_FORM_PROMPT_CLAIM_LINKED } from '../../item-presentation/claim-form/constants/claim-form-copy.constant';
 import { Tags } from 'features/comments';
-import { buildItemCardModifierClasses, getClaimedGrayOutClass, getUserClaimedHighlightClass } from '../shared/item-card-modifiers.util';
+import { buildItemCardModifierClasses, getClaimedGrayOutClass, getGroupFundingInProgressClass, getUserClaimedHighlightClass } from '../shared/item-card-modifiers.util';
 import { hasPriorityValue } from '../../../utils/item-priority.util';
 import { shouldShowSharingAvatars } from '../../../utils/item-audience.util';
 import { resolveItemClaimBadgeState } from '../../../utils/resolve-item-claim-badge-state.util';
 import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import { resolveSuggestedByDisplayName } from '../../../utils/resolve-suggested-by-display-name.util';
 import { resolveItemQuantitySummary } from '../../../utils/resolve-item-quantity.util';
+import { isItemGroupFundingActive, isItemGroupFundingInProgress } from '../../../utils/is-item-group-funding-active.util';
 import type { SubstitutionBrowseOption } from '../../../utils/resolve-item-substitution-options.util';
 import { useCompactColumnSyncContext } from './compact-category-list';
 import styles from './compact-item-view.module.css';
@@ -148,14 +149,22 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     },
     styles
   );
+  const isGroupFundingInProgress = isItemGroupFundingInProgress({
+    allowGroupFunds,
+    fundingTarget: totalExtractedPrice,
+    totalClaimedAmount,
+    isFullyClaimed,
+  });
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
     hasVisibleClaimForGray ?? hasVisibleClaim,
     claimedByCurrentUser,
     styles,
     props.isArchived,
-    isMultiCount
+    isMultiCount,
+    isGroupFundingInProgress
   );
+  const groupFundingClass = getGroupFundingInProgressClass(isGroupFundingInProgress, styles);
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
     styles
@@ -174,7 +183,13 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     ? columnPresence.audience
     : showSharingAvatars || !!item.IsSuggestion || showClaimBadge;
   const reserveFunding =
-    isSyncEnabled ? columnPresence.funding : allowGroupFunds && totalExtractedPrice > 0;
+    isSyncEnabled
+      ? columnPresence.funding
+      : isItemGroupFundingActive({
+          allowGroupFunds,
+          fundingTarget: totalExtractedPrice,
+          totalClaimedAmount,
+        });
   const reserveTrailing =
     isSyncEnabled
       ? columnPresence.trailing
@@ -199,7 +214,11 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     showClaimBadge ||
     showQuantityBadge;
   const hasTrailingContent = !!primaryLink || !!onView || showCompactActions;
-  const hasFundingContent = allowGroupFunds && totalExtractedPrice > 0;
+  const hasFundingContent = isItemGroupFundingActive({
+    allowGroupFunds,
+    fundingTarget: totalExtractedPrice,
+    totalClaimedAmount,
+  });
   const showGuestClaimActions =
     showCompactActions && !isOwner && !showClaimForm;
   const showWideClaimActionPair =
@@ -221,7 +240,7 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     !!displayDescription?.trim() ||
     predefinedDisplayEntries.length > 0 ||
     userDefinedEntries.length > 0 ||
-    (allowGroupFunds && totalExtractedPrice > 0);
+    hasFundingContent;
 
   const handleCompactRowActivate = () => {
     onSelect?.();
@@ -456,7 +475,7 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
               data-compact-col="funding"
               {...(fundingCol.measure ? { 'data-compact-col-measure': 'funding' } : {})}
             >
-              {allowGroupFunds && totalExtractedPrice > 0 ? (
+              {hasFundingContent ? (
                 <FundingWidget
                   totalExtractedPrice={totalExtractedPrice}
                   totalClaimedAmount={totalClaimedAmount}
@@ -642,6 +661,38 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
       </div>
 
       {showClaimForm &&
+        !!itemActions &&
+        !props.isArchived &&
+        !props.isExpired && (
+        <EnterPanel
+          animation="dropdown"
+          className={
+            canAdjustClaim ? styles['confirm-extension-stack'] : styles['confirm-extension']
+          }
+        >
+          <ClaimForm
+            item={displayItem}
+            metadata={displayItem.Metadata}
+            userId={claimUserId}
+            claimedByName={claimActorName ?? null}
+            itemActions={itemActions}
+            anonymous={anonymous}
+            onAnonymousChange={setAnonymous}
+            onSubmitted={() => setShowClaimForm(false)}
+            onCancel={() => setShowClaimForm(false)}
+            linkedItems={linkedClaimPeers}
+            wishlistItems={wishlistItemsForLinkedClaim}
+            onLinkedItemClick={onLinkedClaimItemClick}
+            compact
+            allowGroupFunds={allowGroupFunds}
+            fundingTarget={totalExtractedPrice}
+            totalClaimedAmount={totalClaimedAmount}
+          />
+        </EnterPanel>
+      )}
+
+      {showClaimForm &&
+        !itemActions &&
         !canAdjustClaim &&
         !props.isArchived &&
         !props.isExpired && (
@@ -694,33 +745,6 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
               Cancel
             </button>
           </div>
-        </EnterPanel>
-      )}
-
-      {showClaimForm &&
-        canAdjustClaim &&
-        !!itemActions &&
-        !props.isArchived &&
-        !props.isExpired && (
-        <EnterPanel
-          animation="dropdown"
-          className={styles['confirm-extension-stack']}
-        >
-          <ClaimForm
-            item={displayItem}
-            metadata={displayItem.Metadata}
-            userId={claimUserId}
-            claimedByName={claimActorName ?? null}
-            itemActions={itemActions}
-            anonymous={anonymous}
-            onAnonymousChange={setAnonymous}
-            onSubmitted={() => setShowClaimForm(false)}
-            onCancel={() => setShowClaimForm(false)}
-            linkedItems={linkedClaimPeers}
-            wishlistItems={wishlistItemsForLinkedClaim}
-            onLinkedItemClick={onLinkedClaimItemClick}
-            compact
-          />
         </EnterPanel>
       )}
 
@@ -790,7 +814,7 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
               </div>
             )}
           </div>
-          {allowGroupFunds && totalExtractedPrice > 0 && (
+          {hasFundingContent && (
             <div className={styles['v-compact-expanded-aside']}>
               <FundingWidget
                 totalExtractedPrice={totalExtractedPrice}
@@ -806,7 +830,7 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
 
   return (
     <div
-      className={`${styles['v-compact-card']} ${modifierClass} ${claimedGrayClass} ${userClaimedHighlightClass} ${isExpanded ? styles.expanded : ''} ${isSelected ? styles['is-selected'] : ''} ${hasSubstitutionBrowse ? styles['v-compact-card-with-subs'] : ''}`}
+      className={`${styles['v-compact-card']} ${modifierClass} ${claimedGrayClass} ${groupFundingClass} ${userClaimedHighlightClass} ${isExpanded ? styles.expanded : ''} ${isSelected ? styles['is-selected'] : ''} ${hasSubstitutionBrowse ? styles['v-compact-card-with-subs'] : ''}`}
       aria-expanded={hasExpandableContent ? isExpanded : undefined}
     >
       <TaggingOverlay

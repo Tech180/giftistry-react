@@ -107,4 +107,72 @@ describe('NumberSelector', () => {
 
     expect(onChange).toHaveBeenCalledWith(0);
   });
+
+  it('shows a dash when value matches dashValue', () => {
+    render(
+      <NumberSelector
+        value={0}
+        min={-1}
+        dashValue={0}
+        infinityValue={-1}
+        onChange={vi.fn()}
+        editLabel="Edit priority"
+      />
+    );
+
+    expect(screen.getByText('–')).toBeInTheDocument();
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
+  });
+
+  it('shows infinity when value matches infinityValue', () => {
+    render(
+      <NumberSelector
+        value={-1}
+        min={-1}
+        dashValue={0}
+        infinityValue={-1}
+        onChange={vi.fn()}
+        editLabel="Edit priority"
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Edit priority' })).toBeInTheDocument();
+    expect(screen.queryByText('–')).not.toBeInTheDocument();
+    expect(screen.queryByText('-1')).not.toBeInTheDocument();
+  });
+
+  it('steps from dash to infinity and to one', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <NumberSelector
+        value={0}
+        min={-1}
+        dashValue={0}
+        infinityValue={-1}
+        onChange={onChange}
+        decreaseLabel="Decrease priority"
+        increaseLabel="Increase priority"
+        editLabel="Edit priority"
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Decrease priority' }));
+    expect(onChange).toHaveBeenCalledWith(-1);
+
+    onChange.mockClear();
+    rerender(
+      <NumberSelector
+        value={0}
+        min={-1}
+        dashValue={0}
+        infinityValue={-1}
+        onChange={onChange}
+        decreaseLabel="Decrease priority"
+        increaseLabel="Increase priority"
+        editLabel="Edit priority"
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Increase priority' }));
+    expect(onChange).toHaveBeenCalledWith(1);
+  });
 });

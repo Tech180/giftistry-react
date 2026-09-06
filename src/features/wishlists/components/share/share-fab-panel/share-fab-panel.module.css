@@ -118,6 +118,13 @@
   transform: translateY(0);
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+}
+
+.tabPanelActive > * {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -238,6 +238,26 @@ describe('ActionButtons', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('hides Add substitution when the active section is fully claimed', () => {
+    render(
+      <ActionButtons
+        isOwner={false}
+        canCollaborate={false}
+        claimedByCurrentUser={false}
+        isFullyClaimed
+        claimLoading={false}
+        showDeleteConfirm={false}
+        deleteLoading={false}
+        substitutionAction={null}
+        {...guestHandlers}
+      />
+    );
+
+    expect(
+      screen.queryByRole('button', { name: ADD_SUBSTITUTION_ACTION_LABEL })
+    ).not.toBeInTheDocument();
+  });
+
   it('shows Edit substitution when substitutionAction is manage', () => {
     render(
       <ActionButtons

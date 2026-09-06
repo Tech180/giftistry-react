@@ -20,6 +20,11 @@
   background: var(--success-bg);
 }
 
+.group-funding-in-progress {
+  border-color: var(--success-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--success) 35%, transparent);
+}
+
 .claimed-gray-out {
   position: relative;
   isolation: isolate;

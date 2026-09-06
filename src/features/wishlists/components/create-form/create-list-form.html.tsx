@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronDown, Bot, Globe, ArrowRight, Loader2 } from 'lucide-react';
 import { Input, Switch } from 'shared/ui';
 import { CreateListFormTemplateProps } from '../../interfaces/create-list-form-template-props.interface';
@@ -28,6 +28,8 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
   globalWebSearchEnabled,
   onCancel,
 }) => {
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+
   return (
     <form onSubmit={handleSubmit} className={styles.form} noValidate>
       {errorMsg && (
@@ -102,9 +104,30 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
 
         <div className={styles.divider}></div>
 
-        <div className={styles['advanced-options']}>
-          <h3 className={styles['advanced-title']}>Advanced Options</h3>
+        <div className={styles['advanced-section']}>
+          <button
+            type="button"
+            className={styles['advanced-trigger']}
+            onClick={() => setAdvancedOpen((open) => !open)}
+            aria-expanded={advancedOpen}
+            aria-controls="create-list-advanced-options"
+          >
+            <span className={styles['advanced-title']}>Advanced Options</span>
+            <span
+              className={`${styles['advanced-chevron']} ${advancedOpen ? styles['advanced-chevron-open'] : ''}`}
+            >
+              <ChevronDown size={16} />
+            </span>
+          </button>
 
+          <div
+            id="create-list-advanced-options"
+            className={`${styles['grid-collapse']} ${advancedOpen ? styles['is-open'] : ''}`}
+            aria-hidden={!advancedOpen}
+          >
+            {advancedOpen ? (
+            <div>
+              <div className={styles['advanced-options']}>
           {/* Group Funding Toggle */}
           <div className={styles['toggle-wrapper']}>
             <div className={styles['toggle-text-block']}>
@@ -174,6 +197,10 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
             </div>
           )}
 
+              </div>
+            </div>
+            ) : null}
+          </div>
         </div>
       </div>
 

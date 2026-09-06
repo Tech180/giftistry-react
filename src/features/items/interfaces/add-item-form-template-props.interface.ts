@@ -97,11 +97,13 @@ export interface AddItemFormTemplateProps {
   showFieldDefinitions: boolean;
   varName: string;
   setVarName: (val: string) => void;
-  varQty: number | '';
-  setVarQty: (val: number | '') => void;
+  varQty: number;
+  setVarQty: (val: number) => void;
+  variationQtyMax?: number;
+  variationQtyDisabled?: boolean;
+  variationQtyAllowInfinity?: boolean;
   varError: string | null;
   handleAddVariation: () => void;
-  handleVarQtyChange: (val: string) => void;
   listShares: ListShare[];
   sharedWithUserIds: string[];
   setSharedWithUserIds: (userIds: string[]) => void;
@@ -130,4 +132,8 @@ export interface AddItemFormTemplateProps {
   /** When set, form shows product fields for a substitution child (hides manager/audience/links). */
   substitutionEditor: SubstitutionEditorTemplateProps | null;
   formId: string;
+  readOnlyMetadataPredefined: { label: string; value: string }[];
+  readOnlyMetadataUserDefined: { name: string; value: string }[];
+  hasReadOnlyMetadata: boolean;
+  metadataBadgeEmoji: Record<string, string>;
 }

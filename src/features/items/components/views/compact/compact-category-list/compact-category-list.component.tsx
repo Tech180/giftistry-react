@@ -59,19 +59,26 @@ export const CompactCategoryList: React.FC<CompactCategoryListProps> = ({
   const itemSignature = useMemo(
     () =>
       items
-        .map(
-          (item) =>
-            [
-              item.Id,
-              item.Priority ?? '',
-              item.IsSuggestion ? 1 : 0,
-              item.Claims.length,
-              item.Links.length,
-              item.DesiredQuantity ?? '',
-              item.SharedWith?.length ?? 0,
-              item.FundingTarget ?? '',
-            ].join(':')
-        )
+        .map((item) => {
+          const subFundingSignal = (item.SubstitutionOptions ?? [])
+            .map(
+              (option) =>
+                `${option.Item.Id}:${option.Item.TotalClaimedAmount ?? ''}:${option.Item.Claims?.length ?? 0}`
+            )
+            .join(',');
+          return [
+            item.Id,
+            item.Priority ?? '',
+            item.IsSuggestion ? 1 : 0,
+            item.Claims.length,
+            item.Links.length,
+            item.DesiredQuantity ?? '',
+            item.SharedWith?.length ?? 0,
+            item.FundingTarget ?? '',
+            item.TotalClaimedAmount ?? '',
+            subFundingSignal,
+          ].join(':');
+        })
         .join('|'),
     [items]
   );

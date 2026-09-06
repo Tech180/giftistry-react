@@ -7,6 +7,7 @@ import styles from './meta.module.css';
 export const MetaTemplate: React.FC<MetaTemplateProps> = ({
   comment,
   isAnonymousComment,
+  isSystemComment = false,
   authorUsername,
   authorAvatar,
   authorParticipant,
@@ -19,7 +20,9 @@ export const MetaTemplate: React.FC<MetaTemplateProps> = ({
   return (
     <div className={styles['comment-meta']}>
       <div className={styles['comment-meta-left']}>
-        {isAnonymousComment ? (
+        {isSystemComment ? (
+          <span className={`${styles.author} ${styles['system-author']}`}>System</span>
+        ) : isAnonymousComment ? (
           <span className={`${styles.author} ${styles['anonymous-author']}`}>Anonymous</span>
         ) : (
           authorUsername && (

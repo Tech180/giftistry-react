@@ -25,6 +25,7 @@ export interface HeaderTemplateProps {
   toggleWebSearchEnabled: () => void;
   toggleManualJobBackground: () => void;
   toggleAutoRollover: () => void;
+  toggleAllowGroupFunds: () => void;
   canShowAi: boolean;
   canShowWebSearch: boolean;
   isCommentsOpen: boolean;

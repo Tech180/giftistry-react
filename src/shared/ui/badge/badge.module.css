@@ -128,6 +128,14 @@
 
 /* --- Sizes --- */
 
+.size-sm .border-wrapper {
+  border-radius: var(--radius-sm);
+}
+
+.size-md .border-wrapper {
+  border-radius: var(--radius-md);
+}
+
 .size-sm .inner {
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
@@ -161,6 +169,19 @@
 
 .size-compact.effect-rainbow .inner {
   border-radius: calc(var(--radius-full) - 1px);
+}
+
+/* --- Tones --- */
+
+.tone-success .border-wrapper {
+  border: 1px solid var(--success-border);
+  background: var(--success-bg);
+}
+
+.tone-success .inner {
+  color: var(--success);
+  background: transparent;
+  border-color: transparent;
 }
 
 /* --- Active / inactive --- */

@@ -19,6 +19,8 @@ import { formatWishlistExpirationDate } from 'shared/utils/format-date.util';
 import { useSupportsKanbanViewMode } from 'shared/hooks/use-supports-kanban-view-mode';
 import { isWishlistArchived } from 'features/wishlists/utils/is-wishlist-archived.util';
 import { isWishlistExpired } from 'features/wishlists/utils/is-wishlist-expired.util';
+import { isWishlistLocked } from 'features/wishlists/utils/is-wishlist-locked.util';
+import { resolveShouldOpenItemViewer } from 'features/items/utils/resolve-should-open-item-viewer.util';
 import { groupGuestPreviewItems } from 'features/wishlists/utils/group-guest-preview-items.util';
 import { toGuestWishlist } from 'features/wishlists/utils/to-guest-wishlist.util';
 import { GUEST_ITEM_ACTIONS } from './constants/guest-item-actions.constant';
@@ -54,6 +56,16 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
   const [viewingItem, setViewingItem] = useState<Item | null>(null);
   const [linkedItemIds, setLinkedItemIds] = useState<string[]>([]);
   const [relatedItemIds, setRelatedItemIds] = useState<string[]>([]);
+
+  const isExpired = isWishlistExpired(wishlist.ExpiresAt);
+  const isArchived = isWishlistArchived(wishlist.IsActive);
+  const isLocked = isWishlistLocked(isExpired, isArchived);
+  const shouldOpenItemViewer = resolveShouldOpenItemViewer({
+    isOwner: false,
+    canCollaborate: false,
+    isPublicGuest: true,
+    isLocked,
+  });
 
   const groupedItems = useMemo(
     () => groupGuestPreviewItems(items, groups, searchQuery),
@@ -121,8 +133,8 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       canCollaborate={false}
       canSuggest={false}
       isPublicGuest
-      isExpired={isWishlistExpired(wishlist.ExpiresAt)}
-      isArchived={isWishlistArchived(wishlist.IsActive)}
+      isExpired={isExpired}
+      isArchived={isArchived}
       isAddOpen={false}
       setIsAddOpen={noop}
       openAddDrawer={noop}
@@ -146,7 +158,7 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       openSubstitutionEdit={noop}
       deleteSubstitutionOption={async () => undefined}
       clearSubstitutionAutoOpen={noop}
-      shouldOpenItemViewer={false}
+      shouldOpenItemViewer={shouldOpenItemViewer}
       setEditingItemDraft={noop}
       linkedItemIds={linkedItemIds}
       setLinkedItemIds={setLinkedItemIds}

@@ -66,6 +66,7 @@ const baseProps: HeaderProps = {
   toggleWebSearchEnabled: vi.fn(),
   toggleManualJobBackground: vi.fn(),
   toggleAutoRollover: vi.fn(),
+  toggleAllowGroupFunds: vi.fn(),
   isCommentsOpen: false,
   setIsCommentsOpen: vi.fn(),
   setIsShareOpen: vi.fn(),

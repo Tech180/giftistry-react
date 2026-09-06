@@ -49,6 +49,7 @@ export interface BackendSettings {
   AiEnabledPackIds?: string[];
   AiCustomPacks?: CustomPackSettings[];
   AiCompletionTimeoutMs?: number;
+  AiConnectTimeoutMs?: number;
   ScrapeFetchTimeoutMs?: number;
   ScrapePlaywrightTimeoutMs?: number;
   GrabInfoConcurrency?: number;

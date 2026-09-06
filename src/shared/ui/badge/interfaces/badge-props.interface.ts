@@ -2,6 +2,7 @@ import { ReactNode, MouseEventHandler } from 'react';
 
 export type BadgeSize = 'sm' | 'md' | 'compact';
 export type BadgeEffect = 'none' | 'rainbow';
+export type BadgeTone = 'default' | 'success';
 
 export interface BadgeProps {
   children?: ReactNode;
@@ -9,6 +10,7 @@ export interface BadgeProps {
   iconInactive?: ReactNode;
   active?: boolean;
   effect?: BadgeEffect;
+  tone?: BadgeTone;
   size?: BadgeSize;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;

@@ -23,8 +23,8 @@ function metadataFromSubstitutionSummary(
 
 /**
  * Build the item shape shown on the card for the active browse option.
- * Substitution children overlay product fields only — never inherit parent
- * description / custom-field metadata.
+ * Substitution children overlay product and funding fields — never inherit
+ * parent description / custom-field metadata or parent funding aggregates.
  */
 export function resolveDisplayItem(
   parent: Item,
@@ -52,7 +52,11 @@ export function resolveDisplayItem(
     Photos: child.Photos ?? parent.Photos,
     Metadata: metadata,
     DesiredQuantity: child.DesiredQuantity ?? null,
+    RemainingQuantity: child.RemainingQuantity,
     IsMultiCount: child.MultiCount === true,
+    FundingTarget: child.FundingTarget,
+    TotalClaimedAmount: child.TotalClaimedAmount,
+    TotalClaimedQuantity: child.TotalClaimedQuantity,
     AllowSubstitutions: false,
     SubstitutionOptions: undefined,
     ActiveSubstitutionId: active.option.Id,

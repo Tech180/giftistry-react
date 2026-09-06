@@ -301,32 +301,6 @@ textarea.input {
   padding-top: 8px;
 }
 
-.input-narrow {
-  width: 100px;
-}
-
-.priority-input-wrap {
-  position: relative;
-  width: 100px;
-}
-
-.priority-placeholder {
-  position: absolute;
-  inset: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
-  padding: 0 12px;
-  color: var(--text-muted);
-  font-size: var(--font-size-sm);
-  pointer-events: none;
-  line-height: 1;
-}
-
-.priority-placeholder svg {
-  flex-shrink: 0;
-}
-
 .qty-selector {
   --number-selector-height: 34px;
   --number-selector-btn-width: 34px;
@@ -808,11 +782,6 @@ textarea.input {
 
 .variation-name {
   flex: 2;
-  min-width: 0;
-}
-
-.variation-qty {
-  flex: 0 0 5rem;
   min-width: 0;
 }
 

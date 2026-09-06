@@ -68,7 +68,7 @@ describe('resolveSubstitutionGroupClaimChrome', () => {
       options: [claimedSub],
       active: browse[1]!,
       userId: 'viewer-2',
-      isMultiCount: false,
+      allowGroupFunds: false,
     });
     expect(chrome.claimedByCurrentUser).toBe(false);
     expect(chrome.hasVisibleClaimForGray).toBe(true);
@@ -83,7 +83,7 @@ describe('resolveSubstitutionGroupClaimChrome', () => {
       options: [claimedSub],
       active: browse[0]!,
       userId: 'viewer-2',
-      isMultiCount: false,
+      allowGroupFunds: false,
     });
     expect(chrome.claimedByCurrentUser).toBe(false);
     expect(chrome.hasVisibleClaimForGray).toBe(true);
@@ -99,7 +99,7 @@ describe('resolveSubstitutionGroupClaimChrome', () => {
       options: [claimedSub],
       active: browse[1]!,
       userId: 'viewer-2',
-      isMultiCount: false,
+      allowGroupFunds: false,
     });
     expect(chrome.isUnavailableDueToSiblingClaim).toBe(false);
   });
@@ -111,7 +111,7 @@ describe('resolveSubstitutionGroupClaimChrome', () => {
       options: [claimedSub],
       active: browse[1]!,
       userId: 'claimer-1',
-      isMultiCount: false,
+      allowGroupFunds: false,
     });
     expect(onClaimed.claimedByCurrentUser).toBe(true);
 
@@ -120,7 +120,7 @@ describe('resolveSubstitutionGroupClaimChrome', () => {
       options: [claimedSub],
       active: browse[0]!,
       userId: 'claimer-1',
-      isMultiCount: false,
+      allowGroupFunds: false,
     });
     expect(onSibling.claimedByCurrentUser).toBe(false);
     expect(onSibling.hasVisibleClaimForGray).toBe(true);
@@ -136,6 +136,8 @@ describe('resolveSubstitutionGroupClaimChrome', () => {
         Description: null,
         Links: [],
         Photos: [],
+        MultiCount: true,
+        DesiredQuantity: 3,
         Claims: [
           {
             Id: 'cl1',
@@ -156,9 +158,106 @@ describe('resolveSubstitutionGroupClaimChrome', () => {
       options: [partialSub],
       active: browse[0]!,
       userId: 'viewer-2',
-      isMultiCount: true,
+      allowGroupFunds: false,
     });
     expect(chrome.hasVisibleClaimForGray).toBe(true);
     expect(chrome.isFullyClaimedForChrome).toBe(false);
+  });
+
+  it('grays non-contributors when a GF substitution is fully funded but IsFullyClaimed is false', () => {
+    const gfSub = option({
+      Id: 'gf1',
+      Kind: 'owner_approved',
+      Item: {
+        Id: 'child-gf1',
+        Name: 'Alt GF',
+        Description: null,
+        Links: [
+          {
+            Id: 'l1',
+            ItemId: 'child-gf1',
+            Url: 'https://example.com',
+            RetailerName: null,
+            ExtractedPrice: 30,
+            ExtractedImageUrl: null,
+          },
+        ],
+        Photos: [],
+        Claims: [
+          {
+            Id: 'cl1',
+            ItemId: 'child-gf1',
+            UserId: 'contributor-1',
+            Amount: 30,
+            ClaimedByName: 'Pat',
+          },
+        ],
+        IsClaimed: true,
+        IsFullyClaimed: false,
+        FundingTarget: 30,
+        TotalClaimedAmount: 30,
+      },
+    });
+    const browse = resolveItemSubstitutionOptions(parent(), [gfSub]);
+
+    const onOriginal = resolveSubstitutionGroupClaimChrome({
+      parent: parent(),
+      options: [gfSub],
+      active: browse[0]!,
+      userId: 'viewer-2',
+      allowGroupFunds: true,
+    });
+    expect(onOriginal.isFullyClaimedForChrome).toBe(true);
+    expect(onOriginal.hasVisibleClaimForGray).toBe(true);
+    expect(onOriginal.isUnavailableDueToSiblingClaim).toBe(true);
+
+    const onSub = resolveSubstitutionGroupClaimChrome({
+      parent: parent(),
+      options: [gfSub],
+      active: browse[1]!,
+      userId: 'viewer-2',
+      allowGroupFunds: true,
+    });
+    expect(onSub.isFullyClaimedForChrome).toBe(true);
+    expect(onSub.hasVisibleClaimForGray).toBe(true);
+    expect(onSub.isUnavailableDueToSiblingClaim).toBe(false);
+  });
+
+  it('grays non-contributors for a fully GF-funded original with no substitutions', () => {
+    const fundedParent = parent({
+      Links: [
+        {
+          Id: 'l1',
+          ItemId: 'parent-1',
+          Url: 'https://example.com',
+          RetailerName: null,
+          ExtractedPrice: 100,
+          ExtractedImageUrl: null,
+        },
+      ],
+      Claims: [
+        {
+          Id: 'c1',
+          ItemId: 'parent-1',
+          UserId: 'contributor-1',
+          Amount: 100,
+          ClaimedByName: 'Pat',
+        },
+      ],
+      IsClaimed: true,
+      IsFullyClaimed: false,
+      FundingTarget: 100,
+      TotalClaimedAmount: 100,
+    });
+    const browse = resolveItemSubstitutionOptions(fundedParent, []);
+    const chrome = resolveSubstitutionGroupClaimChrome({
+      parent: fundedParent,
+      options: [],
+      active: browse[0]!,
+      userId: 'viewer-2',
+      allowGroupFunds: true,
+    });
+    expect(chrome.isFullyClaimedForChrome).toBe(true);
+    expect(chrome.hasVisibleClaimForGray).toBe(true);
   });
 });

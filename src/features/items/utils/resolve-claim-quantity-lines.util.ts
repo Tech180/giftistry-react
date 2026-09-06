@@ -99,7 +99,10 @@ export function resolveClaimQuantityLines(
     const matches = (claim: Claim) => claimSelectionKey(claim) === variation.Name;
     const claimedByUser = sumMatchingClaims(claims, userId, true, matches);
     const claimedByOthers = sumMatchingClaims(claims, userId, false, matches);
-    const capacity = Math.max(0, Number(variation.Quantity) || 0);
+    const capacity =
+      Number(variation.Quantity) === 0
+        ? Number.MAX_SAFE_INTEGER
+        : Math.max(0, Number(variation.Quantity) || 0);
     return toQuantityLine(
       variation.Name,
       variation.Name,

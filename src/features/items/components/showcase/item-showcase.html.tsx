@@ -3,15 +3,15 @@ import { Star, Link2, Edit2, Trash2, Tag, Layers2, Copy } from 'lucide-react';
 import { Button, Card } from 'shared/ui';
 // Future: AI item reviews — re-enable AiReviewsPanel when shipping the feature.
 // import { LinksWidget, FundingWidget, AiReviewsPanel, ClaimPrompt } from '../item-presentation';
-import { LinksWidget, FundingWidget, ClaimPrompt, ClaimForm, QuantityBadge, PriorityDisplay, SubstitutionSwitcher, SubstitutionBadge, SubstitutionClaimButton } from '../item-presentation';
-import { CLAIM_FORM_PROMPT_CLAIM_LINKED } from '../item-presentation/claim-form/constants/claim-form-copy.constant';
-import { Tags } from 'features/comments';
+import { LinksWidget, FundingWidget, ClaimForm, QuantityBadge, PriorityDisplay, SubstitutionSwitcher, SubstitutionBadge, SubstitutionClaimButton } from '../item-presentation';
 import type { ItemShowcaseTemplateProps } from '../../interfaces/item-showcase-template-props.interface';
 import { getItemPrimaryImageUrl } from '../../utils/item-primary-image.util';
 import {
   getClaimedGrayOutClass,
+  getGroupFundingInProgressClass,
   getUserClaimedHighlightClass,
 } from '../views/shared/item-card-modifiers.util';
+import { isItemGroupFundingInProgress } from '../../utils/is-item-group-funding-active.util';
 import styles from './item-showcase.module.css';
 
 export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
@@ -33,8 +33,8 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   itemActions,
   claimUserId,
   claimActorName,
-  claimAmount,
-  setClaimAmount,
+  claimAmount: _claimAmount,
+  setClaimAmount: _setClaimAmount,
   anonymous,
   setAnonymous,
   claimLoading,
@@ -49,7 +49,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   predefinedDisplayEntries,
   userDefinedEntries,
   metadataBadgeEmoji,
-  handleClaim,
+  handleClaim: _handleClaim,
   handleUnclaim,
   handleDelete,
   totalExtractedPrice,
@@ -85,13 +85,12 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
   variationProgress,
   linkedRelationItems,
   relatedRelationItems,
-  maxContributionAmount,
+  maxContributionAmount: _maxContributionAmount,
   linkedClaimPeers = [],
   wishlistItemsForLinkedClaim = [],
   onLinkedClaimItemClick,
 }) => {
   const primaryImageUrl = getItemPrimaryImageUrl(displayItem);
-  const hasLinkedBundle = linkedClaimPeers.length > 0;
 
   const quantityClaimForm = (
     <ClaimForm
@@ -107,63 +106,13 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
       linkedItems={linkedClaimPeers}
       wishlistItems={wishlistItemsForLinkedClaim}
       onLinkedItemClick={onLinkedClaimItemClick}
+      allowGroupFunds={allowGroupFunds}
+      fundingTarget={totalExtractedPrice}
+      totalClaimedAmount={totalClaimedAmount}
     />
   );
 
-  const claimForm = (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleClaim();
-      }}
-      className={styles['claim-form']}
-    >
-      <div className={styles['claim-prompt-row']}>
-        <ClaimPrompt
-          anonymous={anonymous}
-          onAnonymousChange={setAnonymous}
-          prompt={hasLinkedBundle ? CLAIM_FORM_PROMPT_CLAIM_LINKED : undefined}
-        />
-        {hasLinkedBundle && (
-          <div className={styles['claim-linked-tags']}>
-            <Tags
-              appearance="badges"
-              taggedIds={linkedClaimPeers.map((peer) => peer.Id)}
-              items={wishlistItemsForLinkedClaim}
-              onItemTaggedClick={onLinkedClaimItemClick}
-            />
-          </div>
-        )}
-      </div>
-      {allowGroupFunds && (
-        <div className={styles['form-group']}>
-          <label className={styles['form-label']} htmlFor="showcase-claim-amount">
-            Amount to Contribute
-          </label>
-          <input
-            id="showcase-claim-amount"
-            type="number"
-            step="0.01"
-            max={maxContributionAmount}
-            value={claimAmount}
-            onChange={(e) => setClaimAmount(e.target.value)}
-            placeholder="Enter contribution amount"
-            required
-          />
-        </div>
-      )}
-      <div className={styles['form-actions']}>
-        <Button variant="primary" size="sm" type="submit" isLoading={claimLoading}>
-          {hasLinkedBundle ? 'Claim all' : 'Confirm'}
-        </Button>
-        <Button variant="ghost" size="sm" onClick={() => setShowClaimForm(false)}>
-          Cancel
-        </Button>
-      </div>
-    </form>
-  );
-
-  const claimSectionContent = canAdjustClaim ? quantityClaimForm : claimForm;
+  const claimSectionContent = quantityClaimForm;
 
   const ownerActions =
     isArchived || isExpired || !onEdit ? null : (
@@ -267,7 +216,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
               onOpenEditor={substitutionAction.onRequest}
               onDelete={substitutionAction.onDelete}
               appearance="ghost-text"
-              disabled={claimLoading}
+                    disabled={claimLoading}
               className={substitutionManageIconClass}
             />
           ) : null}
@@ -289,7 +238,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
               onOpenEditor={substitutionAction.onRequest}
               onDelete={substitutionAction.onDelete}
               appearance="ghost-text"
-              disabled={claimLoading}
+                    disabled={claimLoading}
               className={substitutionManageIconClass}
             />
           ) : null}
@@ -330,19 +279,27 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
     ownerActions
   );
 
+  const isGroupFundingInProgress = isItemGroupFundingInProgress({
+    allowGroupFunds,
+    fundingTarget: totalExtractedPrice,
+    totalClaimedAmount,
+    isFullyClaimed,
+  });
   const claimedGrayClass = getClaimedGrayOutClass(
     isFullyClaimed,
     hasVisibleClaimForGray,
     claimedByCurrentUser,
     styles,
     isArchived,
-    isMultiCount
+    isMultiCount,
+    isGroupFundingInProgress
   );
+  const groupFundingClass = getGroupFundingInProgressClass(isGroupFundingInProgress, styles);
   const userClaimedHighlightClass = getUserClaimedHighlightClass(
     claimedByCurrentUser,
     styles
   );
-  const claimChromeClass = [claimedGrayClass, userClaimedHighlightClass]
+  const claimChromeClass = [claimedGrayClass, groupFundingClass, userClaimedHighlightClass]
     .filter(Boolean)
     .join(' ');
 

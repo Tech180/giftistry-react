@@ -24,6 +24,11 @@
   font-weight: 500;
 }
 
+.main-photo-frame {
+  position: relative;
+  width: 100%;
+}
+
 .main-photo-area {
   position: relative;
   width: 100%;
@@ -81,6 +86,31 @@
   font-weight: 500;
   z-index: 1;
   pointer-events: none;
+}
+
+.download-photo-btn {
+  position: absolute;
+  right: var(--spacing-sm);
+  bottom: var(--spacing-sm);
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  padding: 0;
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.15));
+  transition: background 0.2s, transform 0.2s;
+}
+
+.download-photo-btn:hover {
+  background: var(--surface-hover);
+  transform: scale(1.08);
 }
 
 .thumbnails-wrapper {

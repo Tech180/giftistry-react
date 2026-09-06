@@ -25,6 +25,7 @@ export interface HeaderProps {
   toggleWebSearchEnabled: () => void;
   toggleManualJobBackground: () => void;
   toggleAutoRollover: () => void;
+  toggleAllowGroupFunds: () => void;
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsShareOpen: (open: boolean) => void;

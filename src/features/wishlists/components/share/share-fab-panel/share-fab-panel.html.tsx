@@ -7,6 +7,7 @@ export const ShareFabPanelTemplate: React.FC<ShareFabPanelTemplateProps> = ({
   activeTab,
   setActiveTab,
   onClose,
+  hideTabs = false,
   linkTab,
   inviteTab,
   accessTab,
@@ -26,22 +27,24 @@ export const ShareFabPanelTemplate: React.FC<ShareFabPanelTemplateProps> = ({
         </button>
       </header>
 
-      <div className={styles.tabsNav} role="tablist" aria-label="Share options">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            id={`share-fab-tab-${tab.id}`}
-            aria-selected={activeTab === tab.id}
-            aria-controls={`share-fab-panel-${tab.id}`}
-            className={`${styles.tabBtn} ${activeTab === tab.id ? styles.tabBtnActive : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!hideTabs && (
+        <div className={styles.tabsNav} role="tablist" aria-label="Share options">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              id={`share-fab-tab-${tab.id}`}
+              aria-selected={activeTab === tab.id}
+              aria-controls={`share-fab-panel-${tab.id}`}
+              className={`${styles.tabBtn} ${activeTab === tab.id ? styles.tabBtnActive : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className={styles.tabContent}>
         {tabs.map((tab) => (
@@ -49,7 +52,7 @@ export const ShareFabPanelTemplate: React.FC<ShareFabPanelTemplateProps> = ({
             key={tab.id}
             id={`share-fab-panel-${tab.id}`}
             role="tabpanel"
-            aria-labelledby={`share-fab-tab-${tab.id}`}
+            aria-labelledby={hideTabs ? undefined : `share-fab-tab-${tab.id}`}
             aria-hidden={activeTab !== tab.id}
             className={`${styles.tabPanel} ${activeTab === tab.id ? styles.tabPanelActive : ''}`}
           >
