@@ -1,38 +1,24 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Sun, Moon, Palette } from 'lucide-react';
 import { useAuth } from 'app/providers/auth-context';
-import { useTheme, Theme, Appearance } from 'app/providers/theme-context';
-import { wishlistsApi, Wishlist } from 'features/wishlists';
+import { useTheme } from 'app/providers/theme-context';
 import { AppNavigationTemplate } from './app-navigation.html';
 
 export const AppNavigation: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
-  const { theme, appearance, setTheme, setAppearance, isThemeUnlocked, temporaryTheme, customThemes } = useTheme();
+  const { user, isAuthenticated, logout, registrationMode } = useAuth();
+  const {
+    theme,
+    appearance,
+    setTheme,
+    setAppearance,
+    isThemeUnlocked,
+    customThemes,
+    temporaryTheme,
+  } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
-
-  const handleSetThemeOpen = (open: boolean) => {
-    setIsThemeOpen(open);
-  };
-
-  const [isHolidayOpen, setIsHolidayOpen] = useState(false);
-
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [wishlists, setWishlists] = useState<Wishlist[]>([]);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
-  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
-
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const profileRef = useRef<HTMLDivElement>(null);
-  const themeRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
 
@@ -43,48 +29,26 @@ export const AppNavigation: React.FC = () => {
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 48rem)');
     const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      if (e.matches) {
-        setIsMobileMenuOpen(false);
-      }
+      if (e.matches) setIsMobileMenuOpen(false);
     };
 
-    // Modern matchMedia API support
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleMediaChange);
-    } else {
-      // Deprecated matchMedia support for older engines
-      mediaQuery.addListener(handleMediaChange);
-    }
+    if (mediaQuery.addEventListener) mediaQuery.addEventListener('change', handleMediaChange);
+    else mediaQuery.addListener(handleMediaChange);
 
-    // Check initial match
-    if (mediaQuery.matches) {
-      setIsMobileMenuOpen(false);
-    }
+    if (mediaQuery.matches) setIsMobileMenuOpen(false);
 
     return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', handleMediaChange);
-      } else {
-        mediaQuery.removeListener(handleMediaChange);
-      }
+      if (mediaQuery.removeEventListener) mediaQuery.removeEventListener('change', handleMediaChange);
+      else mediaQuery.removeListener(handleMediaChange);
     };
   }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setIsProfileOpen(false);
-      }
-      if (themeRef.current && !themeRef.current.contains(e.target as Node)) {
-        setIsThemeOpen(false);
-      }
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setIsSearchOpen(false);
-      }
+      const target = e.target as Node;
       if (
-        mobileMenuRef.current &&
-        !mobileMenuRef.current.contains(e.target as Node) &&
-        !hamburgerRef.current?.contains(e.target as Node)
+        mobileMenuRef.current?.contains(target) === false &&
+        hamburgerRef.current?.contains(target) !== true
       ) {
         setIsMobileMenuOpen(false);
       }
@@ -95,118 +59,8 @@ export const AppNavigation: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    setIsProfileOpen(false);
     navigate('/login');
   };
-
-  // Keyboard shortcut (⌘K or Ctrl+K)
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (isAuthenticated && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setIsSearchOpen(true);
-        if (searchInputRef.current) {
-          searchInputRef.current.focus();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [isAuthenticated]);
-
-  // Fetch wishlists when search opens
-  useEffect(() => {
-    if (isSearchOpen) {
-      const fetchLists = async () => {
-        setIsSearchLoading(true);
-        try {
-          const res = await wishlistsApi.listWishlists({ bucket: 'all' });
-          const lists = Array.isArray(res)
-            ? res
-            : (res && typeof res === 'object' && 'Wishlists' in res)
-              ? (res as any).Wishlists
-              : [];
-          setWishlists(lists);
-        } catch (err) {
-          // fallback silently
-        } finally {
-          setIsSearchLoading(false);
-        }
-      };
-      fetchLists();
-      setSearchQuery('');
-      setActiveSearchIndex(0);
-    }
-  }, [isSearchOpen]);
-
-  // Filter wishlists
-  const searchResults = wishlists.filter((w) =>
-    w.Title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleSearchSelect = useCallback((wishlistId: string) => {
-    setIsSearchOpen(false);
-    navigate(`/wishlists/${wishlistId}`);
-  }, [navigate]);
-
-  // Keyboard navigation within the modal
-  useEffect(() => {
-    if (!isSearchOpen) return;
-
-    const handleModalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        setIsSearchOpen(false);
-      } else if (e.key === 'ArrowDown' && searchResults.length > 0) {
-        e.preventDefault();
-        setActiveSearchIndex((prev) => (prev + 1) % searchResults.length);
-      } else if (e.key === 'ArrowUp' && searchResults.length > 0) {
-        e.preventDefault();
-        setActiveSearchIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
-      } else if (e.key === 'Enter' && searchResults.length > 0) {
-        e.preventDefault();
-        const selected = searchResults[activeSearchIndex];
-        if (selected) {
-          handleSearchSelect(selected.Id);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleModalKeyDown);
-    return () => window.removeEventListener('keydown', handleModalKeyDown);
-  }, [isSearchOpen, searchResults, activeSearchIndex, handleSearchSelect]);
-
-  const standardThemes: { value: Theme; label: string }[] = [
-    { value: 'default', label: 'Linear' },
-    { value: 'neon', label: 'Neon' },
-    { value: 'cyberpunk', label: 'Cyberpunk' },
-    { value: 'mystic', label: 'Mystic' },
-    { value: 'burnt-forest', label: 'Burnt Forest' },
-    { value: 'paper', label: 'Paper' },
-    { value: 'paper-mario', label: 'Paper Mario' },
-    { value: 'retro-80s', label: "80's Retro" },
-    { value: 'pixel', label: 'Pixel Art' },
-    { value: 'matrix', label: 'Matrix' },
-    { value: 'terminal', label: 'Terminal' },
-    { value: 'vaporwave', label: 'Vaporwave' },
-    { value: 'arcade', label: 'Arcade' },
-  ];
-
-  const holidayThemes: { value: Theme; label: string }[] = [
-    { value: 'valentines', label: 'Valentine\'s Day' },
-    { value: 'st-patricks', label: 'St. Patrick\'s Day' },
-    { value: 'earth-day', label: 'Earth Day' },
-    { value: 'independence', label: '4th of July' },
-    { value: 'halloween', label: 'Halloween' },
-    { value: 'thanksgiving', label: 'Thanksgiving' },
-    { value: 'christmas', label: 'Christmas' },
-  ];
-
-  const appearances: { value: Appearance; label: string; icon: any }[] = [
-    { value: 'light', label: 'Light', icon: Sun },
-    { value: 'dark', label: 'Dark', icon: Moon },
-    { value: 'system', label: 'System', icon: Palette },
-  ];
 
   return (
     <AppNavigationTemplate
@@ -217,36 +71,15 @@ export const AppNavigation: React.FC = () => {
       setTheme={setTheme}
       setAppearance={setAppearance}
       isThemeUnlocked={isThemeUnlocked}
-      temporaryTheme={temporaryTheme}
-      isProfileOpen={isProfileOpen}
-      setIsProfileOpen={setIsProfileOpen}
-      isThemeOpen={isThemeOpen}
-      setIsThemeOpen={handleSetThemeOpen}
-      profileRef={profileRef}
-      themeRef={themeRef}
-      handleLogout={handleLogout}
-      standardThemes={standardThemes}
-      holidayThemes={holidayThemes}
       customThemes={customThemes}
-      isHolidayOpen={isHolidayOpen}
-      setIsHolidayOpen={setIsHolidayOpen}
-      appearances={appearances}
+      temporaryTheme={temporaryTheme}
+      handleLogout={handleLogout}
       navigate={navigate}
-      isSearchOpen={isSearchOpen}
-      setIsSearchOpen={setIsSearchOpen}
-      searchQuery={searchQuery}
-      setSearchQuery={setSearchQuery}
-      searchResults={searchResults}
-      isSearchLoading={isSearchLoading}
-      activeSearchIndex={activeSearchIndex}
-      setActiveSearchIndex={setActiveSearchIndex}
-      handleSearchSelect={handleSearchSelect}
-      searchRef={searchRef}
-      searchInputRef={searchInputRef}
       isMobileMenuOpen={isMobileMenuOpen}
       setIsMobileMenuOpen={setIsMobileMenuOpen}
       mobileMenuRef={mobileMenuRef}
       hamburgerRef={hamburgerRef}
+      showRegisterCta={registrationMode === 'open'}
     />
   );
 };

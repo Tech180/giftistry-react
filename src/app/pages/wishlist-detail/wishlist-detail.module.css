@@ -1135,6 +1135,11 @@
   background-color: var(--surface-hover);
 }
 
+.inline-date-field {
+  min-width: 12rem;
+  max-width: 16rem;
+}
+
 .inline-date-input::-webkit-calendar-picker-indicator{
   cursor: pointer;
 }

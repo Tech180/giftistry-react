@@ -19,7 +19,7 @@ export const ReplyInputTemplate: React.FC<ReplyInputTemplateProps> = ({
   participants,
   currentUserId,
   isOwner,
-  isOwnerVisible,
+  commentVisibility,
   listOwnerId,
   onSubmit,
   setImageUrl,
@@ -28,6 +28,8 @@ export const ReplyInputTemplate: React.FC<ReplyInputTemplateProps> = ({
   isTaggingModeActive,
   setIsTaggingModeActive,
   onCancel,
+  onMentionAudienceSelect,
+  footer,
 }) => (
   <div className={styles['reply-container']}>
     <form className={styles['reply-box']} onSubmit={onSubmit}>
@@ -56,11 +58,15 @@ export const ReplyInputTemplate: React.FC<ReplyInputTemplateProps> = ({
           participants={participants}
           currentUserId={currentUserId}
           isOwner={isOwner}
-          isOwnerVisible={isOwnerVisible}
+          visibilityMode={commentVisibility.mode}
+          selectedUserIds={commentVisibility.selectedUserIds}
           listOwnerId={listOwnerId}
           onSubmit={onSubmit}
+          onMentionAudienceSelect={onMentionAudienceSelect}
         />
       </div>
+
+      {footer}
 
       <div className={styles['reply-toolbar']}>
         <div className={styles['reply-toolbar-left']}>

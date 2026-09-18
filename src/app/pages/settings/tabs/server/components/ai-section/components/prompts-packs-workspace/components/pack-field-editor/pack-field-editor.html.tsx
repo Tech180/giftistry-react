@@ -1,5 +1,9 @@
 import React from 'react';
-import { Button, Input } from 'shared/ui';
+import { Button, Input, SelectMenu } from 'shared/ui';
+import {
+  PACK_FIELD_BUCKET_MENU_TITLE,
+  PACK_FIELD_BUCKET_OPTIONS,
+} from './constants/pack-field-bucket-options.constant';
 import type { PackFieldEditorProps } from './interfaces/pack-field-editor-props.interface';
 import styles from './pack-field-editor.module.css';
 
@@ -26,20 +30,19 @@ export const PackFieldEditorTemplate: React.FC<PackFieldEditorProps> = ({
         disabled={disabled}
         onChange={(event) => onLabelChange(event.target.value)}
       />
-      <label className={styles['bucket-field']}>
+      <div className={styles['bucket-field']}>
         <span className={styles['bucket-label']}>Bucket</span>
-        <select
+        <SelectMenu
           className={styles['bucket-select']}
           value={field.bucket}
+          options={PACK_FIELD_BUCKET_OPTIONS}
+          onChange={(next) => onBucketChange(next === 'predefined' ? 'predefined' : 'userDefined')}
           disabled={disabled}
-          onChange={(event) =>
-            onBucketChange(event.target.value === 'predefined' ? 'predefined' : 'userDefined')
-          }
-        >
-          <option value="userDefined">User-defined</option>
-          <option value="predefined">Predefined</option>
-        </select>
-      </label>
+          variant="field"
+          menuTitle={PACK_FIELD_BUCKET_MENU_TITLE}
+          aria-label="Bucket"
+        />
+      </div>
       <Input
         label="Hint"
         value={field.hint}

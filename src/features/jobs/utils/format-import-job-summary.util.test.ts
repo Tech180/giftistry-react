@@ -38,6 +38,38 @@ describe('formatImportJobSummary', () => {
     expect(summary.tone).toBe('info');
   });
 
+  test('appends parse Warnings with info tone', () => {
+    const summary = formatImportJobSummary(
+      job({
+        Result: {
+          Created: 2,
+          Failed: 0,
+          Warnings: ['AI returned only 2 items from ~40 rows; results may be incomplete.'],
+        },
+      })
+    );
+    expect(summary.message).toContain('2 items added');
+    expect(summary.message).toContain('only 2 items from ~40 rows');
+    expect(summary.tone).toBe('info');
+  });
+
+  test('appends chunk failure Warnings with info tone', () => {
+    const summary = formatImportJobSummary(
+      job({
+        Result: {
+          Created: 10,
+          Failed: 0,
+          Warnings: [
+            '1 of 3 AI import chunks failed; results may be incomplete.',
+          ],
+        },
+      })
+    );
+    expect(summary.message).toContain('10 items added');
+    expect(summary.message).toContain('1 of 3 AI import chunks failed');
+    expect(summary.tone).toBe('info');
+  });
+
   test('formats failed and cancelled jobs', () => {
     expect(
       formatImportJobSummary(job({ Status: 'failed', Error: 'parse boom' })).message

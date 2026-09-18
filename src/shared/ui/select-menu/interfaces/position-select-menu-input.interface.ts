@@ -11,4 +11,6 @@ export interface PositionSelectMenuInput {
   viewportHeight: number;
   gap?: number;
   inset?: number;
+  /** center = under trigger midpoint; start = flush with trigger left */
+  align?: 'center' | 'start';
 }

@@ -215,6 +215,7 @@
 }
 
 .date-input,
+.date-field,
 .time-input,
 .text-input {
   flex: 1;
@@ -227,6 +228,13 @@
   outline: none;
   transition: border-color 0.2s;
   box-sizing: border-box;
+}
+
+.date-field {
+  background: transparent;
+  border: none;
+  padding: 0;
+  min-width: 0;
 }
 
 .date-input:focus,

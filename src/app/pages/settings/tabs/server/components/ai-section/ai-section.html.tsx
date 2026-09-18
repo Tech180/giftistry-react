@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Sparkles, Search, Gauge, CheckCircle2, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Sparkles, Search, Gauge, Layers, CheckCircle2, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { Switch } from 'shared/ui';
 import { AiSectionProps, type AiModelSlot } from '../../interfaces/ai-section-props.interface';
 import type { AiSlotProvider } from '../../interfaces/backend-settings.interface';
@@ -20,6 +20,10 @@ export const AiSectionTemplate: React.FC<AiSectionProps> = ({
   setAiWebSearchEnabled,
   aiRateLimitEnabled,
   setAiRateLimitEnabled,
+  aiImportChunkingEnabled,
+  setAiImportChunkingEnabled,
+  aiImportChunkItemLimit,
+  setAiImportChunkItemLimit,
   aiConnectTimeoutMs,
   setAiConnectTimeoutMs,
   aiCompletionTimeoutMs,
@@ -335,6 +339,49 @@ export const AiSectionTemplate: React.FC<AiSectionProps> = ({
                   aria-label="Enable AI rate limiting"
                 />
               </div>
+
+              <div className={styles['web-search-row']}>
+                <div className={styles['web-search-copy']}>
+                  <div className={styles['web-search-icon']} aria-hidden="true">
+                    <Layers size={14} />
+                  </div>
+                  <div>
+                    <h3 className={styles['subsection-title']}>Import chunking</h3>
+                    <p className={styles['ai-subtitle']}>
+                      Split large wishlist imports into smaller AI requests for more reliable extraction.
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={aiImportChunkingEnabled}
+                  onChange={setAiImportChunkingEnabled}
+                  disabled={!aiEnabled}
+                  aria-label="Enable AI import chunking"
+                />
+              </div>
+
+              {aiImportChunkingEnabled ? (
+                <div className={styles['input-wrapper']}>
+                  <label className={styles['input-label']} htmlFor="ai-import-chunk-item-limit">
+                    Items per import chunk
+                  </label>
+                  <p className={styles['ai-subtitle']}>
+                    Maximum candidate rows sent to the AI in each import chunk (1–100).
+                  </p>
+                  <input
+                    id="ai-import-chunk-item-limit"
+                    type="number"
+                    min={1}
+                    max={100}
+                    step={1}
+                    className={styles['input-field']}
+                    value={aiImportChunkItemLimit}
+                    onChange={(e) => setAiImportChunkItemLimit(Number(e.target.value))}
+                    disabled={!aiEnabled}
+                    aria-label="Items per AI import chunk"
+                  />
+                </div>
+              ) : null}
 
               <div className={styles['input-wrapper']}>
                 <label className={styles['input-label']} htmlFor="ai-connect-timeout-ms">

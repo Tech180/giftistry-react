@@ -5,6 +5,12 @@
   gap: var(--spacing-base);
 }
 
+.visibility-anchor {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .tools-left {
   display: flex;
   align-items: center;

@@ -28,7 +28,8 @@ export function useCommentController() {
     isOwnerVisible?: boolean,
     isRollover?: boolean,
     parentId?: string | null,
-    imageUrl?: string | null
+    imageUrl?: string | null,
+    visibleToUserIds?: string[] | null
   ) => {
     setError(null);
     try {
@@ -39,7 +40,8 @@ export function useCommentController() {
         isOwnerVisible,
         isRollover,
         parentId,
-        imageUrl
+        imageUrl,
+        visibleToUserIds
       );
       setComments((prev) => appendUniqueComment(prev, newComment));
       return newComment;

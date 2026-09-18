@@ -93,7 +93,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   );
 
   const claims = displayItem.Claims ?? [];
-  const canEditItem = resolveCanEditItem(item, user?.Id, isOwner, isPublicGuest);
+  const canEditItem = resolveCanEditItem(item, user?.Id, canCollaborate, isPublicGuest);
 
   const [claimAmount, setClaimAmount] = useState('');
   const [anonymous, setAnonymous] = useState(false);
@@ -301,7 +301,7 @@ export const ItemShowcase: React.FC<ItemShowcaseProps> = ({
   const claimerSubstitutionEligibility = resolveClaimerSubstitutionAction({
     item,
     userId: user?.Id,
-    isOwner,
+    canCollaborate,
     isPublicGuest,
   });
 

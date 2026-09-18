@@ -8,7 +8,14 @@ export const authApi = {
   login: (username: string, password: string) =>
     apiClient.post<AuthResponse>('/api/auth/login', { Username: username, Password: password }, 'Auth'),
 
-  signup: (username: string, email: string | null | undefined, password: string, firstName?: string, lastName?: string) =>
+  signup: (
+    username: string,
+    email: string | null | undefined,
+    password: string,
+    firstName?: string,
+    lastName?: string,
+    inviteToken?: string | null
+  ) =>
     apiClient.post<AuthResponse>(
       '/api/auth/signup',
       {
@@ -17,6 +24,7 @@ export const authApi = {
         Password: password,
         FirstName: firstName,
         LastName: lastName,
+        ...(inviteToken ? { InviteToken: inviteToken } : {}),
       },
       'Auth'
     ),
@@ -112,7 +120,16 @@ export const authApi = {
   patchOnboarding: (payload: OnboardingPatchPayload) =>
     apiClient.patch<OnboardingState & { User?: ApiUser }>('/api/auth/onboarding', payload, 'Onboarding'),
 
-  beginOauthLogin: () => {
-    window.location.href = `${env.apiUrl}/api/auth/oauth/authorize`;
+  beginOauthLogin: (inviteToken?: string | null) => {
+    const qs =
+      inviteToken && inviteToken.trim()
+        ? `?invite=${encodeURIComponent(inviteToken.trim())}`
+        : '';
+    window.location.href = `${env.apiUrl}/api/auth/oauth/authorize${qs}`;
   },
+
+  validateRegistrationInvite: (token: string) =>
+    apiClient.get<{ Valid: boolean; ExpiresAt: string | null }>(
+      `/api/auth/registration-invite/${encodeURIComponent(token)}`
+    ),
 };

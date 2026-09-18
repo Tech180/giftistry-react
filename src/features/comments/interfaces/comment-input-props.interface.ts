@@ -1,10 +1,11 @@
+import type { CommentVisibilityState } from './comment-visibility-state.interface';
 import { Item } from 'features/items';
 import { ListParticipant } from './list-participant.interface';
 
 export interface CommentInputProps {
   isOwner: boolean;
-  isOwnerVisible: boolean;
-  setIsOwnerVisible: (visible: boolean) => void;
+  commentVisibility: CommentVisibilityState;
+  setCommentVisibility: (next: CommentVisibilityState) => void;
   isRollover: boolean;
   setIsRollover: (rollover: boolean) => void;
   autoRollover?: boolean;
@@ -25,4 +26,5 @@ export interface CommentInputProps {
   listOwnerId?: string;
   imageUrl?: string | null;
   setImageUrl?: (url: string | null) => void;
+  onMentionSelect?: (userId: string) => void;
 }

@@ -68,6 +68,10 @@ export interface ServerSettingsTabTemplateProps {
   setAiWebSearchEnabled: (val: boolean) => void;
   aiRateLimitEnabled: boolean;
   setAiRateLimitEnabled: (val: boolean) => void;
+  aiImportChunkingEnabled: boolean;
+  setAiImportChunkingEnabled: (val: boolean) => void;
+  aiImportChunkItemLimit: number;
+  setAiImportChunkItemLimit: (val: number) => void;
   aiConnectTimeoutMs: number;
   setAiConnectTimeoutMs: (val: number) => void;
   aiCompletionTimeoutMs: number;

@@ -48,6 +48,8 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
   const [aiEnabled, setAiEnabled] = useState(false);
   const [aiWebSearchEnabled, setAiWebSearchEnabled] = useState(false);
   const [aiRateLimitEnabled, setAiRateLimitEnabled] = useState(false);
+  const [aiImportChunkingEnabled, setAiImportChunkingEnabled] = useState(true);
+  const [aiImportChunkItemLimit, setAiImportChunkItemLimit] = useState(20);
   const [aiCompletionTimeoutMs, setAiCompletionTimeoutMs] = useState(600000);
   const [aiConnectTimeoutMs, setAiConnectTimeoutMs] = useState(5000);
   const [scrapeFetchTimeoutMs, setScrapeFetchTimeoutMs] = useState(8000);
@@ -183,6 +185,10 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     setAiEnabled(!!s.AiEnabled);
     setAiWebSearchEnabled(!!s.AiWebSearchEnabled);
     setAiRateLimitEnabled(!!s.AiRateLimitEnabled);
+    setAiImportChunkingEnabled(s.AiImportChunkingEnabled !== false);
+    setAiImportChunkItemLimit(
+      Number.isFinite(s.AiImportChunkItemLimit) ? Number(s.AiImportChunkItemLimit) : 20
+    );
     setAiCompletionTimeoutMs(
       Number.isFinite(s.AiCompletionTimeoutMs) ? Number(s.AiCompletionTimeoutMs) : 600000
     );
@@ -317,12 +323,22 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     };
   }, [aiFastProvider, aiIntelligentProvider, aiFastModel, aiIntelligentModel]);
 
-  const checkLocalAiConnection = useCallback(async (slot: AiModelSlot, endpointOverride?: string) => {
+  const checkLocalAiConnection = useCallback(async (
+    slot: AiModelSlot,
+    endpointOverride?: string,
+    modelOverride?: string
+  ) => {
     const isFast = slot === 'fast';
     const provider = isFast ? aiFastProvider : aiIntelligentProvider;
     const endpoint = (endpointOverride ?? (isFast ? aiFastEndpoint : aiIntelligentEndpoint)).trim();
     const apiKey = (isFast ? aiFastApiKey : aiIntelligentApiKey).trim();
-    const model = (isFast ? aiFastModel : aiIntelligentModel).trim();
+    const model = (
+      modelOverride !== undefined
+        ? modelOverride
+        : isFast
+          ? aiFastModel
+          : aiIntelligentModel
+    ).trim();
     const requestIdRef = isFast ? fastCheckRequestIdRef : intelligentCheckRequestIdRef;
     const setStatus = isFast ? setFastConnectionStatus : setIntelligentConnectionStatus;
     const setMessage = isFast ? setFastConnectionMessage : setIntelligentConnectionMessage;
@@ -421,9 +437,37 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     }
   }, []);
 
+  const handleAiFastProviderChange = useCallback((value: AiSlotProvider) => {
+    if (value === aiFastProvider) {
+      return;
+    }
+    setAiFastProvider(value);
+    setAiFastModel('');
+    setSelectedFastCompany('');
+    setLocalFastModels([]);
+    setLocalFastModelMode('custom');
+    setFastConnectionStatus('idle');
+    setFastConnectionMessage('');
+  }, [aiFastProvider]);
+
+  const handleAiIntelligentProviderChange = useCallback((value: AiSlotProvider) => {
+    if (value === aiIntelligentProvider) {
+      return;
+    }
+    setAiIntelligentProvider(value);
+    setAiIntelligentModel('');
+    setSelectedIntelligentCompany('');
+    setLocalIntelligentModels([]);
+    setLocalIntelligentModelMode('custom');
+    setIntelligentConnectionStatus('idle');
+    setIntelligentConnectionMessage('');
+  }, [aiIntelligentProvider]);
+
   const handleAiFastEndpointChange = useCallback((value: string) => {
     setAiFastEndpoint(value);
+    setAiFastModel('');
     setLocalFastModels([]);
+    setLocalFastModelMode('custom');
     setFastConnectionStatus('idle');
     setFastConnectionMessage('');
 
@@ -437,13 +481,15 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     }
 
     fastEndpointCheckTimerRef.current = window.setTimeout(() => {
-      void checkLocalAiConnection('fast', value);
+      void checkLocalAiConnection('fast', value, '');
     }, 600);
   }, [aiEnabled, aiFastProvider, checkLocalAiConnection]);
 
   const handleAiIntelligentEndpointChange = useCallback((value: string) => {
     setAiIntelligentEndpoint(value);
+    setAiIntelligentModel('');
     setLocalIntelligentModels([]);
+    setLocalIntelligentModelMode('custom');
     setIntelligentConnectionStatus('idle');
     setIntelligentConnectionMessage('');
 
@@ -457,7 +503,7 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
     }
 
     intelligentEndpointCheckTimerRef.current = window.setTimeout(() => {
-      void checkLocalAiConnection('intelligent', value);
+      void checkLocalAiConnection('intelligent', value, '');
     }, 600);
   }, [aiEnabled, aiIntelligentProvider, checkLocalAiConnection]);
 
@@ -522,6 +568,8 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       AiEnabled: aiEnabled,
       AiWebSearchEnabled: aiWebSearchEnabled,
       AiRateLimitEnabled: aiRateLimitEnabled,
+      AiImportChunkingEnabled: aiImportChunkingEnabled,
+      AiImportChunkItemLimit: aiImportChunkItemLimit,
       AiCompletionTimeoutMs: aiCompletionTimeoutMs,
       AiConnectTimeoutMs: aiConnectTimeoutMs,
       ScrapeFetchTimeoutMs: scrapeFetchTimeoutMs,
@@ -723,6 +771,10 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       setAiWebSearchEnabled={setAiWebSearchEnabled}
       aiRateLimitEnabled={aiRateLimitEnabled}
       setAiRateLimitEnabled={setAiRateLimitEnabled}
+      aiImportChunkingEnabled={aiImportChunkingEnabled}
+      setAiImportChunkingEnabled={setAiImportChunkingEnabled}
+      aiImportChunkItemLimit={aiImportChunkItemLimit}
+      setAiImportChunkItemLimit={setAiImportChunkItemLimit}
       aiCompletionTimeoutMs={aiCompletionTimeoutMs}
       setAiCompletionTimeoutMs={setAiCompletionTimeoutMs}
       aiConnectTimeoutMs={aiConnectTimeoutMs}
@@ -738,7 +790,7 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       grabInfoActiveStreamLimit={grabInfoActiveStreamLimit}
       setGrabInfoActiveStreamLimit={setGrabInfoActiveStreamLimit}
       aiFastProvider={aiFastProvider}
-      setAiFastProvider={setAiFastProvider}
+      setAiFastProvider={handleAiFastProviderChange}
       aiFastEndpoint={aiFastEndpoint}
       setAiFastEndpoint={handleAiFastEndpointChange}
       aiFastApiKey={aiFastApiKey}
@@ -746,7 +798,7 @@ export const ServerSettingsTab: React.FC<ServerSettingsTabProps> = ({ showToast 
       aiFastModel={aiFastModel}
       setAiFastModel={setAiFastModel}
       aiIntelligentProvider={aiIntelligentProvider}
-      setAiIntelligentProvider={setAiIntelligentProvider}
+      setAiIntelligentProvider={handleAiIntelligentProviderChange}
       aiIntelligentEndpoint={aiIntelligentEndpoint}
       setAiIntelligentEndpoint={handleAiIntelligentEndpointChange}
       aiIntelligentApiKey={aiIntelligentApiKey}

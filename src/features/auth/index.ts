@@ -7,3 +7,4 @@ export * from './api/auth.api';
 export * from './interfaces/api-user.interface';
 export * from './interfaces/auth-response.interface';
 export * from './utils/post-auth-path.util';
+export * from './utils/is-session-unauthorized.util';

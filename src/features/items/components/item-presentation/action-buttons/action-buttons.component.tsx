@@ -49,7 +49,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
     return null;
   }
 
-  const showSuggesterEditActions = !!canEditItem && !isOwner;
+  const showSuggesterEditActions = !!canEditItem && !canCollaborate;
   const size: ActionButtonsSize = compact ? 'sm' : 'md';
   const stackClassName = compact
     ? styles['actions-row']

@@ -1,8 +1,17 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ReplyInputProps } from './interfaces/reply-input-props.interface';
 import { ReplyInputTemplate } from './reply-input.html';
 import { CommentEditorHandle } from '../../../input/components/input/editor';
-import { convertMentionsToMarkdown, getMentionableParticipants } from '../../../../utils/comment-content.util';
+import { InputFooter } from '../../../input/components/input';
+import {
+  convertMentionsToMarkdown,
+  getMentionableParticipants,
+} from '../../../../utils/comment-content.util';
+import {
+  DEFAULT_COMMENT_VISIBILITY,
+  OWNER_DEFAULT_COMMENT_VISIBILITY,
+} from '../../../../constants/default-comment-visibility.constant';
+import type { CommentVisibilityState } from '../../../../interfaces/comment-visibility-state.interface';
 
 export const ReplyInput: React.FC<ReplyInputProps> = ({
   replyToName,
@@ -10,7 +19,6 @@ export const ReplyInput: React.FC<ReplyInputProps> = ({
   items,
   currentUserId,
   isOwner,
-  isOwnerVisible,
   listOwnerId,
   isTaggingModeActive,
   setIsTaggingModeActive,
@@ -23,21 +31,33 @@ export const ReplyInput: React.FC<ReplyInputProps> = ({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [commentVisibility, setCommentVisibility] = useState<CommentVisibilityState>(() =>
+    isOwner ? OWNER_DEFAULT_COMMENT_VISIBILITY : DEFAULT_COMMENT_VISIBILITY
+  );
 
   const mentionParticipants = useMemo(
     () =>
       getMentionableParticipants(participants, {
         isOwner,
-        isOwnerVisible,
+        mode: commentVisibility.mode,
+        selectedUserIds: commentVisibility.selectedUserIds,
         listOwnerId,
       }),
-    [participants, isOwner, isOwnerVisible, listOwnerId]
+    [participants, isOwner, commentVisibility, listOwnerId]
   );
 
   useEffect(() => {
     const timer = window.setTimeout(() => editorHandle.current?.focus(), 50);
     return () => window.clearTimeout(timer);
   }, []);
+
+  const handleMentionAudienceSelect = (userId: string) => {
+    setCommentVisibility((prev) => {
+      if (prev.mode !== 'visibleToSelected') return prev;
+      if (prev.selectedUserIds.includes(userId)) return prev;
+      return { ...prev, selectedUserIds: [...prev.selectedUserIds, userId] };
+    });
+  };
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -63,7 +83,7 @@ export const ReplyInput: React.FC<ReplyInputProps> = ({
         }
       }
 
-      await onSubmit(finalContent, imageUrl);
+      await onSubmit(finalContent, imageUrl, commentVisibility);
       setContent('');
       setImageUrl(null);
       setUploadError(null);
@@ -97,7 +117,7 @@ export const ReplyInput: React.FC<ReplyInputProps> = ({
       participants={mentionParticipants}
       currentUserId={currentUserId ?? undefined}
       isOwner={isOwner}
-      isOwnerVisible={isOwnerVisible}
+      commentVisibility={commentVisibility}
       listOwnerId={listOwnerId}
       onSubmit={handleSubmit}
       setImageUrl={setImageUrl}
@@ -106,6 +126,23 @@ export const ReplyInput: React.FC<ReplyInputProps> = ({
       isTaggingModeActive={isTaggingModeActive}
       setIsTaggingModeActive={setIsTaggingModeActive}
       onCancel={handleCancel}
+      onMentionAudienceSelect={handleMentionAudienceSelect}
+      footer={
+        <InputFooter
+          isOwner={isOwner}
+          commentVisibility={commentVisibility}
+          setCommentVisibility={setCommentVisibility}
+          isRollover={false}
+          setIsRollover={() => undefined}
+          autoRollover={false}
+          items={items}
+          isTaggingModeActive={isTaggingModeActive}
+          setIsTaggingModeActive={setIsTaggingModeActive}
+          participants={participants}
+          currentUserId={currentUserId ?? undefined}
+          listOwnerId={listOwnerId}
+        />
+      }
     />
   );
 };

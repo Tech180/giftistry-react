@@ -1,5 +1,7 @@
-import { Item } from 'features/items';
-import { ListParticipant } from '../../../../../interfaces/list-participant.interface';
+import type { Item } from 'features/items';
+import type { ListParticipant } from '../../../../interfaces/list-participant.interface';
+import type { CommentVisibilityState } from '../../../../interfaces/comment-visibility-state.interface';
+import type { CommentEditorHandle } from '../../../input/components/input/editor';
 
 export interface ReplyInputProps {
   replyToName: string;
@@ -7,11 +9,14 @@ export interface ReplyInputProps {
   items: Item[];
   currentUserId?: string | null;
   isOwner: boolean;
-  isOwnerVisible: boolean;
   listOwnerId?: string;
   isTaggingModeActive: boolean;
   setIsTaggingModeActive: (active: boolean) => void;
   taggedItemIds: string[];
-  onSubmit: (content: string, imageUrl: string | null) => Promise<void>;
+  onSubmit: (
+    content: string,
+    imageUrl: string | null,
+    visibility: CommentVisibilityState
+  ) => Promise<void>;
   onCancel: () => void;
 }

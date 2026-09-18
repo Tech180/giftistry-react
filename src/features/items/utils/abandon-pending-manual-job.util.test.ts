@@ -67,6 +67,24 @@ describe('abandonPendingManualJob', () => {
     expect(result.result?.Job.Id).toBe('new-job');
   });
 
+  test('background cancels draft-populate when promoteOnClose is false', async () => {
+    await expect(
+      abandonPendingManualJob({
+        pending: {
+          jobId: 'job-sub',
+          kind: 'enrich',
+          intent: 'draft-populate',
+          url: 'https://example.com/sub',
+          promoteOnClose: false,
+        },
+        listId: 'list-1',
+        background: true,
+      })
+    ).resolves.toEqual({ outcome: 'cancelled' });
+    expect(jobsApi.cancelJob).toHaveBeenCalledWith('job-sub');
+    expect(jobsApi.startItemEnrich).not.toHaveBeenCalled();
+  });
+
   test('background leaves update-item running', async () => {
     await expect(
       abandonPendingManualJob({

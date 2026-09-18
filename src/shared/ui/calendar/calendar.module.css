@@ -1,0 +1,120 @@
+.calendar {
+  padding: var(--spacing-md);
+  width: 17.5rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.nav {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm, var(--radius));
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast, 0.1s) ease-out,
+    color var(--transition-fast, 0.1s) ease-out,
+    border-color var(--transition-fast, 0.1s) ease-out;
+  outline: none;
+}
+
+.nav-btn:hover,
+.nav-btn:focus-visible {
+  background: var(--surface-hover);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.125rem;
+  text-align: center;
+}
+
+.weekday {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  padding-bottom: var(--spacing-sm);
+}
+
+.day-btn {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm, var(--radius));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast, 0.1s) ease-out;
+  margin: 0 auto;
+  outline: none;
+  position: relative;
+}
+
+.day-btn:hover {
+  background: var(--surface-hover);
+}
+
+.day-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary);
+  z-index: 1;
+}
+
+.day-other-month {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.day-today::after {
+  content: '';
+  position: absolute;
+  bottom: 0.125rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0.25rem;
+  height: 0.25rem;
+  border-radius: 50%;
+  background-color: var(--primary);
+}
+
+.day-selected {
+  background: var(--primary);
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
+.day-selected::after {
+  background-color: var(--primary-text);
+}
+
+.day-selected:hover {
+  background: var(--primary-hover, var(--primary));
+}

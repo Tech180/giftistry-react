@@ -17,4 +17,5 @@ export interface MobileDrawerProps {
   handleLogout: () => void;
   navigate: NavigateFunction;
   drawerRef: RefObject<HTMLDivElement | null>;
+  showRegisterCta: boolean;
 }

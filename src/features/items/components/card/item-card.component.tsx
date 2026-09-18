@@ -87,7 +87,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   );
 
   const claims = displayItem.Claims ?? [];
-  const canEditItem = resolveCanEditItem(item, user?.Id, isOwner, isPublicGuest);
+  const canEditItem = resolveCanEditItem(item, user?.Id, canCollaborate, isPublicGuest);
 
   const [urlInput, setUrlInput] = useState('');
   const [showAddLink, setShowAddLink] = useState(false);
@@ -146,7 +146,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       };
       const newFavoriteState = !localIsFavorite;
 
-      if (isOwner) {
+      if (canCollaborate) {
         metadataPayload.IsFavorite = newFavoriteState;
         if (!newFavoriteState) {
           delete metadataPayload.IsPinned;
@@ -348,7 +348,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
   const claimerSubstitutionEligibility = resolveClaimerSubstitutionAction({
     item,
     userId: user?.Id,
-    isOwner,
+    canCollaborate,
     isPublicGuest,
   });
 

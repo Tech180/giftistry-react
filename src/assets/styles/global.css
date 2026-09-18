@@ -102,7 +102,6 @@
   --dropdown-shadow: var(--shadow-lg, var(--shadow));
   --dropdown-item-hover: color-mix(in srgb, var(--text) 4%, transparent);
   --dropdown-item-active: color-mix(in srgb, var(--accent) 8%, transparent);
-  --zindex-dropdown: 9999;
 }
 
 /* Transparent bordered panel — matches gift category section */

@@ -19,7 +19,7 @@ export interface AddItemFormTemplateProps {
   isHiddenIdea: boolean;
   setIsHiddenIdea: (val: boolean) => void;
   priorities?: Priority[];
-  isOwner: boolean;
+  canCollaborate: boolean;
   isLoading: boolean;
   errorMsg: string | null;
   warningMsg: string | null;

@@ -216,14 +216,20 @@ describe('AddItemTemplate link-select drawer visibility', () => {
 });
 
 describe('AddItemTemplate suggestion banner', () => {
-  test('shows a Suggestion banner for non-owners', () => {
-    render(<AddItemTemplate {...baseProps} isOwner={false} />);
+  test('shows a Suggestion banner for non-collaborators', () => {
+    render(<AddItemTemplate {...baseProps} isOwner={false} canCollaborate={false} />);
 
     expect(screen.getByRole('status')).toHaveTextContent('Suggestion');
   });
 
   test('hides the Suggestion banner for owners', () => {
-    render(<AddItemTemplate {...baseProps} isOwner={true} />);
+    render(<AddItemTemplate {...baseProps} isOwner={true} canCollaborate={true} />);
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  test('hides the Suggestion banner for collaborators', () => {
+    render(<AddItemTemplate {...baseProps} isOwner={false} canCollaborate={true} />);
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });

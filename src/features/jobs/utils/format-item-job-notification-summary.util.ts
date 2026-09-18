@@ -1,5 +1,6 @@
 import type { BackgroundJobView } from '../interfaces/background-job.interface';
 import type { ImportJobSummary } from '../interfaces/import-job-summary.interface';
+import { isAiPopulateFailed } from './is-ai-populate-failed.util';
 
 /**
  * Fallback bell/toast copy for item AI jobs when the notification payload
@@ -32,6 +33,15 @@ export function formatItemJobNotificationSummary(
   const label = resolveItemLabel(job);
 
   if (isEnrich) {
+    if (isAiPopulateFailed(job.Result)) {
+      return {
+        title: listTitle || 'Item ready',
+        message: label
+          ? `Product details were found, but AI summarization has failed for “${label}”.`
+          : 'Product details were found, but AI summarization has failed.',
+        tone: 'info',
+      };
+    }
     return {
       title: listTitle || 'Item ready',
       message: label

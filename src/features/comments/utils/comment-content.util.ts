@@ -1,4 +1,5 @@
 import { ListParticipant } from '../interfaces/list-participant.interface';
+import type { CommentVisibilityMode } from '../interfaces/comment-visibility-mode.type';
 
 export type CommentContentSegment =
   | { type: 'text'; value: string }
@@ -50,14 +51,27 @@ export function getMentionableParticipants(
   participants: ListParticipant[],
   options: {
     isOwner: boolean;
-    isOwnerVisible: boolean;
+    mode: CommentVisibilityMode;
+    selectedUserIds?: string[];
     listOwnerId?: string;
+    /** @deprecated Prefer `mode` */
+    isOwnerVisible?: boolean;
   }
 ): ListParticipant[] {
-  const { isOwner, isOwnerVisible, listOwnerId } = options;
-  if (isOwner || isOwnerVisible || !listOwnerId) {
+  const { isOwner, selectedUserIds = [], listOwnerId } = options;
+  const mode =
+    options.mode ??
+    (options.isOwnerVisible === false ? 'hiddenFromOwner' : 'visibleToAll');
+
+  if (mode === 'visibleToSelected') {
+    const allowed = new Set(selectedUserIds);
+    return participants.filter((participant) => allowed.has(participant.userId));
+  }
+
+  if (isOwner || mode === 'visibleToAll' || !listOwnerId) {
     return participants;
   }
+
   return participants.filter((participant) => participant.userId !== listOwnerId);
 }
 

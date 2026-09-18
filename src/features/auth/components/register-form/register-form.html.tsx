@@ -22,6 +22,10 @@ export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
   localError,
   registrationClosed = false,
   registrationClosedMessage,
+  inviteValidating = false,
+  oauthEnabled = false,
+  oauthButtonText = 'Sign in with SSO',
+  onOauthSignup,
   handleSubmit,
 }) => {
   return (
@@ -32,7 +36,14 @@ export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
         <p className={styles.subtitle}>Get started with your custom gift registry</p>
       </div>
 
-      {registrationClosed && registrationClosedMessage && (
+      {inviteValidating && (
+        <EnterPanel animation="slide-up" className={styles.alert}>
+          <AlertCircle size={16} />
+          <span>Checking invite link…</span>
+        </EnterPanel>
+      )}
+
+      {registrationClosed && registrationClosedMessage && !inviteValidating && (
         <EnterPanel animation="slide-up" className={styles.alert}>
           <AlertCircle size={16} />
           <span>{registrationClosedMessage}</span>
@@ -111,11 +122,23 @@ export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
           type="submit"
           variant="primary"
           isLoading={isLoading}
-          disabled={registrationClosed}
+          disabled={registrationClosed || inviteValidating}
           className={styles['submit-btn']}
         >
           Create Account
         </Button>
+
+        {oauthEnabled && onOauthSignup && (
+          <Button
+            type="button"
+            variant="secondary"
+            className={styles['submit-btn']}
+            onClick={onOauthSignup}
+            disabled={registrationClosed || inviteValidating}
+          >
+            {oauthButtonText}
+          </Button>
+        )}
       </form>
 
       <div className={styles.footer}>

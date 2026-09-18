@@ -2,7 +2,6 @@ import type { ActionButtonsLayoutMode } from '../interfaces/action-buttons-templ
 import type { ActionButtonsVisibility } from '../interfaces/action-buttons-visibility.interface';
 
 export function resolveActionButtonsLayoutMode({
-  isOwner,
   canCollaborate,
   claimedByCurrentUser,
   isFullyClaimed,
@@ -17,13 +16,13 @@ export function resolveActionButtonsLayoutMode({
     return null;
   }
 
-  // Only list owners get pure edit/delete; suggestors (canEditItem && !isOwner)
-  // fall through so they can claim as well as edit.
-  const isOwnerEdit = isOwner && (canEditItem ?? canCollaborate);
-  if (isOwnerEdit) {
+  // Collaborators (and owners) get pure edit/delete with no claim chrome.
+  // Suggestors (canEditItem && !canCollaborate) fall through so they can claim as well as edit.
+  const isCollaboratorEdit = canCollaborate && (canEditItem ?? true);
+  if (isCollaboratorEdit) {
     return 'owner-edit';
   }
-  if (isOwner) {
+  if (canCollaborate) {
     return null;
   }
   if (claimedByCurrentUser && canAdjustClaim) {

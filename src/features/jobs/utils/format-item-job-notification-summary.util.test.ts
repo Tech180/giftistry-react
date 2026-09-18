@@ -52,4 +52,43 @@ describe('formatItemJobNotificationSummary', () => {
       tone: 'error',
     });
   });
+
+  it('formats enrich soft-fail when AiPopulate failed', () => {
+    expect(
+      formatItemJobNotificationSummary(
+        {
+          Kind: 'item-enrich',
+          Status: 'completed',
+          Error: null,
+          Message: 'Info grabbed',
+          Result: {
+            Title: 'Wireless Mouse',
+            Diagnostics: { AiPopulate: 'failed' },
+          },
+        },
+        { listTitle: 'Office Gifts' }
+      )
+    ).toEqual({
+      title: 'Office Gifts',
+      message:
+        'Product details were found, but AI summarization has failed for “Wireless Mouse”.',
+      tone: 'info',
+    });
+  });
+
+  it('formats enrich soft-fail without label', () => {
+    expect(
+      formatItemJobNotificationSummary({
+        Kind: 'item-enrich',
+        Status: 'completed',
+        Error: null,
+        Message: 'Info grabbed',
+        Result: { Diagnostics: { AiPopulate: 'failed' } },
+      })
+    ).toEqual({
+      title: 'Item ready',
+      message: 'Product details were found, but AI summarization has failed.',
+      tone: 'info',
+    });
+  });
 });

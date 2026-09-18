@@ -23,6 +23,8 @@ export interface AddItemTemplateProps {
   collapseDrawerWhileLinking?: boolean;
   handleLinkingAudienceChange: (context: LinkingAudienceContext) => void;
   isOwner: boolean;
+  /** Item authority (owner or collaborator). Defaults to `isOwner` when omitted. */
+  canCollaborate?: boolean;
   listId: string;
   listAiEnabled: boolean;
   listManualJobBackground?: boolean;

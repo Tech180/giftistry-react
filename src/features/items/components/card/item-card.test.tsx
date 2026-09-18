@@ -225,7 +225,7 @@ describe('ItemCard suggestor view vs edit', () => {
         item={linkedSource as never}
         isOwner={false}
         isExpired={false}
-        canCollaborate
+        canCollaborate={false}
         allowGroupFunds={false}
         itemActions={{ ...itemActions, claimItem, claimItems: vi.fn() } as never}
         viewMode="detailed"
@@ -270,7 +270,7 @@ describe('ItemCard suggestor view vs edit', () => {
         item={linkedSource as never}
         isOwner={false}
         isExpired={false}
-        canCollaborate
+        canCollaborate={false}
         allowGroupFunds={false}
         itemActions={{ ...itemActions, claimItem, claimItems: vi.fn() } as never}
         viewMode="detailed"
@@ -330,7 +330,7 @@ describe('ItemCard suggestor view vs edit', () => {
         item={linkedSource as never}
         isOwner={false}
         isExpired={false}
-        canCollaborate
+        canCollaborate={false}
         allowGroupFunds={false}
         itemActions={{ ...itemActions, unclaimItem, claimItems: vi.fn() } as never}
         viewMode="detailed"
@@ -423,7 +423,7 @@ describe('ItemCard compact substitution chrome', () => {
         }
         isOwner={false}
         isExpired={false}
-        canCollaborate
+        canCollaborate={false}
         allowGroupFunds={false}
         itemActions={itemActions as never}
         viewMode="compact"

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
-import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { CommentSectionTemplateProps } from '../../interfaces/comment-section-template-props.interface';
 import { CommentItem } from '../item/comment-item.component';
 import { CommentInput } from '../input/comment-input.component';
@@ -14,7 +13,6 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   canPostComments,
   currentUserId,
   participants,
-  comments,
   parentComments,
   repliesMap,
   handleReplySubmit,
@@ -25,8 +23,8 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   setContent,
   commenterName,
   setCommenterName,
-  isOwnerVisible,
-  setIsOwnerVisible,
+  commentVisibility,
+  setCommentVisibility,
   isRollover,
   setIsRollover,
   autoRollover = false,
@@ -37,11 +35,8 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   onlineUsers,
   typingUsers,
   onItemTaggedClick,
-  handleSelectTagItem,
   isTaggingModeActive,
   setIsTaggingModeActive,
-  taggedItemIds,
-  setTaggedItemIds,
   handleDeleteComment,
   deletingCommentId,
   setDeletingCommentId,
@@ -56,13 +51,10 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
   replyTaggedItemIds,
   setReplyTaggedItemIds,
   listContainerRef,
+  onMentionSelect,
 }) => {
   return (
     <div className={styles.section}>
-
-
-
-
       {displayError && (
         <div className={styles.alert}>
           <AlertCircle size={16} />
@@ -70,7 +62,6 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
         </div>
       )}
 
-      {/* Comment history list */}
       <div ref={listContainerRef} className={styles['list-container']}>
         {isLoading ? (
           <div className={styles['loading-spinner']}>
@@ -102,7 +93,6 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
                 replyTaggedItemIds={replyTaggedItemIds}
                 setReplyTaggedItemIds={setReplyTaggedItemIds}
                 isOwner={isOwner}
-                isOwnerVisible={isOwnerVisible}
               />
             ))}
           </div>
@@ -113,12 +103,13 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
         )}
       </div>
 
-      {/* Bottom Chat Message section */}
       <div className={styles['bottom-seamless-container']}>
         {!isAuthenticated ? (
           <div className={styles['auth-prompt']}>
             <p className={styles['auth-prompt-text']}>Sign in to join the conversation.</p>
-            <Link to="/login" className={styles['auth-prompt-link']}>Sign in</Link>
+            <Link to="/login" className={styles['auth-prompt-link']}>
+              Sign in
+            </Link>
           </div>
         ) : !canPostComments ? (
           <div className={styles['auth-prompt']}>
@@ -127,8 +118,8 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
         ) : (
           <CommentInput
             isOwner={isOwner}
-            isOwnerVisible={isOwnerVisible}
-            setIsOwnerVisible={setIsOwnerVisible}
+            commentVisibility={commentVisibility}
+            setCommentVisibility={setCommentVisibility}
             isRollover={isRollover}
             setIsRollover={setIsRollover}
             autoRollover={autoRollover}
@@ -149,6 +140,7 @@ export const CommentSectionTemplate: React.FC<CommentSectionTemplateProps> = ({
             listOwnerId={listOwnerId}
             imageUrl={imageUrl}
             setImageUrl={setImageUrl}
+            onMentionSelect={onMentionSelect}
           />
         )}
       </div>

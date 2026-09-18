@@ -12,7 +12,8 @@ export const commentsApi = {
     isOwnerVisible?: boolean,
     isRollover?: boolean,
     parentId?: string | null,
-    imageUrl?: string | null
+    imageUrl?: string | null,
+    visibleToUserIds?: string[] | null
   ) =>
     apiClient.post<Comment>(
       `/api/wishlists/${listId}/comments`,
@@ -23,6 +24,7 @@ export const commentsApi = {
         IsRollover: isRollover,
         ParentId: parentId,
         ImageUrl: imageUrl,
+        VisibleToUserIds: visibleToUserIds,
       },
       'Comments'
     ),

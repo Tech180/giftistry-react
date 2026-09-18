@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { ChevronDown, Bot, Globe, ArrowRight, Loader2 } from 'lucide-react';
-import { Input, Switch } from 'shared/ui';
+import { DateField, Input, SelectMenu, Switch } from 'shared/ui';
+import {
+  WISHLIST_CATEGORY_MENU_TITLE,
+  WISHLIST_CATEGORY_OPTIONS,
+} from '../../constants/wishlist-category-options.constant';
 import { CreateListFormTemplateProps } from '../../interfaces/create-list-form-template-props.interface';
 import styles from './create-list-form.module.css';
+
 
 export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
   title,
@@ -57,32 +62,24 @@ export const CreateListFormTemplate: React.FC<CreateListFormTemplateProps> = ({
             {/* Category */}
             <div className={styles['flex-3']}>
               <label className={styles.label}>Category</label>
-              <div className={styles['select-wrapper']}>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className={styles.select}
-                >
-                  <option value="generic">General</option>
-                  <option value="birthday">Birthday</option>
-                  <option value="holiday">Holiday</option>
-                  <option value="wedding">Wedding</option>
-                  <option value="custom">Custom...</option>
-                </select>
-                <span className={styles['select-icon']}>
-                  <ChevronDown size={16} />
-                </span>
-              </div>
+              <SelectMenu
+                className={styles['category-select']}
+                value={category}
+                options={WISHLIST_CATEGORY_OPTIONS}
+                onChange={setCategory}
+                variant="field"
+                menuTitle={WISHLIST_CATEGORY_MENU_TITLE}
+                aria-label="Category"
+              />
             </div>
 
             {/* Date */}
             <div className={styles['flex-2']}>
-              <Input
+              <DateField
                 label="Date (Optional)"
-                type="date"
                 value={expiresAt}
-                onChange={(e) => setExpiresAt(e.target.value)}
-                className={styles['input-group']}
+                onChange={setExpiresAt}
+                className={styles['date-field']}
               />
             </div>
           </div>

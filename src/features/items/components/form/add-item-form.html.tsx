@@ -27,7 +27,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
   setPriorityWeight,
   isHiddenIdea,
   setIsHiddenIdea,
-  isOwner,
+  canCollaborate,
   isLoading,
   errorMsg,
   warningMsg,
@@ -306,19 +306,19 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           {!isSubstitutionSurface ? (
           <div className={styles['form-group']}>
             <label className={`${styles.label} ${styles['label-center']}`}>
-              {isOwner ? 'Favorite' : 'Pin'}
+              {canCollaborate ? 'Favorite' : 'Pin'}
             </label>
             <button
               type="button"
               onClick={() => setIsFavorite(!isFavorite)}
-              className={`${styles['btn-star']} ${isOwner
+              className={`${styles['btn-star']} ${canCollaborate
                 ? (isFavorite ? styles['btn-star-active'] : '')
                 : (isFavorite ? styles['btn-pin-active'] : '')}`}
-              title={isOwner
+              title={canCollaborate
                 ? (isFavorite ? 'Remove Favorite' : 'Mark as Favorite')
                 : (isFavorite ? 'Unpin Item' : 'Pin Item')}
             >
-              {isOwner ? (
+              {canCollaborate ? (
                 <Star size={16} fill={isFavorite ? 'currentColor' : 'none'} />
               ) : (
                 <Pin size={16} fill={isFavorite ? 'currentColor' : 'none'} style={{ transform: isFavorite ? 'rotate(45deg)' : 'none' }} />
@@ -729,7 +729,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
 
       {/* Section 3: Visibility & sharing */}
       <div className={styles.section}>
-        {isOwner && !isSuggestion && (
+        {canCollaborate && !isSuggestion && (
           <SubstitutionManager
             parentItemId={itemId}
             options={substitutionOptions}
@@ -752,7 +752,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
           disabled={isLoading || readOnly}
         />
 
-        {!isOwner && (
+        {!canCollaborate && (
           <>
             <div className={styles['switch-row']}>
               <label htmlFor="visible-to-list-owner" className={styles['switch-label']}>
@@ -798,7 +798,7 @@ export const AddItemFormTemplate: React.FC<AddItemFormTemplateProps> = ({
       </div>
         </>
         )
-      ) : !isOwner &&
+      ) : !canCollaborate &&
         (substitutionEditor?.mode === 'create'
           ? substitutionEditor.kind === 'claimer_custom'
           : substitutionEditor?.option.Kind === 'claimer_custom') ? (

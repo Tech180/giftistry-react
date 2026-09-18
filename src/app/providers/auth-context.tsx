@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, useRef, useMemo } from 'react';
-import { authApi } from 'features/auth';
+import { authApi, isSessionUnauthorized } from 'features/auth';
+import { ApiError, apiClient } from 'core/api/client';
 import { InactivityModal } from 'features/auth/components/inactivity-modal/inactivity-modal.component';
-import { apiClient } from 'core/api/client';
 import { AuthContextType } from './interfaces/auth-context-type.interface';
 import { User } from './interfaces/user.interface';
 import { SystemStatusResult } from 'features/system/api/system.api';
@@ -38,6 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearError = () => setError(null);
 
   const fetchCurrentUser = async () => {
+    if (!localStorage.getItem('giftistry-token')) {
+      setUser(null);
+      setCapabilities(undefined);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const res = await authApi.getMe();
       if (res && res.User) {
@@ -50,9 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setCapabilities(undefined);
       }
     } catch (err) {
-      localStorage.removeItem('giftistry-token');
-      setUser(null);
-      setCapabilities(undefined);
+      if (err instanceof ApiError && isSessionUnauthorized(err.status, { Message: err.message })) {
+        localStorage.removeItem('giftistry-token');
+        setUser(null);
+        setCapabilities(undefined);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -122,11 +131,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string | null | undefined,
     password: string,
     firstName?: string,
-    lastName?: string
+    lastName?: string,
+    inviteToken?: string | null
   ) => {
     setError(null);
     try {
-      const res = await authApi.signup(username, email, password, firstName, lastName);
+      const res = await authApi.signup(
+        username,
+        email,
+        password,
+        firstName,
+        lastName,
+        inviteToken
+      );
       if (res && res.Token) {
         localStorage.setItem('giftistry-token', res.Token);
       }
@@ -338,8 +355,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [showWarning]);
 
   useEffect(() => {
-    const removeInterceptor = apiClient.addResponseInterceptor((response) => {
-      if (response.status === 401) {
+    const removeInterceptor = apiClient.addResponseInterceptor((response, json) => {
+      if (isSessionUnauthorized(response.status, json)) {
         localStorage.removeItem('giftistry-token');
         setUser(null);
       }

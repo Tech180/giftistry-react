@@ -3,4 +3,5 @@ export interface ListParticipant {
   username: string;
   displayName: string;
   avatar?: string | null;
+  role?: 'owner' | 'collaborator' | 'viewer';
 }

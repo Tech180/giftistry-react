@@ -20,24 +20,7 @@
 
 .bucket-select {
   width: 100%;
-  height: 2.25rem;
-  padding: 0 var(--spacing-sm);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm, var(--radius));
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-  font-size: var(--font-size-sm);
-}
-
-.bucket-select:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary);
-}
-
-.bucket-select:disabled {
-  opacity: 0.6;
+  min-width: 0;
 }
 
 @media (max-width: 48rem) {

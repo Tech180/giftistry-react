@@ -12,7 +12,8 @@ export interface AbandonPendingManualJobOptions {
 
 /**
  * Handles Manual form close/unmount while an AI job is still in flight.
- * Background + draft-populate → cancel draft and start create-from-url.
+ * Background + draft-populate → cancel draft and start create-from-url
+ * (unless promoteOnClose is false, e.g. substitution editor drafts).
  * Foreground → cancel the pending job.
  * Background + update-item/summarize → leave the server job running.
  */
@@ -24,7 +25,7 @@ export async function abandonPendingManualJob(
     return { outcome: 'noop' };
   }
 
-  if (!background) {
+  if (!background || pending.promoteOnClose === false) {
     try {
       await jobsApi.cancelJob(pending.jobId);
     } catch {

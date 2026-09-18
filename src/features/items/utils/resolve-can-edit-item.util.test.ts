@@ -2,19 +2,25 @@ import { describe, expect, it } from 'vitest';
 import { resolveCanEditItem } from './resolve-can-edit-item.util';
 
 describe('resolveCanEditItem', () => {
-  it('allows list owners to edit', () => {
+  it('allows collaborators to edit any item', () => {
     expect(
       resolveCanEditItem({ SuggestedByUserId: null }, 'user-1', true, false)
     ).toBe(true);
   });
 
-  it('allows the suggestor to edit', () => {
+  it('allows collaborators to edit another user’s suggestion', () => {
+    expect(
+      resolveCanEditItem({ SuggestedByUserId: 'user-1' }, 'user-2', true, false)
+    ).toBe(true);
+  });
+
+  it('allows a viewer to edit their own suggestion', () => {
     expect(
       resolveCanEditItem({ SuggestedByUserId: 'user-1' }, 'user-1', false, false)
     ).toBe(true);
   });
 
-  it('denies other collaborators', () => {
+  it('denies viewers editing another user’s suggestion', () => {
     expect(
       resolveCanEditItem({ SuggestedByUserId: 'user-1' }, 'user-2', false, false)
     ).toBe(false);

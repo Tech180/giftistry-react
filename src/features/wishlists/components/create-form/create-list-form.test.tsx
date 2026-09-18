@@ -54,4 +54,10 @@ describe('CreateListFormTemplate', () => {
     expect(screen.getByLabelText('Group Funding')).toBeInTheDocument();
     expect(screen.getByLabelText('Auto Rollover')).toBeInTheDocument();
   });
+
+  test('shows date field trigger for optional expiration', () => {
+    render(<CreateListFormTemplate {...baseProps} />);
+    expect(screen.getByLabelText('Date (Optional)')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open calendar' })).toBeInTheDocument();
+  });
 });

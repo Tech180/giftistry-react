@@ -3,7 +3,7 @@ import { Comment } from './comment.interface';
 import { Item } from 'features/items';
 import { OnlineUser } from './online-user.interface';
 import { ListParticipant } from './list-participant.interface';
-import { CommentContentSegment } from '../utils/comment-content.util';
+import type { CommentVisibilityState } from './comment-visibility-state.interface';
 
 export interface CommentSectionTemplateProps {
   isOwner: boolean;
@@ -16,13 +16,12 @@ export interface CommentSectionTemplateProps {
   isLoading: boolean;
   displayError: string | null;
 
-  // Form state
   content: string;
   setContent: (val: string) => void;
   commenterName: string;
   setCommenterName: (val: string) => void;
-  isOwnerVisible: boolean;
-  setIsOwnerVisible: (val: boolean) => void;
+  commentVisibility: CommentVisibilityState;
+  setCommentVisibility: (val: CommentVisibilityState) => void;
   isRollover: boolean;
   setIsRollover: (val: boolean) => void;
   autoRollover?: boolean;
@@ -30,7 +29,6 @@ export interface CommentSectionTemplateProps {
   handleSubmit: (e: React.SyntheticEvent) => void;
   formatDate: (dateStr?: string) => string;
 
-  // Phase 5 additions
   items: Item[];
   onlineUsers: OnlineUser[];
   typingUsers: string[];
@@ -53,11 +51,12 @@ export interface CommentSectionTemplateProps {
     parentId: string,
     replyContent: string,
     replyCommenterName?: string | null,
-    replyIsOwnerVisible?: boolean,
+    replyVisibility?: CommentVisibilityState,
     replyIsRollover?: boolean,
     replyImageUrl?: string | null
   ) => Promise<void>;
   toggleReaction: (commentId: string, reaction: string) => void;
+  onMentionSelect?: (userId: string) => void;
   activeReplyId: string | null;
   onReplyOpen: (commentId: string | null) => void;
   isReplyTaggingModeActive: boolean;

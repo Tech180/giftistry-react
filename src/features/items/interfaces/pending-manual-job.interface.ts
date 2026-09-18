@@ -5,4 +5,9 @@ export interface PendingManualJob {
   kind: 'enrich' | 'summarize';
   intent?: ItemEnrichIntent;
   url?: string;
+  /**
+   * When false, closing the form cancels a draft-populate job instead of promoting
+   * it to create-from-url. Omit/true keeps Add Item background-promote behavior.
+   */
+  promoteOnClose?: boolean;
 }

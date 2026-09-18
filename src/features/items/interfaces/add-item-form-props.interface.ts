@@ -7,6 +7,8 @@ import type { SubstitutionDrawerChrome } from './substitution-drawer-chrome.inte
 export interface AddItemFormProps {
   listId: string;
   isOwner: boolean;
+  /** Item authority (owner or collaborator). Defaults to `isOwner` when omitted. */
+  canCollaborate?: boolean;
   onSuccess: () => void;
   existingCategories?: string[];
   item?: Item | null;

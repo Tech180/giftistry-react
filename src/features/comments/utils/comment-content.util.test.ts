@@ -6,29 +6,41 @@ import {
 import { ListParticipant } from '../interfaces/list-participant.interface';
 
 const participants: ListParticipant[] = [
-  { userId: 'owner-1', username: 'owner', displayName: 'List Owner' },
-  { userId: 'user-2', username: 'collab', displayName: 'Collaborator' },
+  { userId: 'owner-1', username: 'owner', displayName: 'List Owner', role: 'owner' },
+  { userId: 'user-2', username: 'collab', displayName: 'Collaborator', role: 'collaborator' },
+  { userId: 'user-3', username: 'viewer', displayName: 'Viewer', role: 'viewer' },
 ];
 
 describe('getMentionableParticipants', () => {
   it('excludes the list owner when a comment is invisible to owner', () => {
     const result = getMentionableParticipants(participants, {
       isOwner: false,
-      isOwnerVisible: false,
+      mode: 'hiddenFromOwner',
       listOwnerId: 'owner-1',
     });
 
-    expect(result).toEqual([participants[1]]);
+    expect(result).toEqual([participants[1], participants[2]]);
   });
 
   it('keeps the list owner when the comment is visible to owner', () => {
     const result = getMentionableParticipants(participants, {
       isOwner: false,
-      isOwnerVisible: true,
+      mode: 'visibleToAll',
       listOwnerId: 'owner-1',
     });
 
     expect(result).toEqual(participants);
+  });
+
+  it('limits mentions to selected audience', () => {
+    const result = getMentionableParticipants(participants, {
+      isOwner: false,
+      mode: 'visibleToSelected',
+      selectedUserIds: ['owner-1', 'user-3'],
+      listOwnerId: 'owner-1',
+    });
+
+    expect(result).toEqual([participants[0], participants[2]]);
   });
 });
 

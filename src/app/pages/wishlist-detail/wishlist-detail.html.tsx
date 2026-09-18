@@ -219,13 +219,13 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         itemActions={itemActions}
         onEdit={isLocked ? undefined : () => openItemEditor(item)}
         onAddSubstitution={
-          isLocked || isOwner ? undefined : () => openClaimerSubstitutionCreate(item)
+          isLocked || canCollaborate ? undefined : () => openClaimerSubstitutionCreate(item)
         }
         onEditSubstitution={
-          isLocked || isOwner ? undefined : () => openClaimerSubstitutionEdit(item)
+          isLocked || canCollaborate ? undefined : () => openClaimerSubstitutionEdit(item)
         }
         onDeleteSubstitution={
-          isLocked || isOwner ? undefined : () => deleteClaimerSubstitution(item)
+          isLocked || canCollaborate ? undefined : () => deleteClaimerSubstitution(item)
         }
         onEditSubstitutionOption={
           isLocked ? undefined : (option) => openSubstitutionEdit(item, option.Id)
@@ -331,6 +331,7 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
         collapseDrawerWhileLinking={collapseDrawerWhileLinking}
         handleLinkingAudienceChange={handleLinkingAudienceChange}
         isOwner={isOwner}
+        canCollaborate={canCollaborate && !isLocked}
         listId={wishlist.Id}
         listAiEnabled={!!wishlist.AiEnabled}
         listManualJobBackground={wishlist.ManualJobBackground !== false}
@@ -544,17 +545,17 @@ export const WishlistDetailTemplate: React.FC<WishlistDetailTemplateProps> = ({
                         itemActions={itemActions}
                         onEdit={isLocked ? undefined : () => openItemEditor(selectedItem)}
                         onAddSubstitution={
-                          isLocked || isOwner
+                          isLocked || canCollaborate
                             ? undefined
                             : () => openClaimerSubstitutionCreate(selectedItem)
                         }
                         onEditSubstitution={
-                          isLocked || isOwner
+                          isLocked || canCollaborate
                             ? undefined
                             : () => openClaimerSubstitutionEdit(selectedItem)
                         }
                         onDeleteSubstitution={
-                          isLocked || isOwner
+                          isLocked || canCollaborate
                             ? undefined
                             : () => deleteClaimerSubstitution(selectedItem)
                         }

@@ -74,7 +74,8 @@
 
 .panel {
   position: fixed;
-  z-index: var(--zindex-dropdown, 9999);
+  /* Above modal/overlay — theme --zindex-dropdown is only 100 (in-page menus). */
+  z-index: calc(var(--zindex-modal, var(--zindex-overlay, 1000)) + 10);
   display: flex;
   flex-direction: column;
   min-width: 13.75rem;

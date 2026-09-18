@@ -5,6 +5,7 @@ export interface Comment {
   CommenterName: string;
   Content: string;
   IsOwnerVisible: boolean;
+  VisibleToUserIds?: string[] | null;
   IsRollover: boolean;
   IsDeleted?: boolean;
   ParentId?: string | null;

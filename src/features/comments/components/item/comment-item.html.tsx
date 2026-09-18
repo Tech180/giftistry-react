@@ -1,11 +1,12 @@
 import React from 'react';
-import { Eye, EyeOff, Trash2, CornerUpLeft } from 'lucide-react';
+import { Eye, EyeOff, Trash2, CornerUpLeft, Users } from 'lucide-react';
 import { CommentItemTemplateProps } from '../../interfaces/comment-item-template-props.interface';
 import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
 import { Meta } from './components/meta';
 import { Reactions } from './components/reactions';
 import { DeleteConfirm } from './components/delete-confirm';
 import { Tags } from './components/tags';
+import { parseCommentVisibilityMode } from '../../utils/parse-comment-visibility-mode.util';
 import styles from './comment-item.module.css';
 
 export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
@@ -57,6 +58,13 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
   const hasThread = !isThreadChild && (replies.length > 0 || isReplying);
   const showReplyThread = !isThreadChild && (isReplying || (isExpanded && replies.length > 0));
   const showLeftRail = hasLeftIcons || hasThread;
+  const visibilityMode = parseCommentVisibilityMode(comment);
+  const visibilityTitle =
+    visibilityMode === 'hiddenFromOwner'
+      ? 'Hidden from Owner'
+      : visibilityMode === 'visibleToSelected'
+        ? 'Selected audience'
+        : 'Visible to Owner';
 
   return (
     <div
@@ -74,14 +82,13 @@ export const CommentItemTemplate: React.FC<CommentItemTemplateProps> = ({
               aria-hidden={!hasLeftIcons}
             >
               {!isOwner && (
-                <div
-                  title={comment.IsOwnerVisible ? 'Visible to Owner' : 'Hidden from Owner'}
-                  className={styles['visibility-icon-wrap']}
-                >
-                  {comment.IsOwnerVisible ? (
-                    <Eye size={14} className={styles['visible-eye']} />
-                  ) : (
+                <div title={visibilityTitle} className={styles['visibility-icon-wrap']}>
+                  {visibilityMode === 'hiddenFromOwner' ? (
                     <EyeOff size={14} className={styles['hidden-eye']} />
+                  ) : visibilityMode === 'visibleToSelected' ? (
+                    <Users size={14} className={styles['visible-eye']} />
+                  ) : (
+                    <Eye size={14} className={styles['visible-eye']} />
                   )}
                 </div>
               )}

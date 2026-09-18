@@ -102,6 +102,30 @@ describe('resolveActionButtonsLayoutMode', () => {
     ).toBe('owner-edit');
   });
 
+  it('keeps owner-edit for collaborators with canEditItem', () => {
+    expect(
+      resolveActionButtonsLayoutMode({
+        isOwner: false,
+        canCollaborate: true,
+        canEditItem: true,
+        claimedByCurrentUser: false,
+        isFullyClaimed: false,
+      })
+    ).toBe('owner-edit');
+  });
+
+  it('hides claim chrome for collaborators even without canEditItem', () => {
+    expect(
+      resolveActionButtonsLayoutMode({
+        isOwner: false,
+        canCollaborate: true,
+        canEditItem: false,
+        claimedByCurrentUser: false,
+        isFullyClaimed: false,
+      })
+    ).toBeNull();
+  });
+
   it('hides all modes when archived', () => {
     expect(
       resolveActionButtonsLayoutMode({

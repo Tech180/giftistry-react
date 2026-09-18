@@ -1,7 +1,11 @@
 import React from 'react';
 import { ArrowLeft, Check, Gift, Link2, Palette, Settings2, UserRound } from 'lucide-react';
-import { Badge, BrandMark, Button, Input, Switch } from 'shared/ui';
+import { Badge, BrandMark, Button, Input, SelectMenu, Switch } from 'shared/ui';
 import { OnboardingTimeline } from './components/timeline/onboarding-timeline.component';
+import {
+  SMTP_TRANSPORT_MENU_TITLE,
+  SMTP_TRANSPORT_OPTIONS,
+} from './constants/smtp-transport-options.constant';
 import { OnboardingTemplateProps } from './interfaces/onboarding-template-props.interface';
 import styles from './onboarding.module.css';
 
@@ -259,7 +263,7 @@ export const OnboardingTemplate: React.FC<OnboardingTemplateProps> = ({
                         {
                           value: 'invite_only' as const,
                           title: 'Invite Only',
-                          desc: 'Users must receive a cryptographic invitation link to join the workspace.',
+                          desc: 'Users must receive a registration invite link to join the workspace.',
                           defaultBadge: true,
                         },
                         {
@@ -322,14 +326,15 @@ export const OnboardingTemplate: React.FC<OnboardingTemplateProps> = ({
                   <div className={`${styles.fields} ${styles['fields-wide']}`}>
                     <div className={styles['stagger-item']}>
                       <span className={styles.label}>Transport Protocol</span>
-                      <select
-                        className={styles.select}
+                      <SelectMenu
+                        className={styles['select-menu']}
                         value={smtpType}
-                        onChange={(e) => onFieldChange('smtpType', e.target.value)}
-                      >
-                        <option value="local">Local (Mailpit Virtual SMTP)</option>
-                        <option value="remote">Remote SMTP Relay</option>
-                      </select>
+                        options={SMTP_TRANSPORT_OPTIONS}
+                        onChange={(next) => onFieldChange('smtpType', next)}
+                        variant="field"
+                        menuTitle={SMTP_TRANSPORT_MENU_TITLE}
+                        aria-label="Transport Protocol"
+                      />
                     </div>
 
                     {smtpType === 'remote' && (

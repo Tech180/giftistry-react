@@ -1,7 +1,11 @@
 /**
  * Scans CSS module files for px spacing/typography, deep nesting, and descendant selectors.
+ * Allows shallow BEM nesting (max depth 2: block → &__element / &--modifier).
  * Exit code 1 if violations found outside allowlist.
  */
+
+/** Matches css skill: block → element/modifier, optional nested &--modifier on element */
+const MAX_BEM_NESTING_DEPTH = 2;
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative } from 'path';
 
@@ -109,8 +113,10 @@ function checkFile(file: string): number {
       }
 
       const nestingDepth = braceDepth - mediaDepth;
-      if (nestingDepth > 0) {
-        console.error(`${rel}:${i + 1}: nested rule at depth ${nestingDepth + 1} "${selector}"`);
+      if (nestingDepth > MAX_BEM_NESTING_DEPTH) {
+        console.error(
+          `${rel}:${i + 1}: nested rule at depth ${nestingDepth + 1} exceeds BEM max ${MAX_BEM_NESTING_DEPTH + 1} "${selector}"`
+        );
         violations++;
       }
     }

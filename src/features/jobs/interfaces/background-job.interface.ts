@@ -76,6 +76,13 @@ export interface BackgroundJobView {
   GrabInfo?: boolean;
   Mode?: string;
   FileName?: string;
+  /** Present on item-enrich jobs (create-from-url | update-item | draft-populate). */
+  Intent?: string;
+  /**
+   * Whether the job mutates a persisted list item.
+   * draft-populate / non-write-back summarize are false; older frames may omit this.
+   */
+  WriteBack?: boolean;
   ItemsSummary?: JobItemsSummary;
   ActiveStreams?: JobActiveStream[];
 }

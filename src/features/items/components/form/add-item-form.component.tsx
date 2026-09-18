@@ -59,12 +59,14 @@ import {
 } from '../../utils/add-item-custom-fields.util';
 import { jobsApi, waitForJob } from 'features/jobs';
 import { toExtractMetadataResult, toSummarizedDescription } from '../../utils/ai-job-result.util';
+import { polishExtractMetadataForForm } from '../../utils/polish-extract-metadata-for-form.util';
 import { formatAiHelperFailure } from '../../utils/format-ai-helper-failure.util';
 import {
   ENRICH_FAILURE_FALLBACK,
   SUMMARIZE_FAILURE_FALLBACK,
 } from '../../constants/ai-helper-failure.constants';
 import { abandonPendingManualJob } from '../../utils/abandon-pending-manual-job.util';
+import { resolveItemEnrichRequest } from '../../utils/resolve-item-enrich-request.util';
 import type { PendingManualJob } from '../../interfaces/pending-manual-job.interface';
 import type { ExtractMetadataResult } from '../../interfaces/extract-metadata-result.interface';
 import type { ItemPhotoGalleryEntry } from '../photo-gallery/interfaces/item-photo-gallery-props.interface';
@@ -111,6 +113,7 @@ type ParentFormSnapshot = {
 export const AddItemForm: React.FC<AddItemFormProps> = ({
   listId,
   isOwner,
+  canCollaborate = isOwner,
   onSuccess,
   existingCategories = [],
   item,
@@ -148,7 +151,8 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [priorityWeight, setPriorityWeight] = useState('');
-  const [isHiddenIdea, setIsHiddenIdea] = useState(!isOwner);
+  const canManageItems = canCollaborate;
+  const [isHiddenIdea, setIsHiddenIdea] = useState(!canManageItems);
   const [otherUsersCanSee, setOtherUsersCanSee] = useState(true);
   const [allowSubstitutions, setAllowSubstitutions] = useState(true);
   const [substitutionOptions, setSubstitutionOptions] = useState<ItemSubstitutionOption[]>([]);
@@ -188,7 +192,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   const isMultiCount =
     typeof desiredQuantity === 'number' &&
     (isUnlimitedQuantity || desiredQuantity > 1);
-  const isSuggestion = item?.IsSuggestion ?? !isOwner;
+  const isSuggestion = item?.IsSuggestion ?? !canManageItems;
   const [variations, setVariations] = useState<{ name: string; quantity: number }[]>([]);
 
   const setDesiredQuantity = useCallback(
@@ -552,7 +556,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   };
 
   const buildDescriptionPayload = useCallback(
-    (options: { isOwner: boolean; isFavorite: boolean }): ItemDescriptionMetadata | null => {
+    (options: { canManageItems: boolean; isFavorite: boolean }): ItemDescriptionMetadata | null => {
       const visibleDynamicValues: Record<string, string> = {};
       definitions.forEach((def) => {
         if (isFieldVisible(def)) {
@@ -580,13 +584,13 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
       const loadedAllowSubstitutions = item?.AllowSubstitutions !== false;
       const allowSubstitutionsDirty =
-        options.isOwner && allowSubstitutions !== loadedAllowSubstitutions;
+        options.canManageItems && allowSubstitutions !== loadedAllowSubstitutions;
 
       const shouldSerialize = !!(
         hasVisibleDynamic ||
         hasExtraFields ||
         description.trim() ||
-        !options.isOwner ||
+        !options.canManageItems ||
         options.isFavorite ||
         includePhotos ||
         allowSubstitutionsDirty
@@ -613,10 +617,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
             : undefined,
         LinkedItemIds: linkedItemIds.length > 0 ? linkedItemIds : undefined,
         RelatedItemIds: relatedItemIds.length > 0 ? relatedItemIds : undefined,
-        OtherUsersCanSee: options.isOwner ? true : otherUsersCanSee,
-        IsFavorite: options.isOwner ? options.isFavorite || undefined : undefined,
-        IsPinned: !options.isOwner ? options.isFavorite || undefined : undefined,
-        AllowSubstitutions: options.isOwner ? allowSubstitutions : undefined,
+        OtherUsersCanSee: options.canManageItems ? true : otherUsersCanSee,
+        IsFavorite: options.canManageItems ? options.isFavorite || undefined : undefined,
+        IsPinned: !options.canManageItems ? options.isFavorite || undefined : undefined,
+        AllowSubstitutions: options.canManageItems ? allowSubstitutions : undefined,
       });
 
       // Always send Photos when gallery is available and there are photos,
@@ -750,7 +754,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setName('');
       setDescription('');
       setPriorityWeight('');
-      setIsHiddenIdea(!isOwner);
+      setIsHiddenIdea(!canManageItems);
       setSharedWithUserIds([]);
       setVisibilityMode('everyone');
       setLinkUrl('');
@@ -775,7 +779,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setName('');
       setDescription('');
       setPriorityWeight('');
-      setIsHiddenIdea(!isOwner);
+      setIsHiddenIdea(!canManageItems);
       setSharedWithUserIds([]);
       setVisibilityMode('everyone');
       setLinkUrl('');
@@ -821,7 +825,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       return;
     }
 
-    const metaPayload = buildDescriptionPayload({ isOwner, isFavorite });
+    const metaPayload = buildDescriptionPayload({ canManageItems, isFavorite });
     const quantityFields = {
       DesiredQuantity: typeof desiredQuantity === 'number' ? desiredQuantity : 1,
       IsMultiCount: isMultiCount,
@@ -877,7 +881,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     otherUsersCanSee,
     dynamicValues,
     definitions,
-    isOwner,
+    canManageItems,
     item,
     onDraftChange,
     loadedItemId,
@@ -995,21 +999,26 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setErrorMsg(null);
     setWarningMsg(null);
     try {
-      const intent = item?.Id ? 'update-item' : 'draft-populate';
+      const isSubstitutionEditor = !!substitutionEditorRef.current;
+      const enrichRequest = resolveItemEnrichRequest({
+        persistedItemId: item?.Id,
+        isSubstitutionEditor,
+      });
       const { Job } = await jobsApi.startItemEnrich({
-        intent,
+        intent: enrichRequest.intent,
         listId,
         url: linkUrl.trim(),
-        itemId: item?.Id,
-        writeBack: intent === 'update-item',
+        itemId: enrichRequest.itemId,
+        writeBack: enrichRequest.writeBack,
       });
 
       if (isCancelled()) return;
       pendingJobRef.current = {
         jobId: Job.Id,
         kind: 'enrich',
-        intent,
+        intent: enrichRequest.intent,
         url: linkUrl.trim(),
+        promoteOnClose: isSubstitutionEditor ? false : undefined,
       };
 
       const finished = await waitForJob(Job.Id, { isCancelled });
@@ -1020,11 +1029,11 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         throw new Error(finished.Error || finished.Message || 'Enrich job failed');
       }
 
-      applyExtractedMetadata(data);
+      applyExtractedMetadata(polishExtractMetadataForForm(data));
       if (canShowAi && data.Diagnostics?.AiPopulate === 'failed') {
         setWarningMsg('Product details were found, but AI summarization has failed.');
       }
-      if (intent === 'update-item') {
+      if (enrichRequest.intent === 'update-item') {
         onItemEnriched?.();
       }
     } catch (err) {
@@ -1222,7 +1231,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         }),
         DesiredQuantity: typeof desiredQuantity === 'number' ? desiredQuantity : 1,
         IsMultiCount: isMultiCount,
-        IsSuggestion: item?.IsSuggestion ?? !isOwner,
+        IsSuggestion: item?.IsSuggestion ?? !canManageItems,
       };
       const linkedPeers = linkedItemIds
         .map((id) => wishlistItems.find((i) => i.Id === id))
@@ -1248,7 +1257,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     setWarningMsg(null);
 
     try {
-      const metadataPayload = buildDescriptionPayload({ isOwner, isFavorite });
+      const metadataPayload = buildDescriptionPayload({ canManageItems, isFavorite });
 
       const priorityVal = parsePriorityWeight(priorityWeight);
 
@@ -1274,7 +1283,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           price.trim() ? parseFloat(price) : null,
           websiteName.trim() || null,
           metadataPayload,
-          isOwner ? false : isHiddenIdea
+          canManageItems ? false : isHiddenIdea
         );
         savedItemId = item.Id;
       } else {
@@ -1283,7 +1292,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           name.trim(),
           null,
           null,
-          isOwner ? false : isHiddenIdea,
+          canManageItems ? false : isHiddenIdea,
           linkUrl.trim() || null,
           price.trim() ? parseFloat(price) : null,
           websiteName.trim() || null,
@@ -1294,7 +1303,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         );
         savedItemId = createdItem.Id;
 
-        if (!isOwner && claimOnCreate && createdItem?.Id) {
+        if (!canManageItems && claimOnCreate && createdItem?.Id) {
           try {
             const claimerName = user ? `${user.FirstName} ${user.LastName}`.trim() || user.Username : null;
             await itemsApi.claimItem(createdItem.Id, null, claimerName, false);
@@ -1334,7 +1343,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setName('');
       setDescription('');
       setPriorityWeight('');
-      setIsHiddenIdea(!isOwner);
+      setIsHiddenIdea(!canManageItems);
       setSharedWithUserIds([]);
       setLinkUrl('');
       setWebsiteName('');
@@ -1774,7 +1783,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
   const openCreateClaimerSubstitution = useCallback(
     (nested = true) => {
-      if (!item?.Id || isOwner) return;
+      if (!item?.Id || canManageItems) return;
       substitutionEntryNestedRef.current = nested;
       parentFormSnapshotRef.current = captureParentFormSnapshot();
       const next: SubstitutionEditorState = { mode: 'create', kind: 'claimer_custom' };
@@ -1782,19 +1791,19 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       resetProductFieldsForSubstitution();
       setSubstitutionEditor(next);
     },
-    [item, isOwner, captureParentFormSnapshot, resetProductFieldsForSubstitution]
+    [item, canManageItems, captureParentFormSnapshot, resetProductFieldsForSubstitution]
   );
 
   useEffect(() => {
     if (autoOpenClaimerSubstitutionNonce === 0) return;
     if (autoOpenClaimerSubstitutionNonce === lastAutoOpenClaimerNonceRef.current) return;
-    if (!item?.Id || isOwner) return;
+    if (!item?.Id || canManageItems) return;
     const timerId = window.setTimeout(() => {
       lastAutoOpenClaimerNonceRef.current = autoOpenClaimerSubstitutionNonce;
       openCreateClaimerSubstitution(false);
     }, 0);
     return () => window.clearTimeout(timerId);
-  }, [autoOpenClaimerSubstitutionNonce, item?.Id, isOwner, openCreateClaimerSubstitution]);
+  }, [autoOpenClaimerSubstitutionNonce, item?.Id, canManageItems, openCreateClaimerSubstitution]);
 
   const openEditSubstitution = useCallback(
     (option: ItemSubstitutionOption, nested = true) => {
@@ -1819,7 +1828,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     if (!option) return;
 
     if (
-      !isOwner &&
+      !canManageItems &&
       (option.Kind !== 'claimer_custom' ||
         !user?.Id ||
         option.CreatedByUserId !== user.Id)
@@ -1837,7 +1846,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     autoOpenClaimerSubstitutionEditId,
     item?.Id,
     item?.SubstitutionOptions,
-    isOwner,
+    canManageItems,
     user?.Id,
     openEditSubstitution,
   ]);
@@ -2019,6 +2028,10 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           substitutionOptions: refreshed.Options,
         };
       }
+      if (!substitutionEntryNestedRef.current) {
+        onSuccess();
+        return;
+      }
       closeSubstitutionEditor();
       if (
         substitutionEditor.mode === 'create' &&
@@ -2049,7 +2062,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setPriorityWeight={setPriorityWeight}
       isHiddenIdea={isHiddenIdea}
       setIsHiddenIdea={setIsHiddenIdea}
-      isOwner={isOwner}
+      canCollaborate={canManageItems}
       isLoading={isLoading || subSaving}
       errorMsg={errorMsg}
       warningMsg={warningMsg}

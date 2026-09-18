@@ -56,4 +56,19 @@ describe('positionSelectMenu', () => {
     expect(result.top).toBe(514);
     expect(result.transformOrigin).toBe('center bottom');
   });
+
+  test('aligns start flush with the trigger left edge', () => {
+    const result = positionSelectMenu({
+      triggerRect: { top: 100, bottom: 132, left: 200, width: 288 },
+      menuWidth: 288,
+      menuHeight: 160,
+      viewportWidth: 1000,
+      viewportHeight: 800,
+      align: 'start',
+    });
+
+    expect(result.top).toBe(138);
+    expect(result.left).toBe(200);
+    expect(result.transformOrigin).toBe('left top');
+  });
 });

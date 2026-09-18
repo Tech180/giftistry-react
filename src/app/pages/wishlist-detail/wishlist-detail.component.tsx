@@ -31,6 +31,7 @@ import {
   useWishlistJob,
   formatJobTerminalSummary,
   claimImportJobTerminalToast,
+  resolveListReloadOnJobTerminal,
   type ItemEnrichJobResult,
 } from 'features/jobs';
 import { markJobNotificationHandled } from 'features/notifications';
@@ -334,7 +335,12 @@ export default function WishlistDetail() {
     if (lastJobTerminalRef.current === terminalKey) return;
     lastJobTerminalRef.current = terminalKey;
 
-    void loadData();
+    const reloadStrategy = resolveListReloadOnJobTerminal(activeJob);
+    if (reloadStrategy === 'full') {
+      void loadData();
+    } else if (reloadStrategy === 'items') {
+      void softReloadItems();
+    }
 
     if (
       activeJob.Status === 'completed' ||
@@ -1148,7 +1154,7 @@ export default function WishlistDetail() {
   const openSubstitutionEdit = (item: Item, substitutionId: string) => {
     const option = (item.SubstitutionOptions ?? []).find((entry) => entry.Id === substitutionId);
     if (!option) return;
-    if (isOwner) {
+    if (canCollaborate) {
       openItemEditor(item);
     } else {
       openItemViewer(item);
@@ -1262,7 +1268,7 @@ export default function WishlistDetail() {
           editingItemDraft?.IsMultiCount ??
           draftMeta?.MultiCount ??
           editingItem.IsMultiCount,
-        IsSuggestion: editingItem.IsSuggestion ?? !isOwner,
+        IsSuggestion: editingItem.IsSuggestion ?? !canCollaborate,
       };
     }
 
@@ -1282,12 +1288,12 @@ export default function WishlistDetail() {
         DesiredQuantity: editingItemDraft.DesiredQuantity ?? 1,
         IsMultiCount: editingItemDraft.IsMultiCount ?? false,
         Metadata: editingItemDraft.Metadata ?? null,
-        IsSuggestion: editingItemDraft.IsSuggestion ?? !isOwner,
+        IsSuggestion: editingItemDraft.IsSuggestion ?? !canCollaborate,
       };
     }
 
     return null;
-  }, [editingItem, editingItemDraft, isAddOpen, isOwner, wishlist?.Id]);
+  }, [editingItem, editingItemDraft, isAddOpen, canCollaborate, wishlist?.Id]);
 
   const handleLinkItemToggle = useCallback(
     (itemId: string) => {

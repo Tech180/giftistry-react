@@ -87,6 +87,20 @@ describe('SelectMenu', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
+  test('stays open when a scroll fires during open (modal scrollIntoView race)', () => {
+    render(
+      <SelectMenu value="viewer" options={OPTIONS} onChange={vi.fn()} aria-label="Role" />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Role' }));
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+
+    // Opening can trigger capture-phase scroll from option scrollIntoView or a
+    // scrollable ancestor (share modal). Those must not dismiss immediately.
+    fireEvent.scroll(document);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
+
   test('positions with mocked getBoundingClientRect', () => {
     const triggerRect = {
       top: 100,

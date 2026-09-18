@@ -20,6 +20,12 @@ import {
   COMMENT_TYPING_STOP_DELAY_MS,
   COMMENT_TYPING_USER_TTL_MS,
 } from '../../constants/comment-presence';
+import {
+  DEFAULT_COMMENT_VISIBILITY,
+  OWNER_DEFAULT_COMMENT_VISIBILITY,
+} from '../../constants/default-comment-visibility.constant';
+import type { CommentVisibilityState } from '../../interfaces/comment-visibility-state.interface';
+import { resolveCommentVisibilityPayload } from '../../utils/resolve-comment-visibility-payload.util';
 
 export const CommentSection: React.FC<CommentSectionProps> = ({
   listId,
@@ -60,7 +66,9 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   const [isAnonymous, setIsAnonymous] = useState(() => {
     return localStorage.getItem(COMMENT_ANON_STORAGE_KEY) === 'true';
   });
-  const [isOwnerVisible, setIsOwnerVisible] = useState(false); // Surprise is default!
+  const [commentVisibility, setCommentVisibility] = useState<CommentVisibilityState>(() =>
+    isOwner ? OWNER_DEFAULT_COMMENT_VISIBILITY : DEFAULT_COMMENT_VISIBILITY
+  );
   const [isRollover, setIsRollover] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -136,7 +144,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     parentId: string,
     replyContent: string,
     replyCommenterName?: string | null,
-    replyIsOwnerVisible?: boolean,
+    replyVisibility?: CommentVisibilityState,
     replyIsRollover?: boolean,
     replyImageUrl?: string | null
   ) => {
@@ -146,14 +154,19 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     try {
       const resolvedCommenterName = replyCommenterName?.trim() || commenterName?.trim() || user?.Username;
       const formattedReplyContent = convertMentionsToMarkdown(replyContent, participants);
+      const visibility = resolveCommentVisibilityPayload(
+        replyVisibility ?? commentVisibility,
+        isOwner
+      );
       await addComment(
         listId,
         formattedReplyContent,
         resolvedCommenterName || null,
-        replyIsOwnerVisible !== undefined ? replyIsOwnerVisible : (isOwner ? true : isOwnerVisible),
+        visibility.isOwnerVisible,
         autoRollover && (replyIsRollover !== undefined ? replyIsRollover : isRollover),
         parentId,
-        replyImageUrl
+        replyImageUrl,
+        visibility.visibleToUserIds
       );
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'Failed to post reply.');
@@ -192,6 +205,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
           username: ownerUsername,
           displayName: ownerDisplayName || ownerUsername,
           avatar: listOwnerId === user?.Id ? user.Avatar ?? null : null,
+          role: 'owner',
         });
       }
 
@@ -206,6 +220,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
               ? `${share.FirstName} ${share.LastName || ''}`.trim()
               : share.Username,
             avatar: share.Avatar ?? null,
+            role: share.Role,
           });
         }
       } catch {
@@ -479,19 +494,22 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     }
 
     try {
+      const visibility = resolveCommentVisibilityPayload(commentVisibility, isOwner);
       await addComment(
         listId,
         finalContent,
         commenterName.trim() || null,
-        isOwner ? true : isOwnerVisible,
+        visibility.isOwnerVisible,
         autoRollover && isRollover,
         null,
-        imageUrl
+        imageUrl,
+        visibility.visibleToUserIds
       );
       shouldScrollToBottomRef.current = true;
       setContent('');
       setImageUrl(null);
       setIsRollover(false);
+      setCommentVisibility(isOwner ? OWNER_DEFAULT_COMMENT_VISIBILITY : DEFAULT_COMMENT_VISIBILITY);
       setTaggedItemIds([]);
       setIsTaggingModeActive(false);
     } catch (err) {
@@ -513,6 +531,14 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     }
   };
 
+  const handleMentionSelect = (userId: string) => {
+    setCommentVisibility((prev) => {
+      if (prev.mode !== 'visibleToSelected') return prev;
+      if (prev.selectedUserIds.includes(userId)) return prev;
+      return { ...prev, selectedUserIds: [...prev.selectedUserIds, userId] };
+    });
+  };
+
   return (
     <CommentSectionTemplate
       isOwner={isOwner}
@@ -532,8 +558,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       setContent={handleContentChange}
       commenterName={commenterName}
       setCommenterName={setCommenterName}
-      isOwnerVisible={isOwnerVisible}
-      setIsOwnerVisible={setIsOwnerVisible}
+      commentVisibility={commentVisibility}
+      setCommentVisibility={setCommentVisibility}
       isRollover={isRollover}
       setIsRollover={setIsRollover}
       autoRollover={autoRollover}
@@ -563,6 +589,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       replyTaggedItemIds={replyTaggedItemIds}
       setReplyTaggedItemIds={setReplyTaggedItemIds}
       listContainerRef={listContainerRef}
+      onMentionSelect={handleMentionSelect}
     />
   );
 };

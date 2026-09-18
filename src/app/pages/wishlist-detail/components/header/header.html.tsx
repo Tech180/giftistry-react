@@ -14,13 +14,12 @@ import {
   Settings,
   BookCopy,
 } from 'lucide-react';
-import { EnterPanel } from 'shared/ui';
+import { EnterPanel, DateField } from 'shared/ui';
 import { OwnerBadge } from 'features/items/components/item-presentation';
 import { exportToCsv, exportToXlsx, exportToTxt, exportToJson, exportToPdf } from 'shared/utils/wishlist-export';
 import { ListSettingsPanel } from '../list-settings-panel/list-settings-panel.component';
 import { HeaderTemplateProps } from './interfaces/header-template-props.interface';
 import styles from '../../wishlist-detail.module.css';
-import { expiresAtIsoToDateInput } from 'features/wishlists/utils/expires-at-iso-to-date-input.util';
 
 export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
   wishlist,
@@ -170,19 +169,16 @@ export const HeaderTemplate: React.FC<HeaderTemplateProps> = ({
           </div>
           <div className={`${styles['meta-row']} ${styles['meta-chips']}`}>
             {isEditingDate ? (
-              <input
-                type="date"
+              <DateField
                 value={tempDate}
-                onChange={(e) => saveDate(e.target.value)}
-                onBlur={() => setIsEditingDate(false)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
-                    setTempDate(expiresAtIsoToDateInput(wishlist.ExpiresAt));
-                    setIsEditingDate(false);
-                  }
+                onChange={(next) => {
+                  setTempDate(next);
+                  void saveDate(next);
+                  setIsEditingDate(false);
                 }}
-                autoFocus
-                className={styles['inline-date-input']}
+                clearable
+                aria-label="Change expiration date"
+                className={styles['inline-date-field']}
               />
             ) : isOwner ? (
               <button

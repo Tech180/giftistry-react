@@ -30,6 +30,7 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
   oauthEnabled,
   oauthButtonText,
   handleOauthLogin,
+  showRegisterLink,
   showPassword,
   onToggleShowPassword,
 }) => {
@@ -268,12 +269,14 @@ export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
               </div>
             )}
 
-            <div className={styles.footer}>
-              <span>New to Giftistry?</span>{' '}
-              <Link to="/register" className={styles.link}>
-                Create an account
-              </Link>
-            </div>
+            {showRegisterLink && (
+              <div className={styles.footer}>
+                <span>New to Giftistry?</span>{' '}
+                <Link to="/register" className={styles.link}>
+                  Create an account
+                </Link>
+              </div>
+            )}
           </Card>
         </EnterPanel>
       </div>

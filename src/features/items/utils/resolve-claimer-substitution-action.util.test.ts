@@ -45,11 +45,11 @@ const customOption = (createdByUserId = 'claimer-1'): ItemSubstitutionOption => 
 });
 
 describe('resolveClaimerSubstitutionAction', () => {
-  it('is visible for an unclaimed non-owner viewer', () => {
+  it('is visible for an unclaimed non-collaborator viewer', () => {
     const result = resolveClaimerSubstitutionAction({
       item: baseItem(),
       userId: 'claimer-1',
-      isOwner: false,
+      canCollaborate: false,
       isPublicGuest: false,
     });
     expect(result).toEqual({
@@ -60,13 +60,13 @@ describe('resolveClaimerSubstitutionAction', () => {
     });
   });
 
-  it('is visible for a non-owner who claimed the parent', () => {
+  it('is visible for a non-collaborator who claimed the parent', () => {
     const result = resolveClaimerSubstitutionAction({
       item: baseItem({
         Claims: [claim('parent-1', 'claimer-1')],
       }),
       userId: 'claimer-1',
-      isOwner: false,
+      canCollaborate: false,
       isPublicGuest: false,
     });
     expect(result).toEqual({
@@ -77,13 +77,13 @@ describe('resolveClaimerSubstitutionAction', () => {
     });
   });
 
-  it('hides for owners', () => {
+  it('hides for owners and collaborators', () => {
     const result = resolveClaimerSubstitutionAction({
       item: baseItem({
         Claims: [claim('parent-1', 'owner-1')],
       }),
       userId: 'owner-1',
-      isOwner: true,
+      canCollaborate: true,
       isPublicGuest: false,
     });
     expect(result.visible).toBe(false);
@@ -93,7 +93,7 @@ describe('resolveClaimerSubstitutionAction', () => {
     const result = resolveClaimerSubstitutionAction({
       item: baseItem(),
       userId: 'claimer-1',
-      isOwner: false,
+      canCollaborate: false,
       isPublicGuest: true,
     });
     expect(result.visible).toBe(false);
@@ -105,7 +105,7 @@ describe('resolveClaimerSubstitutionAction', () => {
         SubstitutionOptions: [customOption('other-claimer')],
       }),
       userId: 'claimer-1',
-      isOwner: false,
+      canCollaborate: false,
       isPublicGuest: false,
     });
     expect(result.visible).toBe(false);
@@ -118,7 +118,7 @@ describe('resolveClaimerSubstitutionAction', () => {
         SubstitutionOptions: [own],
       }),
       userId: 'claimer-1',
-      isOwner: false,
+      canCollaborate: false,
       isPublicGuest: false,
     });
     expect(result).toEqual({
@@ -135,7 +135,7 @@ describe('resolveClaimerSubstitutionAction', () => {
         IsSuggestion: true,
       }),
       userId: 'claimer-1',
-      isOwner: false,
+      canCollaborate: false,
       isPublicGuest: false,
     });
     expect(result.visible).toBe(false);
@@ -147,7 +147,7 @@ describe('resolveClaimerSubstitutionAction', () => {
         AllowSubstitutions: false,
       }),
       userId: 'claimer-1',
-      isOwner: false,
+      canCollaborate: false,
       isPublicGuest: false,
     });
     expect(result).toEqual({

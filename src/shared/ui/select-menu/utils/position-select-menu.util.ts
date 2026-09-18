@@ -4,15 +4,20 @@ import type { PositionSelectMenuResult } from '../interfaces/position-select-men
 const DEFAULT_GAP = 6;
 const DEFAULT_INSET = 12;
 
-/** Centers the menu under the trigger, flips above when clipped, clamps to viewport. */
+/** Places the menu under the trigger, flips above when clipped, clamps to viewport. */
 export function positionSelectMenu(input: PositionSelectMenuInput): PositionSelectMenuResult {
   const gap = input.gap ?? DEFAULT_GAP;
   const inset = input.inset ?? DEFAULT_INSET;
+  const align = input.align ?? 'center';
   const { triggerRect, menuWidth, menuHeight, viewportWidth, viewportHeight } = input;
 
   let top = triggerRect.bottom + gap;
-  let left = triggerRect.left + triggerRect.width / 2 - menuWidth / 2;
-  let transformOrigin: PositionSelectMenuResult['transformOrigin'] = 'center top';
+  let left =
+    align === 'start'
+      ? triggerRect.left
+      : triggerRect.left + triggerRect.width / 2 - menuWidth / 2;
+  let transformOrigin: PositionSelectMenuResult['transformOrigin'] =
+    align === 'start' ? 'left top' : 'center top';
 
   if (left < inset) {
     left = inset;
@@ -23,7 +28,7 @@ export function positionSelectMenu(input: PositionSelectMenuInput): PositionSele
 
   if (top + menuHeight > viewportHeight - inset) {
     top = triggerRect.top - menuHeight - gap;
-    transformOrigin = 'center bottom';
+    transformOrigin = align === 'start' ? 'left bottom' : 'center bottom';
   }
 
   return { top, left, transformOrigin };

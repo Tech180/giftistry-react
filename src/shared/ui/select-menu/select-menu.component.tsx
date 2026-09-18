@@ -74,18 +74,33 @@ export const SelectMenu: React.FC<SelectMenuProps> = ({
     }
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
-    const menuRect = menuRef.current.getBoundingClientRect();
+    const matchTriggerWidth = variant === 'field';
+    const panelWidth = matchTriggerWidth
+      ? triggerRect.width
+      : menuRef.current.getBoundingClientRect().width;
+
+    if (matchTriggerWidth) {
+      menuRef.current.style.width = `${panelWidth}px`;
+      menuRef.current.style.minWidth = `${panelWidth}px`;
+      menuRef.current.style.maxWidth = `${panelWidth}px`;
+    }
+
+    const menuHeight = menuRef.current.getBoundingClientRect().height;
     const positioned = positionSelectMenu({
       triggerRect,
-      menuWidth: menuRect.width,
-      menuHeight: menuRect.height,
+      menuWidth: panelWidth,
+      menuHeight,
       viewportWidth: window.innerWidth,
       viewportHeight: window.innerHeight,
+      align: matchTriggerWidth ? 'start' : 'center',
     });
 
     setPanelStyle({
       top: positioned.top,
       left: positioned.left,
+      width: matchTriggerWidth ? panelWidth : undefined,
+      minWidth: matchTriggerWidth ? panelWidth : undefined,
+      maxWidth: matchTriggerWidth ? panelWidth : undefined,
       transformOrigin: positioned.transformOrigin,
       visibility: 'visible',
     });
@@ -94,7 +109,7 @@ export const SelectMenu: React.FC<SelectMenuProps> = ({
       setIsPanelShown(true);
     });
     return () => cancelAnimationFrame(frame);
-  }, [isOpen, options, menuTitle]);
+  }, [isOpen, options, menuTitle, variant]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -151,21 +166,46 @@ export const SelectMenu: React.FC<SelectMenuProps> = ({
       }
     };
 
-    const onScrollOrResize = () => {
+    // Ignore scroll dismiss until after open layout settles. Opening inside a
+    // scrollable modal (share menu) + option scrollIntoView can fire a capture
+    // scroll that would otherwise close the menu immediately.
+    let allowScrollDismiss = false;
+    const armScrollDismiss = window.setTimeout(() => {
+      allowScrollDismiss = true;
+    }, 0);
+
+    const onScroll = (event: Event) => {
+      if (!allowScrollDismiss) {
+        return;
+      }
+      const target = event.target;
+      if (
+        target instanceof Node &&
+        menuRef.current &&
+        (menuRef.current === target || menuRef.current.contains(target))
+      ) {
+        return;
+      }
+      setIsPanelShown(false);
+      setIsOpen(false);
+    };
+
+    const onResize = () => {
       setIsPanelShown(false);
       setIsOpen(false);
     };
 
     document.addEventListener('mousedown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
-    window.addEventListener('scroll', onScrollOrResize, true);
-    window.addEventListener('resize', onScrollOrResize);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onResize);
 
     return () => {
+      window.clearTimeout(armScrollDismiss);
       document.removeEventListener('mousedown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('scroll', onScrollOrResize, true);
-      window.removeEventListener('resize', onScrollOrResize);
+      window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', onResize);
     };
   }, [isOpen, options, focusedIndex]);
 

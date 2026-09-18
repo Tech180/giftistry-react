@@ -314,7 +314,7 @@ export const DetailedItemView: React.FC<ItemViewProps> = (props) => {
                       onSelectTag={onSelectTag}
                     />
                   )}
-                  {isOwner ? (
+                  {canCollaborate ? (
                     <button
                       type="button"
                       onClick={toggleFavorite}

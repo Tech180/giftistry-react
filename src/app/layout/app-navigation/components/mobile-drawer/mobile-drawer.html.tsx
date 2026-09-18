@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { X, LayoutGrid } from 'lucide-react';
 import { BrandMark } from 'shared/ui/brand-mark/brand-mark.component';
 import { IconButton } from 'shared/ui/icon-button/icon-button.component';
-import { ProfileSheet } from './components/profile-sheet/profile-sheet.component';
+import { ProfileSheet } from '../profile/sheet/profile-sheet.component';
 import { MobileDrawerTemplateProps } from './interfaces/mobile-drawer-template-props.interface';
 import styles from './mobile-drawer.module.css';
 
@@ -19,6 +19,7 @@ export const MobileDrawerTemplate: React.FC<MobileDrawerTemplateProps> = ({
   handleLogout,
   navigate,
   drawerRef,
+  showRegisterCta,
   isActive,
   showSwipeHandle,
   isDashboardActive,
@@ -110,13 +111,15 @@ export const MobileDrawerTemplate: React.FC<MobileDrawerTemplateProps> = ({
             >
               Sign In
             </Link>
-            <Link
-              to="/register"
-              className={styles['drawer-auth-btn-primary']}
-              onClick={onClose}
-            >
-              Get Started
-            </Link>
+            {showRegisterCta && (
+              <Link
+                to="/register"
+                className={styles['drawer-auth-btn-primary']}
+                onClick={onClose}
+              >
+                Get Started
+              </Link>
+            )}
           </div>
         )}
       </div>

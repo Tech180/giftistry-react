@@ -23,14 +23,19 @@ export const CommentEditor = forwardRef<CommentEditorHandle, EditorProps>(
       participants,
       currentUserId,
       isOwner = false,
+      visibilityMode,
+      selectedUserIds = [],
       isOwnerVisible = true,
       listOwnerId,
       onSubmit,
+      onMentionAudienceSelect,
     },
     ref
   ) => {
     const editorRef = useRef<HTMLDivElement>(null);
-    const prevOwnerVisibleRef = useRef(isOwnerVisible);
+    const resolvedMode =
+      visibilityMode ?? (isOwnerVisible === false ? 'hiddenFromOwner' : 'visibleToAll');
+    const prevModeRef = useRef(resolvedMode);
     const [mentionQuery, setMentionQuery] = useState<string | null>(null);
     const [mentionRange, setMentionRange] = useState<{ start: number; end: number } | null>(null);
     const [activeMentionIndex, setActiveMentionIndex] = useState(0);
@@ -85,10 +90,18 @@ export const CommentEditor = forwardRef<CommentEditorHandle, EditorProps>(
         setMentionQuery(null);
         setMentionRange(null);
         setActiveMentionIndex(0);
+        onMentionAudienceSelect?.(participant.userId);
 
         requestAnimationFrame(() => editor.focus());
       },
-      [mentionCandidates, mentionRange, setContent, handleMentionMouseEnter, handleMentionMouseLeave]
+      [
+        mentionCandidates,
+        mentionRange,
+        setContent,
+        handleMentionMouseEnter,
+        handleMentionMouseLeave,
+        onMentionAudienceSelect,
+      ]
     );
 
     const handleEditorInput = (event: React.FormEvent<HTMLDivElement>) => {
@@ -159,23 +172,48 @@ export const CommentEditor = forwardRef<CommentEditorHandle, EditorProps>(
     }, [content]);
 
     useEffect(() => {
-      const wasOwnerVisible = prevOwnerVisibleRef.current;
-      prevOwnerVisibleRef.current = isOwnerVisible;
+      const previousMode = prevModeRef.current;
+      prevModeRef.current = resolvedMode;
 
-      if (isOwner || isOwnerVisible || !listOwnerId) return;
-      if (!wasOwnerVisible) return;
+      if (isOwner) return;
+
+      const demoteIds: string[] = [];
+      if (resolvedMode === 'hiddenFromOwner' && listOwnerId) {
+        if (previousMode === 'hiddenFromOwner') return;
+        demoteIds.push(listOwnerId);
+      } else if (resolvedMode === 'visibleToSelected') {
+        const allowed = new Set(selectedUserIds);
+        for (const participant of participants) {
+          if (!allowed.has(participant.userId)) {
+            demoteIds.push(participant.userId);
+          }
+        }
+        if (previousMode === 'visibleToSelected' && demoteIds.length === 0) return;
+      } else {
+        return;
+      }
+
+      if (demoteIds.length === 0) return;
 
       const editor = editorRef.current;
       if (editor) {
-        demoteUserMentionsInElement(editor, [listOwnerId]);
+        demoteUserMentionsInElement(editor, demoteIds);
       }
 
       const nextContent = demoteUserMentionsInMarkdown(
         editor ? getEditorContentAsMarkdown(editor) : content,
-        [listOwnerId]
+        demoteIds
       );
       setContent(nextContent);
-    }, [isOwner, isOwnerVisible, listOwnerId, setContent, content]);
+    }, [
+      isOwner,
+      resolvedMode,
+      selectedUserIds,
+      participants,
+      listOwnerId,
+      setContent,
+      content,
+    ]);
 
     return (
       <>

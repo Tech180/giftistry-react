@@ -5,7 +5,7 @@ import { itemSupportsSubstitutions } from './item-supports-substitutions.util';
 export interface ResolveClaimerSubstitutionActionInput {
   item: Pick<Item, 'Id' | 'SubstitutionOptions' | 'IsSuggestion' | 'AllowSubstitutions'>;
   userId: string | null | undefined;
-  isOwner: boolean;
+  canCollaborate: boolean;
   isPublicGuest: boolean;
 }
 
@@ -20,7 +20,7 @@ export interface ResolveClaimerSubstitutionActionResult {
 export function resolveClaimerSubstitutionAction({
   item,
   userId,
-  isOwner,
+  canCollaborate,
   isPublicGuest,
 }: ResolveClaimerSubstitutionActionInput): ResolveClaimerSubstitutionActionResult {
   const allowSubstitutions = item.AllowSubstitutions !== false;
@@ -31,7 +31,7 @@ export function resolveClaimerSubstitutionAction({
     ownOption: null,
   };
 
-  if (isOwner || isPublicGuest || !userId || !itemSupportsSubstitutions(item)) {
+  if (canCollaborate || isPublicGuest || !userId || !itemSupportsSubstitutions(item)) {
     return hidden;
   }
 

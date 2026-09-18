@@ -78,6 +78,10 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
   setAiWebSearchEnabled,
   aiRateLimitEnabled,
   setAiRateLimitEnabled,
+  aiImportChunkingEnabled,
+  setAiImportChunkingEnabled,
+  aiImportChunkItemLimit,
+  setAiImportChunkItemLimit,
   aiConnectTimeoutMs,
   setAiConnectTimeoutMs,
   aiCompletionTimeoutMs,
@@ -379,6 +383,10 @@ export const ServerSettingsTabTemplate: React.FC<ServerSettingsTabTemplateProps>
           setAiWebSearchEnabled={setAiWebSearchEnabled}
           aiRateLimitEnabled={aiRateLimitEnabled}
           setAiRateLimitEnabled={setAiRateLimitEnabled}
+          aiImportChunkingEnabled={aiImportChunkingEnabled}
+          setAiImportChunkingEnabled={setAiImportChunkingEnabled}
+          aiImportChunkItemLimit={aiImportChunkItemLimit}
+          setAiImportChunkItemLimit={setAiImportChunkItemLimit}
           aiConnectTimeoutMs={aiConnectTimeoutMs}
           setAiConnectTimeoutMs={setAiConnectTimeoutMs}
           aiCompletionTimeoutMs={aiCompletionTimeoutMs}

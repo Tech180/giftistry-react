@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from 'app/providers/auth-context';
 import { useToast } from 'app/providers/toast-context';
 import { authApi } from '../../api/auth.api';
@@ -8,9 +8,21 @@ import { ApiUser } from '../../interfaces/api-user.interface';
 import { postAuthPath } from '../../utils/post-auth-path.util';
 import { camelcaseKeys } from 'shared/utils/api-case.util';
 
+type LoginLocationState = {
+  error?: string;
+};
+
 export const LoginForm: React.FC = () => {
-  const { login, refreshUser, allowPasswordLogin, oauthEnabled, oauthButtonText } = useAuth();
+  const {
+    login,
+    refreshUser,
+    allowPasswordLogin,
+    oauthEnabled,
+    oauthButtonText,
+    registrationMode,
+  } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
 
@@ -30,6 +42,15 @@ export const LoginForm: React.FC = () => {
   const cancelBiometrics = () => {
     setIsBiometricModalOpen(false);
   };
+
+  useEffect(() => {
+    const state = location.state as LoginLocationState | null;
+    const errorFromInvite = state?.error?.trim();
+    if (!errorFromInvite) return;
+
+    setLocalError(errorFromInvite);
+    navigate(location.pathname + location.search, { replace: true, state: {} });
+  }, [location.pathname, location.search, location.state, navigate]);
 
   useEffect(() => {
     const loadAndVerifyAccounts = async () => {
@@ -324,6 +345,7 @@ export const LoginForm: React.FC = () => {
       oauthEnabled={oauthEnabled}
       oauthButtonText={oauthButtonText}
       handleOauthLogin={() => authApi.beginOauthLogin()}
+      showRegisterLink={registrationMode === 'open'}
       showPassword={showPassword}
       onToggleShowPassword={() => setShowPassword((prev) => !prev)}
     />

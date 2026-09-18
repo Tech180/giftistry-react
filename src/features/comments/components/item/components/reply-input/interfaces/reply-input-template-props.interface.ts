@@ -1,6 +1,7 @@
-import { Item } from 'features/items';
-import { ListParticipant } from '../../../../../interfaces/list-participant.interface';
-import type { CommentEditorHandle } from '../../../../../components/input/components/input/editor';
+import type { Item } from 'features/items';
+import type { ListParticipant } from '../../../../interfaces/list-participant.interface';
+import type { CommentVisibilityState } from '../../../../interfaces/comment-visibility-state.interface';
+import type { CommentEditorHandle } from '../../../input/components/input/editor';
 
 export interface ReplyInputTemplateProps {
   replyToName: string;
@@ -13,9 +14,9 @@ export interface ReplyInputTemplateProps {
   content: string;
   setContent: (content: string) => void;
   participants: ListParticipant[];
-  currentUserId?: string | null;
+  currentUserId?: string;
   isOwner: boolean;
-  isOwnerVisible: boolean;
+  commentVisibility: CommentVisibilityState;
   listOwnerId?: string;
   onSubmit: (e: React.SyntheticEvent) => void;
   setImageUrl: (url: string | null) => void;
@@ -24,4 +25,6 @@ export interface ReplyInputTemplateProps {
   isTaggingModeActive: boolean;
   setIsTaggingModeActive: (active: boolean) => void;
   onCancel: () => void;
+  onMentionAudienceSelect?: (userId: string) => void;
+  footer: React.ReactNode;
 }

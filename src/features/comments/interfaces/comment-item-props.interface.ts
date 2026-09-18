@@ -2,6 +2,7 @@ import { Comment } from './comment.interface';
 import { Item } from 'features/items';
 import { OnlineUser } from './online-user.interface';
 import { ListParticipant } from './list-participant.interface';
+import type { CommentVisibilityState } from './comment-visibility-state.interface';
 
 export interface CommentItemProps {
   comment: Comment;
@@ -21,7 +22,7 @@ export interface CommentItemProps {
     parentId: string,
     replyContent: string,
     replyCommenterName?: string | null,
-    replyIsOwnerVisible?: boolean,
+    replyVisibility?: CommentVisibilityState,
     replyIsRollover?: boolean,
     replyImageUrl?: string | null
   ) => Promise<void>;
@@ -33,5 +34,4 @@ export interface CommentItemProps {
   setReplyTaggedItemIds?: (ids: string[]) => void;
   isThreadChild?: boolean;
   isOwner?: boolean;
-  isOwnerVisible?: boolean;
 }

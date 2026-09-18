@@ -130,7 +130,7 @@ describe('ActionButtons', () => {
     render(
       <ActionButtons
         isOwner={false}
-        canCollaborate
+        canCollaborate={false}
         canEditItem
         claimedByCurrentUser={false}
         isFullyClaimed={false}
@@ -152,7 +152,7 @@ describe('ActionButtons', () => {
     render(
       <ActionButtons
         isOwner={false}
-        canCollaborate
+        canCollaborate={false}
         canEditItem
         claimedByCurrentUser
         isFullyClaimed={false}
@@ -168,6 +168,27 @@ describe('ActionButtons', () => {
     const labels = buttons.map((button) => button.getAttribute('aria-label') ?? button.textContent);
     expect(labels.indexOf('Edit item')).toBeLessThan(labels.indexOf('Unclaim'));
     expect(labels.indexOf('Delete item')).toBeLessThan(labels.indexOf('Unclaim'));
+  });
+
+  it('renders Edit and Delete without Claim for a collaborator', () => {
+    render(
+      <ActionButtons
+        isOwner={false}
+        canCollaborate
+        canEditItem
+        claimedByCurrentUser={false}
+        isFullyClaimed={false}
+        claimLoading={false}
+        showDeleteConfirm={false}
+        deleteLoading={false}
+        onEdit={() => {}}
+        {...guestHandlers}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Edit item' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete item' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Claim Item' })).not.toBeInTheDocument();
   });
 
   it('shows Add substitution before Unclaim when substitutionAction is set', () => {

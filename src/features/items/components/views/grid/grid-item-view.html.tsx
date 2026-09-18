@@ -18,6 +18,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
     item,
     displayItem = item,
     isOwner,
+    canCollaborate,
     isFullyClaimed,
     isMultiCount,
     hasVisibleClaimForGray,
@@ -141,7 +142,7 @@ export const GridItemView: React.FC<ItemViewProps> = (props) => {
             <Eye size={14} />
           </button>
         ) : null}
-        {isOwner ? (
+        {canCollaborate ? (
           <button
             type="button"
             onClick={(e) => {

@@ -1,8 +1,8 @@
-import { RefObject } from 'react';
-import { Theme } from 'app/providers/interfaces/theme.interface';
-import { Appearance } from 'app/providers/interfaces/appearance.interface';
-import { User } from 'app/providers/interfaces/user.interface';
-import { Wishlist } from 'features/wishlists';
+import type { RefObject } from 'react';
+import type { NavigateFunction } from 'react-router-dom';
+import type { Theme } from 'app/providers/interfaces/theme.interface';
+import type { Appearance } from 'app/providers/interfaces/appearance.interface';
+import type { User } from 'app/providers/interfaces/user.interface';
 
 export interface NavigationTemplateProps {
   user: User | null;
@@ -12,34 +12,13 @@ export interface NavigationTemplateProps {
   setTheme: (t: Theme) => void;
   setAppearance: (a: Appearance) => void;
   isThemeUnlocked: (t: Theme) => boolean;
-  isProfileOpen: boolean;
-  setIsProfileOpen: (open: boolean) => void;
-  isThemeOpen: boolean;
-  setIsThemeOpen: (open: boolean) => void;
-  profileRef: RefObject<HTMLDivElement | null>;
-  themeRef: RefObject<HTMLDivElement | null>;
-  handleLogout: () => void;
-  standardThemes: { value: Theme; label: string }[];
-  holidayThemes: { value: Theme; label: string }[];
   customThemes?: { id: string; name: string }[];
   temporaryTheme?: { id: string; label: string } | null;
-  isHolidayOpen: boolean;
-  setIsHolidayOpen: (open: boolean) => void;
-  appearances: { value: Appearance; label: string; icon: any }[];
-  navigate: (to: string) => void;
-  isSearchOpen: boolean;
-  setIsSearchOpen: (open: boolean) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  searchResults: Wishlist[];
-  isSearchLoading: boolean;
-  activeSearchIndex: number;
-  setActiveSearchIndex: (index: number) => void;
-  handleSearchSelect: (wishlistId: string) => void;
-  searchRef: RefObject<HTMLDivElement | null>;
-  searchInputRef: RefObject<HTMLInputElement | null>;
+  handleLogout: () => void;
+  navigate: NavigateFunction;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
   mobileMenuRef: RefObject<HTMLDivElement | null>;
   hamburgerRef: RefObject<HTMLButtonElement | null>;
+  showRegisterCta: boolean;
 }

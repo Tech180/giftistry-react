@@ -30,7 +30,7 @@ const baseProps = {
   setPriorityWeight: vi.fn(),
   isHiddenIdea: false,
   setIsHiddenIdea: vi.fn(),
-  isOwner: true,
+  canCollaborate: true,
   isLoading: false,
   errorMsg: null,
   warningMsg: null,
@@ -162,7 +162,7 @@ describe('AddItemFormTemplate substitution surface', () => {
     render(
       <AddItemFormTemplate
         {...baseProps}
-        isOwner={false}
+        canCollaborate={false}
         isEdit={false}
         formId={SUBSTITUTION_FORM_ID}
         substitutionEditor={{ mode: 'create', kind: 'claimer_custom' }}
@@ -178,7 +178,7 @@ describe('AddItemFormTemplate substitution surface', () => {
     render(
       <AddItemFormTemplate
         {...baseProps}
-        isOwner={false}
+        canCollaborate={false}
         isEdit
         formId={SUBSTITUTION_FORM_ID}
         substitutionEditor={{

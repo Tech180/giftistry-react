@@ -6,6 +6,12 @@ function resultNumber(result: Record<string, unknown> | undefined, key: string):
   return typeof raw === 'number' && Number.isFinite(raw) ? raw : 0;
 }
 
+function resultWarnings(result: Record<string, unknown> | undefined): string[] {
+  const raw = result?.Warnings;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0);
+}
+
 export function formatImportJobSummary(job: BackgroundJobView): ImportJobSummary {
   if (job.Status === 'failed') {
     return {
@@ -25,6 +31,7 @@ export function formatImportJobSummary(job: BackgroundJobView): ImportJobSummary
 
   const created = resultNumber(job.Result, 'Created');
   const grabFailed = resultNumber(job.Result, 'GrabFailed');
+  const warnings = resultWarnings(job.Result);
   const parts: string[] = [];
 
   if (created > 0) {
@@ -39,14 +46,18 @@ export function formatImportJobSummary(job: BackgroundJobView): ImportJobSummary
     parts.push(`${grabFailed} grab failure${grabFailed === 1 ? '' : 's'}`);
   }
 
-  const message =
+  let message =
     parts.length > 0
       ? `Import finished — ${parts.join(', ')}`
       : job.Message?.trim() || 'Import finished';
 
+  if (warnings.length > 0) {
+    message = `${message}. ${warnings[0]}`;
+  }
+
   return {
     title: 'Import complete',
     message,
-    tone: grabFailed > 0 ? 'info' : 'success',
+    tone: grabFailed > 0 || warnings.length > 0 ? 'info' : 'success',
   };
 }

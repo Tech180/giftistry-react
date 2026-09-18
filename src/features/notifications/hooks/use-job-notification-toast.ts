@@ -31,13 +31,17 @@ export function useJobNotificationToast(): void {
         return;
       }
 
-      const tone = notification.Type === 'job_failed' ? 'error' : 'success';
+      const softFailure = notification.Metadata?.SoftFailure === 'true';
+      const tone =
+        notification.Type === 'job_failed' ? 'error' : softFailure ? 'info' : 'success';
       const message =
         notification.Message?.trim() ||
         notification.Title?.trim() ||
         (notification.Type === 'job_failed'
           ? 'Background item job failed.'
-          : 'Background item job finished.');
+          : softFailure
+            ? 'Product details were found, but AI summarization has failed.'
+            : 'Background item job finished.');
       showToast(message, tone);
     };
 

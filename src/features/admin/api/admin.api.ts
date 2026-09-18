@@ -5,6 +5,10 @@ import { ContentReport } from '../interfaces/content-report.interface';
 import { GiftistryUserPolicy } from '../interfaces/giftistry-user-policy.interface';
 import { ModerationComment } from '../interfaces/moderation-comment.interface';
 import { SitePolicy } from '../interfaces/site-policy.interface';
+import type {
+  RegistrationInviteRegenerateResult,
+  RegistrationInviteStatus,
+} from '../interfaces/registration-invite.interface';
 
 export const adminApi = {
   getOverview: () =>
@@ -108,6 +112,18 @@ export const adminApi = {
 
   updateSitePolicy: (policy: SitePolicy) =>
     apiClient.patch<{ Policy: SitePolicy }>('/api/admin/site-policy', policy, 'SitePolicy'),
+
+  getRegistrationInvite: () =>
+    apiClient.get<RegistrationInviteStatus>('/api/admin/registration-invite'),
+
+  regenerateRegistrationInvite: () =>
+    apiClient.post<RegistrationInviteRegenerateResult>(
+      '/api/admin/registration-invite/regenerate',
+      {}
+    ),
+
+  deleteRegistrationInvite: (id: string) =>
+    apiClient.delete<Record<string, never>>(`/api/admin/registration-invite/${id}`),
 
   getAuditLog: (params: { action?: string; page?: number }) => {
     const q = new URLSearchParams();

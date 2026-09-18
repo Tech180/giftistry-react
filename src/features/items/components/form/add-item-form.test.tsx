@@ -2122,6 +2122,120 @@ describe('AddItemForm - Substitution drawer chrome entry path', () => {
       );
     });
   });
+
+  test('claimer substitution magic-link uses draft-populate without write-back', async () => {
+    const onItemEnriched = vi.fn();
+    mockEnrichJob({
+      Title: 'Alt Headphones',
+      Price: 99.5,
+      Description: 'Quiet comfort',
+      Category: 'electronics',
+      CategoryAlternatives: [],
+      ImageUrl: null,
+      WebsiteName: 'Amazon',
+      CustomFields: { Predefined: {}, UserDefined: {} },
+    });
+
+    const itemWithDetails: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: true,
+      SubstitutionOptions: [],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        item={itemWithDetails}
+        readOnly
+        onItemEnriched={onItemEnriched}
+        canShowAi={true}
+        listAiEnabled={true}
+        autoOpenClaimerSubstitutionNonce={1}
+      />
+    );
+
+    await waitFor(() => {
+      expect(document.getElementById(SUBSTITUTION_FORM_ID)).toBeTruthy();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/alt-headphones' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(jobsApi.startItemEnrich).toHaveBeenCalledWith({
+        intent: 'draft-populate',
+        listId: 'test-list-id',
+        url: 'https://shop.example/alt-headphones',
+        itemId: undefined,
+        writeBack: false,
+      });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Alt Headphones')).toBeInTheDocument();
+    });
+    expect(onItemEnriched).not.toHaveBeenCalled();
+  });
+
+  test('owner nested substitution magic-link uses draft-populate', async () => {
+    mockEnrichJob({
+      Title: 'Approved Alt',
+      Price: 40,
+      Description: null,
+      Category: 'electronics',
+      CategoryAlternatives: [],
+      ImageUrl: null,
+      WebsiteName: null,
+      CustomFields: { Predefined: {}, UserDefined: {} },
+    });
+
+    const itemWithDetails: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: true,
+      SubstitutionOptions: [],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        item={itemWithDetails}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Test Headphones')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Add approved substitution/i }));
+
+    await waitFor(() => {
+      expect(document.getElementById(SUBSTITUTION_FORM_ID)).toBeTruthy();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://shop.example/approved-alt' },
+    });
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(jobsApi.startItemEnrich).toHaveBeenCalledWith({
+        intent: 'draft-populate',
+        listId: 'test-list-id',
+        url: 'https://shop.example/approved-alt',
+        itemId: undefined,
+        writeBack: false,
+      });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Approved Alt')).toBeInTheDocument();
+    });
+  });
 });
 
 describe('AddItemForm - Allow substitutions toggle', () => {
@@ -2187,6 +2301,49 @@ describe('AddItemForm - Allow substitutions toggle', () => {
 
     expect(screen.getByLabelText('Allow substitutions')).toBeChecked();
     expect(itemsApi.listSubstitutions).toHaveBeenCalledWith('item-1');
+    expect(baseFormProps.onSuccess).not.toHaveBeenCalled();
+  });
+
+  test('direct claimer create save closes the drawer via onSuccess', async () => {
+    const onSuccess = vi.fn();
+    const onItemEnriched = vi.fn();
+    (itemsApi as any).createClaimerSubstitution = vi.fn().mockResolvedValue(createdOption);
+    (itemsApi as any).listSubstitutions = vi.fn().mockResolvedValue({
+      Options: [createdOption],
+      AllowSubstitutions: true,
+    });
+
+    const itemWithDetails: Item = {
+      ...mockEditItem,
+      AllowSubstitutions: true,
+      SubstitutionOptions: [],
+    };
+
+    render(
+      <AddItemForm
+        {...baseFormProps}
+        isOwner={false}
+        item={itemWithDetails}
+        readOnly
+        onSuccess={onSuccess}
+        onItemEnriched={onItemEnriched}
+        autoOpenClaimerSubstitutionNonce={1}
+      />
+    );
+
+    await waitFor(() => {
+      expect(document.getElementById(SUBSTITUTION_FORM_ID)).toBeTruthy();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('e.g. Sony WH-1000XM5'), {
+      target: { value: 'Alt Gift' },
+    });
+    fireEvent.submit(document.getElementById(SUBSTITUTION_FORM_ID)!);
+
+    await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+    });
+    expect(onItemEnriched).not.toHaveBeenCalled();
   });
 
   test('parent save persists AllowSubstitutions true when toggled on', async () => {

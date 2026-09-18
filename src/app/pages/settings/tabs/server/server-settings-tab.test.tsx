@@ -125,6 +125,8 @@ const defaultSettings = {
   AiIntelligentApiKey: '',
   AiIntelligentModel: 'llama3',
   AiRateLimitEnabled: false,
+  AiImportChunkingEnabled: true,
+  AiImportChunkItemLimit: 20,
   AiCompletionTimeoutMs: 600000,
   AiConnectTimeoutMs: 5000,
   ScrapeFetchTimeoutMs: 8000,
@@ -449,7 +451,7 @@ describe('ServerSettingsTab local AI validation', () => {
     });
 
     await waitFor(() => {
-      expectAiCheckPayload(LOCAL_ENDPOINT, 'fast', { fast: 'llama3', intelligent: 'llama3' });
+      expectAiCheckPayload(LOCAL_ENDPOINT, 'fast', { fast: '', intelligent: 'llama3' });
     });
 
     await waitFor(() => {
@@ -622,7 +624,7 @@ describe('ServerSettingsTab local AI validation', () => {
 
     await waitFor(() => {
       expectAiCheckPayload('http://localhost:11435/v1', 'fast', {
-        fast: 'qwen3:8b',
+        fast: '',
         intelligent: 'qwen3:8b',
       });
     });
@@ -636,8 +638,43 @@ describe('ServerSettingsTab local AI validation', () => {
     });
 
     await waitFor(() => {
-      expect(getLocalModelSelect()).toHaveValue('__custom__');
-      expect(getLocalModelInput()).toHaveValue('qwen3:8b');
+      expect(getLocalModelSelect()).toHaveValue('mistral');
+    });
+  });
+
+  test('switching AI provider clears the selected model', async () => {
+    writeLocalAiModelsCache(LOCAL_ENDPOINT, ['llama3', 'qwen3:8b']);
+
+    vi.mocked(apiClient.get).mockResolvedValue({
+      ...defaultSettings,
+      AiFastEndpoint: LOCAL_ENDPOINT,
+      AiIntelligentEndpoint: LOCAL_ENDPOINT,
+      AiFastApiKey: 'test-key',
+      AiIntelligentApiKey: 'test-key',
+      AiFastModel: 'qwen3:8b',
+      AiIntelligentModel: 'qwen3:8b',
+    });
+    mockLocalModels([]);
+    vi.mocked(systemApi.listModels).mockResolvedValue([
+      {
+        id: 'google/gemini-2.0-flash',
+        name: 'Google: Gemini 2.0 Flash',
+        company: 'Google',
+        displayName: 'Gemini 2.0 Flash',
+      },
+    ]);
+
+    render(<ServerSettingsTab showToast={showToast} />);
+
+    await waitFor(() => {
+      expect(getLocalModelSelect()).toHaveValue('qwen3:8b');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Global Models (API)' }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Company')).toHaveValue('');
+      expect(screen.getByLabelText('Model')).toHaveValue('');
     });
   });
 });
@@ -752,6 +789,8 @@ describe('ServerSettingsTab AI disable persists config', () => {
       AiEnabled: true,
       AiWebSearchEnabled: true,
       AiRateLimitEnabled: true,
+      AiImportChunkingEnabled: true,
+      AiImportChunkItemLimit: 20,
       AiFastProvider: 'openrouter',
       AiFastEndpoint: 'https://openrouter.ai/api/v1',
       AiFastApiKey: 'sk-keep-me',
@@ -790,6 +829,8 @@ describe('ServerSettingsTab AI disable persists config', () => {
       AiEnabled: false,
       AiWebSearchEnabled: true,
       AiRateLimitEnabled: true,
+      AiImportChunkingEnabled: true,
+      AiImportChunkItemLimit: 20,
       AiFastProvider: 'openrouter',
       AiFastEndpoint: 'https://openrouter.ai/api/v1',
       AiFastApiKey: 'sk-keep-me',

@@ -117,41 +117,9 @@
   display: block;
 }
 
-.select-wrapper {
-  position: relative;
+.category-select {
   width: 100%;
-}
-
-.select {
-  width: 100%;
-  padding: 0.625rem var(--spacing-2xl) 0.625rem var(--spacing-base);
-  background-color: #000000;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: 0.875rem;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  transition: border-color var(--transition-normal);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
-}
-
-.select:focus {
-  border-color: var(--primary);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(107, 122, 236, 0.3);
-}
-
-.select-icon {
-  position: absolute;
-  right: var(--spacing-base);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  pointer-events: none;
-  display: flex;
-  align-items: center;
+  min-width: 0;
 }
 
 .divider {

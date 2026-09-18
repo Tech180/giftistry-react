@@ -5,7 +5,14 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<any>;
-  signup: (username: string, email: string | null | undefined, password: string, firstName?: string, lastName?: string) => Promise<any>;
+  signup: (
+    username: string,
+    email: string | null | undefined,
+    password: string,
+    firstName?: string,
+    lastName?: string,
+    inviteToken?: string | null
+  ) => Promise<any>;
   logout: () => Promise<void>;
   updateProfile: (
     username?: string,

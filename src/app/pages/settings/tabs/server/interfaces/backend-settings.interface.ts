@@ -46,6 +46,8 @@ export interface BackendSettings {
   AiPopulatePrompt?: string;
   AiCategoryPrompt?: string;
   AiImportPrompt?: string;
+  AiImportChunkingEnabled?: boolean;
+  AiImportChunkItemLimit?: number;
   AiEnabledPackIds?: string[];
   AiCustomPacks?: CustomPackSettings[];
   AiCompletionTimeoutMs?: number;

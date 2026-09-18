@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertCircle, Check, Copy, Link2, Lock } from 'lucide-react';
-import { Button, SelectMenu, Switch } from 'shared/ui';
+import { Button, DateField, SelectMenu, Switch } from 'shared/ui';
 import {
   SHARE_ROLE_MENU_TITLE,
   SHARE_ROLE_OPTIONS,
@@ -214,12 +214,11 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
             </div>
             {hasExpiration && (
               <div className={styles['sub-details']}>
-                <input
-                  type="date"
+                <DateField
                   value={expDate}
-                  onChange={(e) => setExpDate(e.target.value)}
-                  className={styles['date-input']}
-                  style={{ colorScheme: 'dark' }}
+                  onChange={setExpDate}
+                  aria-label="Link expiration date"
+                  className={styles['date-field']}
                 />
                 <input
                   type="time"

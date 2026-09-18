@@ -148,7 +148,7 @@ export const ItemShowcaseTemplate: React.FC<ItemShowcaseTemplateProps> = ({
     substitutionAction?.mode === 'manage' ? styles['claim-icon-btn'] : undefined;
 
   const guestActions =
-    isArchived || isExpired || isPublicGuest ? null : !isOwner ? (
+    isArchived || isExpired || isPublicGuest ? null : !canCollaborate ? (
     <>
       {(canEditItem ?? canCollaborate) && ownerActions}
       {canAdjustClaim ? (

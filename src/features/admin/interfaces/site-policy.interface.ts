@@ -11,5 +11,7 @@ export interface SitePolicy {
   AllowPasswordLogin: boolean;
   RequireStrongPasswords: boolean;
   AllowedEmailDomains: string[];
+  RegistrationInviteTtlHours: number;
+  RegistrationInviteMaxUses: number | null;
   DefaultUserPolicy: GiftistryUserPolicy;
 }

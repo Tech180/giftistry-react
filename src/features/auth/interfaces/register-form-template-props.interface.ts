@@ -17,5 +17,9 @@ export interface RegisterFormTemplateProps {
   localError: string | null;
   registrationClosed?: boolean;
   registrationClosedMessage?: string;
+  inviteValidating?: boolean;
+  oauthEnabled?: boolean;
+  oauthButtonText?: string;
+  onOauthSignup?: () => void;
   handleSubmit: (e: React.SyntheticEvent) => void;
 }

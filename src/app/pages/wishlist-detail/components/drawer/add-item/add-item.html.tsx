@@ -94,6 +94,7 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
   collapseDrawerWhileLinking = false,
   handleLinkingAudienceChange,
   isOwner,
+  canCollaborate = isOwner,
   listId,
   listAiEnabled,
   listManualJobBackground = true,
@@ -290,7 +291,7 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
           Substitution item
         </p>
       )}
-      {(formItem?.IsSuggestion || (!isView && !isOwner)) && !isSubstitutionMode && (
+      {(formItem?.IsSuggestion || (!isView && !canCollaborate)) && !isSubstitutionMode && (
         <p className={styles.suggestionBanner} role="status">
           Suggestion
         </p>
@@ -306,6 +307,7 @@ export const AddItemTemplate: React.FC<AddItemTemplateProps> = ({
         key={formItem?.Id ?? 'add'}
         listId={listId}
         isOwner={isOwner}
+        canCollaborate={canCollaborate}
         item={formItem}
         readOnly={isView}
         existingCategories={Array.from(

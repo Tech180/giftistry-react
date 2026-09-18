@@ -29,6 +29,7 @@ export interface LoginFormTemplateProps {
   oauthEnabled: boolean;
   oauthButtonText: string;
   handleOauthLogin: () => void;
+  showRegisterLink: boolean;
 
   showPassword: boolean;
   onToggleShowPassword: () => void;

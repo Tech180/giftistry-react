@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { CommentInputProps } from '../../interfaces/comment-input-props.interface';
 import { CommentInputTemplate } from './comment-input.html';
 import {
@@ -16,8 +16,8 @@ import { getMentionableParticipants } from '../../utils/comment-content.util';
 
 export const CommentInput: React.FC<CommentInputProps> = ({
   isOwner,
-  isOwnerVisible,
-  setIsOwnerVisible,
+  commentVisibility,
+  setCommentVisibility,
   isRollover,
   setIsRollover,
   autoRollover = false,
@@ -37,6 +37,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   listOwnerId,
   imageUrl,
   setImageUrl,
+  onMentionSelect,
 }) => {
   const editorHandle = useRef<CommentEditorHandle>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -45,17 +46,23 @@ export const CommentInput: React.FC<CommentInputProps> = ({
     () =>
       getMentionableParticipants(participants, {
         isOwner,
-        isOwnerVisible,
+        mode: commentVisibility.mode,
+        selectedUserIds: commentVisibility.selectedUserIds,
         listOwnerId,
       }),
-    [participants, isOwner, isOwnerVisible, listOwnerId]
+    [participants, isOwner, commentVisibility, listOwnerId]
   );
 
   return (
     <CommentInputTemplate
       handleSubmit={handleSubmit}
       typingIndicator={<TypingIndicator typingUsers={typingUsers} />}
-      ownerWarning={<OwnerWarning isOwner={isOwner} isOwnerVisible={isOwnerVisible} />}
+      ownerWarning={
+        <OwnerWarning
+          isOwner={isOwner}
+          isOwnerVisible={commentVisibility.mode === 'visibleToAll'}
+        />
+      }
       uploadErrorBar={uploadError ? <UploadErrorBar message={uploadError} /> : null}
       metaRow={
         <MetaRow
@@ -78,9 +85,11 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           participants={mentionParticipants}
           currentUserId={currentUserId}
           isOwner={isOwner}
-          isOwnerVisible={isOwnerVisible}
+          visibilityMode={commentVisibility.mode}
+          selectedUserIds={commentVisibility.selectedUserIds}
           listOwnerId={listOwnerId}
           onSubmit={handleSubmit}
+          onMentionAudienceSelect={onMentionSelect}
         />
       }
       toolbar={
@@ -96,14 +105,17 @@ export const CommentInput: React.FC<CommentInputProps> = ({
       footer={
         <InputFooter
           isOwner={isOwner}
-          isOwnerVisible={isOwnerVisible}
-          setIsOwnerVisible={setIsOwnerVisible}
+          commentVisibility={commentVisibility}
+          setCommentVisibility={setCommentVisibility}
           isRollover={isRollover}
           setIsRollover={setIsRollover}
           autoRollover={autoRollover}
           items={items}
           isTaggingModeActive={isTaggingModeActive}
           setIsTaggingModeActive={setIsTaggingModeActive}
+          participants={participants}
+          currentUserId={currentUserId}
+          listOwnerId={listOwnerId}
         />
       }
     />

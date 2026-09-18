@@ -1,0 +1,43 @@
+.dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-full);
+  transition: background-color var(--transition-normal);
+}
+
+.profile-trigger:hover {
+  background-color: var(--surface-hover);
+}
+
+.avatar {
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
+  border-radius: var(--radius-full);
+  background-color: var(--primary);
+  color: var(--primary-text);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chevron {
+  color: var(--text-muted);
+}
+
+@media (max-width: 48rem) {
+  .dropdown-container {
+    display: none;
+  }
+}

@@ -220,7 +220,7 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
     totalClaimedAmount,
   });
   const showGuestClaimActions =
-    showCompactActions && !isOwner && !showClaimForm;
+    showCompactActions && !canCollaborate && !showClaimForm;
   const showWideClaimActionPair =
     showGuestClaimActions && claimedByCurrentUser && canAdjustClaim;
   const syncClaimActionWidth =
@@ -228,7 +228,7 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
   const useSyncedClaimActionWidth = syncClaimActionWidth && showGuestClaimActions;
   const useSyncedConfirmButtons =
     syncClaimActionWidth &&
-    ((showClaimForm && !isOwner) || showDeleteConfirm);
+    ((showClaimForm && !canCollaborate) || showDeleteConfirm);
   const spanClaimActionWidth =
     useSyncedClaimActionWidth ||
     (isSyncEnabled &&
@@ -320,7 +320,7 @@ export const CompactItemView: React.FC<ItemViewProps> = (props) => {
             {...(leadingCol.measure ? { 'data-compact-col-measure': 'leading' } : {})}
           >
             <div className={styles['v-compact-star']}>
-              {isOwner ? (
+              {canCollaborate ? (
                 <button
                   type="button"
                   onClick={toggleFavorite}
