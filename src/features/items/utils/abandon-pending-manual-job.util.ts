@@ -1,14 +1,7 @@
 import { jobsApi } from 'features/jobs/api/jobs.api';
 import type { ItemEnrichJobResult } from 'features/jobs/interfaces/item-enrich-job-result.interface';
-import type { PendingManualJob } from '../interfaces/pending-manual-job.interface';
-
-export type AbandonPendingManualJobOutcome = 'promoted' | 'cancelled' | 'left' | 'noop';
-
-export interface AbandonPendingManualJobOptions {
-  pending: PendingManualJob | null;
-  listId: string;
-  background: boolean;
-}
+import type { AbandonPendingManualJobOptions } from '../interfaces/abandon-pending-manual-job-options.interface';
+import type { AbandonPendingManualJobOutcome } from '../interfaces/abandon-pending-manual-job-outcome.type';
 
 /**
  * Handles Manual form close/unmount while an AI job is still in flight.
@@ -18,7 +11,7 @@ export interface AbandonPendingManualJobOptions {
  * Background + update-item/summarize → leave the server job running.
  */
 export async function abandonPendingManualJob(
-  options: AbandonPendingManualJobOptions
+  options: AbandonPendingManualJobOptions,
 ): Promise<{ outcome: AbandonPendingManualJobOutcome; result?: ItemEnrichJobResult }> {
   const { pending, listId, background } = options;
   if (!pending?.jobId) {

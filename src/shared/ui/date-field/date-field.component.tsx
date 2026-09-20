@@ -9,12 +9,10 @@ import { DateFieldTemplate } from './date-field.html';
 import {
   formatDateFieldDisplay,
   formatDateFieldEditValue,
-} from './utils/format-date-field-display.util';
-import { parseDateFieldInput } from './utils/parse-date-field-input.util';
-import { resolveDateFieldQuickPick } from './utils/resolve-date-field-quick-pick.util';
+} from './utils/format-display.util';
+import { parseDateFieldInput } from './utils/parse-input.util';
+import { resolveDateFieldQuickPick } from './utils/resolve-quick-pick.util';
 import styles from './date-field.module.css';
-
-export type { DateFieldProps } from './interfaces/date-field-props.interface';
 
 export const DateField: React.FC<DateFieldProps> = ({
   value,
@@ -264,39 +262,105 @@ export const DateField: React.FC<DateFieldProps> = ({
 
   return (
     <DateFieldTemplate
-      rootClass={rootClass}
-      controlClass={controlClass}
-      panelClass={panelClass}
-      panelStyle={panelStyle}
-      label={label}
-      labelId={labelId}
-      inputId={inputId}
-      calendarButtonId={calendarButtonId}
-      dialogId={dialogId}
-      ariaLabel={resolvedAriaLabel}
-      draftValue={draftValue}
-      placeholder={isEditing ? 'MM/DD/YYYY' : placeholder}
-      isOpen={isOpen}
-      disabled={disabled}
-      clearable={clearable}
-      hasValue={Boolean(selectedDate)}
-      quickPicks={DATE_FIELD_QUICK_PICKS}
-      viewMonth={viewMonth}
-      selectedDate={selectedDate}
-      controlRef={controlRef}
-      calendarButtonRef={calendarButtonRef}
-      panelRef={panelRef}
-      inputRef={inputRef}
-      calendarIcon={<CalendarIcon size={14} aria-hidden />}
-      onDraftChange={setDraftValue}
-      onDraftCommit={onDraftCommit}
-      onDraftFocus={onDraftFocus}
-      onDraftKeyDown={onDraftKeyDown}
-      onOpenCalendar={onOpenCalendar}
-      onSelectDay={onSelectDay}
-      onViewMonthChange={setViewMonth}
-      onQuickPick={onQuickPick}
-      onClear={onClear}
+      rootClass = {
+        rootClass
+      }
+      controlClass = {
+        controlClass
+      }
+      panelClass = {
+        panelClass
+      }
+      panelStyle = {
+        panelStyle
+      }
+      label = {
+        label
+      }
+      labelId = {
+        labelId
+      }
+      inputId = {
+        inputId
+      }
+      calendarButtonId = {
+        calendarButtonId
+      }
+      dialogId = {
+        dialogId
+      }
+      ariaLabel = {
+        resolvedAriaLabel
+      }
+      draftValue = {
+        draftValue
+      }
+      placeholder = {
+        isEditing ? 'MM/DD/YYYY' : placeholder
+      }
+      isOpen = {
+        isOpen
+      }
+      disabled = {
+        disabled
+      }
+      clearable = {
+        clearable
+      }
+      hasValue = {
+        Boolean(selectedDate)
+      }
+      quickPicks = {
+        DATE_FIELD_QUICK_PICKS
+      }
+      viewMonth = {
+        viewMonth
+      }
+      selectedDate = {
+        selectedDate
+      }
+      controlRef = {
+        controlRef
+      }
+      calendarButtonRef = {
+        calendarButtonRef
+      }
+      panelRef = {
+        panelRef
+      }
+      inputRef = {
+        inputRef
+      }
+      calendarIcon = {
+        <CalendarIcon size={14} aria-hidden />
+      }
+      onDraftChange = {
+        setDraftValue
+      }
+      onDraftCommit = {
+        onDraftCommit
+      }
+      onDraftFocus = {
+        onDraftFocus
+      }
+      onDraftKeyDown = {
+        onDraftKeyDown
+      }
+      onOpenCalendar = {
+        onOpenCalendar
+      }
+      onSelectDay = {
+        onSelectDay
+      }
+      onViewMonthChange = {
+        setViewMonth
+      }
+      onQuickPick = {
+        onQuickPick
+      }
+      onClear = {
+        onClear
+      }
     />
   );
 };

@@ -1,4 +1,4 @@
-.claim-prompt-block {
+.claim-prompt {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -7,13 +7,13 @@
   flex: 1 1 auto;
 }
 
-.claim-prompt-text {
+.claim-prompt__text {
   font-size: var(--font-size-sm);
   color: var(--text);
   font-weight: var(--font-weight-medium);
 }
 
-.claim-gf-block {
+.claim-prompt__gf {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
@@ -21,7 +21,7 @@
   margin-block-start: var(--spacing-2xs);
 }
 
-.claim-gf-toggle-row {
+.claim-prompt__gf-toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -30,25 +30,25 @@
   min-height: 2.75rem;
 }
 
-.claim-gf-toggle-label {
+.claim-prompt__gf-toggle-label {
   font-size: var(--font-size-sm);
   color: var(--text);
   font-weight: var(--font-weight-medium);
 }
 
-.claim-gf-amount {
+.claim-prompt__gf-amount {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2xs);
   width: 100%;
 }
 
-.claim-gf-amount-label {
+.claim-prompt__gf-amount-label {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
-.claim-gf-amount-field {
+.claim-prompt__gf-amount-field {
   display: flex;
   align-items: center;
   gap: var(--spacing-2xs);
@@ -57,15 +57,20 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
+
+  &:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+  }
 }
 
-.claim-gf-amount-icon {
+.claim-prompt__gf-amount-icon {
   display: inline-flex;
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.claim-gf-amount-input {
+.claim-prompt__gf-amount-input {
   flex: 1 1 auto;
   min-width: 0;
   border: none;
@@ -73,18 +78,13 @@
   color: var(--text);
   font-size: var(--font-size-sm);
   min-height: 2.5rem;
+
+  &:focus {
+    outline: none;
+  }
 }
 
-.claim-gf-amount-input:focus {
-  outline: none;
-}
-
-.claim-gf-amount-field:focus-within {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary);
-}
-
-.claim-gf-amount-hint {
+.claim-prompt__gf-amount-hint {
   margin: 0;
   font-size: var(--font-size-xs);
   color: var(--text-muted);

@@ -1,25 +1,15 @@
 import { normalizeItemDescriptionMetadata } from 'shared/utils/item-custom-fields.util';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
 import type { Item } from '../interfaces/item.interface';
+import type { ItemSectionFullyClaimedInput } from '../interfaces/item-section-fully-claimed-input.interface';
 import type { ItemSubstitutionSummary } from '../interfaces/item-substitution.interface';
+import type { SubstitutionBrowseOption } from '../interfaces/substitution-browse-option.interface';
 import {
   isItemGroupFundingFullyFunded,
   resolveActiveItemFullyClaimed,
   resolveItemFundingSnapshot,
 } from './is-item-group-funding-active.util';
 import { resolveItemQuantitySummary } from './resolve-item-quantity.util';
-import type { SubstitutionBrowseOption } from './resolve-item-substitution-options.util';
-
-export interface ItemSectionFullyClaimedInput {
-  isFullyClaimed?: boolean | null;
-  isClaimed?: boolean;
-  allowGroupFunds: boolean;
-  fundingTarget: number;
-  totalClaimedAmount: number;
-  isMultiCount: boolean;
-  claimedQuantity: number;
-  desiredQuantity: number;
-}
 
 /** GF-aware fully-claimed for a parent or substitution section. */
 export function resolveItemSectionFullyClaimed(

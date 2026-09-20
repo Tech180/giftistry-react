@@ -1,0 +1,2 @@
+export const DEFAULT_INVITE_TTL_HOURS = 168;
+export const DEFAULT_INVITE_MAX_USES = 1;

@@ -1,14 +1,11 @@
 import { ListParticipant } from '../interfaces/list-participant.interface';
+import type { CommentContentSegment } from '../interfaces/comment-content-segment.type';
 import type { CommentVisibilityMode } from '../interfaces/comment-visibility-mode.type';
-
-export type CommentContentSegment =
-  | { type: 'text'; value: string }
-  | { type: 'mention'; userId: string; username: string }
-  | { type: 'item'; itemId: string; name: string };
-
-const USER_MENTION_REGEX = /\[([^\]]+)\]\(user:([^)]+)\)/g;
-const ITEM_TAG_REGEX = /\[([^\]]+)\]\(item:([^)]+)\)/g;
-const COMBINED_REGEX = /\[([^\]]+)\]\((user|item):([^)]+)\)/g;
+import {
+  COMBINED_REGEX,
+  ITEM_TAG_REGEX,
+  USER_MENTION_REGEX,
+} from '../constants/comment-content-regex.constant';
 
 export function formatUserMention(participant: ListParticipant): string {
   return `[${participant.username}](user:${participant.userId})`;

@@ -1,0 +1,47 @@
+import type { ClaimerSubstitutionAction } from '../../../../../../interfaces/claimer-substitution-action.interface';
+import type { Item } from '../../../../../../interfaces/item.interface';
+import type { ItemActions } from '../../../../../../interfaces/item-actions.interface';
+
+export interface TemplateProps {
+  footerClassName: string;
+  claimFormPanelClassName: string;
+  claimFormActionsClassName: string;
+  showClaimForm: boolean;
+  isArchived: boolean | undefined;
+  isExpired: boolean;
+  displayItem: Item;
+  claimUserId: string | null | undefined;
+  claimActorName: string | null | undefined;
+  itemActions: ItemActions | undefined;
+  anonymous: boolean;
+  setAnonymous: (val: boolean) => void;
+  setShowClaimForm: (val: boolean) => void;
+  linkedClaimPeers: Item[];
+  wishlistItemsForLinkedClaim: Item[];
+  onLinkedClaimItemClick?: (itemId: string) => void;
+  allowGroupFunds: boolean;
+  totalExtractedPrice: number;
+  totalClaimedAmount: number;
+  handleClaim: () => void;
+  claimLoading: boolean;
+  isOwner: boolean;
+  canCollaborate: boolean;
+  isPublicGuest: boolean | undefined;
+  canEditItem: boolean | undefined;
+  claimedByCurrentUser: boolean;
+  isFullyClaimed: boolean;
+  isClaimUnavailable: boolean | undefined;
+  canAdjustClaim: boolean;
+  showDeleteConfirm: boolean;
+  deleteLoading: boolean;
+  onEdit?: () => void;
+  onView?: () => void;
+  handleUnclaim: () => void;
+  setShowDeleteConfirm: (val: boolean) => void;
+  handleDelete: () => void;
+  hasLinkedUnclaimPeers: boolean;
+  substitutionAction: ClaimerSubstitutionAction | null | undefined;
+  claimPrompt: string | undefined;
+  claimConfirmLabel: string;
+  linkedClaimTaggedIds: string[];
+}

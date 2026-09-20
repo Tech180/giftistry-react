@@ -6,4 +6,9 @@ export interface ClaimFormQuantityRow {
   maxForUser: number;
   remaining: number;
   outOfStock: boolean;
+  rowClassName: string;
+  hintClassName: string;
+  decreaseLabel: string;
+  increaseLabel: string;
+  selectorDisabled: boolean;
 }

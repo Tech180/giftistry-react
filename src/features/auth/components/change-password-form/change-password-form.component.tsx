@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from 'app/providers/auth-context';
+import { useAuth } from '../../providers';
 import { authApi } from '../../api/auth.api';
 import { postAuthPath } from '../../utils/post-auth-path.util';
 import { ChangePasswordFormTemplate } from './change-password-form.html';
@@ -70,22 +70,54 @@ export const ChangePasswordForm: React.FC = () => {
 
   return (
     <ChangePasswordFormTemplate
-      currentPassword={currentPassword}
-      setCurrentPassword={setCurrentPassword}
-      newPassword={newPassword}
-      setNewPassword={setNewPassword}
-      confirmPassword={confirmPassword}
-      setConfirmPassword={setConfirmPassword}
-      showCurrent={showCurrent}
-      showNew={showNew}
-      showConfirm={showConfirm}
-      onToggleShowCurrent={() => setShowCurrent((prev) => !prev)}
-      onToggleShowNew={() => setShowNew((prev) => !prev)}
-      onToggleShowConfirm={() => setShowConfirm((prev) => !prev)}
-      isLoading={isLoading}
-      localError={localError}
-      handleSubmit={handleSubmit}
-      passwordHint={passwordHint}
+      currentPassword = {
+        currentPassword
+      }
+      setCurrentPassword = {
+        setCurrentPassword
+      }
+      newPassword = {
+        newPassword
+      }
+      setNewPassword = {
+        setNewPassword
+      }
+      confirmPassword = {
+        confirmPassword
+      }
+      setConfirmPassword = {
+        setConfirmPassword
+      }
+      showCurrent = {
+        showCurrent
+      }
+      showNew = {
+        showNew
+      }
+      showConfirm = {
+        showConfirm
+      }
+      onToggleShowCurrent = {
+        () => setShowCurrent((prev) => !prev)
+      }
+      onToggleShowNew = {
+        () => setShowNew((prev) => !prev)
+      }
+      onToggleShowConfirm = {
+        () => setShowConfirm((prev) => !prev)
+      }
+      isLoading = {
+        isLoading
+      }
+      localError = {
+        localError
+      }
+      handleSubmit = {
+        handleSubmit
+      }
+      passwordHint = {
+        passwordHint
+      }
     />
   );
 };

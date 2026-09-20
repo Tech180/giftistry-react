@@ -4,22 +4,9 @@ import {
   getWishlistImportAllowedExtensions,
   getWishlistImportTypeError,
 } from '../constants/wishlist-import.constants';
-import type { ImportFileFormat } from '../interfaces/import-file-format.interface';
+import type { ReadImportFileOptions } from '../interfaces/read-import-file-options.interface';
+import type { ReadImportFileResult } from '../interfaces/read-import-file-result.interface';
 import { detectImportFormat } from './detect-import-format.util';
-
-export type ImportContentEncoding = 'text' | 'base64' | 'data-url';
-
-export interface ReadImportFileResult {
-  fileName: string;
-  format: ImportFileFormat;
-  content: string;
-  contentEncoding: ImportContentEncoding;
-}
-
-export interface ReadImportFileOptions {
-  onProgress?: (percent: number) => void;
-  allowAi?: boolean;
-}
 
 function clampPercent(value: number): number {
   if (!Number.isFinite(value)) return 0;

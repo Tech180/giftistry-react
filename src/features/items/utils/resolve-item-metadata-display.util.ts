@@ -3,11 +3,7 @@ import {
   getMetadataDisplayEntries,
   getUserDefinedEntries,
 } from 'shared/utils/item-custom-fields.util';
-
-export interface ItemMetadataDisplay {
-  predefinedDisplayEntries: { label: string; value: string }[];
-  userDefinedEntries: { name: string; value: string }[];
-}
+import type { ItemMetadataDisplay } from '../interfaces/item-metadata-display.interface';
 
 export function resolveItemMetadataDisplay(
   metadata: ItemDescriptionMetadata | null | undefined

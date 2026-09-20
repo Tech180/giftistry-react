@@ -93,6 +93,20 @@ const apiUrl = resolveLanUrl(process.env.VITE_API_URL, `http://${lanIp}:${API_PO
 const appUrl = resolveLanUrl(process.env.GIFTISTRY_PUBLIC_APP_URL, `http://${lanIp}:${WEB_PORT}`);
 const chromiumPath = resolveChromiumPath();
 
+const sync = spawn('bun', ['run', 'sync:theme-catalog'], {
+  cwd: ROOT,
+  stdio: 'inherit',
+});
+await new Promise<void>((resolve, reject) => {
+  sync.on('exit', (code) => {
+    if (code === 0) {
+      resolve();
+      return;
+    }
+    reject(new Error(`sync:theme-catalog exited with code ${code}`));
+  });
+});
+
 console.log(`[dev:all] Phone / LAN UI  ${appUrl}`);
 console.log(`[dev:all] Phone / LAN API ${apiUrl}`);
 if (chromiumPath) {

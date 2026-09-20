@@ -5,68 +5,59 @@ import styles from './badge.module.css';
 export const BadgeTemplate: React.FC<BadgeTemplateProps> = ({
   children,
   rootClass,
+  borderWrapperClass,
+  borderGradientClass,
+  showBorderGradient,
+  innerClass,
+  hasIcon,
+  iconSlotClass,
+  showActiveIcon,
+  activeIconClass,
+  showInactiveIcon,
+  inactiveIconClass,
+  showLabel,
+  labelClass,
+  showDefs,
+  gradientId,
   icon,
   iconInactive,
-  active = false,
-  effect = 'none',
   onClick,
   disabled = false,
   ariaLabel,
   ariaPressed,
-  gradientId,
 }) => {
-  const hasIcon = icon != null || iconInactive != null;
-  const hasInactivePair = icon != null && iconInactive != null;
-  const isRainbow = effect === 'rainbow';
-  const showLabel = children != null && children !== false && children !== '';
-
   const content = (
-    <>
-      {isRainbow && <div className={styles.glow} aria-hidden="true" />}
+    <div className={borderWrapperClass}>
+      {showBorderGradient && (
+        <div className={borderGradientClass} aria-hidden="true" />
+      )}
 
-      <div className={styles['border-wrapper']}>
-        {isRainbow && <div className={styles['border-gradient']} aria-hidden="true" />}
+      <div className={innerClass}>
+        {hasIcon && (
+          <div className={iconSlotClass} aria-hidden="true">
+            {showActiveIcon && <span className={activeIconClass}>{icon}</span>}
+            {showInactiveIcon && (
+              <span className={inactiveIconClass}>{iconInactive}</span>
+            )}
+          </div>
+        )}
 
-        <div className={styles.inner}>
-          {hasIcon && (
-            <div
-              className={[
-                styles['icon-slot'],
-                hasInactivePair ? styles['icon-slot-pair'] : styles['icon-slot-single'],
-              ].join(' ')}
-              aria-hidden="true"
-            >
-              {icon != null && (
-                <span className={`${styles['icon-face']} ${styles['icon-active']}`}>
-                  {icon}
-                </span>
-              )}
-              {iconInactive != null && (
-                <span className={`${styles['icon-face']} ${styles['icon-inactive']}`}>
-                  {iconInactive}
-                </span>
-              )}
-            </div>
-          )}
-
-          {showLabel && <span className={styles.label}>{children}</span>}
-        </div>
+        {showLabel && <span className={labelClass}>{children}</span>}
       </div>
-    </>
+    </div>
   );
 
-  const defs =
-    isRainbow && gradientId ? (
-      <svg className={styles['svg-defs']} aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#5E42F8" />
-            <stop offset="50%" stopColor="#B656CB" />
-            <stop offset="100%" stopColor="#F15565" />
-          </linearGradient>
-        </defs>
-      </svg>
-    ) : null;
+  const defs = showDefs ? (
+    <svg className={styles['badge__svg-defs']} aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="var(--primary)" />
+          <stop offset="50%" stopColor="var(--accent)" />
+          <stop offset="100%" stopColor="var(--error)" />
+        </linearGradient>
+      </defs>
+    </svg>
+  ) : null;
 
   if (onClick) {
     return (

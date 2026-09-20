@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ADD_SUBSTITUTION_ACTION_LABEL } from '../../../../constants/substitution-messages.constant';
-import { SubstitutionClaimButton } from './claim-button.component';
+import { ClaimButton as SubstitutionClaimButton } from './claim-button.component';
 
 describe('SubstitutionClaimButton', () => {
   it('opens the editor directly when substitutions are allowed', () => {

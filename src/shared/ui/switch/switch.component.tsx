@@ -2,8 +2,6 @@ import React from 'react';
 import { SwitchProps } from './interfaces/switch-props.interface';
 import { SwitchTemplate } from './switch.html';
 
-export type { SwitchProps } from './interfaces/switch-props.interface';
-
 export const Switch: React.FC<SwitchProps> = ({
   checked,
   onChange,
@@ -15,13 +13,27 @@ export const Switch: React.FC<SwitchProps> = ({
 }) => {
   return (
     <SwitchTemplate
-      checked={checked}
-      onChange={onChange}
-      disabled={disabled}
-      id={id}
-      className={className}
-      size={size}
-      ariaLabel={ariaLabel}
+      checked = {
+        checked
+      }
+      onChange = {
+        onChange
+      }
+      disabled = {
+        disabled
+      }
+      id = {
+        id
+      }
+      className = {
+        className
+      }
+      size = {
+        size
+      }
+      ariaLabel = {
+        ariaLabel
+      }
     />
   );
 };

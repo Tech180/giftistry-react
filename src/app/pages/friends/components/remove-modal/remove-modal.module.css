@@ -1,0 +1,17 @@
+.remove-modal__body {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.remove-modal__name {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.remove-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}

@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from 'app/providers/auth-context';
-import { useToast } from 'app/providers/toast-context';
+import { useAuth } from '../../providers';
+import { useToast } from 'shared/providers/toast';
+import { AUTH_TOKEN_STORAGE_KEY } from 'core/api/constants/token-storage-key.constant';
 import { authApi } from '../../api/auth.api';
 import { LoginFormTemplate } from './login-form.html';
 import { ApiUser } from '../../interfaces/api-user.interface';
 import { postAuthPath } from '../../utils/post-auth-path.util';
 import { camelcaseKeys } from 'shared/utils/api-case.util';
-
-type LoginLocationState = {
-  error?: string;
-};
+import type { LocationState } from './interfaces/location-state.interface';
+import type { Step } from './interfaces/step.type';
+import type { SwitcherAccount } from './interfaces/switcher-account.interface';
+import { readSwitcherAccounts } from './utils/read-switcher-accounts.util';
+import { writeSwitcherAccounts } from './utils/write-switcher-accounts.util';
 
 export const LoginForm: React.FC = () => {
   const {
@@ -28,12 +30,12 @@ export const LoginForm: React.FC = () => {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [step, setStep] = useState<'credentials' | '2fa'>('credentials');
+  const [step, setStep] = useState<Step>('credentials');
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [ticket, setTicket] = useState('');
   const [totpCode, setTotpCode] = useState('');
-  const [switcherAccounts, setSwitcherAccounts] = useState<any[]>([]);
+  const [switcherAccounts, setSwitcherAccounts] = useState<SwitcherAccount[]>([]);
 
   const [isBiometricModalOpen, setIsBiometricModalOpen] = useState(false);
   const [biometricLabel, setBiometricLabel] = useState('');
@@ -44,9 +46,11 @@ export const LoginForm: React.FC = () => {
   };
 
   useEffect(() => {
-    const state = location.state as LoginLocationState | null;
+    const state = location.state as LocationState | null;
     const errorFromInvite = state?.error?.trim();
-    if (!errorFromInvite) return;
+    if (!errorFromInvite) {
+      return;
+    }
 
     setLocalError(errorFromInvite);
     navigate(location.pathname + location.search, { replace: true, state: {} });
@@ -55,20 +59,17 @@ export const LoginForm: React.FC = () => {
   useEffect(() => {
     const loadAndVerifyAccounts = async () => {
       try {
-        const raw = localStorage.getItem('giftistry-switcher-accounts');
-        if (!raw) return;
+        const accounts = readSwitcherAccounts().filter((acc) => acc.Username);
+        if (accounts.length === 0) {
+          return;
+        }
 
-        const accounts = JSON.parse(raw).map((acc: any) => ({
-          ...acc,
-          Username: acc.Username || acc.Email,
-        }));
-
-        const initialShow = accounts.filter((acc: any) => acc.HasPasskey !== false);
+        const initialShow = accounts.filter((acc) => acc.HasPasskey !== false);
         setSwitcherAccounts(initialShow);
 
         let updated = false;
         const checkedAccounts = await Promise.all(
-          accounts.map(async (acc: any) => {
+          accounts.map(async (acc) => {
             if (acc.HasPasskey === undefined && acc.Username) {
               try {
                 const res = await authApi.checkPasskey(acc.Username);
@@ -79,27 +80,28 @@ export const LoginForm: React.FC = () => {
               }
             }
             return acc;
-          })
+          }),
         );
 
         if (updated) {
-          localStorage.setItem('giftistry-switcher-accounts', JSON.stringify(checkedAccounts));
-          const finalShow = checkedAccounts.filter((acc: any) => acc.HasPasskey !== false);
-          setSwitcherAccounts(finalShow);
+          writeSwitcherAccounts(checkedAccounts);
+          setSwitcherAccounts(checkedAccounts.filter((acc) => acc.HasPasskey !== false));
         }
       } catch {
         // Ignore
       }
     };
 
-    loadAndVerifyAccounts();
+    void loadAndVerifyAccounts();
   }, []);
 
   useEffect(() => {
     const token = searchParams.get('token');
-    if (!token) return;
+    if (!token) {
+      return;
+    }
 
-    localStorage.setItem('giftistry-token', token);
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
     refreshUser()
       .then(async () => {
         setSearchParams({}, { replace: true });
@@ -119,10 +121,9 @@ export const LoginForm: React.FC = () => {
 
   const saveAccountToSwitcher = (user: ApiUser) => {
     try {
-      const raw = localStorage.getItem('giftistry-switcher-accounts');
-      const list = raw ? JSON.parse(raw) : [];
-      const index = list.findIndex((u: any) => u.Username === user.Username);
-      const accountData = {
+      const list = readSwitcherAccounts();
+      const index = list.findIndex((u) => u.Username === user.Username);
+      const accountData: SwitcherAccount = {
         Username: user.Username,
         Email: user.Email,
         FirstName: user.FirstName,
@@ -137,8 +138,8 @@ export const LoginForm: React.FC = () => {
         list.push(accountData);
       }
 
-      localStorage.setItem('giftistry-switcher-accounts', JSON.stringify(list));
-      setSwitcherAccounts(list.filter((acc: any) => acc.HasPasskey !== false));
+      writeSwitcherAccounts(list);
+      setSwitcherAccounts(list.filter((acc) => acc.HasPasskey !== false));
     } catch {
       // Ignore
     }
@@ -146,13 +147,10 @@ export const LoginForm: React.FC = () => {
 
   const handleRemoveSwitcherAccount = (usernameToRemove: string) => {
     try {
-      const raw = localStorage.getItem('giftistry-switcher-accounts');
-      if (raw) {
-        const list = JSON.parse(raw);
-        const updated = list.filter((acc: any) => acc.Username !== usernameToRemove);
-        localStorage.setItem('giftistry-switcher-accounts', JSON.stringify(updated));
-        setSwitcherAccounts(updated.filter((acc: any) => acc.HasPasskey !== false));
-      }
+      const list = readSwitcherAccounts();
+      const updated = list.filter((acc) => acc.Username !== usernameToRemove);
+      writeSwitcherAccounts(updated);
+      setSwitcherAccounts(updated.filter((acc) => acc.HasPasskey !== false));
     } catch {
       // Ignore
     }
@@ -200,7 +198,7 @@ export const LoginForm: React.FC = () => {
     try {
       const res = await authApi.verify2faLogin(ticket, totpCode);
       if (res && res.Token) {
-        localStorage.setItem('giftistry-token', res.Token);
+        localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, res.Token);
       }
       if (res && res.User) {
         saveAccountToSwitcher(res.User);
@@ -235,7 +233,7 @@ export const LoginForm: React.FC = () => {
         setStep('2fa');
       } else {
         if (verifyRes && verifyRes.Token) {
-          localStorage.setItem('giftistry-token', verifyRes.Token);
+          localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, verifyRes.Token);
         }
         if (verifyRes && verifyRes.User) {
           saveAccountToSwitcher(verifyRes.User);
@@ -265,15 +263,12 @@ export const LoginForm: React.FC = () => {
         hasPasskey = !!(checkRes && checkRes.HasPasskey);
 
         try {
-          const raw = localStorage.getItem('giftistry-switcher-accounts');
-          if (raw) {
-            const list = JSON.parse(raw);
-            const idx = list.findIndex((u: any) => u.Username === selectedUsername);
-            if (idx > -1) {
-              list[idx].HasPasskey = hasPasskey;
-              localStorage.setItem('giftistry-switcher-accounts', JSON.stringify(list));
-              setSwitcherAccounts(list);
-            }
+          const list = readSwitcherAccounts();
+          const idx = list.findIndex((u) => u.Username === selectedUsername);
+          if (idx > -1) {
+            list[idx] = { ...list[idx]!, HasPasskey: hasPasskey };
+            writeSwitcherAccounts(list);
+            setSwitcherAccounts(list.filter((acc) => acc.HasPasskey !== false));
           }
         } catch {
           // Ignore
@@ -304,7 +299,7 @@ export const LoginForm: React.FC = () => {
         setStep('2fa');
       } else {
         if (verifyRes && verifyRes.Token) {
-          localStorage.setItem('giftistry-token', verifyRes.Token);
+          localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, verifyRes.Token);
         }
         if (verifyRes && verifyRes.User) {
           saveAccountToSwitcher(verifyRes.User);
@@ -322,32 +317,84 @@ export const LoginForm: React.FC = () => {
 
   return (
     <LoginFormTemplate
-      username={username}
-      setUsername={setUsername}
-      password={password}
-      setPassword={setPassword}
-      isLoading={isLoading}
-      localError={localError}
-      handleSubmit={handleSubmit}
-      step={step}
-      setStep={setStep}
-      totpCode={totpCode}
-      setTotpCode={setTotpCode}
-      handleTotpSubmit={handleTotpSubmit}
-      handlePasskeyLogin={handlePasskeyLogin}
-      switcherAccounts={switcherAccounts}
-      handleSwitcherSelect={handleSwitcherSelect}
-      handleRemoveSwitcherAccount={handleRemoveSwitcherAccount}
-      isBiometricModalOpen={isBiometricModalOpen}
-      biometricLabel={biometricLabel}
-      cancelBiometrics={cancelBiometrics}
-      allowPasswordLogin={allowPasswordLogin}
-      oauthEnabled={oauthEnabled}
-      oauthButtonText={oauthButtonText}
-      handleOauthLogin={() => authApi.beginOauthLogin()}
-      showRegisterLink={registrationMode === 'open'}
-      showPassword={showPassword}
-      onToggleShowPassword={() => setShowPassword((prev) => !prev)}
+      username = {
+        username
+      }
+      setUsername = {
+        setUsername
+      }
+      password = {
+        password
+      }
+      setPassword = {
+        setPassword
+      }
+      isLoading = {
+        isLoading
+      }
+      localError = {
+        localError
+      }
+      handleSubmit = {
+        handleSubmit
+      }
+      step = {
+        step
+      }
+      setStep = {
+        setStep
+      }
+      totpCode = {
+        totpCode
+      }
+      setTotpCode = {
+        setTotpCode
+      }
+      handleTotpSubmit = {
+        handleTotpSubmit
+      }
+      handlePasskeyLogin = {
+        handlePasskeyLogin
+      }
+      switcherAccounts = {
+        switcherAccounts
+      }
+      handleSwitcherSelect = {
+        handleSwitcherSelect
+      }
+      handleRemoveSwitcherAccount = {
+        handleRemoveSwitcherAccount
+      }
+      isBiometricModalOpen = {
+        isBiometricModalOpen
+      }
+      biometricLabel = {
+        biometricLabel
+      }
+      cancelBiometrics = {
+        cancelBiometrics
+      }
+      allowPasswordLogin = {
+        allowPasswordLogin
+      }
+      oauthEnabled = {
+        oauthEnabled
+      }
+      oauthButtonText = {
+        oauthButtonText
+      }
+      handleOauthLogin = {
+        () => authApi.beginOauthLogin()
+      }
+      showRegisterLink = {
+        registrationMode === 'open'
+      }
+      showPassword = {
+        showPassword
+      }
+      onToggleShowPassword = {
+        () => setShowPassword((prev) => !prev)
+      }
     />
   );
 };

@@ -1,23 +1,6 @@
 import type { ReactNode } from 'react';
-
-export interface FloatingActionChild {
-  id: string;
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-  icon?: ReactNode;
-}
-
-export interface FloatingActionPanelHelpers {
-  closeMenu: () => void;
-  /** Override the open panel width/height (px). Cleared when leaving panel state. */
-  setPanelSize: (width: number, height: number) => void;
-  /**
-   * When set, Escape in panel state calls this first. Return true to consume
-   * the key (skip the default panel → toolbar step).
-   */
-  setPanelEscapeHandler: (handler: (() => boolean) | null) => void;
-}
+import type { FloatingActionChild } from './floating-action-child.interface';
+import type { FloatingActionPanelHelpers } from './floating-action-panel-helpers.interface';
 
 export interface FloatingAction {
   id: string;

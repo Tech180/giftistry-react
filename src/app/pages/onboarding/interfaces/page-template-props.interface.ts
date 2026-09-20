@@ -1,0 +1,41 @@
+import type { MouseEvent } from 'react';
+import type { TimelineStep } from '../components/timeline/interfaces/timeline-step.interface';
+import type { FieldName } from './field-name.type';
+import type { PanelPhase } from './panel-phase.type';
+import type { StepId } from './step-id.type';
+import type { ThemeOption } from './theme-option.interface';
+
+export interface PageTemplateProps {
+  step: number;
+  totalSteps: number;
+  stepId: StepId;
+  visibleStepId: StepId;
+  panelPhase: PanelPhase;
+  title: string;
+  subtitle: string;
+  timelineSteps: TimelineStep[];
+  timelineActiveIndex: number;
+  requiresOwner: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+  canSkip: boolean;
+  primaryCtaLabel: string;
+  firstName: string;
+  lastName: string;
+  bio: string;
+  theme: string;
+  themeOptions: ThemeOption[];
+  publicAppUrl: string;
+  registrationMode: 'open' | 'invite_only' | 'disabled';
+  smtpType: 'local' | 'remote';
+  smtpHost: string;
+  smtpPort: string;
+  smtpFrom: string;
+  aiEnabled: boolean;
+  aiWebSearchEnabled: boolean;
+  onFieldChange: (field: FieldName, value: string | boolean) => void;
+  onNext: () => void;
+  onSkip: () => void;
+  onBack: () => void;
+  onGlowMove: (event: MouseEvent<HTMLElement>) => void;
+}

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from 'app/providers/auth-context';
-import { useTheme } from 'app/providers/theme-context';
+import { useAuth } from 'features/auth';
+import { useTheme } from 'app/providers/theme';
 import { AppNavigationTemplate } from './app-navigation.html';
 
 export const AppNavigation: React.FC = () => {

@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { PriorityDisplay } from './priority-display.html';
+import { PriorityDisplay } from './priority-display.component';
 
 describe('PriorityDisplay', () => {
   it('renders label and value on separate lines', () => {

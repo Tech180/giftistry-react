@@ -1,9 +1,12 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ImportStripHandle, Item } from 'features/items';
+import { ItemsSessionProvider } from 'features/items';
+import { CommentsSessionProvider } from 'features/comments';
 import {
   ITEM_VIEW_MODE_STORAGE_KEY,
 } from 'features/items/constants/item-view-mode.constants';
-import type { ItemViewMode } from 'features/items/types/item-view-mode.type';
+import type { ItemViewMode } from 'features/items/interfaces/item-view-mode.type';
 import {
   isKanbanViewMode,
   normalizeStoredViewMode,
@@ -17,24 +20,27 @@ import {
 } from 'features/items/utils/item-audience.util';
 import { formatWishlistExpirationDate } from 'shared/utils/format-date.util';
 import { useSupportsKanbanViewMode } from 'shared/hooks/use-supports-kanban-view-mode';
-import { isWishlistArchived } from 'features/wishlists/utils/is-wishlist-archived.util';
-import { isWishlistExpired } from 'features/wishlists/utils/is-wishlist-expired.util';
-import { isWishlistLocked } from 'features/wishlists/utils/is-wishlist-locked.util';
+import {
+  isWishlistArchived,
+  isWishlistExpired,
+  isWishlistLocked,
+  groupGuestPreviewItems,
+  toGuestWishlist,
+} from 'features/wishlists';
 import { resolveShouldOpenItemViewer } from 'features/items/utils/resolve-should-open-item-viewer.util';
-import { groupGuestPreviewItems } from 'features/wishlists/utils/group-guest-preview-items.util';
-import { toGuestWishlist } from 'features/wishlists/utils/to-guest-wishlist.util';
 import { GUEST_ITEM_ACTIONS } from './constants/guest-item-actions.constant';
 import { GuestWishlistPreviewTemplate } from './guest-wishlist-preview.html';
 import type { GuestWishlistPreviewProps } from './interfaces/guest-wishlist-preview-props.interface';
-
-const noop = () => undefined;
-const noopAsync = async () => undefined;
+import { noop } from './utils/noop.util';
+import { noopAsync } from './utils/noop-async.util';
+import { getPageShellFlags } from 'app/pages/wishlist-detail/utils/get-page-shell-flags.util';
 
 export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
   wishlist: previewWishlist,
   items,
   groups,
 }) => {
+  const navigate = useNavigate();
   const wishlist = toGuestWishlist(previewWishlist);
   const importStripRef = useRef<ImportStripHandle | null>(null);
   const [viewMode, setViewMode] = useState<ItemViewMode>(() =>
@@ -122,10 +128,32 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
     setViewingItem(sourceItem);
   };
 
+  const shellFlags = getPageShellFlags({
+    canSuggest: false,
+    canShowAi: false,
+    aiEnabled: false,
+    isExpired,
+    isArchived,
+    isAddOpen: false,
+    hasEditingItem: false,
+    hasViewingItem: !!viewingItem,
+    isLinkingModeActive,
+    isRelatingModeActive,
+    isTaggingModeActive: false,
+    isReplyTaggingModeActive: false,
+    doesAddSidebarOverlayList: false,
+    isCommentsOpen,
+    selectedItemId,
+  });
+
   return (
-    <GuestWishlistPreviewTemplate
+    <ItemsSessionProvider>
+      <CommentsSessionProvider>
+        <GuestWishlistPreviewTemplate
       isWishlistLoading={false}
       wishlistError={null}
+      onGoHome={() => navigate('/login')}
+      {...shellFlags}
       wishlist={wishlist}
       items={items}
       priorities={[]}
@@ -245,6 +273,8 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       isCancellingJob={false}
       onCancelJob={noop}
       canShowAi={false}
-    />
+        />
+      </CommentsSessionProvider>
+    </ItemsSessionProvider>
   );
 };

@@ -1,3 +1,5 @@
+import { SCROLL_SETTLE_IDLE_MS } from '../constants/scroll-settle-idle-ms.constant';
+
 /**
  * Resolves when scrolling settles (`scrollend`) or after `fallbackMs`.
  * If no scroll occurs, resolves on the next frame so peeks stay snappy.
@@ -8,7 +10,10 @@ export function waitForScrollSettle(fallbackMs: number): Promise<void> {
     let sawScroll = false;
 
     const finish = () => {
-      if (settled) return;
+      if (settled) {
+        return;
+      }
+
       settled = true;
       window.clearTimeout(fallbackId);
       window.clearTimeout(idleId);
@@ -29,13 +34,11 @@ export function waitForScrollSettle(fallbackMs: number): Promise<void> {
     window.addEventListener('scrollend', onScrollEnd, true);
 
     const fallbackId = window.setTimeout(finish, Math.max(0, fallbackMs));
-
-    // If nothing scrolls shortly after scrollIntoView, don't wait the full fallback.
     const idleId = window.setTimeout(() => {
       if (!sawScroll) {
         finish();
       }
-    }, 100);
+    }, SCROLL_SETTLE_IDLE_MS);
   });
 }
 

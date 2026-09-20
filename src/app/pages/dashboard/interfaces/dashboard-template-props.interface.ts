@@ -1,34 +1,32 @@
-import React from 'react';
-import { Wishlist } from 'features/wishlists';
+import type { ReactNode, RefObject } from 'react';
 import type { ImportStripHandle } from 'features/items';
-
-export interface DashboardTab {
-  id: string;
-  label: string;
-  count: number;
-}
+import type { DashboardCard } from './dashboard-card.interface';
+import type { DashboardTab } from './dashboard-tab.interface';
+import type { DashboardTabId } from './dashboard-tab-id.type';
 
 export interface DashboardTemplateProps {
-  getGreeting: () => string;
+  greeting: string;
   isCreateOpen: boolean;
-  setIsCreateOpen: (open: boolean) => void;
   isImportOpen: boolean;
-  setIsImportOpen: (open: boolean) => void;
   canShowAi: boolean;
-  importStripRef: React.RefObject<ImportStripHandle | null>;
-  activeTab: 'my-lists' | 'shared' | 'archive';
-  setActiveTab: (tab: 'my-lists' | 'shared' | 'archive') => void;
+  importStripRef: RefObject<ImportStripHandle | null>;
+  activeTab: DashboardTabId;
   searchQuery: string;
-  setSearchQuery: (query: string) => void;
   tabs: DashboardTab[];
-  currentLists: Wishlist[];
+  cards: DashboardCard[];
   isLoading: boolean;
   error: string | null;
-  handleCreateSuccess: () => void;
-  handleImportStarted: (result: { listId: string; jobId: string }) => void;
-  emptyIcon: React.ReactNode;
+  emptyIcon: ReactNode;
   emptyTitle: string;
   emptyDesc: string;
+  showCreateAction: boolean;
   gridRef: (node: HTMLDivElement | null) => void;
   columns: number;
+  onToggleImport: () => void;
+  onOpenCreate: () => void;
+  onCloseCreate: () => void;
+  onTabChange: (tabId: string) => void;
+  onSearchChange: (query: string) => void;
+  onCreateSuccess: () => void;
+  onImportStarted: (result: { listId: string; jobId: string; created: number; failed: number }) => void;
 }

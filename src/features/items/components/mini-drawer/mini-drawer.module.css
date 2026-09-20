@@ -1,0 +1,105 @@
+.mini-drawer {
+  position: absolute;
+  top: 0;
+  width: auto;
+  min-width: 4.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-base);
+  align-items: center;
+  padding: var(--spacing-base) var(--spacing-xs);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  z-index: var(--zindex-overlay);
+  max-height: calc(100vh - 8.75rem);
+  box-sizing: border-box;
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--bg);
+    z-index: -1;
+    border-radius: inherit;
+  }
+
+  &.mini-drawer--right {
+    right: 100%;
+    border-right: none;
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    box-shadow: -10px 0 20px var(--shadow-color);
+  }
+
+  &.mini-drawer--left {
+    left: 100%;
+    border-left: none;
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    box-shadow: 10px 0 20px var(--shadow-color);
+  }
+
+  &.mini-drawer--edge-offset.mini-drawer--left {
+    left: calc(100% + var(--mini-drawer-edge-offset, 4.875rem));
+  }
+
+  &.mini-drawer--inline {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    width: auto;
+    min-width: 4.875rem;
+    max-height: none;
+    height: auto;
+    align-self: stretch;
+    flex-direction: column;
+    flex-shrink: 0;
+    border-radius: 0;
+    box-shadow: none;
+    z-index: auto;
+    padding: var(--spacing-base) var(--spacing-sm);
+    overflow: visible;
+
+    &.mini-drawer--left {
+      border-left: 1px solid var(--border);
+      border-right: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    &.mini-drawer--right {
+      border-right: 1px solid var(--border);
+      border-left: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+  }
+}
+
+.mini-drawer__label {
+  font-size: 0.65rem;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.mini-drawer__squares {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap-reverse;
+  align-content: flex-start;
+  height: auto;
+  max-height: calc(100vh - 11.25rem);
+
+  &.mini-drawer__squares--inline {
+    max-height: none;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.375rem;
+    margin: -0.125rem;
+    box-sizing: border-box;
+  }
+}

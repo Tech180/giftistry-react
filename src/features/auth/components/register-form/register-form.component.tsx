@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from 'app/providers/auth-context';
+import { useAuth } from '../../providers';
 import { authApi } from '../../api/auth.api';
-import { validateUsername } from 'shared/utils/validate-username.util';
+import { INVITE_INVALID_OR_EXPIRED } from './constants/invite-invalid-or-expired.constant';
+import { getClosedMessage } from './utils/get-closed-message.util';
+import { validateSubmission } from './utils/validate-submission.util';
+import { Fields } from './components/fields/fields.component';
+import { Actions } from './components/actions/actions.component';
 import { RegisterFormTemplate } from './register-form.html';
-
-const INVITE_INVALID_OR_EXPIRED =
-  'This invitation link is invalid or has expired.';
 
 export const RegisterForm: React.FC = () => {
   const {
@@ -41,11 +42,13 @@ export const RegisterForm: React.FC = () => {
         setInviteValidating(false);
         return;
       }
+
       if (registrationMode === 'disabled') {
         setInviteValid(false);
         setInviteValidating(false);
         return;
       }
+
       if (!inviteToken) {
         setInviteValid(false);
         setInviteValidating(false);
@@ -53,9 +56,14 @@ export const RegisterForm: React.FC = () => {
       }
 
       setInviteValidating(true);
+
       try {
         const res = await authApi.validateRegistrationInvite(inviteToken);
-        if (cancelled) return;
+
+        if (cancelled) {
+          return;
+        }
+
         if (!res.Valid) {
           navigate('/login', {
             replace: true,
@@ -63,9 +71,13 @@ export const RegisterForm: React.FC = () => {
           });
           return;
         }
+
         setInviteValid(true);
       } catch {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
+
         navigate('/login', {
           replace: true,
           state: { error: INVITE_INVALID_OR_EXPIRED },
@@ -78,63 +90,40 @@ export const RegisterForm: React.FC = () => {
     };
 
     void run();
+
     return () => {
       cancelled = true;
     };
   }, [registrationMode, inviteToken, navigate]);
 
   const registrationClosed =
-    registrationMode === 'disabled' ||
-    (registrationMode === 'invite_only' && !inviteValid);
+    registrationMode === 'disabled' || (registrationMode === 'invite_only' && !inviteValid);
 
-  const registrationClosedMessage =
-    registrationMode === 'disabled'
-      ? 'Registration is currently disabled on this server.'
-      : registrationMode === 'invite_only' && !inviteToken
-        ? 'Registration is invite-only. Use a valid invite link from an administrator.'
-        : undefined;
+  const registrationClosedMessage = getClosedMessage(registrationMode, inviteToken);
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
+
     if (registrationClosed) {
       setLocalError(
         registrationClosedMessage ||
-          'Registration is invite-only. Contact an administrator for access.'
+          'Registration is invite-only. Contact an administrator for access.',
       );
       return;
     }
-    if (!username || !password || !firstName || !lastName) {
-      setLocalError('Please fill out all required fields.');
-      return;
-    }
 
-    const usernameCheck = validateUsername(username);
-    if (!usernameCheck.ok) {
-      setLocalError(usernameCheck.message);
-      return;
-    }
+    const validation = validateSubmission({
+      username,
+      email,
+      firstName,
+      lastName,
+      password,
+      confirmPassword,
+      requireStrongPasswords,
+    });
 
-    if (email.trim() && !/\S+@\S+\.\S+/.test(email.trim())) {
-      setLocalError('Please enter a valid email address, or leave it blank.');
-      return;
-    }
-
-    if (requireStrongPasswords) {
-      if (password.length < 8) {
-        setLocalError('Password must be at least 8 characters long.');
-        return;
-      }
-      if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
-        setLocalError('Password must include at least one letter and one number.');
-        return;
-      }
-    } else if (password.length < 6) {
-      setLocalError('Password must be at least 6 characters long.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setLocalError('Passwords do not match.');
+    if (!validation.ok) {
+      setLocalError(validation.message);
       return;
     }
 
@@ -143,19 +132,19 @@ export const RegisterForm: React.FC = () => {
 
     try {
       await signup(
-        usernameCheck.value,
+        validation.username,
         email.trim() || null,
         password,
         firstName,
         lastName,
-        registrationMode === 'invite_only' ? inviteToken : null
+        registrationMode === 'invite_only' ? inviteToken : null,
       );
       navigate('/dashboard');
     } catch (err) {
       setLocalError(
         err instanceof Error
           ? err.message
-          : 'Registration failed. Username or email may already be taken.'
+          : 'Registration failed. Username or email may already be taken.',
       );
     } finally {
       setIsLoading(false);
@@ -164,27 +153,80 @@ export const RegisterForm: React.FC = () => {
 
   return (
     <RegisterFormTemplate
-      registrationClosed={registrationClosed}
-      registrationClosedMessage={registrationClosedMessage}
-      inviteValidating={inviteValidating}
-      username={username}
-      setUsername={setUsername}
-      email={email}
-      setEmail={setEmail}
-      firstName={firstName}
-      setFirstName={setFirstName}
-      lastName={lastName}
-      setLastName={setLastName}
-      password={password}
-      setPassword={setPassword}
-      confirmPassword={confirmPassword}
-      setConfirmPassword={setConfirmPassword}
-      isLoading={isLoading}
-      localError={localError}
-      oauthEnabled={oauthEnabled && !registrationClosed}
-      oauthButtonText={oauthButtonText}
-      onOauthSignup={() => authApi.beginOauthLogin(inviteToken)}
-      handleSubmit={handleSubmit}
+      inviteValidating = {
+        inviteValidating
+      }
+      registrationClosed = {
+        registrationClosed
+      }
+      registrationClosedMessage = {
+        registrationClosedMessage
+      }
+      localError = {
+        localError
+      }
+      handleSubmit = {
+        handleSubmit
+      }
+      fields = {
+        <Fields
+          username = {
+            username
+          }
+          setUsername = {
+            setUsername
+          }
+          email = {
+            email
+          }
+          setEmail = {
+            setEmail
+          }
+          firstName = {
+            firstName
+          }
+          setFirstName = {
+            setFirstName
+          }
+          lastName = {
+            lastName
+          }
+          setLastName = {
+            setLastName
+          }
+          password = {
+            password
+          }
+          setPassword = {
+            setPassword
+          }
+          confirmPassword = {
+            confirmPassword
+          }
+          setConfirmPassword = {
+            setConfirmPassword
+          }
+        />
+      }
+      actions = {
+        <Actions
+          isLoading = {
+            isLoading
+          }
+          disabled = {
+            registrationClosed || inviteValidating
+          }
+          oauthEnabled = {
+            oauthEnabled && !registrationClosed
+          }
+          oauthButtonText = {
+            oauthButtonText
+          }
+          onOauthSignup = {
+            () => authApi.beginOauthLogin(inviteToken)
+          }
+        />
+      }
     />
   );
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ClaimAnonymousToggle } from './claim-anonymous-toggle.html';
+import { ClaimAnonymousToggle } from './claim-anonymous-toggle.component';
 
 describe('ClaimAnonymousToggle', () => {
   it('renders anonymously label with switch', () => {

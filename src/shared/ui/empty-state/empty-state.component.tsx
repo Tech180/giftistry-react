@@ -16,11 +16,21 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
   return (
     <EmptyStateTemplate
-      icon={icon}
-      title={title}
-      description={description}
-      action={action}
-      containerClass={containerClass}
+      icon = {
+        icon
+      }
+      title = {
+        title
+      }
+      description = {
+        description
+      }
+      action = {
+        action
+      }
+      containerClass = {
+        containerClass
+      }
     />
   );
 };

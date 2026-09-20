@@ -1,11 +1,11 @@
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
-import { LinksWidgetProps } from './interfaces/links-widget-props.interface';
+import { Props } from './interfaces/props.interface';
 import styles from './links-widget.module.css';
 
-export const LinksWidget: React.FC<LinksWidgetProps> = ({ links, getSiteName }) => {
+export const LinksWidgetTemplate: React.FC<Props> = ({ links, getSiteName }) => {
   if (!links.length) {
-    return <span className={styles['empty-links']}>No links yet</span>;
+    return <span className={styles['links-widget__empty']}>No links yet</span>;
   }
 
   return (
@@ -16,7 +16,7 @@ export const LinksWidget: React.FC<LinksWidgetProps> = ({ links, getSiteName }) 
           href={link.Url}
           target="_blank"
           rel="noopener noreferrer"
-          className={styles['link-btn']}
+          className={styles['links-widget__link']}
         >
           <span>{getSiteName(link.Url, link.RetailerName)}</span>
           <strong>

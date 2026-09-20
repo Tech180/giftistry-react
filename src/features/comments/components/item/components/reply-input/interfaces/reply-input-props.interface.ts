@@ -1,7 +1,7 @@
 import type { Item } from 'features/items';
-import type { ListParticipant } from '../../../../interfaces/list-participant.interface';
-import type { CommentVisibilityState } from '../../../../interfaces/comment-visibility-state.interface';
-import type { CommentEditorHandle } from '../../../input/components/input/editor';
+import type { ListParticipant } from '../../../../../interfaces/list-participant.interface';
+import type { CommentVisibilityState } from '../../../../../interfaces/comment-visibility-state.interface';
+import type { CommentEditorHandle } from '../../../../input/components/editor';
 
 export interface ReplyInputProps {
   replyToName: string;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, test } from 'vitest';
-import { FundingWidget } from './funding-widget.html';
+import { FundingWidget } from './funding-widget.component';
 import styles from './funding-widget.module.css';
 
 describe('FundingWidget', () => {
@@ -13,8 +13,8 @@ describe('FundingWidget', () => {
     expect(screen.getByText('$40.00 / $100.00')).toBeInTheDocument();
     expect(screen.queryByLabelText('Fully funded')).not.toBeInTheDocument();
 
-    const fill = container.querySelector(`.${styles['progress-fill']}`);
-    expect(fill?.className).not.toMatch(/progress-fill-complete/);
+    const fill = container.querySelector(`.${styles['funding-widget__progress-fill']}`);
+    expect(fill?.className).not.toMatch(/funding-widget__progress-fill--complete/);
   });
 
   test('shows green progress fill and funded badge when target is met', () => {
@@ -28,10 +28,11 @@ describe('FundingWidget', () => {
     const amountRow = screen.getByText('$49.99 / $49.99').parentElement;
     expect(amountRow?.firstElementChild).toHaveAttribute('aria-label', 'Fully funded');
 
-    const fill = container.querySelector(`.${styles['progress-fill-complete']}`);
+    const fill = container.querySelector(
+      `.${styles['funding-widget__progress-fill--complete']}`
+    );
     expect(fill).toBeTruthy();
   });
-
   test('returns null when there is no funding target', () => {
     const { container } = render(
       <FundingWidget totalExtractedPrice={0} totalClaimedAmount={10} />

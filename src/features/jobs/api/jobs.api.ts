@@ -1,7 +1,8 @@
 import { apiClient } from 'core/api/client';
 import type { BackgroundJobView } from '../interfaces/background-job.interface';
+import type { ImportMode } from '../interfaces/import-mode.type';
 import type { ImportFileFormat } from 'features/items/interfaces/import-file-format.interface';
-import type { ImportContentEncoding } from 'features/items/utils/read-import-file.util';
+import type { ImportContentEncoding } from 'features/items/interfaces/import-content-encoding.type';
 import type { ItemEnrichPayload } from '../interfaces/item-enrich-payload.interface';
 import type { ItemEnrichJobResult } from '../interfaces/item-enrich-job-result.interface';
 import type { ItemSummarizePayload } from '../interfaces/item-summarize-payload.interface';
@@ -11,7 +12,7 @@ import { unwrapJobEnvelope } from '../utils/unwrap-job-envelope.util';
 
 export const jobsApi = {
   startWishlistImport: (payload: {
-    mode: 'create-list' | 'existing-list';
+    mode: ImportMode;
     listId?: string | null;
     title?: string | null;
     fileName: string;

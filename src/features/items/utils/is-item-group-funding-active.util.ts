@@ -1,4 +1,5 @@
 import { isMoneyAmountAtLeast } from 'shared/utils/compare-money-amount.util';
+import type { FundingSource } from '../interfaces/funding-source.type';
 import type { Item } from '../interfaces/item.interface';
 import type { ItemFundingSnapshot } from '../interfaces/item-funding-snapshot.interface';
 import type { ItemSubstitutionSummary } from '../interfaces/item-substitution.interface';
@@ -18,11 +19,6 @@ export function isItemGroupFundingActive(input: {
     input.totalClaimedAmount > 0
   );
 }
-
-type FundingSource = Pick<
-  Item,
-  'FundingTarget' | 'TotalClaimedAmount' | 'Links' | 'Claims'
->;
 
 export function resolveItemFundingTarget(item: FundingSource): number {
   if (item.FundingTarget != null && item.FundingTarget > 0) {

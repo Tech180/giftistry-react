@@ -3,44 +3,17 @@ import {
   useLayoutEffect,
   useImperativeHandle,
   useRef,
-  type HTMLAttributes,
-  type ReactNode,
-  type ElementType,
 } from 'react';
-
-export type EnterAnimation =
-  | 'dropdown'
-  | 'accordion'
-  | 'fade'
-  | 'scale'
-  | 'slide-down'
-  | 'slide-up'
-  | 'mini-left'
-  | 'mini-right';
-
-const ANIMATION_CLASS: Record<EnterAnimation, string> = {
-  dropdown: 'animate-dropdown-in',
-  accordion: 'animate-accordion-down',
-  fade: 'animate-fade-in',
-  scale: 'animate-scale-in',
-  'slide-down': 'animate-slide-down',
-  'slide-up': 'animate-slide-up',
-  'mini-left': 'animate-mini-slide-from-left',
-  'mini-right': 'animate-mini-slide-from-right',
-};
-
-export type EnterPanelProps = HTMLAttributes<HTMLDivElement> & {
-  animation: EnterAnimation;
-  children: ReactNode;
-  as?: ElementType;
-};
+import { ANIMATION_CLASS } from './constants/animation-class.constant';
+import type { Props } from './interfaces/props.interface';
+import { EnterPanelTemplate } from './enter-panel.html';
 
 /**
  * Mount-only enter animation. React inserts nodes with the final class already
  * applied, which browsers often skip animating. This re-applies the class after
  * a reflow so the keyframe / @starting-style transition always runs.
  */
-export const EnterPanel = forwardRef<HTMLDivElement, EnterPanelProps>(function EnterPanel(
+export const EnterPanel = forwardRef<HTMLDivElement, Props>(function EnterPanel(
   { animation, className = '', children, as: Tag = 'div', ...props },
   forwardedRef
 ) {
@@ -59,8 +32,19 @@ export const EnterPanel = forwardRef<HTMLDivElement, EnterPanelProps>(function E
   }, [animClass]);
 
   return (
-    <Tag ref={ref as React.Ref<HTMLElement>} className={className} {...props}>
+    <EnterPanelTemplate
+      Tag = {
+        Tag
+      }
+      className = {
+        className
+      }
+      elementRef = {
+        ref
+      }
+      {...props}
+    >
       {children}
-    </Tag>
+    </EnterPanelTemplate>
   );
 });

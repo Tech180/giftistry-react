@@ -1,6 +1,7 @@
 import {
   ITEM_PHOTO_ALLOWED_TYPES,
   ITEM_PHOTO_MAX_BYTES,
+  ITEM_PHOTO_MIME_TO_EXT,
   ITEM_PHOTO_SIZE_ERROR,
   ITEM_PHOTO_TYPE_ERROR,
 } from '../constants/item-photo-attachment';
@@ -40,21 +41,12 @@ export function readItemPhotoFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
-const MIME_TO_EXT: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/jpg': 'jpg',
-  'image/png': 'png',
-  'image/gif': 'gif',
-  'image/webp': 'webp',
-};
-
 /** Extension for a `data:image/...` URL; defaults to `jpg`. */
 export function itemPhotoExtensionFromDataUrl(dataUrl: string): string {
   const match = /^data:(image\/[a-z0-9.+-]+);/i.exec(dataUrl.trim());
   const mime = match?.[1]?.toLowerCase() ?? '';
-  return MIME_TO_EXT[mime] ?? 'jpg';
+  return ITEM_PHOTO_MIME_TO_EXT[mime] ?? 'jpg';
 }
-
 /** Triggers a browser download for an item photo data URL. */
 export function downloadItemPhotoDataUrl(dataUrl: string, filename: string): void {
   const trimmed = dataUrl.trim();

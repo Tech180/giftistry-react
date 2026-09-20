@@ -1,0 +1,116 @@
+.page__badge--admin {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.page__badge--owner {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.page__badge--user {
+  background: var(--surface-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.page__badge--disabled {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.page__badge--active {
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.page__cell--end {
+  text-align: right;
+}
+
+.page__modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.page__form-field--modal {
+  max-width: 100%;
+}
+
+.page__form-row--modal {
+  max-width: 100%;
+}
+
+.page__password {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.page__password-input {
+  padding-right: var(--spacing-2xl, 2.5rem);
+}
+
+.page__password-toggle {
+  position: absolute;
+  right: var(--spacing-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color var(--transition-fast, 0.15s) ease, background-color var(--transition-fast, 0.15s) ease;
+
+  &:hover {
+    color: var(--text);
+    background: color-mix(in srgb, var(--surface-hover) 80%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(var(--primary-rgb), 0.35);
+    outline-offset: 1px;
+  }
+}
+
+.page__modal-divider {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border);
+}
+
+.page__modal-switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page__modal-switch-row--spaced {
+  margin-bottom: var(--spacing-md);
+}
+
+.page__modal-switch-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.page__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xl);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page__password-toggle {
+    transition-duration: 0.01ms;
+  }
+}

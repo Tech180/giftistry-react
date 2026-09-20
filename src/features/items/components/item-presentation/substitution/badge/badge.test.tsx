@@ -1,11 +1,15 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { SubstitutionBadge } from './badge.component';
+import { Badge as SubstitutionBadge } from './badge.component';
 
-vi.mock('shared/ui/user-preview-card/user-preview-card.component', () => ({
-  UserPreviewCard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
+vi.mock('features/auth', async () => {
+  const actual = await vi.importActual<typeof import('features/auth')>('features/auth');
+  return {
+    ...actual,
+    UserPreviewCard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  };
+});
 
 describe('SubstitutionBadge', () => {
   it('renders owner-approved as a text chip', () => {

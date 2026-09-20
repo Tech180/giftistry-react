@@ -1,33 +1,26 @@
 import { env } from 'core/config/env';
-import { ResponseInterceptor } from './interfaces/response-interceptor.interface';
-import { formatApiErrorMessage } from 'shared/utils/format-api-error-message.util';
+import { ApiError } from './api-error';
+import { AUTH_TOKEN_STORAGE_KEY } from './constants/token-storage-key.constant';
+import type { ResponseInterceptor } from './interfaces/response-interceptor.interface';
+import { asApiEnvelope } from './utils/as-api-envelope.util';
+import { formatApiErrorMessage } from './utils/format-api-error-message.util';
 
 export type { ResponseInterceptor } from './interfaces/response-interceptor.interface';
+export { ApiError } from './api-error';
 
-export class ApiError extends Error {
-  status: number;
-  code: string;
-  /** Original API message payload (string, validation object, etc.). */
-  details: unknown;
-
-  constructor(message: string, status: number, code: string, details?: unknown) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.code = code;
-    this.details = details;
-  }
-}
+type ApiRequestInit = Omit<RequestInit, 'body'> & {
+  body?: unknown;
+};
 
 const responseInterceptors: ResponseInterceptor[] = [];
-const activeGetRequests = new Map<string, Promise<any>>();
+const activeGetRequests = new Map<string, Promise<unknown>>();
 
 async function executeRequest<T>(
   path: string,
-  options: RequestInit = {},
+  options: ApiRequestInit = {},
   wrapNamespace?: string
 ): Promise<T> {
-  const token = localStorage.getItem('giftistry-token');
+  const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
   const headers = new Headers(options.headers);
 
   if (token) {
@@ -36,18 +29,31 @@ async function executeRequest<T>(
 
   headers.set('Accept', 'application/json');
 
-  let body: any = options.body;
-  if (body && typeof body === 'object' && !(body instanceof FormData)) {
+  let body: BodyInit | undefined;
+  const requestBody = options.body;
+  if (
+    requestBody &&
+    typeof requestBody === 'object' &&
+    !(requestBody instanceof FormData)
+  ) {
     headers.set('Content-Type', 'application/json');
-    let data: any = body;
+    let data: unknown = requestBody;
     if (wrapNamespace) {
       data = {
         Giftistry: {
-          [wrapNamespace]: data
-        }
+          [wrapNamespace]: data,
+        },
       };
     }
     body = JSON.stringify(data);
+  } else if (
+    typeof requestBody === 'string' ||
+    requestBody instanceof FormData ||
+    requestBody instanceof Blob ||
+    requestBody instanceof ArrayBuffer ||
+    ArrayBuffer.isView(requestBody)
+  ) {
+    body = requestBody as BodyInit;
   }
 
   try {
@@ -58,7 +64,7 @@ async function executeRequest<T>(
       credentials: 'include',
     });
 
-    let json: any = {};
+    let json: unknown = {};
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       json = await response.json();
@@ -68,20 +74,27 @@ async function executeRequest<T>(
       try {
         await interceptor(response, json);
       } catch (err) {
-        // Silently catch interceptor errors to prevent request breaking
+        console.error('Response interceptor failed:', err);
       }
     }
 
+    const envelope = asApiEnvelope(json);
+
     if (!response.ok) {
       const status = response.status;
-      const rawMessage = json.Result?.Message ?? json.Message ?? 'An error occurred';
+      const resultMessage =
+        envelope.Result && typeof envelope.Result === 'object' && envelope.Result !== null
+          ? (envelope.Result as { Message?: unknown }).Message
+          : undefined;
+      const rawMessage = resultMessage ?? envelope.Message ?? 'An error occurred';
       const errorMsg = formatApiErrorMessage(rawMessage);
-      const errorCode = json.Meta?.Code || 'API_ERROR';
+      const errorCode =
+        typeof envelope.Meta?.Code === 'string' ? envelope.Meta.Code : 'API_ERROR';
       throw new ApiError(errorMsg, status, errorCode, rawMessage);
     }
 
-    if (json.Result !== undefined) {
-      return json.Result as T;
+    if (envelope.Result !== undefined) {
+      return envelope.Result as T;
     }
 
     return json as T;
@@ -99,17 +112,18 @@ async function executeRequest<T>(
 
 async function request<T>(
   path: string,
-  options: RequestInit = {},
+  options: ApiRequestInit = {},
   wrapNamespace?: string
 ): Promise<T> {
   const method = options.method || 'GET';
 
   if (method === 'GET') {
-    const token = localStorage.getItem('giftistry-token');
+    const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
     const cacheKey = `${token || ''}:${path}`;
 
-    if (activeGetRequests.has(cacheKey)) {
-      return activeGetRequests.get(cacheKey)!;
+    const existing = activeGetRequests.get(cacheKey);
+    if (existing) {
+      return existing as Promise<T>;
     }
 
     const promise = (async () => {
@@ -138,18 +152,18 @@ export const apiClient = {
     };
   },
 
-  get: <T>(path: string, options?: RequestInit) =>
+  get: <T>(path: string, options?: ApiRequestInit) =>
     request<T>(path, { ...options, method: 'GET' }),
 
-  post: <T>(path: string, body: any, wrapNamespace?: string, options?: RequestInit) =>
+  post: <T>(path: string, body: unknown, wrapNamespace?: string, options?: ApiRequestInit) =>
     request<T>(path, { ...options, method: 'POST', body }, wrapNamespace),
 
-  put: <T>(path: string, body: any, wrapNamespace?: string, options?: RequestInit) =>
+  put: <T>(path: string, body: unknown, wrapNamespace?: string, options?: ApiRequestInit) =>
     request<T>(path, { ...options, method: 'PUT', body }, wrapNamespace),
 
-  patch: <T>(path: string, body: any, wrapNamespace?: string, options?: RequestInit) =>
+  patch: <T>(path: string, body: unknown, wrapNamespace?: string, options?: ApiRequestInit) =>
     request<T>(path, { ...options, method: 'PATCH', body }, wrapNamespace),
 
-  delete: <T>(path: string, body?: any, wrapNamespace?: string, options?: RequestInit) =>
+  delete: <T>(path: string, body?: unknown, wrapNamespace?: string, options?: ApiRequestInit) =>
     request<T>(path, { ...options, method: 'DELETE', body }, wrapNamespace),
 };

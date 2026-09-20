@@ -1,0 +1,40 @@
+import type { FormEvent, MouseEvent } from 'react';
+import type { ClaimFormQuantityRow } from './claim-form-quantity-row.interface';
+import type { Item } from '../../../../interfaces/item.interface';
+
+export interface TemplateProps {
+  prompt: string;
+  title: string;
+  confirmLabel: string;
+  anonymous: boolean;
+  onAnonymousChange: (checked: boolean) => void;
+  formClassName: string;
+  drawerActionsClassName: string;
+  actionGroupClassName: string;
+  drawerActionBtnClassName: string;
+  showQuantityUi: boolean;
+  showVariationList: boolean;
+  quantityRows: ClaimFormQuantityRow[];
+  inlineRow: ClaimFormQuantityRow | undefined;
+  totalRemaining: number;
+  confirmDisabled: boolean;
+  confirmLoading: boolean;
+  onQuantityChange: (selection: string | null, quantity: number) => void;
+  onFormSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onFormClick: (event: MouseEvent<HTMLFormElement>) => void;
+  onCancel: () => void;
+  showLinkedTags: boolean;
+  taggedIds: string[];
+  wishlistItems: Item[];
+  onLinkedItemClick?: (itemId: string) => void;
+  showGroupFunding: boolean;
+  groupFundingStarted: boolean;
+  groupFundingEnabled: boolean;
+  onGroupFundingEnabledChange: (enabled: boolean) => void;
+  claimAmount: string;
+  onClaimAmountChange: (value: string) => void;
+  remainingAmount: number;
+  amountInputId: string;
+  inlineDecreaseLabel: string;
+  inlineIncreaseLabel: string;
+}

@@ -1,0 +1,31 @@
+import type { Props } from './props.interface';
+
+export type TemplateProps = Props & {
+  statusBadgeClassName: string;
+  starClassName: string;
+  headerClassName: string;
+  titleAreaClassName: string;
+  metaLineClassName: string;
+  categoryClassName: string;
+  actionIconClassName: string;
+  headerActionsClassName: string;
+  copyBtnClassName: string;
+  closeBtnClassName: string;
+  bodyClassName: string;
+  gridClassName: string;
+  infoColClassName: string;
+  actionColClassName: string;
+  descriptionBoxClassName: string;
+  emptyDescriptionClassName: string;
+  sectionTitleClassName: string;
+  descriptionTextClassName: string;
+  priceContainerClassName: string;
+  priceLabelClassName: string;
+  priceValueClassName: string;
+  fundingSectionClassName: string;
+  fundingHeaderClassName: string;
+  progressBarBgClassName: string;
+  progressBarFillClassName: string;
+  linksSectionClassName: string;
+  actionsAreaClassName: string;
+};

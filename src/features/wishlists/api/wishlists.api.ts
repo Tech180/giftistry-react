@@ -1,7 +1,9 @@
 import { apiClient } from 'core/api/client';
-import { Wishlist } from '../interfaces/wishlist.interface';
+import { LinkInvite } from '../interfaces/link-invite.interface';
+import { ListCounts } from '../interfaces/list-counts.interface';
 import { ListShare } from '../interfaces/list-share.interface';
 import { Priority } from '../interfaces/priority.interface';
+import { Wishlist } from '../interfaces/wishlist.interface';
 
 export const wishlistsApi = {
   listWishlists: (params?: {
@@ -14,7 +16,7 @@ export const wishlistsApi = {
     const qs = search.toString();
     return apiClient.get<{
       Wishlists: Wishlist[];
-      Counts: { My: number; Shared: number; Archive: number };
+      Counts: ListCounts;
     } | Wishlist[]>(`/api/wishlists${qs ? `?${qs}` : ''}`);
   },
 
@@ -115,16 +117,14 @@ export const wishlistsApi = {
     maxUses?: number | null,
     password?: string | null
   ) =>
-    apiClient.post<{ Invite: unknown; Token: string }>(
+    apiClient.post<{ Invite: LinkInvite; Token: string }>(
       `/api/wishlists/${listId}/link-invites`,
       { Role: role, ExpiresAt: expiresAt, MaxUses: maxUses, Password: password },
       'Invites'
     ),
 
   listLinkInvites: (listId: string) =>
-    apiClient.get<Array<{ Token?: string | null; RevokedAt?: string | null; ExpiresAt?: string | null }>>(
-      `/api/wishlists/${listId}/link-invites`
-    ),
+    apiClient.get<LinkInvite[]>(`/api/wishlists/${listId}/link-invites`),
 
   revokeLinkInvite: (listId: string, inviteId: string) =>
     apiClient.delete<Record<string, never>>(`/api/wishlists/${listId}/link-invites/${inviteId}`),

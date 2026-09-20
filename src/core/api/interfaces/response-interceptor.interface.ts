@@ -1,1 +1,4 @@
-export type ResponseInterceptor = (response: Response, json: any) => void | Promise<void>;
+export type ResponseInterceptor = (
+  response: Response,
+  json: unknown
+) => void | Promise<void>;

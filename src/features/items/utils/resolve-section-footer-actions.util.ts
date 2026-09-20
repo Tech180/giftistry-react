@@ -1,28 +1,5 @@
-import type { ItemSubstitutionOption } from '../interfaces/item-substitution.interface';
-import type { ResolveClaimerSubstitutionActionResult } from './resolve-claimer-substitution-action.util';
-import type { SubstitutionBrowseOption } from './resolve-item-substitution-options.util';
-
-export interface ResolveSectionFooterActionsInput {
-  active: Pick<SubstitutionBrowseOption, 'kind' | 'option'>;
-  /** Owner or suggester may edit/delete the parent item (any browse section). */
-  canEditItem: boolean;
-  claimerEligibility: ResolveClaimerSubstitutionActionResult;
-  /** GF-aware fully-claimed for the active browse section (original or substitution). */
-  activeSectionFullyClaimed?: boolean;
-}
-
-export interface SectionFooterSubstitutionSurface {
-  mode: 'create' | 'manage';
-  allowSubstitutions: boolean;
-  ownOption: ItemSubstitutionOption | null;
-}
-
-export interface ResolveSectionFooterActionsResult {
-  /** Parent Edit/Delete when the viewer can edit the parent item. */
-  showParentEditDelete: boolean;
-  /** Section-gated Add / Edit-Delete substitution controls; null when hidden. */
-  substitutionSurface: SectionFooterSubstitutionSurface | null;
-}
+import type { ResolveSectionFooterActionsInput } from '../interfaces/resolve-section-footer-actions-input.interface';
+import type { ResolveSectionFooterActionsResult } from '../interfaces/resolve-section-footer-actions-result.interface';
 
 /**
  * Footer chrome depends on which substitution browse section is active.

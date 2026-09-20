@@ -43,6 +43,18 @@
   background: var(--border);
 }
 
+.dot--active {
+  background: var(--primary);
+}
+
+.dot--error {
+  background: var(--error);
+}
+
+.dot--done {
+  background: var(--success);
+}
+
 .spinner {
   width: 0.75rem;
   height: 0.75rem;
@@ -66,24 +78,12 @@
   white-space: nowrap;
 }
 
-.row--active .dot {
-  background: var(--primary);
-}
-
-.row--active .status {
+.status--active {
   color: var(--primary);
 }
 
-.row--error .dot {
-  background: var(--error);
-}
-
-.row--error .status {
+.status--error {
   color: var(--error);
-}
-
-.row--done .dot {
-  background: var(--success);
 }
 
 @keyframes spin {

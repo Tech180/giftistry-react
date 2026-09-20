@@ -13,5 +13,5 @@ export const COMMENT_TAG_PEEK_SCROLL_FALLBACK_MS = 2000;
 /** How long to leave the list visible after scroll settles before reopening comments. */
 export const COMMENT_TAG_PEEK_DWELL_MS = 2000;
 
-/** Matches continuous `.item-card-wrapper-highlighted` pulse while the class is applied. */
+/** Matches continuous `.page__item-highlight` pulse while the class is applied. */
 export const ITEM_CARD_HIGHLIGHT_DURATION_MS = 2000;

@@ -1,140 +1,175 @@
 import React from 'react';
 import { Button, NumberSelector } from 'shared/ui';
 import { Tags } from 'features/comments';
-import { ClaimAnonymousToggle } from '../claim-anonymous-toggle/claim-anonymous-toggle.html';
-import { ClaimPrompt } from '../claim-prompt/claim-prompt.html';
-import { CLAIM_FORM_QUANTITY_LABEL } from './constants/claim-form-copy.constant';
-import type { ClaimFormTemplateProps } from './interfaces/claim-form-template-props.interface';
+import { ClaimAnonymousToggle } from '../claim-anonymous-toggle/claim-anonymous-toggle.component';
+import { ClaimPrompt } from '../claim-prompt/claim-prompt.component';
+import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './claim-form.module.css';
 
-export const ClaimFormTemplate: React.FC<ClaimFormTemplateProps> = ({
+export const ClaimFormTemplate: React.FC<TemplateProps> = ({
   prompt,
   title,
   confirmLabel,
   anonymous,
   onAnonymousChange,
-  compact,
+  formClassName,
+  drawerActionsClassName,
+  actionGroupClassName,
+  drawerActionBtnClassName,
   showQuantityUi,
   showVariationList,
   quantityRows,
+  inlineRow,
   totalRemaining,
   confirmDisabled,
   confirmLoading,
   onQuantityChange,
-  onSubmit,
+  onFormSubmit,
+  onFormClick,
   onCancel,
-  linkedItems = [],
-  wishlistItems = [],
+  showLinkedTags,
+  taggedIds,
+  wishlistItems,
   onLinkedItemClick,
-  showGroupFunding = false,
-  groupFundingStarted = false,
-  groupFundingEnabled = false,
+  showGroupFunding,
+  groupFundingStarted,
+  groupFundingEnabled,
   onGroupFundingEnabledChange,
-  claimAmount = '',
+  claimAmount,
   onClaimAmountChange,
-  remainingAmount = 0,
+  remainingAmount,
   amountInputId,
+  inlineDecreaseLabel,
+  inlineIncreaseLabel,
 }) => {
-  const formClass = [
-    styles['claim-form'],
-    compact ? styles['claim-form-compact'] : '',
-    compact && !showQuantityUi ? styles['claim-form-compact-row'] : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-  const inlineRow = !showVariationList ? quantityRows[0] : undefined;
-  const showLinkedTags = linkedItems.length > 0;
-
   return (
     <form
-      className={formClass}
-      onSubmit={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        onSubmit();
-      }}
-      onClick={(event) => event.stopPropagation()}
+      className={formClassName}
+      onSubmit={onFormSubmit}
+      onClick={onFormClick}
     >
       {showQuantityUi ? (
         <>
-          <div className={styles['claim-drawer-header']}>
-            <div className={styles['header-count']}>
-              <div className={styles['drawer-total']} title="Amount left">
+          <div className={styles['claim-form__drawer-header']}>
+            <div className={styles['claim-form__header-count']}>
+              <div className={styles['claim-form__drawer-total']} title="Amount left">
                 {totalRemaining}
               </div>
-              {inlineRow && (
+              {inlineRow ? (
                 <NumberSelector
-                  value={inlineRow.quantity}
-                  min={0}
-                  max={inlineRow.maxForUser}
-                  onChange={(next) => onQuantityChange(inlineRow.selection, next)}
-                  decreaseLabel={`Decrease ${CLAIM_FORM_QUANTITY_LABEL}`}
-                  increaseLabel={`Increase ${CLAIM_FORM_QUANTITY_LABEL}`}
-                  disabled={inlineRow.maxForUser <= 0 && inlineRow.quantity <= 0}
+                  value = {
+                    inlineRow.quantity
+                  }
+                  min = {
+                    0
+                  }
+                  max = {
+                    inlineRow.maxForUser
+                  }
+                  onChange = {
+                    (next) => onQuantityChange(inlineRow.selection, next)
+                  }
+                  decreaseLabel = {
+                    inlineDecreaseLabel
+                  }
+                  increaseLabel = {
+                    inlineIncreaseLabel
+                  }
+                  disabled = {
+                    inlineRow.selectorDisabled
+                  }
                 />
-              )}
+              ) : null}
             </div>
-            <h4 className={styles['claim-drawer-title']}>{title}</h4>
+            <h4 className={styles['claim-form__drawer-title']}>{title}</h4>
           </div>
-          {showVariationList && (
-            <div className={styles['qty-list']}>
-              {quantityRows.map((row) => {
-                const rowClass = [
-                  styles['qty-row'],
-                  row.quantity > 0 ? styles['qty-row-active'] : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ');
-                const hintClass = [
-                  styles['qty-hint'],
-                  row.outOfStock ? styles['qty-hint-out-of-stock'] : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ');
-
-                return (
-                  <div key={row.inputId} className={rowClass}>
-                    <div className={styles['qty-info']}>
-                      <span className={hintClass} aria-label={`${row.remaining} remaining`}>
-                        {row.remaining}
-                      </span>
-                      <span className={styles['qty-label']} id={row.inputId}>
-                        {row.name}
-                      </span>
-                    </div>
-                    <NumberSelector
-                      value={row.quantity}
-                      min={0}
-                      max={row.maxForUser}
-                      onChange={(next) => onQuantityChange(row.selection, next)}
-                      decreaseLabel={`Decrease ${row.name}`}
-                      increaseLabel={`Increase ${row.name}`}
-                      disabled={row.maxForUser <= 0 && row.quantity <= 0}
-                    />
+          {showVariationList ? (
+            <div className={styles['claim-form__qty-list']}>
+              {quantityRows.map((row) => (
+                <div key={row.inputId} className={row.rowClassName}>
+                  <div className={styles['claim-form__qty-info']}>
+                    <span className={row.hintClassName} aria-label={`${row.remaining} remaining`}>
+                      {row.remaining}
+                    </span>
+                    <span className={styles['claim-form__qty-label']} id={row.inputId}>
+                      {row.name}
+                    </span>
                   </div>
-                );
-              })}
+                  <NumberSelector
+                    value = {
+                      row.quantity
+                    }
+                    min = {
+                      0
+                    }
+                    max = {
+                      row.maxForUser
+                    }
+                    onChange = {
+                      (next) => onQuantityChange(row.selection, next)
+                    }
+                    decreaseLabel = {
+                      row.decreaseLabel
+                    }
+                    increaseLabel = {
+                      row.increaseLabel
+                    }
+                    disabled = {
+                      row.selectorDisabled
+                    }
+                  />
+                </div>
+              ))}
             </div>
-          )}
-          <div className={styles['drawer-actions']}>
-            <ClaimAnonymousToggle checked={anonymous} onChange={onAnonymousChange} />
-            <div className={styles['action-group']}>
+          ) : null}
+          <div className={drawerActionsClassName}>
+            <ClaimAnonymousToggle
+              checked = {
+                anonymous
+              }
+              onChange = {
+                onAnonymousChange
+              }
+            />
+            <div className={actionGroupClassName}>
               <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                className={styles['drawer-action-btn']}
-                onClick={onCancel}
+                variant = {
+                  'ghost'
+                }
+                size = {
+                  'sm'
+                }
+                type = {
+                  'button'
+                }
+                className = {
+                  drawerActionBtnClassName
+                }
+                onClick = {
+                  onCancel
+                }
               >
                 Cancel
               </Button>
               <Button
-                variant="primary"
-                size="sm"
-                type="submit"
-                className={styles['drawer-action-btn']}
-                isLoading={confirmLoading}
-                disabled={confirmDisabled}
+                variant = {
+                  'primary'
+                }
+                size = {
+                  'sm'
+                }
+                type = {
+                  'submit'
+                }
+                className = {
+                  drawerActionBtnClassName
+                }
+                isLoading = {
+                  confirmLoading
+                }
+                disabled = {
+                  confirmDisabled
+                }
               >
                 {confirmLabel}
               </Button>
@@ -142,40 +177,99 @@ export const ClaimFormTemplate: React.FC<ClaimFormTemplateProps> = ({
           </div>
         </>
       ) : (
-        <div className={styles['claim-simple-row']}>
+        <div className={styles['claim-form__simple-row']}>
           <ClaimPrompt
-            anonymous={anonymous}
-            onAnonymousChange={onAnonymousChange}
-            prompt={prompt}
-            showGroupFunding={showGroupFunding}
-            groupFundingStarted={groupFundingStarted}
-            groupFundingEnabled={groupFundingEnabled}
-            onGroupFundingEnabledChange={onGroupFundingEnabledChange}
-            claimAmount={claimAmount}
-            onClaimAmountChange={onClaimAmountChange}
-            remainingAmount={remainingAmount}
-            amountInputId={amountInputId}
+            anonymous = {
+              anonymous
+            }
+            onAnonymousChange = {
+              onAnonymousChange
+            }
+            prompt = {
+              prompt
+            }
+            showGroupFunding = {
+              showGroupFunding
+            }
+            groupFundingStarted = {
+              groupFundingStarted
+            }
+            groupFundingEnabled = {
+              groupFundingEnabled
+            }
+            onGroupFundingEnabledChange = {
+              onGroupFundingEnabledChange
+            }
+            claimAmount = {
+              claimAmount
+            }
+            onClaimAmountChange = {
+              onClaimAmountChange
+            }
+            remainingAmount = {
+              remainingAmount
+            }
+            amountInputId = {
+              amountInputId
+            }
           />
-          {showLinkedTags && (
-            <div className={styles['claim-linked-tags']}>
+          {showLinkedTags ? (
+            <div className={styles['claim-form__linked-tags']}>
               <Tags
-                appearance="badges"
-                taggedIds={linkedItems.map((linked) => linked.Id)}
-                items={wishlistItems}
-                onItemTaggedClick={onLinkedItemClick}
+                appearance = {
+                  'badges'
+                }
+                taggedIds = {
+                  taggedIds
+                }
+                items = {
+                  wishlistItems
+                }
+                onItemTaggedClick = {
+                  onLinkedItemClick
+                }
               />
             </div>
-          )}
-          <div className={styles['form-actions']}>
-            <Button variant="ghost" size="sm" type="button" onClick={onCancel}>
+          ) : null}
+          <div className={styles['claim-form__form-actions']}>
+            <Button
+              variant = {
+                'ghost'
+              }
+              size = {
+                'sm'
+              }
+              type = {
+                'button'
+              }
+              className = {
+                styles['claim-form__form-action']
+              }
+              onClick = {
+                onCancel
+              }
+            >
               Cancel
             </Button>
             <Button
-              variant="primary"
-              size="sm"
-              type="submit"
-              isLoading={confirmLoading}
-              disabled={confirmDisabled}
+              variant = {
+                'primary'
+              }
+              size = {
+                'sm'
+              }
+              type = {
+                'submit'
+              }
+              className = {
+                styles['claim-form__form-action']
+              }
+              isLoading = {
+                confirmLoading
+              }
+              disabled = {
+                confirmDisabled
+              }
             >
               {confirmLabel}
             </Button>

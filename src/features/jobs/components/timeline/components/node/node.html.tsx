@@ -1,23 +1,16 @@
 import React from 'react';
-import type { NodeProps } from './interfaces/node-props.interface';
-import styles from './node.module.css';
+import type { TemplateProps } from './interfaces/template-props.interface';
 
-const toneClass: Record<string, string> = {
-  pending: styles['node--pending'],
-  active: styles['node--active'],
-  done: styles['node--done'],
-  error: styles['node--error'],
-};
-
-export const NodeTemplate: React.FC<NodeProps> = ({ tone }) => {
+export const NodeTemplate: React.FC<TemplateProps> = ({
+  nodeClassName,
+  innerClassName,
+  checkClassName,
+}) => {
   return (
-    <span
-      className={[styles.node, toneClass[tone] || ''].filter(Boolean).join(' ')}
-      aria-hidden
-    >
-      <span className={styles.inner} />
+    <span className={nodeClassName} aria-hidden>
+      <span className={innerClassName} />
       <svg
-        className={styles.check}
+        className={checkClassName}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"

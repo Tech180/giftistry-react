@@ -1,0 +1,23 @@
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.loading__spinner {
+  border: 0.25rem solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: var(--radius-full);
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  animation: var(--animation-rotation);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading__spinner {
+    animation: none;
+  }
+}

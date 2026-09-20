@@ -1,5 +1,5 @@
 import type { CSSProperties, RefObject } from 'react';
-import type { User } from 'app/providers/interfaces/user.interface';
+import type { User } from 'features/auth';
 
 export interface ProfileTriggerTemplateProps {
   user: User;

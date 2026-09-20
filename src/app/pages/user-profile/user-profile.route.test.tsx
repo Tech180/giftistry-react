@@ -2,21 +2,18 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, test, vi } from 'vitest';
-import { ProtectedRoute } from 'app/routes/protected-route.component';
+import { ProtectedRoute } from 'app/routes';
 import UserProfile from 'app/pages/user-profile/user-profile.component';
-
-vi.mock('app/providers/auth-context', () => ({
-  useAuth: () => ({
-    isAuthenticated: false,
-    isLoading: false,
-    user: null,
-  }),
-}));
 
 vi.mock('features/auth', async (importOriginal) => {
   const actual = await importOriginal<typeof import('features/auth')>();
   return {
     ...actual,
+    useAuth: () => ({
+      isAuthenticated: false,
+      isLoading: false,
+      user: null,
+    }),
     authApi: {
       ...actual.authApi,
       getUserPreview: vi.fn(),

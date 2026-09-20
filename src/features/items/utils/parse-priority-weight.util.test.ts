@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
+import { PRIORITY_WEIGHT_INFINITY } from '../constants/priority-weight.constant';
 import {
-  PRIORITY_WEIGHT_INFINITY,
   decodePrioritySelectorValue,
   encodePrioritySelectorValue,
   parsePriorityWeight,

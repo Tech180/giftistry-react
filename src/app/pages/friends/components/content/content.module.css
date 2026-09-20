@@ -1,0 +1,7 @@
+.content {
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  background: var(--surface-glass);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(12px);
+}

@@ -1,48 +1,48 @@
 import React from 'react';
-import { hasPriorityValue } from '../../../utils/item-priority.util';
-import { PriorityDisplay } from '../priority-display/priority-display.html';
-import { MetadataGridProps } from './interfaces/metadata-grid-props.interface';
+import { PriorityDisplay } from '../priority-display/priority-display.component';
+import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './metadata-grid.module.css';
 
-export const MetadataGrid: React.FC<MetadataGridProps> = ({
-  predefinedDisplayEntries,
-  userDefinedEntries,
-  metadataBadgeEmoji,
+export const MetadataGridTemplate: React.FC<TemplateProps> = ({
+  variant,
+  compactAlign,
+  showPriority,
   priority,
-  variant = 'badges',
-  compactAlign = 'start',
+  predefinedEntries,
+  userDefinedEntries,
 }) => {
-  const showPriority = hasPriorityValue(priority);
-
-  if (predefinedDisplayEntries.length === 0 && userDefinedEntries.length === 0 && !showPriority) {
-    return null;
-  }
-
   if (variant === 'compact') {
     return (
       <div
         className={`${styles['metadata-compact']} ${compactAlign === 'end' ? styles['metadata-compact-end'] : ''}`}
       >
-        {showPriority && (
-          <PriorityDisplay priority={priority} variant="chip" />
-        )}
-        {predefinedDisplayEntries.map((entry) => (
-          <span key={entry.label} className={styles['metadata-chip']}>
+        {showPriority && priority !== null ? (
+          <PriorityDisplay
+            priority = {
+              priority
+            }
+            variant = {
+              'chip'
+            }
+          />
+        ) : null}
+        {predefinedEntries.map((entry) => (
+          <span key={entry.key} className={styles['metadata-chip']}>
             <span className={styles['metadata-chip-label']}>
-              {metadataBadgeEmoji[entry.label] && (
+              {entry.emoji ? (
                 <span className={styles['metadata-chip-emoji']} aria-hidden="true">
-                  {metadataBadgeEmoji[entry.label]}
+                  {entry.emoji}
                 </span>
-              )}
+              ) : null}
               {entry.label}
             </span>
             <span className={styles['metadata-chip-value']}>{entry.value}</span>
           </span>
         ))}
-        {userDefinedEntries.map((field) => (
-          <span key={field.name} className={styles['metadata-chip']}>
-            <span className={styles['metadata-chip-label']}>{field.name}</span>
-            <span className={styles['metadata-chip-value']}>{field.value}</span>
+        {userDefinedEntries.map((entry) => (
+          <span key={entry.key} className={styles['metadata-chip']}>
+            <span className={styles['metadata-chip-label']}>{entry.label}</span>
+            <span className={styles['metadata-chip-value']}>{entry.value}</span>
           </span>
         ))}
       </div>
@@ -51,18 +51,25 @@ export const MetadataGrid: React.FC<MetadataGridProps> = ({
 
   return (
     <div className={styles['metadata-grid']}>
-      {showPriority && (
-        <PriorityDisplay priority={priority} variant="chip" />
-      )}
-      {predefinedDisplayEntries.map((entry) => (
-        <span key={entry.label} className={`${styles.badge} ${styles['badge-meta']}`}>
-          {metadataBadgeEmoji[entry.label] ? `${metadataBadgeEmoji[entry.label]} ` : ''}
+      {showPriority && priority !== null ? (
+        <PriorityDisplay
+          priority = {
+            priority
+          }
+          variant = {
+            'chip'
+          }
+        />
+      ) : null}
+      {predefinedEntries.map((entry) => (
+        <span key={entry.key} className={`${styles.badge} ${styles['badge-meta']}`}>
+          {entry.emoji ? `${entry.emoji} ` : ''}
           <strong>{entry.label}:</strong> {entry.value}
         </span>
       ))}
-      {userDefinedEntries.map((field) => (
-        <span key={field.name} className={`${styles.badge} ${styles['badge-meta']}`}>
-          <strong>{field.name}:</strong> {field.value}
+      {userDefinedEntries.map((entry) => (
+        <span key={entry.key} className={`${styles.badge} ${styles['badge-meta']}`}>
+          <strong>{entry.label}:</strong> {entry.value}
         </span>
       ))}
     </div>

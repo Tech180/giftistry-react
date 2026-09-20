@@ -1,4 +1,4 @@
-import { User } from 'app/providers/interfaces/user.interface';
+import { User } from 'features/auth';
 
 export interface ProfileMenuProps {
   user: User;

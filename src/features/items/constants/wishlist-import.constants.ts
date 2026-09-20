@@ -1,15 +1,9 @@
+import type { WishlistImportExtension } from '../interfaces/wishlist-import-extension.type';
+
 export const WISHLIST_IMPORT_MAX_BYTES = 5 * 1024 * 1024;
 
 export const WISHLIST_IMPORT_BASE_EXTENSIONS = ['csv', 'xlsx', 'txt', 'json', 'md'] as const;
 export const WISHLIST_IMPORT_AI_EXTENSIONS = ['pdf'] as const;
-
-export type WishlistImportBaseExtension =
-  (typeof WISHLIST_IMPORT_BASE_EXTENSIONS)[number];
-export type WishlistImportAiExtension =
-  (typeof WISHLIST_IMPORT_AI_EXTENSIONS)[number];
-export type WishlistImportExtension =
-  | WishlistImportBaseExtension
-  | WishlistImportAiExtension;
 
 export function getWishlistImportAllowedExtensions(
   allowAi: boolean

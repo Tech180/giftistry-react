@@ -1,8 +1,8 @@
 import React from 'react';
-import { PanelTemplateProps } from './interfaces/panel.interface';
+import { TemplateProps } from './interfaces/template-props.interface';
 import styles from './panel.module.css';
 
-export const SharePanelTemplate: React.FC<PanelTemplateProps> = ({
+export const SharePanelTemplate: React.FC<TemplateProps> = ({
   activeTab,
   setActiveTab,
   friendsTab,

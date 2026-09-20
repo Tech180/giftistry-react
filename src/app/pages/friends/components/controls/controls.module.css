@@ -1,0 +1,205 @@
+.controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-base);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.controls__tabs {
+  display: flex;
+  padding: 0.125rem;
+  background: var(--surface-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.controls__tab {
+  position: relative;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: var(--spacing-xs) var(--spacing-base);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal, 0.2s ease);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  outline: none;
+}
+
+.controls__tab:hover {
+  color: var(--text-primary);
+}
+
+.controls__tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.controls__tab--active {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+.controls__tab-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  background-color: var(--accent);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.controls__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.controls__filter {
+  position: relative;
+  width: 12.5rem;
+}
+
+.controls__filter-icon {
+  position: absolute;
+  left: var(--spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.controls__filter-input {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm) var(--spacing-xs) var(--spacing-xl);
+  font-size: var(--font-size-sm);
+  background: var(--surface-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  outline: none;
+  transition: all var(--transition-normal, 0.2s ease);
+}
+
+.controls__filter-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.controls__sort {
+  position: relative;
+}
+
+.controls__sort-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  background: var(--surface-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-normal, 0.2s ease);
+}
+
+.controls__sort-button:hover {
+  background: var(--surface-elevated);
+}
+
+.controls__sort-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.375rem);
+  width: 10.625rem;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-2xs, 0.25rem);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  animation: controls-dropdown-in 0.2s ease-out;
+}
+
+.controls__sort-item {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  padding: var(--spacing-sm) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.controls__sort-item:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.controls__sort-item--active {
+  background: var(--primary-light);
+  color: var(--primary-text);
+}
+
+@keyframes controls-dropdown-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (max-width: 40rem) {
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls__tabs {
+    justify-content: stretch;
+  }
+
+  .controls__tab {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .controls__actions {
+    justify-content: stretch;
+  }
+
+  .controls__filter {
+    flex: 1;
+    width: auto;
+  }
+
+  .controls__sort {
+    flex: 1;
+  }
+
+  .controls__sort-button {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

@@ -1,9 +1,7 @@
 import React, { useId } from 'react';
 import { ButtonProps } from './interfaces/button-props.interface';
 import { ButtonTemplate } from './button.html';
-import styles from './button.module.css';
-
-export type { ButtonProps } from './interfaces/button-props.interface';
+import { buildClasses } from './utils/build-classes.util';
 
 export const Button: React.FC<ButtonProps> = ({
   children,
@@ -16,32 +14,57 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   effect = 'none',
   gradientId: gradientIdProp,
+  disabled,
   ...props
 }) => {
   const rawId = useId().replace(/:/g, '');
-  const gradientId =
-    effect === 'rainbow' ? (gradientIdProp ?? `button-gradient-${rawId}`) : undefined;
-
-  const buttonClass = [
-    styles.button,
-    styles[variant],
-    styles[size],
-    iconOnly ? styles['icon-only'] : '',
-    effect === 'rainbow' ? styles['effect-rainbow'] : '',
+  const isRainbow = effect === 'rainbow';
+  const gradientId = isRainbow
+    ? (gradientIdProp ?? `button-gradient-${rawId}`)
+    : undefined;
+  const classes = buildClasses({
+    variant,
+    size,
+    effect,
+    iconOnly,
     className,
-  ].filter(Boolean).join(' ');
+  });
 
   return (
     <ButtonTemplate
-      buttonClass={buttonClass}
-      variant={variant}
-      size={size}
-      isLoading={isLoading}
-      leftIcon={leftIcon}
-      rightIcon={rightIcon}
-      className={className}
-      effect={effect}
-      gradientId={gradientId}
+      buttonClass = {
+        classes.buttonClass
+      }
+      innerClass = {
+        classes.innerClass
+      }
+      showRainbow = {
+        classes.showRainbow
+      }
+      showDefs = {
+        Boolean(isRainbow && gradientId)
+      }
+      showSpinner = {
+        isLoading
+      }
+      showLeftIcon = {
+        !isLoading && Boolean(leftIcon)
+      }
+      showRightIcon = {
+        !isLoading && Boolean(rightIcon)
+      }
+      leftIcon = {
+        leftIcon
+      }
+      rightIcon = {
+        rightIcon
+      }
+      gradientId = {
+        gradientId
+      }
+      disabled = {
+        disabled || isLoading
+      }
       {...props}
     >
       {children}

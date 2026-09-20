@@ -2,10 +2,10 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, test, vi } from 'vitest';
-import { SettingsTemplate } from './settings.html';
+import { PageTemplate } from './page.html';
 
-vi.mock('./components/settings-sidebar/settings-sidebar.component', () => ({
-  SettingsSidebar: () => <nav aria-label="Settings">sidebar</nav>,
+vi.mock('./components/sidebar/sidebar.component', () => ({
+  Sidebar: () => <nav aria-label="Settings">sidebar</nav>,
 }));
 
 vi.mock('./components/processes-rail/processes-rail.component', () => ({
@@ -16,11 +16,11 @@ vi.mock('./components/processes-rail/processes-rail.component', () => ({
   ),
 }));
 
-describe('SettingsTemplate processes rail', () => {
+describe('PageTemplate processes rail', () => {
   test('renders background processes rail when scope is set', () => {
     render(
       <MemoryRouter>
-        <SettingsTemplate
+        <PageTemplate
           routes={<div>main content</div>}
           toasts={[]}
           isAdmin={false}
@@ -28,7 +28,7 @@ describe('SettingsTemplate processes rail', () => {
           processesRailScope="mine"
           onProcessesError={vi.fn()}
         />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByRole('complementary', { name: 'Background processes' })).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe('SettingsTemplate processes rail', () => {
   test('renders admin scope rail on overview', () => {
     render(
       <MemoryRouter>
-        <SettingsTemplate
+        <PageTemplate
           routes={<div>overview</div>}
           toasts={[]}
           isAdmin
@@ -46,7 +46,7 @@ describe('SettingsTemplate processes rail', () => {
           processesRailScope="admin"
           onProcessesError={vi.fn()}
         />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText('processes rail (admin)')).toBeInTheDocument();
@@ -55,7 +55,7 @@ describe('SettingsTemplate processes rail', () => {
   test('hides processes rail when scope is null', () => {
     render(
       <MemoryRouter>
-        <SettingsTemplate
+        <PageTemplate
           routes={<div>security</div>}
           toasts={[]}
           isAdmin={false}
@@ -63,7 +63,7 @@ describe('SettingsTemplate processes rail', () => {
           processesRailScope={null}
           onProcessesError={vi.fn()}
         />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.queryByRole('complementary', { name: 'Background processes' })).not.toBeInTheDocument();

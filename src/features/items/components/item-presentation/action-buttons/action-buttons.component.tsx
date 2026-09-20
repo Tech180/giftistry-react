@@ -1,11 +1,13 @@
 import React from 'react';
-import { ActionButtonsProps } from './interfaces/action-buttons-props.interface';
-import type { ActionButtonsSize } from './interfaces/action-buttons-template-props.interface';
+import type { Props } from './interfaces/props.interface';
+import type { ClaimPanel } from './interfaces/claim-panel.type';
+import type { ClaimVariant } from './interfaces/template-props.interface';
+import type { Size } from './interfaces/size.type';
 import { resolveActionButtonsLayoutMode } from './utils/resolve-action-buttons-layout-mode.util';
 import { ActionButtonsTemplate } from './action-buttons.html';
 import styles from './action-buttons.module.css';
 
-export const ActionButtons: React.FC<ActionButtonsProps> = ({
+export const ActionButtons: React.FC<Props> = ({
   isOwner,
   canCollaborate,
   isPublicGuest = false,
@@ -50,35 +52,207 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   }
 
   const showSuggesterEditActions = !!canEditItem && !canCollaborate;
-  const size: ActionButtonsSize = compact ? 'sm' : 'md';
-  const stackClassName = compact
-    ? styles['actions-row']
-    : splitOnMobile
-      ? styles['actions-stack-split']
-      : styles['actions-stack'];
+  const size: Size = compact ? 'sm' : 'md';
+  const claimButtonSize: 'sm' | 'md' = size === 'sm' ? 'sm' : 'md';
+  const splitLayout = !compact && splitOnMobile;
+  const claimsStacked = !compact && !splitOnMobile;
+  const showView = !!onView;
+  const showEditor = layoutMode === 'owner-edit' || showSuggesterEditActions;
+  const showLeading = showView || showEditor;
+  const showSubstitution = !!substitutionAction;
+  const soloClaimCluster = splitLayout && !showLeading;
+  const onlyLeading = layoutMode === 'owner-edit' || (layoutMode == null && showView);
+
+  const stackClassName = [
+    compact ? styles['action-buttons__row'] : styles['action-buttons__stack'],
+    splitLayout ? styles['action-buttons__stack--split'] : '',
+    splitLayout && onlyLeading ? styles['action-buttons__stack--split-trailing'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   const confirmClassName =
-    compact || splitOnMobile ? styles['actions-row'] : styles['actions-stack'];
+    compact || splitLayout ? styles['action-buttons__row'] : styles['action-buttons__stack'];
+
+  const iconBtnClassName = [
+    styles['action-buttons__icon-btn'],
+    splitLayout ? styles['action-buttons__icon-btn--split'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const claimsClusterClassName = [
+    styles['action-buttons__claims'],
+    claimsStacked ? styles['action-buttons__claims--stacked'] : '',
+    soloClaimCluster ? styles['action-buttons__claims--solo'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  let claimPanel: ClaimPanel = 'none';
+  let claimLabel = '';
+  let claimVariant: ClaimVariant = 'primary';
+  let claimDisabled = false;
+  let claimClassName = styles['action-buttons__action-btn'];
+  let claimOnClick = onClaim;
+  let claimShowsLoading = false;
+
+  if (layoutMode === 'unclaim') {
+    claimPanel = 'simple';
+    claimLabel = hasLinkedUnclaimPeers ? 'Unclaim all' : 'Unclaim';
+    claimVariant = 'secondary';
+    claimDisabled = unclaimDisabled;
+    claimOnClick = onUnclaim;
+    claimShowsLoading = true;
+    if (soloClaimCluster && !showSubstitution) {
+      claimClassName = `${styles['action-buttons__action-btn']} ${styles['action-buttons__action-btn--solo']}`;
+    }
+  } else if (layoutMode === 'claimed') {
+    claimPanel = 'simple';
+    claimLabel = 'Claimed';
+    claimVariant = 'secondary';
+    claimDisabled = true;
+    claimOnClick = onClaim;
+    claimShowsLoading = false;
+    if (soloClaimCluster && !showSubstitution) {
+      claimClassName = `${styles['action-buttons__action-btn']} ${styles['action-buttons__action-btn--solo']}`;
+    }
+  } else if (layoutMode === 'unavailable') {
+    claimPanel = 'simple';
+    claimLabel = 'Unavailable';
+    claimVariant = 'secondary';
+    claimDisabled = true;
+    claimOnClick = onClaim;
+    claimShowsLoading = false;
+    if (soloClaimCluster && !showSubstitution) {
+      claimClassName = `${styles['action-buttons__action-btn']} ${styles['action-buttons__action-btn--solo']}`;
+    }
+  } else if (layoutMode === 'update-claim') {
+    claimPanel = 'update';
+    claimClassName = styles['action-buttons__action-btn'];
+    claimOnClick = onClaim;
+    claimShowsLoading = true;
+  } else if (layoutMode === 'claim') {
+    claimPanel = 'simple';
+    claimLabel = 'Claim Item';
+    claimVariant = 'primary';
+    claimDisabled = false;
+    claimOnClick = onClaim;
+    claimShowsLoading = true;
+    if (soloClaimCluster && !showSubstitution) {
+      claimClassName = `${styles['action-buttons__action-btn']} ${styles['action-buttons__action-btn--solo']}`;
+    }
+  }
+
+  const bareClaimOnly = claimPanel !== 'none' && !showLeading && !showSubstitution;
+  const updateUnclaimClassName = [
+    styles['action-buttons__update'],
+    soloClaimCluster ? styles['action-buttons__update--solo'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <ActionButtonsTemplate
-      layoutMode={layoutMode}
-      size={size}
-      stackClassName={stackClassName}
-      confirmClassName={confirmClassName}
-      claimLoading={claimLoading}
-      showDeleteConfirm={showDeleteConfirm}
-      deleteLoading={deleteLoading}
-      showSuggesterEditActions={showSuggesterEditActions}
-      onEdit={onEdit}
-      onView={onView}
-      onClaim={onClaim}
-      onUnclaim={onUnclaim}
-      onDeleteRequest={onDeleteRequest}
-      onDeleteConfirm={onDeleteConfirm}
-      onDeleteCancel={onDeleteCancel}
-      unclaimDisabled={unclaimDisabled}
-      hasLinkedUnclaimPeers={hasLinkedUnclaimPeers}
-      substitutionAction={substitutionAction}
+      stackClassName = {
+        stackClassName
+      }
+      confirmClassName = {
+        confirmClassName
+      }
+      iconBtnClassName = {
+        iconBtnClassName
+      }
+      claimsClusterClassName = {
+        claimsClusterClassName
+      }
+      size = {
+        size
+      }
+      claimButtonSize = {
+        claimButtonSize
+      }
+      bareClaimOnly = {
+        bareClaimOnly
+      }
+      showLeading = {
+        showLeading
+      }
+      showView = {
+        showView
+      }
+      showEditor = {
+        showEditor
+      }
+      showSubstitution = {
+        showSubstitution
+      }
+      claimPanel = {
+        claimPanel
+      }
+      claimLabel = {
+        claimLabel
+      }
+      claimVariant = {
+        claimVariant
+      }
+      claimDisabled = {
+        claimDisabled
+      }
+      claimClassName = {
+        claimClassName
+      }
+      claimOnClick = {
+        claimOnClick
+      }
+      claimShowsLoading = {
+        claimShowsLoading
+      }
+      updateUnclaimClassName = {
+        updateUnclaimClassName
+      }
+      updateUnclaimDisabled = {
+        unclaimDisabled
+      }
+      claimLoading = {
+        claimLoading
+      }
+      showDeleteConfirm = {
+        showDeleteConfirm
+      }
+      deleteLoading = {
+        deleteLoading
+      }
+      substitutionAction = {
+        substitutionAction
+      }
+      substitutionDisabled = {
+        claimLoading || unclaimDisabled || showDeleteConfirm
+      }
+      substitutionClassName = {
+        substitutionAction?.mode === 'manage' ? iconBtnClassName : undefined
+      }
+      onEdit = {
+        onEdit
+      }
+      onView = {
+        onView
+      }
+      onClaim = {
+        onClaim
+      }
+      onUnclaim = {
+        onUnclaim
+      }
+      onDeleteRequest = {
+        onDeleteRequest
+      }
+      onDeleteConfirm = {
+        onDeleteConfirm
+      }
+      onDeleteCancel = {
+        onDeleteCancel
+      }
     />
   );
 };

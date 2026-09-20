@@ -1,134 +1,81 @@
 import React from 'react';
-import { Plus, Upload } from 'lucide-react';
-import { WishlistCard, CreateListForm } from 'features/wishlists';
-import { ImportStrip } from 'features/items/components/import/import-strip/import-strip.component';
-import { Button, Modal, TabBar, SearchInput, EmptyState, LoadingState, EnterPanel } from 'shared/ui';
+import { ImportStrip } from 'features/items';
+import { EnterPanel } from 'shared/ui';
+import { DashboardHeader } from './components/header/dashboard-header.component';
+import { DashboardControls } from './components/controls/dashboard-controls.component';
+import { DashboardWishlistGrid } from './components/wishlist-grid/dashboard-wishlist-grid.component';
+import { DashboardCreateModal } from './components/create-modal/dashboard-create-modal.component';
+import type { DashboardTemplateProps } from './interfaces/dashboard-template-props.interface';
 import styles from './dashboard.module.css';
-import { DashboardTemplateProps } from './interfaces/dashboard-template-props.interface';
-import { isWishlistInArchiveBucket } from 'features/wishlists/utils/is-wishlist-in-archive-bucket.util';
 
 export const DashboardTemplate: React.FC<DashboardTemplateProps> = ({
-  getGreeting,
+  greeting,
   isCreateOpen,
-  setIsCreateOpen,
   isImportOpen,
-  setIsImportOpen,
   canShowAi,
   importStripRef,
   activeTab,
-  setActiveTab,
   searchQuery,
-  setSearchQuery,
   tabs,
-  currentLists,
+  cards,
   isLoading,
   error,
-  handleCreateSuccess,
-  handleImportStarted,
   emptyIcon,
   emptyTitle,
   emptyDesc,
+  showCreateAction,
   gridRef,
   columns,
-}) => {
-  return (
-    <EnterPanel animation="fade" className={styles.container}>
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.greeting}>{getGreeting()}</h1>
-          <p className={styles.subtitle}>
-            Manage your personal registries and collaborated wishlists
-          </p>
-        </div>
-        <div className={styles.headerActions}>
-          <span className={styles.headerImportAction}>
-            <Button
-              variant="secondary"
-              onClick={() => setIsImportOpen(!isImportOpen)}
-              aria-label="Import wishlist"
-              aria-pressed={isImportOpen}
-              effect={canShowAi ? 'rainbow' : 'none'}
-            >
-              <Upload size={16} />
-            </Button>
-          </span>
-          <Button
-            variant="primary"
-            leftIcon={<Plus size={16} />}
-            onClick={() => setIsCreateOpen(true)}
-          >
-            New Wishlist
-          </Button>
-        </div>
-      </div>
+  onToggleImport,
+  onOpenCreate,
+  onCloseCreate,
+  onTabChange,
+  onSearchChange,
+  onCreateSuccess,
+  onImportStarted,
+}) => (
+  <EnterPanel animation="fade" className={styles.dashboard}>
+    <DashboardHeader
+      greeting={greeting}
+      isImportOpen={isImportOpen}
+      canShowAi={canShowAi}
+      onToggleImport={onToggleImport}
+      onOpenCreate={onOpenCreate}
+    />
 
-      <ImportStrip
-        ref={importStripRef}
-        mode="create-list"
-        isExpanded={isImportOpen}
-        onImported={handleImportStarted}
-      />
+    <ImportStrip
+      ref={importStripRef}
+      mode="create-list"
+      isExpanded={isImportOpen}
+      onImported={onImportStarted}
+    />
 
-      {error && <div className={styles['error-banner']}>{error}</div>}
+    {error ? <div className={styles['dashboard__error']}>{error}</div> : null}
 
-      <div className={styles['controls-row']}>
-        <TabBar
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={(tabId) => setActiveTab(tabId as typeof activeTab)}
-        />
-        <SearchInput
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search wishlists..."
-          className={styles['search-input']}
-        />
-      </div>
+    <DashboardControls
+      tabs={tabs}
+      activeTab={activeTab}
+      searchQuery={searchQuery}
+      onTabChange={onTabChange}
+      onSearchChange={onSearchChange}
+    />
 
-      <div className={styles['grid-section']}>
-        {isLoading ? (
-          <LoadingState message="Loading wishlists..." />
-        ) : currentLists.length > 0 ? (
-          <div className={styles.grid} ref={gridRef} data-columns={columns}>
-            {currentLists.map((list) => (
-              <WishlistCard
-                key={list.Id}
-                wishlist={list}
-                isArchived={isWishlistInArchiveBucket(list)}
-              />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={emptyIcon}
-            title={emptyTitle}
-            description={emptyDesc}
-            action={
-              activeTab === 'my-lists' ? (
-                <Button
-                  variant="secondary"
-                  leftIcon={<Plus size={16} />}
-                  onClick={() => setIsCreateOpen(true)}
-                >
-                  Create Registry
-                </Button>
-              ) : undefined
-            }
-          />
-        )}
-      </div>
+    <DashboardWishlistGrid
+      cards={cards}
+      isLoading={isLoading}
+      emptyIcon={emptyIcon}
+      emptyTitle={emptyTitle}
+      emptyDesc={emptyDesc}
+      showCreateAction={showCreateAction}
+      columns={columns}
+      gridRef={gridRef}
+      onOpenCreate={onOpenCreate}
+    />
 
-      <Modal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        title="Create new wishlist"
-        subtitle="Configure details and advanced settings."
-      >
-        <CreateListForm
-          onSuccess={handleCreateSuccess}
-          onCancel={() => setIsCreateOpen(false)}
-        />
-      </Modal>
-    </EnterPanel>
-  );
-};
+    <DashboardCreateModal
+      isOpen={isCreateOpen}
+      onClose={onCloseCreate}
+      onSuccess={onCreateSuccess}
+    />
+  </EnterPanel>
+);

@@ -1,20 +1,8 @@
 import React from 'react';
 import type { CollapsibleStripProps } from './interfaces/collapsible-strip-props.interface';
 import { CollapsibleStripTemplate } from './collapsible-strip.html';
+import { STATUS_CLASS } from './constants/status-class.constant';
 import styles from './collapsible-strip.module.css';
-
-export type { CollapsibleStripProps } from './interfaces/collapsible-strip-props.interface';
-export type {
-  CollapsibleStripStatus,
-  CollapsibleStripStatusTone,
-} from './interfaces/collapsible-strip-status.interface';
-
-const STATUS_CLASS: Record<string, string> = {
-  idle: styles.statusIdle,
-  progress: styles.statusProgress,
-  success: styles.statusSuccess,
-  error: styles.statusError,
-};
 
 export const CollapsibleStrip: React.FC<CollapsibleStripProps> = ({
   title,
@@ -36,11 +24,21 @@ export const CollapsibleStrip: React.FC<CollapsibleStripProps> = ({
 
   return (
     <CollapsibleStripTemplate
-      title={title}
-      status={status}
-      headerEnd={headerEnd}
-      stripClass={stripClass}
-      statusClass={statusClass}
+      title = {
+        title
+      }
+      status = {
+        status
+      }
+      headerEnd = {
+        headerEnd
+      }
+      stripClass = {
+        stripClass
+      }
+      statusClass = {
+        statusClass
+      }
     >
       {children}
     </CollapsibleStripTemplate>

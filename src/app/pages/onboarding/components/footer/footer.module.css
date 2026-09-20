@@ -1,0 +1,24 @@
+.footer {
+  height: 5rem;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  backdrop-filter: blur(12px);
+  padding: 0 var(--spacing-lg, 1.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 20;
+}
+
+.footer__right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 1rem);
+}
+
+@media (min-width: 768px) {
+  .footer {
+    padding: 0 var(--spacing-3xl, 3rem);
+  }
+}

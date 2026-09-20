@@ -10,7 +10,7 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => vi.fn(),
 }));
 
-vi.mock('app/providers/auth-context', () => ({
+vi.mock('../../providers', () => ({
   useAuth: () => mockUseAuth(),
 }));
 

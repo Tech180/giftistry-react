@@ -1,0 +1,202 @@
+@keyframes admin-step-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-step {
+  &.admin-step--active {
+    animation: admin-step-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+.admin-step__header {
+  margin-bottom: var(--spacing-2xl, 2rem);
+}
+
+.admin-step__heading {
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.admin-step__subheading {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-muted);
+  margin: var(--spacing-sm, 0.5rem) 0 0;
+  line-height: 1.5;
+}
+
+.admin-step__form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 1.25rem);
+}
+
+.admin-step__form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg, 1.25rem);
+}
+
+.admin-step__label {
+  display: block;
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 500;
+  color: color-mix(in srgb, var(--text) 85%, var(--text-muted));
+  margin-bottom: var(--spacing-xs, 0.375rem);
+}
+
+.admin-step__input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 0.375rem);
+  padding: var(--spacing-sm, 0.5rem) var(--spacing-base, 0.75rem);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text);
+  font-family: inherit;
+  transition:
+    border-color var(--transition-fast, 0.2s ease),
+    box-shadow var(--transition-fast, 0.2s ease);
+
+  &::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+  }
+
+  &.admin-step__input--error {
+    border-color: var(--error);
+  }
+
+  &.admin-step__input--error:focus {
+    border-color: var(--error);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 25%, transparent);
+  }
+
+  &.admin-step__input--padded {
+    padding-left: 2.25rem;
+  }
+
+  &.admin-step__input--toggle-padded {
+    padding-right: 2.5rem;
+  }
+}
+
+.admin-step__input-with-icon {
+  position: relative;
+}
+
+.admin-step__input-icon {
+  position: absolute;
+  left: var(--spacing-base, 0.75rem);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.admin-step__input-with-toggle {
+  position: relative;
+}
+
+.admin-step__password-toggle {
+  position: absolute;
+  right: var(--spacing-sm, 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm, 0.25rem);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    color var(--transition-fast, 0.15s ease),
+    background-color var(--transition-fast, 0.15s ease);
+
+  &:hover {
+    color: var(--text);
+    background: color-mix(in srgb, var(--surface-hover) 80%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(var(--primary-rgb), 0.35);
+    outline-offset: 1px;
+  }
+}
+
+.admin-step__field-error {
+  color: var(--error);
+  font-size: var(--font-size-xs, 0.75rem);
+  margin: var(--spacing-xs, 0.375rem) 0 0;
+}
+
+.admin-step__setup-error {
+  color: var(--error);
+  font-size: var(--font-size-sm, 0.875rem);
+  margin: 0 0 var(--spacing-md, 1rem);
+  padding: var(--spacing-base, 0.75rem) var(--spacing-md, 1rem);
+  border-radius: var(--radius-sm, 0.375rem);
+  border: 1px solid color-mix(in srgb, var(--error) 25%, transparent);
+  background: color-mix(in srgb, var(--error) 8%, transparent);
+}
+
+.admin-step__callout {
+  display: flex;
+  gap: var(--spacing-base, 0.75rem);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-sm, 0.375rem);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  border: 1px solid var(--border);
+  margin-top: var(--spacing-2xs, 0.25rem);
+}
+
+.admin-step__callout-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  margin-top: var(--spacing-2xs, 0.125rem);
+}
+
+.admin-step__callout-text {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .admin-step__form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-step,
+  .admin-step--active,
+  .admin-step__input,
+  .admin-step__password-toggle {
+    animation: none;
+    transition: none;
+  }
+}

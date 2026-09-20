@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { SubstitutionManager } from './manager.component';
+import { Manager as SubstitutionManager } from './manager.component';
 
 describe('SubstitutionManager', () => {
   it('toggles allow substitutions and lists owner options', () => {

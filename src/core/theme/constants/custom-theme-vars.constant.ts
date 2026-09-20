@@ -1,0 +1,16 @@
+export const CUSTOM_THEME_VARS = [
+  '--primary',
+  '--primary-hover',
+  '--primary-rgb',
+  '--bg',
+  '--surface',
+  '--border',
+  '--text',
+  '--text-muted',
+  '--shadow-sm',
+  '--shadow',
+  '--shadow-lg',
+  '--font-family-body',
+  '--font-family-display',
+  '--radius',
+] as const;

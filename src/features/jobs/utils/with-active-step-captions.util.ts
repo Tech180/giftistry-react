@@ -1,5 +1,6 @@
-import type { ImportTimelineStep } from 'features/items/components/import/import-strip/interfaces/import-timeline-step.interface';
-import type { ImportTimelineStepId } from 'features/items/components/import/import-strip/interfaces/import-timeline-step.interface';
+import type { ImportTimelineStep } from 'features/items/components/import/strip/interfaces/import-timeline-step.interface';
+import type { ImportTimelineStepId } from 'features/items/components/import/strip/interfaces/import-timeline-step.interface';
+import { ELAPSED_METRIC_TAIL } from '../constants/job.constants';
 
 /** Format a whole-second elapsed suffix for legacy label-style captions. */
 export function formatElapsedSuffix(elapsedSeconds: number): string {
@@ -12,8 +13,6 @@ export function formatElapsedSeconds(elapsedSeconds: number): string {
   if (!Number.isFinite(elapsedSeconds) || elapsedSeconds < 1) return '';
   return `${Math.floor(elapsedSeconds)}s`;
 }
-
-const ELAPSED_METRIC_TAIL = /\s·\s\d+s$/;
 
 /**
  * Append elapsed time to the metric on active steps in `stepIds`.
@@ -37,19 +36,5 @@ export function withActiveStepCaptions(
     const baseMetric = (step.metric ?? '').replace(ELAPSED_METRIC_TAIL, '');
     const metric = baseMetric ? `${baseMetric} · ${elapsed}` : elapsed;
     return { ...step, metric };
-  });
-}
-
-/**
- * Append elapsed time to the active "found" (Finding items) step metric.
- * @deprecated Prefer withActiveStepCaptions for multi-step captions.
- */
-export function withFoundStepElapsed(
-  steps: ImportTimelineStep[],
-  elapsedSeconds: number
-): ImportTimelineStep[] {
-  return withActiveStepCaptions(steps, {
-    stepIds: ['found'],
-    elapsedSeconds,
   });
 }

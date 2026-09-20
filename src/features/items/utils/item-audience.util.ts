@@ -1,15 +1,10 @@
 import { ItemAudienceUser } from '../interfaces/item-audience-user.interface';
+import type { ItemAudienceContext } from '../interfaces/item-audience-context.type';
+import type { ItemAudienceMode } from '../interfaces/item-audience-mode.type';
+import type { LinkingAudienceContext } from '../interfaces/linking-audience-context.interface';
 import { Item } from '../interfaces/item.interface';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
-
-type ItemAudienceContext = Pick<Item, 'SharedWith' | 'SuggestedByUserId'>;
-
-export type ItemAudienceMode = 'everyone' | 'restricted' | 'private';
-
-export interface LinkingAudienceContext {
-  mode: ItemAudienceMode;
-  sharedWithUserIds: string[];
-}
+import { getDisplayName } from 'shared/utils/get-display-name.util';
 
 export function getItemAudienceMode(item: ItemAudienceContext): ItemAudienceMode {
   const sharedWith = item.SharedWith;
@@ -137,9 +132,6 @@ export function linkingContextFromItem(item: ItemAudienceContext): LinkingAudien
   };
 }
 
-export const LINK_AUDIENCE_MISMATCH_MESSAGE =
-  'Linked items must use the same visibility: Everyone, Only Me, or the same specific people.';
-
 export function isSelfPrivateItem(item: ItemAudienceContext): boolean {
   const sharedWith = item.SharedWith;
   return !!(
@@ -196,12 +188,7 @@ export function canViewItem(
 }
 
 export function getAudienceDisplayName(user: ItemAudienceUser | ListShare): string {
-  const first = user.FirstName?.trim();
-  const last = user.LastName?.trim();
-  if (first || last) {
-    return `${first || ''} ${last || ''}`.trim();
-  }
-  return user.Username || user.Email || 'User';
+  return getDisplayName(user);
 }
 
 export function getAudienceUserInitials(user: ItemAudienceUser): string {

@@ -1,12 +1,17 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { SharingAvatars } from './sharing-avatars.html';
+import { SharingAvatars } from './sharing-avatars.component';
 
-vi.mock('app/providers/auth-context', () => ({
-  useAuth: () => ({ user: { Id: 'user-1' } }),
+vi.mock('features/items/providers/session', () => ({
+  useItemsSession: () => ({ user: { Id: 'user-1' }, canShowAi: false }),
 }));
 
-vi.mock('app/providers/theme-context', () => ({
+vi.mock('features/auth', () => ({
+  useAuth: () => ({ user: { Id: 'user-1' } }),
+  UserPreviewCard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('app/providers/theme', () => ({
   useTheme: () => ({ theme: 'light' }),
 }));
 

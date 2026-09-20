@@ -23,11 +23,27 @@
   transition: background-color var(--transition-fast, 0.2s ease);
 }
 
+.inner--active {
+  background: var(--primary);
+}
+
+.inner--done {
+  display: none;
+}
+
+.inner--error {
+  background: var(--error);
+}
+
 .check {
   display: none;
   width: 1rem;
   height: 1rem;
   color: var(--success);
+}
+
+.check--done {
+  display: block;
 }
 
 .node--pending {
@@ -39,28 +55,12 @@
   animation: pulse-ring 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
 }
 
-.node--active .inner {
-  background: var(--primary);
-}
-
 .node--done {
   border-color: color-mix(in srgb, var(--success) 55%, var(--border));
 }
 
-.node--done .inner {
-  display: none;
-}
-
-.node--done .check {
-  display: block;
-}
-
 .node--error {
   border-color: var(--error);
-}
-
-.node--error .inner {
-  background: var(--error);
 }
 
 @keyframes pulse-ring {

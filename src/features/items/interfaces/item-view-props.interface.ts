@@ -1,8 +1,7 @@
-import React from 'react';
-import { ItemViewMode } from '../types/item-view-mode.type';
-import { ItemCardTemplateProps } from './item-card-template-props.interface';
+import type { ItemViewMode } from './item-view-mode.type';
+import type { TemplateProps } from '../components/card/interfaces/template-props.interface';
 
-export interface ItemViewProps extends ItemCardTemplateProps {
+export interface ItemViewProps extends TemplateProps {
   viewMode: ItemViewMode;
   aiEnabled?: boolean;
   canShowAi?: boolean;

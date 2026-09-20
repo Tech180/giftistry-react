@@ -1,13 +1,14 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ClaimBadge } from './claim-badge.html';
+import { ClaimBadge } from './claim-badge.component';
 import type { ClaimBadgeEntry } from '../../../interfaces/claim-badge-entry.interface';
 
-vi.mock('app/providers/auth-context', () => ({
+vi.mock('features/auth', () => ({
   useAuth: () => ({ user: { Id: 'test-user-id' } }),
+  UserPreviewCard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('app/providers/theme-context', () => ({
+vi.mock('app/providers/theme', () => ({
   useTheme: () => ({ theme: 'light' }),
 }));
 

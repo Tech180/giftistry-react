@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { jobsApi } from '../api/jobs.api';
 import type { BackgroundJobView } from '../interfaces/background-job.interface';
-
-import { useUserSocket } from 'app/providers/user-socket-context';
-
-export type BackgroundJobsScope = 'mine' | 'admin';
+import type { BackgroundJobsScope } from '../interfaces/background-jobs-scope.type';
+import type { JobSocketUpdate } from '../interfaces/job-socket-update.interface';
+import { useUserSocket } from 'shared/providers/user-socket';
 
 export function useBackgroundJobs(scope: BackgroundJobsScope) {
   const [jobs, setJobs] = useState<BackgroundJobView[]>([]);
@@ -28,15 +27,16 @@ export function useBackgroundJobs(scope: BackgroundJobsScope) {
     void refresh();
 
     if (scope === 'mine') {
-      const handleJobUpdate = (data: any) => {
-        if (data && data.Job) {
+      const handleJobUpdate = (data: unknown) => {
+        const payload = data as JobSocketUpdate;
+        if (payload?.Job) {
+          const nextJob = payload.Job;
           setJobs((prev) => {
-            const exists = prev.some((j) => j.Id === data.Job.Id);
+            const exists = prev.some((j) => j.Id === nextJob.Id);
             if (exists) {
-              return prev.map((j) => (j.Id === data.Job.Id ? data.Job : j));
-            } else {
-              return [data.Job, ...prev];
+              return prev.map((j) => (j.Id === nextJob.Id ? nextJob : j));
             }
+            return [nextJob, ...prev];
           });
         }
       };
@@ -50,12 +50,12 @@ export function useBackgroundJobs(scope: BackgroundJobsScope) {
         removeEventListener('job.completed', handleJobUpdate);
         removeEventListener('job.failed', handleJobUpdate);
       };
-    } else {
-      const id = window.setInterval(() => {
-        void refresh();
-      }, 10000);
-      return () => window.clearInterval(id);
     }
+
+    const id = window.setInterval(() => {
+      void refresh();
+    }, 10000);
+    return () => window.clearInterval(id);
   }, [refresh, scope, addEventListener, removeEventListener]);
 
   const cancel = useCallback(

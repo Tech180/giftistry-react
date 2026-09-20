@@ -1,5 +1,5 @@
 import React from 'react';
-import { EmojiPickerButton } from '../../../input/components/input/toolbar/emoji';
+import { EmojiPickerButton } from '../../../input/components/toolbar/emoji';
 import { ReactionPickerTemplateProps } from './interfaces/reaction-picker-template-props.interface';
 import styles from './reaction-picker.module.css';
 

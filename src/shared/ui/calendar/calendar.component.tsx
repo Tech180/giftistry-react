@@ -1,24 +1,8 @@
 import React from 'react';
 import type { CalendarProps } from './interfaces/calendar-props.interface';
 import { CalendarTemplate } from './calendar.html';
+import { MONTH_NAMES } from './constants/month-names.constant';
 import { buildCalendarGrid } from './utils/build-calendar-grid.util';
-
-export type { CalendarProps } from './interfaces/calendar-props.interface';
-
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-] as const;
 
 export const Calendar: React.FC<CalendarProps> = ({
   viewMonth,
@@ -41,14 +25,30 @@ export const Calendar: React.FC<CalendarProps> = ({
 
   return (
     <CalendarTemplate
-      monthYearLabel={monthYearLabel}
-      days={days}
-      selectedDate={selectedDate}
-      className={className}
-      id={id}
-      onPrevMonth={onPrevMonth}
-      onNextMonth={onNextMonth}
-      onSelectDay={onSelectDay}
+      monthYearLabel = {
+        monthYearLabel
+      }
+      days = {
+        days
+      }
+      selectedDate = {
+        selectedDate
+      }
+      className = {
+        className
+      }
+      id = {
+        id
+      }
+      onPrevMonth = {
+        onPrevMonth
+      }
+      onNextMonth = {
+        onNextMonth
+      }
+      onSelectDay = {
+        onSelectDay
+      }
     />
   );
 };

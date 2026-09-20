@@ -24,6 +24,7 @@ import {
   CLAIM_FORM_PROMPT_CLAIM,
   CLAIM_FORM_PROMPT_CLAIM_LINKED,
   CLAIM_FORM_PROMPT_UPDATE,
+  CLAIM_FORM_QUANTITY_LABEL,
   CLAIM_FORM_TITLE_CLAIM,
   CLAIM_FORM_TITLE_UPDATE,
 } from './constants/claim-form-copy.constant';
@@ -32,9 +33,10 @@ import {
   CLAIM_GF_AMOUNT_REQUIRED,
   CLAIM_GF_CONFIRM_CONTRIBUTE,
 } from '../claim-prompt/constants/claim-group-fund-copy.constant';
-import type { ClaimFormProps } from './interfaces/claim-form-props.interface';
+import type { Props } from './interfaces/props.interface';
+import styles from './claim-form.module.css';
 
-export const ClaimForm: React.FC<ClaimFormProps> = ({
+export const ClaimForm: React.FC<Props> = ({
   item,
   metadata,
   userId,
@@ -98,6 +100,7 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
   const quantityRows = visibleLines.map((line, index) => {
     const quantity = draft.find((entry) => entry.selection === line.selection)?.quantity ?? 0;
     const remaining = Math.max(0, line.maxForUser - quantity);
+    const outOfStock = line.maxForUser <= 0;
     return {
       selection: line.selection,
       name: line.name,
@@ -105,13 +108,56 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
       quantity,
       maxForUser: line.maxForUser,
       remaining,
-      outOfStock: line.maxForUser <= 0,
+      outOfStock,
+      rowClassName: [
+        styles['claim-form__qty-row'],
+        quantity > 0 ? styles['claim-form__qty-row--active'] : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
+      hintClassName: [
+        styles['claim-form__qty-hint'],
+        outOfStock ? styles['claim-form__qty-hint--out-of-stock'] : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
+      decreaseLabel: `Decrease ${line.name}`,
+      increaseLabel: `Increase ${line.name}`,
+      selectorDisabled: line.maxForUser <= 0 && quantity <= 0,
     };
   });
   const totalRemaining = visibleLines.reduce(
     (sum, line) => sum + unclaimedUnitsOnClaimQuantityLine(line),
     0
   );
+  const inlineRow = !showVariationList ? quantityRows[0] : undefined;
+  const showLinkedTags = linkedItems.length > 0;
+  const taggedIds = linkedItems.map((linked) => linked.Id);
+  const formClassName = [
+    styles['claim-form'],
+    compact ? styles['claim-form--compact'] : '',
+    compact && !showQuantityUi ? styles['claim-form--compact-row'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const drawerActionsClassName = [
+    styles['claim-form__drawer-actions'],
+    compact ? styles['claim-form__drawer-actions--compact'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const actionGroupClassName = [
+    styles['claim-form__action-group'],
+    compact ? styles['claim-form__action-group--compact'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const drawerActionBtnClassName = [
+    styles['claim-form__drawer-action-btn'],
+    compact ? styles['claim-form__drawer-action-btn--compact'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const onQuantityChange = (selection: string | null, raw: number) => {
     const line = lines.find((entry) => entry.selection === selection);
@@ -198,6 +244,16 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
     }
   };
 
+  const onFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    void onSubmit();
+  };
+
+  const onFormClick = (event: React.MouseEvent<HTMLFormElement>) => {
+    event.stopPropagation();
+  };
+
   const prompt = userHasClaims
     ? CLAIM_FORM_PROMPT_UPDATE
     : hasLinkedBundle
@@ -216,32 +272,108 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({
 
   return (
     <ClaimFormTemplate
-      prompt={prompt}
-      title={userHasClaims ? CLAIM_FORM_TITLE_UPDATE : CLAIM_FORM_TITLE_CLAIM}
-      confirmLabel={confirmLabel}
-      anonymous={anonymous}
-      onAnonymousChange={onAnonymousChange}
-      compact={compact}
-      showQuantityUi={showQuantityUi}
-      showVariationList={showVariationList}
-      quantityRows={quantityRows}
-      totalRemaining={totalRemaining}
-      confirmDisabled={confirmDisabled}
-      confirmLoading={confirmLoading}
-      onQuantityChange={onQuantityChange}
-      onSubmit={onSubmit}
-      onCancel={onCancel}
-      linkedItems={linkedItems}
-      wishlistItems={wishlistItems}
-      onLinkedItemClick={onLinkedItemClick}
-      showGroupFunding={showGroupFunding}
-      groupFundingStarted={priorGroupFunding}
-      groupFundingEnabled={groupFundingEnabled}
-      onGroupFundingEnabledChange={setGroupFundingEnabled}
-      claimAmount={claimAmount}
-      onClaimAmountChange={setClaimAmount}
-      remainingAmount={remainingAmount}
-      amountInputId={`${idPrefix}-gf-amount`}
+      prompt = {
+        prompt
+      }
+      title = {
+        userHasClaims ? CLAIM_FORM_TITLE_UPDATE : CLAIM_FORM_TITLE_CLAIM
+      }
+      confirmLabel = {
+        confirmLabel
+      }
+      anonymous = {
+        anonymous
+      }
+      onAnonymousChange = {
+        onAnonymousChange
+      }
+      formClassName = {
+        formClassName
+      }
+      drawerActionsClassName = {
+        drawerActionsClassName
+      }
+      actionGroupClassName = {
+        actionGroupClassName
+      }
+      drawerActionBtnClassName = {
+        drawerActionBtnClassName
+      }
+      showQuantityUi = {
+        showQuantityUi
+      }
+      showVariationList = {
+        showVariationList
+      }
+      quantityRows = {
+        quantityRows
+      }
+      inlineRow = {
+        inlineRow
+      }
+      totalRemaining = {
+        totalRemaining
+      }
+      confirmDisabled = {
+        confirmDisabled
+      }
+      confirmLoading = {
+        confirmLoading
+      }
+      onQuantityChange = {
+        onQuantityChange
+      }
+      onFormSubmit = {
+        onFormSubmit
+      }
+      onFormClick = {
+        onFormClick
+      }
+      onCancel = {
+        onCancel
+      }
+      showLinkedTags = {
+        showLinkedTags
+      }
+      taggedIds = {
+        taggedIds
+      }
+      wishlistItems = {
+        wishlistItems
+      }
+      onLinkedItemClick = {
+        onLinkedItemClick
+      }
+      showGroupFunding = {
+        showGroupFunding
+      }
+      groupFundingStarted = {
+        priorGroupFunding
+      }
+      groupFundingEnabled = {
+        groupFundingEnabled
+      }
+      onGroupFundingEnabledChange = {
+        setGroupFundingEnabled
+      }
+      claimAmount = {
+        claimAmount
+      }
+      onClaimAmountChange = {
+        setClaimAmount
+      }
+      remainingAmount = {
+        remainingAmount
+      }
+      amountInputId = {
+        `${idPrefix}-gf-amount`
+      }
+      inlineDecreaseLabel = {
+        `Decrease ${CLAIM_FORM_QUANTITY_LABEL}`
+      }
+      inlineIncreaseLabel = {
+        `Increase ${CLAIM_FORM_QUANTITY_LABEL}`
+      }
     />
   );
 };

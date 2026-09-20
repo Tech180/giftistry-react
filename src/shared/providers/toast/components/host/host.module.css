@@ -1,0 +1,26 @@
+.host {
+  position: fixed;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+  z-index: var(--zindex-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-base);
+  pointer-events: none;
+}
+
+.host__item {
+  pointer-events: auto;
+  transform: translateX(120%);
+  animation: toast-slide-in var(--transition-base, 0.3s) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(120%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}

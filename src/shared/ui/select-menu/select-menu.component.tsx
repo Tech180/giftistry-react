@@ -5,9 +5,6 @@ import { SelectMenuTemplate } from './select-menu.html';
 import { positionSelectMenu } from './utils/position-select-menu.util';
 import styles from './select-menu.module.css';
 
-export type { SelectMenuProps } from './interfaces/select-menu-props.interface';
-export type { SelectMenuOption } from './interfaces/select-menu-option.interface';
-
 export const SelectMenu: React.FC<SelectMenuProps> = ({
   value,
   options,
@@ -240,27 +237,69 @@ export const SelectMenu: React.FC<SelectMenuProps> = ({
 
   return (
     <SelectMenuTemplate
-      triggerRef={triggerRef}
-      menuRef={menuRef}
-      listboxId={`select-menu-${listboxId}`}
-      isOpen={isOpen}
-      disabled={disabled}
-      triggerClass={triggerClass}
-      panelClass={panelClass}
-      panelStyle={panelStyle}
-      selectedLabel={selectedLabel}
-      menuTitle={menuTitle}
-      options={options}
-      focusedIndex={focusedIndex}
-      value={value}
-      ariaLabel={ariaLabel}
-      id={id}
-      checkIcon={<Check size={14} strokeWidth={3} aria-hidden />}
-      chevronSize={variant === 'field' ? 14 : 12}
-      chevronClass={chevronClass}
-      onToggle={onToggle}
-      onSelect={onSelect}
-      onOptionMouseEnter={setFocusedIndex}
+      triggerRef = {
+        triggerRef
+      }
+      menuRef = {
+        menuRef
+      }
+      listboxId = {
+        `select-menu-${listboxId}`
+      }
+      isOpen = {
+        isOpen
+      }
+      disabled = {
+        disabled
+      }
+      triggerClass = {
+        triggerClass
+      }
+      panelClass = {
+        panelClass
+      }
+      panelStyle = {
+        panelStyle
+      }
+      selectedLabel = {
+        selectedLabel
+      }
+      menuTitle = {
+        menuTitle
+      }
+      options = {
+        options
+      }
+      focusedIndex = {
+        focusedIndex
+      }
+      value = {
+        value
+      }
+      ariaLabel = {
+        ariaLabel
+      }
+      id = {
+        id
+      }
+      checkIcon = {
+        <Check size={14} strokeWidth={3} aria-hidden />
+      }
+      chevronSize = {
+        variant === 'field' ? 14 : 12
+      }
+      chevronClass = {
+        chevronClass
+      }
+      onToggle = {
+        onToggle
+      }
+      onSelect = {
+        onSelect
+      }
+      onOptionMouseEnter = {
+        setFocusedIndex
+      }
     />
   );
 };

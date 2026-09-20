@@ -1,9 +1,9 @@
 import React from 'react';
-import { InactivityModalTemplateProps } from './interfaces/inactivity-modal-template-props.interface';
 import { Button } from 'shared/ui';
+import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './inactivity-modal.module.css';
 
-export const InactivityModalTemplate: React.FC<InactivityModalTemplateProps> = ({
+export const InactivityModalTemplate: React.FC<TemplateProps> = ({
   countdown,
   onExtendSession,
   onSignOut,

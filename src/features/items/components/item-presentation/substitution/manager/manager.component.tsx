@@ -1,12 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { MAX_OWNER_APPROVED_SUBSTITUTIONS } from '../../../../constants/substitution-messages.constant';
 import type { ItemSubstitutionOption } from '../../../../interfaces/item-substitution.interface';
-import type { SubstitutionManagerProps } from './interfaces/substitution-manager-props.interface';
-import { SubstitutionManagerTemplate } from './manager.html';
+import type { Props } from './interfaces/props.interface';
+import { ManagerTemplate } from './manager.html';
 
-export type { SubstitutionManagerProps } from './interfaces/substitution-manager-props.interface';
-
-export const SubstitutionManager: React.FC<SubstitutionManagerProps> = ({
+export const Manager: React.FC<Props> = ({
   parentItemId,
   options,
   allowSubstitutions,
@@ -52,7 +50,7 @@ export const SubstitutionManager: React.FC<SubstitutionManagerProps> = ({
   };
 
   return (
-    <SubstitutionManagerTemplate
+    <ManagerTemplate
       allowSubstitutions={allowSubstitutions}
       onAllowSubstitutionsChange={onAllowSubstitutionsChange}
       ownerOptions={ownerOptions}

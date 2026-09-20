@@ -5,11 +5,11 @@ import {
   SHARE_ROLE_MENU_TITLE,
   SHARE_ROLE_OPTIONS,
 } from 'features/wishlists/constants/share-role-options.constant';
-import styles from '../../../panel.module.css';
-import fabStyles from '../../../../share-fab-panel/share-fab-panel.module.css';
-import { LinkTabTemplateProps } from './interfaces/link.interface';
+import { formatDateTime } from 'shared/utils/format-date.util';
+import { TemplateProps } from './interfaces/template-props.interface';
+import styles from './link.module.css';
 
-export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
+export const LinkTabTemplate: React.FC<TemplateProps> = ({
   variant = 'classic',
   isOwner,
   isLoading,
@@ -39,11 +39,11 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
 }) => {
   if (variant === 'compact') {
     if (!isOwner) {
-      return <p className={fabStyles.compactStatus}>Only the wishlist owner can manage share links.</p>;
+      return <p className={styles.compactStatus}>Only the wishlist owner can manage share links.</p>;
     }
 
     if (isLoading) {
-      return <p className={fabStyles.compactStatus}>Checking link status...</p>;
+      return <p className={styles.compactStatus}>Checking link status...</p>;
     }
 
     const shareUrl = generatedToken
@@ -52,48 +52,91 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
     const linkEnabled = Boolean(activeInvite);
 
     return (
-      <div className={fabStyles.compactRoot}>
-        {errorMsg && <p className={fabStyles.compactAlert}>{errorMsg}</p>}
+      <div className={styles.compactRoot}>
+        {errorMsg && <p className={styles.compactAlert}>{errorMsg}</p>}
 
-        <div className={fabStyles.linkCard}>
-          <div className={fabStyles.linkHeader}>
-            <div className={fabStyles.linkInfo}>
-              <div className={fabStyles.linkIconWrap}>
-                <Link2 size={16} aria-hidden />
+        <div className={styles.linkCard}>
+          <div className={styles.linkHeader}>
+            <div className={styles.linkInfo}>
+              <div className={styles.linkIconWrap}>
+                <Link2
+                  size = {
+                    16
+                  }
+                  aria-hidden
+                />
               </div>
-              <span className={fabStyles.linkLabel}>
+              <span className={styles.linkLabel}>
                 {linkEnabled ? 'Link sharing on' : 'Link sharing off'}
               </span>
             </div>
             <Switch
-              checked={linkEnabled}
-              onChange={handleToggleLink}
-              disabled={isGenerating}
-              aria-label={linkEnabled ? 'Turn off link sharing' : 'Turn on link sharing'}
-              size="sm"
+              checked = {
+                linkEnabled
+              }
+              onChange = {
+                handleToggleLink
+              }
+              disabled = {
+                isGenerating
+              }
+              aria-label = {
+                linkEnabled ? 'Turn off link sharing' : 'Turn on link sharing'
+              }
+              size = {
+                'sm'
+              }
             />
           </div>
 
           {linkEnabled && shareUrl && (
-            <div className={fabStyles.linkUrlBox}>
-              <span className={fabStyles.linkUrlText}>{shareUrl.replace(/^https?:\/\//, '')}</span>
+            <div className={styles.linkUrlBox}>
+              <span className={styles.linkUrlText}>{shareUrl.replace(/^https?:\/\//, '')}</span>
               <Button
-                variant="ghost"
-                size="sm"
+                variant = {
+                  'ghost'
+                }
+                size = {
+                  'sm'
+                }
                 iconOnly
-                className={fabStyles.copyBtn}
-                onClick={() => void handleCopy()}
-                disabled={isGenerating}
-                aria-label={copied ? 'Copied' : 'Copy link'}
-                title={copied ? 'Copied' : 'Copy link'}
+                className = {
+                  styles.copyBtn
+                }
+                onClick = {
+                  () => void handleCopy()
+                }
+                disabled = {
+                  isGenerating
+                }
+                aria-label = {
+                  copied ? 'Copied' : 'Copy link'
+                }
+                title = {
+                  copied ? 'Copied' : 'Copy link'
+                }
               >
-                {copied ? <Check size={16} aria-hidden /> : <Copy size={16} aria-hidden />}
+                {copied ? (
+                  <Check
+                    size = {
+                      16
+                    }
+                    aria-hidden
+                  />
+                ) : (
+                  <Copy
+                    size = {
+                      16
+                    }
+                    aria-hidden
+                  />
+                )}
               </Button>
             </div>
           )}
         </div>
 
-        <p className={fabStyles.linkHelper}>
+        <p className={styles.linkHelper}>
           Anyone with this link can view your wishlist and mark items as purchased.
         </p>
       </div>
@@ -112,13 +155,21 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
     <div className={styles['link-tab']}>
       {errorMsg && (
         <div className={`${styles.alert} ${styles['alert-error']}`}>
-          <AlertCircle size={16} />
+          <AlertCircle
+            size = {
+              16
+            }
+          />
           <span>{errorMsg}</span>
         </div>
       )}
       {successMsg && (
         <div className={`${styles.alert} ${styles['alert-success']}`}>
-          <Check size={16} />
+          <Check
+            size = {
+              16
+            }
+          />
           <span>{successMsg}</span>
         </div>
       )}
@@ -128,7 +179,7 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
           <div className={styles['active-link-box']}>
             <div className={styles['link-row']}>
               <div className={styles['user-details']} style={{ overflow: 'hidden' }}>
-                <span className={styles['label']} style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Share Link</span>
+                <span className={`${styles['label']} ${styles['label--uppercase']}`}>Share Link</span>
                 <span className={styles['link-text']}>
                   {generatedToken
                     ? `${window.location.origin}/invite/list/${generatedToken}`
@@ -137,14 +188,36 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
               </div>
               {generatedToken && (
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant = {
+                    'ghost'
+                  }
+                  size = {
+                    'sm'
+                  }
                   iconOnly
-                  onClick={handleCopy}
-                  aria-label={copied ? 'Copied' : 'Copy link'}
-                  title={copied ? 'Copied' : 'Copy link'}
+                  onClick = {
+                    handleCopy
+                  }
+                  aria-label = {
+                    copied ? 'Copied' : 'Copy link'
+                  }
+                  title = {
+                    copied ? 'Copied' : 'Copy link'
+                  }
                 >
-                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  {copied ? (
+                    <Check
+                      size = {
+                        16
+                      }
+                    />
+                  ) : (
+                    <Copy
+                      size = {
+                        16
+                      }
+                    />
+                  )}
                 </Button>
               )}
             </div>
@@ -158,14 +231,23 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
             <div className={styles['info-item']}>
               <span className={styles['info-label']}>Expires</span>
               <span className={styles['info-value']}>
-                {activeInvite.ExpiresAt ? new Date(activeInvite.ExpiresAt).toLocaleString() : 'Never'}
+                {formatDateTime(
+                  activeInvite.ExpiresAt == null
+                    ? null
+                    : new Date(activeInvite.ExpiresAt).toISOString(),
+                  'Never'
+                )}
               </span>
             </div>
             {activeInvite.PasswordProtected && (
               <div className={styles['info-item']}>
                 <span className={styles['info-label']}>Password</span>
                 <span className={styles['info-value-success']}>
-                  <Lock size={12} /> Enabled
+                  <Lock
+                    size = {
+                      12
+                    }
+                  /> Enabled
                 </span>
               </div>
             )}
@@ -189,12 +271,24 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
           <div className={styles.row}>
             <span className={styles['row-label']}>Access Level</span>
             <SelectMenu
-              value={role}
-              options={SHARE_ROLE_OPTIONS}
-              onChange={(next) => setRole(next as 'viewer' | 'collaborator')}
-              variant="field"
-              menuTitle={SHARE_ROLE_MENU_TITLE}
-              aria-label="Access Level"
+              value = {
+                role
+              }
+              options = {
+                SHARE_ROLE_OPTIONS
+              }
+              onChange = {
+                (next) => setRole(next as 'viewer' | 'collaborator')
+              }
+              variant = {
+                'field'
+              }
+              menuTitle = {
+                SHARE_ROLE_MENU_TITLE
+              }
+              aria-label = {
+                'Access Level'
+              }
             />
           </div>
 
@@ -215,10 +309,18 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
             {hasExpiration && (
               <div className={styles['sub-details']}>
                 <DateField
-                  value={expDate}
-                  onChange={setExpDate}
-                  aria-label="Link expiration date"
-                  className={styles['date-field']}
+                  value = {
+                    expDate
+                  }
+                  onChange = {
+                    setExpDate
+                  }
+                  aria-label = {
+                    'Link expiration date'
+                  }
+                  className = {
+                    styles['date-field']
+                  }
                 />
                 <input
                   type="time"
@@ -259,11 +361,21 @@ export const LinkTabTemplate: React.FC<LinkTabTemplateProps> = ({
           </div>
 
           <Button
-            variant="primary"
-            onClick={handleGenerate}
-            isLoading={isGenerating}
-            disabled={hasPassword && !password}
-            style={{ marginTop: '0.5rem', alignSelf: 'flex-end' }}
+            variant = {
+              'primary'
+            }
+            onClick = {
+              handleGenerate
+            }
+            isLoading = {
+              isGenerating
+            }
+            disabled = {
+              hasPassword && !password
+            }
+            style = {
+              { marginTop: '0.5rem', alignSelf: 'flex-end' }
+            }
           >
             Generate Link
           </Button>

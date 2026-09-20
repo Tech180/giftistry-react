@@ -1,7 +1,11 @@
-export * from './api/friends.api';
-export * from './hooks/use-friends-controller';
-export * from './interfaces/friend.interface';
-export * from './components/friend-picker/friend-picker.component';
-export * from './components/friend-list/friend-list.component';
-export * from './components/friend-request-list/friend-request-list.component';
-export * from './components/user-search/user-search.component';
+export { friendsApi } from './api/friends.api';
+export { FriendsProvider, useFriendsController } from './providers';
+export type { FriendsContextType } from './providers';
+export type { Friend } from './interfaces/friend.interface';
+export type { FriendRequest } from './interfaces/friend-request.interface';
+export type { FriendRequestsResult } from './interfaces/friend-requests-result.interface';
+export type { UserSearchResult } from './interfaces/user-search-result.interface';
+export { List as FriendList } from './components/list/list.component';
+export { RequestList as FriendRequestList } from './components/request-list/request-list.component';
+export { Picker as FriendPicker } from './components/picker/picker.component';
+export { UserSearch } from './components/user-search/user-search.component';

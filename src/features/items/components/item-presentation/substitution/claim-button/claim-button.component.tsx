@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Button, Modal } from 'shared/ui';
 import {
   ADD_CUSTOM_SUBSTITUTION_MODAL_TITLE,
   ADD_SUBSTITUTION_ACTION_LABEL,
@@ -7,13 +6,10 @@ import {
   EDIT_SUBSTITUTION_ACTION_LABEL,
   SUBSTITUTION_DISABLED_WARNING,
 } from '../../../../constants/substitution-messages.constant';
-import type { SubstitutionClaimButtonProps } from './interfaces/substitution-claim-button-props.interface';
-import { SubstitutionClaimButtonTemplate } from './claim-button.html';
-import styles from './claim-button.module.css';
+import type { Props } from './interfaces/props.interface';
+import { ClaimButtonTemplate } from './claim-button.html';
 
-export type { SubstitutionClaimButtonProps } from './interfaces/substitution-claim-button-props.interface';
-
-export const SubstitutionClaimButton: React.FC<SubstitutionClaimButtonProps> = ({
+export const ClaimButton: React.FC<Props> = ({
   allowSubstitutions,
   mode = 'create',
   disabled = false,
@@ -48,7 +44,9 @@ export const SubstitutionClaimButton: React.FC<SubstitutionClaimButtonProps> = (
   };
 
   const handleDeleteConfirm = async () => {
-    if (!onDelete) return;
+    if (!onDelete) {
+      return;
+    }
     setDeleteBusy(true);
     try {
       await onDelete();
@@ -59,47 +57,75 @@ export const SubstitutionClaimButton: React.FC<SubstitutionClaimButtonProps> = (
   };
 
   return (
-    <>
-      <SubstitutionClaimButtonTemplate
-        mode={mode}
-        allowSubstitutions={allowSubstitutions}
-        showDisabledConfirm={showDisabledConfirm}
-        showDeleteConfirm={showDeleteConfirm}
-        disabled={disabled}
-        busy={deleteBusy}
-        appearance={appearance}
-        size={size}
-        className={className}
-        createLabel={createLabel}
-        editLabel={EDIT_SUBSTITUTION_ACTION_LABEL}
-        deleteLabel={DELETE_SUBSTITUTION_ACTION_LABEL}
-        onRequest={handleRequest}
-        onDisabledConfirm={() => setWarningOpen(true)}
-        onDisabledCancel={() => setShowDisabledConfirm(false)}
-        onDeleteRequest={() => setShowDeleteConfirm(true)}
-        onDeleteConfirm={() => {
+    <ClaimButtonTemplate
+      mode = {
+        mode
+      }
+      allowSubstitutions = {
+        allowSubstitutions
+      }
+      showDisabledConfirm = {
+        showDisabledConfirm
+      }
+      showDeleteConfirm = {
+        showDeleteConfirm
+      }
+      warningOpen = {
+        warningOpen
+      }
+      disabled = {
+        disabled
+      }
+      busy = {
+        deleteBusy
+      }
+      appearance = {
+        appearance
+      }
+      size = {
+        size
+      }
+      className = {
+        className
+      }
+      createLabel = {
+        createLabel
+      }
+      editLabel = {
+        EDIT_SUBSTITUTION_ACTION_LABEL
+      }
+      deleteLabel = {
+        DELETE_SUBSTITUTION_ACTION_LABEL
+      }
+      warningText = {
+        SUBSTITUTION_DISABLED_WARNING
+      }
+      onRequest = {
+        handleRequest
+      }
+      onDisabledConfirm = {
+        () => setWarningOpen(true)
+      }
+      onDisabledCancel = {
+        () => setShowDisabledConfirm(false)
+      }
+      onDeleteRequest = {
+        () => setShowDeleteConfirm(true)
+      }
+      onDeleteConfirm = {
+        () => {
           void handleDeleteConfirm();
-        }}
-        onDeleteCancel={() => setShowDeleteConfirm(false)}
-      />
-
-      <Modal
-        isOpen={warningOpen}
-        onClose={() => setWarningOpen(false)}
-        title="Substitutions disabled"
-      >
-        <div className={styles['warning-body']}>
-          <p className={styles['warning-text']}>{SUBSTITUTION_DISABLED_WARNING}</p>
-          <div className={styles['warning-actions']}>
-            <Button variant="ghost" onClick={() => setWarningOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="danger" onClick={openEditor}>
-              Continue
-            </Button>
-          </div>
-        </div>
-      </Modal>
-    </>
+        }
+      }
+      onDeleteCancel = {
+        () => setShowDeleteConfirm(false)
+      }
+      onWarningClose = {
+        () => setWarningOpen(false)
+      }
+      onWarningContinue = {
+        openEditor
+      }
+    />
   );
 };

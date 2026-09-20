@@ -1,0 +1,15 @@
+.page {
+  max-width: 62.5rem;
+  margin: 0 auto;
+  padding: var(--spacing-2xl, 2.5rem) var(--spacing-lg);
+}
+
+.page__error {
+  padding: var(--spacing-sm) var(--spacing-base);
+  margin-bottom: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid var(--error);
+  font-size: var(--font-size-sm);
+}

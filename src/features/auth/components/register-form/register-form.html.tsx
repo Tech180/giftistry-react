@@ -1,153 +1,60 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, User as UserIcon, AlertCircle, Smile } from 'lucide-react';
-import { Input, Button, Card, EnterPanel } from 'shared/ui';
-import { RegisterFormTemplateProps } from '../../interfaces/register-form-template-props.interface';
+import { AlertCircle } from 'lucide-react';
+import { Card, EnterPanel } from 'shared/ui';
+import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './register-form.module.css';
 
-export const RegisterFormTemplate: React.FC<RegisterFormTemplateProps> = ({
-  username,
-  setUsername,
-  email,
-  setEmail,
-  firstName,
-  setFirstName,
-  lastName,
-  setLastName,
-  password,
-  setPassword,
-  confirmPassword,
-  setConfirmPassword,
-  isLoading,
-  localError,
-  registrationClosed = false,
+export const RegisterFormTemplate: React.FC<TemplateProps> = ({
+  inviteValidating,
+  registrationClosed,
   registrationClosedMessage,
-  inviteValidating = false,
-  oauthEnabled = false,
-  oauthButtonText = 'Sign in with SSO',
-  onOauthSignup,
+  localError,
   handleSubmit,
+  fields,
+  actions,
 }) => {
   return (
     <EnterPanel animation="scale">
-      <Card className={styles['register-card']} padding="lg" glass={true}>
-      <div className={styles.header}>
-        <h2 className={styles.title}>Create Account</h2>
-        <p className={styles.subtitle}>Get started with your custom gift registry</p>
-      </div>
-
-      {inviteValidating && (
-        <EnterPanel animation="slide-up" className={styles.alert}>
-          <AlertCircle size={16} />
-          <span>Checking invite link…</span>
-        </EnterPanel>
-      )}
-
-      {registrationClosed && registrationClosedMessage && !inviteValidating && (
-        <EnterPanel animation="slide-up" className={styles.alert}>
-          <AlertCircle size={16} />
-          <span>{registrationClosedMessage}</span>
-        </EnterPanel>
-      )}
-
-      {localError && (
-        <EnterPanel animation="slide-up" className={styles.alert}>
-          <AlertCircle size={16} />
-          <span>{localError}</span>
-        </EnterPanel>
-      )}
-
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles['name-row']}>
-          <Input
-            label="First Name *"
-            type="text"
-            placeholder="John"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            leftIcon={<Smile size={16} />}
-            required
-          />
-          <Input
-            label="Last Name *"
-            type="text"
-            placeholder="Doe"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            leftIcon={<Smile size={16} />}
-            required
-          />
+      <Card className={styles.card} padding="lg" glass={true}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Create Account</h2>
+          <p className={styles.subtitle}>Get started with your custom gift registry</p>
         </div>
 
-        <Input
-          label="Username *"
-          type="text"
-          placeholder="johndoe"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          leftIcon={<UserIcon size={16} />}
-          required
-        />
-
-        <Input
-          label="Email Address (optional)"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          leftIcon={<Mail size={16} />}
-        />
-
-        <Input
-          label="Password *"
-          type="password"
-          placeholder="Min 6 characters"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          leftIcon={<Lock size={16} />}
-          required
-        />
-
-        <Input
-          label="Confirm Password *"
-          type="password"
-          placeholder="Re-enter password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          leftIcon={<Lock size={16} />}
-          required
-        />
-
-        <Button
-          type="submit"
-          variant="primary"
-          isLoading={isLoading}
-          disabled={registrationClosed || inviteValidating}
-          className={styles['submit-btn']}
-        >
-          Create Account
-        </Button>
-
-        {oauthEnabled && onOauthSignup && (
-          <Button
-            type="button"
-            variant="secondary"
-            className={styles['submit-btn']}
-            onClick={onOauthSignup}
-            disabled={registrationClosed || inviteValidating}
-          >
-            {oauthButtonText}
-          </Button>
+        {inviteValidating && (
+          <EnterPanel animation="slide-up" className={styles.alert}>
+            <AlertCircle size={16} />
+            <span>Checking invite link…</span>
+          </EnterPanel>
         )}
-      </form>
 
-      <div className={styles.footer}>
-        <span>Already have an account?</span>{' '}
-        <Link to="/login" className={styles.link}>
-          Sign in
-        </Link>
-      </div>
-    </Card>
+        {registrationClosed && registrationClosedMessage && !inviteValidating && (
+          <EnterPanel animation="slide-up" className={styles.alert}>
+            <AlertCircle size={16} />
+            <span>{registrationClosedMessage}</span>
+          </EnterPanel>
+        )}
+
+        {localError && (
+          <EnterPanel animation="slide-up" className={styles.alert}>
+            <AlertCircle size={16} />
+            <span>{localError}</span>
+          </EnterPanel>
+        )}
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+          {fields}
+          {actions}
+        </form>
+
+        <div className={styles.footer}>
+          <span>Already have an account?</span>{' '}
+          <Link to="/login" className={styles.link}>
+            Sign in
+          </Link>
+        </div>
+      </Card>
     </EnterPanel>
   );
 };

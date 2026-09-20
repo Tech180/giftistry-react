@@ -15,10 +15,18 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 
   return (
     <ErrorStateTemplate
-      message={message}
-      onRetry={onRetry}
-      retryLabel={retryLabel}
-      containerClass={containerClass}
+      message = {
+        message
+      }
+      onRetry = {
+        onRetry
+      }
+      retryLabel = {
+        retryLabel
+      }
+      containerClass = {
+        containerClass
+      }
     />
   );
 };

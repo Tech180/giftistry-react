@@ -1,12 +1,9 @@
 import React from 'react';
 import { Modal } from 'shared/ui';
-import { SubstitutionBadge } from '../badge/badge.component';
-import type { SubstitutionViewerProps } from './interfaces/substitution-viewer-props.interface';
-import styles from './viewer.module.css';
+import type { Props } from './interfaces/props.interface';
+import { ViewerTemplate } from './viewer.html';
 
-export type { SubstitutionViewerProps } from './interfaces/substitution-viewer-props.interface';
-
-export const SubstitutionViewer: React.FC<SubstitutionViewerProps> = ({
+export const Viewer: React.FC<Props> = ({
   isOpen,
   onClose,
   option,
@@ -15,34 +12,41 @@ export const SubstitutionViewer: React.FC<SubstitutionViewerProps> = ({
     return null;
   }
 
+  const links = (option.Item.Links ?? []).map((link) => ({
+    id: link.Id,
+    href: link.Url,
+    label: link.RetailerName || link.Url,
+  }));
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Substitution">
-      <div className={styles.viewer}>
-        <SubstitutionBadge
-          kind={option.Kind}
-          createdByUserId={option.CreatedByUserId}
-        />
-        <h3 className={styles.name}>{option.Item.Name}</h3>
-        {option.Item.Description ? (
-          <p className={styles.description}>{option.Item.Description}</p>
-        ) : null}
-        {option.Item.Links?.length ? (
-          <ul className={styles.links}>
-            {option.Item.Links.map((link: { Id: string; Url: string; RetailerName: string | null }) => (
-              <li key={link.Id}>
-                <a
-                  className={styles.link}
-                  href={link.Url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {link.RetailerName || link.Url}
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
+    <Modal
+      isOpen = {
+        isOpen
+      }
+      onClose = {
+        onClose
+      }
+      title = {
+        'Substitution'
+      }
+    >
+      <ViewerTemplate
+        kind = {
+          option.Kind
+        }
+        createdByUserId = {
+          option.CreatedByUserId
+        }
+        name = {
+          option.Item.Name
+        }
+        description = {
+          option.Item.Description
+        }
+        links = {
+          links
+        }
+      />
     </Modal>
   );
 };

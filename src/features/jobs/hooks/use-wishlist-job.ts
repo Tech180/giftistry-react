@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getCommentWsUrl } from 'features/comments/utils/comment-ws.util';
 import { jobsApi } from '../api/jobs.api';
+import { ITEM_STREAM_KINDS } from '../constants/job.constants';
 import type { BackgroundJobView } from '../interfaces/background-job.interface';
+import type { JobSocketUpdate } from '../interfaces/job-socket-update.interface';
 import type { UseWishlistJobOptions } from '../interfaces/use-wishlist-job-options.interface';
 import { getEnrichingItemIds } from '../utils/get-enriching-item-ids.util';
-
-/** Kinds whose active streams map onto item cards that should show a skeleton. */
-const ITEM_STREAM_KINDS = new Set(['item-enrich', 'wishlist-import']);
 
 function isActiveStatus(status: string | undefined): boolean {
   return status === 'queued' || status === 'running';
@@ -84,13 +83,7 @@ export function useWishlistJob(
 
         socket.onmessage = (event) => {
           try {
-            const data = JSON.parse(String(event.data)) as {
-              Type?: string;
-              Job?: BackgroundJobView;
-              Reason?: string;
-              ItemId?: string;
-              ActorUserId?: string;
-            };
+            const data = JSON.parse(String(event.data)) as JobSocketUpdate;
             if (
               (data.Type === 'job.progress' ||
                 data.Type === 'job.completed' ||

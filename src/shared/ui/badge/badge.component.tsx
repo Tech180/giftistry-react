@@ -1,14 +1,12 @@
 import React, { useId } from 'react';
 import { BadgeProps } from './interfaces/badge-props.interface';
 import { BadgeTemplate } from './badge.html';
-import styles from './badge.module.css';
+import { buildClasses } from './utils/build-classes.util';
 
-export type {
-  BadgeProps,
-  BadgeSize,
-  BadgeEffect,
-  BadgeTone,
-} from './interfaces/badge-props.interface';
+export type { BadgeProps } from './interfaces/badge-props.interface';
+export type { BadgeSize } from './interfaces/badge-size.type';
+export type { BadgeEffect } from './interfaces/badge-effect.type';
+export type { BadgeTone } from './interfaces/badge-tone.type';
 
 export const Badge: React.FC<BadgeProps> = ({
   children,
@@ -26,34 +24,89 @@ export const Badge: React.FC<BadgeProps> = ({
   gradientId: gradientIdProp,
 }) => {
   const rawId = useId().replace(/:/g, '');
-  const gradientId =
-    effect === 'rainbow' ? (gradientIdProp ?? `badge-gradient-${rawId}`) : undefined;
-
-  const rootClass = [
-    styles.root,
-    styles[`size-${size}`],
-    tone !== 'default' ? styles[`tone-${tone}`] : '',
-    active ? styles.active : '',
-    effect === 'rainbow' ? styles['effect-rainbow'] : '',
-    onClick ? styles.interactive : '',
+  const isRainbow = effect === 'rainbow';
+  const gradientId = isRainbow
+    ? (gradientIdProp ?? `badge-gradient-${rawId}`)
+    : undefined;
+  const isInteractive = Boolean(onClick);
+  const hasIcon = icon != null || iconInactive != null;
+  const hasInactivePair = icon != null && iconInactive != null;
+  const showLabel = children != null && children !== false && children !== '';
+  const classes = buildClasses({
+    size,
+    effect,
+    tone,
+    active,
+    isInteractive,
+    hasInactivePair,
     className,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  });
 
   return (
     <BadgeTemplate
-      rootClass={rootClass}
-      icon={icon}
-      iconInactive={iconInactive}
-      active={active}
-      effect={effect}
-      size={size}
-      onClick={onClick}
-      disabled={disabled}
-      ariaLabel={ariaLabel}
-      ariaPressed={ariaPressed}
-      gradientId={gradientId}
+      rootClass = {
+        classes.rootClass
+      }
+      borderWrapperClass = {
+        classes.borderWrapperClass
+      }
+      borderGradientClass = {
+        classes.borderGradientClass
+      }
+      showBorderGradient = {
+        classes.showBorderGradient
+      }
+      innerClass = {
+        classes.innerClass
+      }
+      hasIcon = {
+        hasIcon
+      }
+      iconSlotClass = {
+        classes.iconSlotClass
+      }
+      showActiveIcon = {
+        icon != null
+      }
+      activeIconClass = {
+        classes.activeIconClass
+      }
+      showInactiveIcon = {
+        iconInactive != null
+      }
+      inactiveIconClass = {
+        classes.inactiveIconClass
+      }
+      showLabel = {
+        showLabel
+      }
+      labelClass = {
+        classes.labelClass
+      }
+      showDefs = {
+        Boolean(isRainbow && gradientId)
+      }
+      gradientId = {
+        gradientId
+      }
+      icon = {
+        icon
+      }
+      iconInactive = {
+        iconInactive
+      }
+      onClick = {
+        onClick
+      }
+      disabled = {
+        disabled
+      }
+      ariaLabel = {
+        ariaLabel
+      }
+      ariaPressed = {
+        ariaPressed
+      }
     >
       {children}
     </BadgeTemplate>

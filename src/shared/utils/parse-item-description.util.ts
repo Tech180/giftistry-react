@@ -9,8 +9,6 @@ import {
   normalizeItemDescriptionMetadata,
 } from './item-custom-fields.util';
 
-export type { ItemDescriptionMetadata, ParsedItemDescription };
-
 function isJsonDescription(description: string): boolean {
   return description.startsWith('{') && description.endsWith('}');
 }

@@ -2,7 +2,6 @@ import { describe, expect, test } from 'vitest';
 import {
   formatElapsedSuffix,
   withActiveStepCaptions,
-  withFoundStepElapsed,
 } from './with-active-step-captions.util';
 
 describe('withActiveStepCaptions', () => {
@@ -44,13 +43,13 @@ describe('withActiveStepCaptions', () => {
     expect(steps.find((s) => s.id === 'found')?.metric).toBe('5s');
   });
 
-  test('withFoundStepElapsed still targets only found', () => {
-    const steps = withFoundStepElapsed(
+  test('with stepIds found only leaves other active steps untouched', () => {
+    const steps = withActiveStepCaptions(
       [
         { id: 'found', label: 'Asking AI…', metric: '12 tok/s', tone: 'active' },
         { id: 'grabInfo', label: 'Grab info', metric: '3/12', tone: 'active' },
       ],
-      24
+      { stepIds: ['found'], elapsedSeconds: 24 }
     );
     expect(steps.find((s) => s.id === 'found')?.metric).toBe('12 tok/s · 24s');
     expect(steps.find((s) => s.id === 'grabInfo')?.metric).toBe('3/12');

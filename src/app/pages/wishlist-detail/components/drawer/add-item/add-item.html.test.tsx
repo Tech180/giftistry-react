@@ -1,10 +1,18 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
+import { ToastProvider } from 'shared/providers/toast';
+
+vi.mock('features/auth', () => ({
+  useAuth: () => useAuthMock(),
+}));
+
+const useAuthMock = vi.hoisted(() => vi.fn(() => ({ canShowAi: true })));
 
 vi.mock('features/items', () => ({
   ADD_ITEM_FORM_ID: 'add-item-form',
   SUBSTITUTION_FORM_ID: 'substitution-item-form',
+  MiniDrawer: () => null,
   AddItemForm: ({
     isOpen,
     isLinkingModeActive,
@@ -104,7 +112,12 @@ vi.mock('shared/ui', async () => {
     }) => (
       <div data-testid="drawer" data-drawer-open={String(isOpen)}>
         <h1>{title}</h1>
-        <button type="button" aria-label={closeAriaLabel ?? 'Dismiss'} data-testid="drawer-close" onClick={onClose}>
+        <button
+          type="button"
+          aria-label={closeAriaLabel ?? 'Dismiss'}
+          data-testid="drawer-close"
+          onClick={onClose}
+        >
           close-affordance
         </button>
         <div data-testid="header-extra">{headerExtra}</div>
@@ -112,23 +125,26 @@ vi.mock('shared/ui', async () => {
         <div data-testid="drawer-footer">{footer}</div>
       </div>
     ),
-    MiniDrawer: () => null,
   };
 });
 
-import { AddItemTemplate } from './add-item.html';
-import type { AddItemTemplateProps } from './interfaces/add-item-template-props.interface';
+import { AddItem } from './add-item.component';
+import type { Props } from './interfaces/props.interface';
 
-const baseProps = {
+function renderItem(ui: React.ReactElement) {
+  return render(<ToastProvider>{ui}</ToastProvider>);
+}
+
+const baseProps: Props = {
   isOpen: true,
   editingItem: null,
   items: [],
   linkableItems: [],
   resolvedLinkedItems: [],
   resolvedRelatedItems: [],
-  linkedItemIds: [] as string[],
+  linkedItemIds: [],
   setLinkedItemIds: vi.fn(),
-  relatedItemIds: [] as string[],
+  relatedItemIds: [],
   setRelatedItemIds: vi.fn(),
   isLinkingModeActive: false,
   setIsLinkingModeActive: vi.fn(),
@@ -139,7 +155,6 @@ const baseProps = {
   isOwner: true,
   listId: 'list-1',
   listAiEnabled: true,
-  canShowAi: true,
   listShares: [],
   onClose: vi.fn(),
   onSuccess: vi.fn(),
@@ -147,37 +162,38 @@ const baseProps = {
   loadData: vi.fn(),
 };
 
-describe('AddItemTemplate AI badge', () => {
+describe('AddItem AI badge', () => {
+  beforeEach(() => {
+    useAuthMock.mockReturnValue({ canShowAi: true });
+  });
+
   test('shows compact AI enabled badge when list AI is on and user can use AI', () => {
-    render(<AddItemTemplate {...baseProps} listAiEnabled={true} canShowAi={true} />);
+    renderItem(<AddItem {...baseProps} listAiEnabled={true} />);
 
     expect(screen.getByLabelText('AI reviews enabled for this list')).toBeInTheDocument();
     expect(screen.queryByText('AI Enabled')).not.toBeInTheDocument();
   });
 
   test('shows compact AI disabled badge when list AI is off and user can use AI', () => {
-    render(<AddItemTemplate {...baseProps} listAiEnabled={false} canShowAi={true} />);
+    renderItem(<AddItem {...baseProps} listAiEnabled={false} />);
 
     expect(screen.getByLabelText('AI reviews disabled for this list')).toBeInTheDocument();
     expect(screen.queryByText('AI Disabled')).not.toBeInTheDocument();
   });
 
   test('hides AI badge when user cannot use AI features', () => {
-    render(<AddItemTemplate {...baseProps} listAiEnabled={true} canShowAi={false} />);
+    useAuthMock.mockReturnValue({ canShowAi: false });
+    renderItem(<AddItem {...baseProps} listAiEnabled={true} />);
 
     expect(screen.queryByLabelText('AI reviews enabled for this list')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('AI reviews disabled for this list')).not.toBeInTheDocument();
   });
 });
 
-describe('AddItemTemplate link-select drawer visibility', () => {
+describe('AddItem link-select drawer visibility', () => {
   test('keeps the drawer open while linking when sidebar does not overlay', () => {
-    render(
-      <AddItemTemplate
-        {...baseProps}
-        isLinkingModeActive={true}
-        collapseDrawerWhileLinking={false}
-      />
+    renderItem(
+      <AddItem {...baseProps} isLinkingModeActive={true} collapseDrawerWhileLinking={false} />
     );
 
     expect(screen.getByTestId('drawer')).toHaveAttribute('data-drawer-open', 'true');
@@ -185,12 +201,8 @@ describe('AddItemTemplate link-select drawer visibility', () => {
   });
 
   test('hides the drawer while linking when sidebar overlays the list, keeping form session open', () => {
-    render(
-      <AddItemTemplate
-        {...baseProps}
-        isLinkingModeActive={true}
-        collapseDrawerWhileLinking={true}
-      />
+    renderItem(
+      <AddItem {...baseProps} isLinkingModeActive={true} collapseDrawerWhileLinking={true} />
     );
 
     expect(screen.getByTestId('drawer')).toHaveAttribute('data-drawer-open', 'false');
@@ -198,7 +210,7 @@ describe('AddItemTemplate link-select drawer visibility', () => {
   });
 
   test('shows the drawer when the form session is open and linking is inactive', () => {
-    render(<AddItemTemplate {...baseProps} isLinkingModeActive={false} />);
+    renderItem(<AddItem {...baseProps} isLinkingModeActive={false} />);
 
     expect(screen.getByTestId('drawer')).toHaveAttribute('data-drawer-open', 'true');
     expect(screen.getByTestId('add-item-form')).toHaveAttribute('data-form-open', 'true');
@@ -206,39 +218,37 @@ describe('AddItemTemplate link-select drawer visibility', () => {
 
   test('link control activates linking mode', () => {
     const setIsLinkingModeActive = vi.fn();
-    render(
-      <AddItemTemplate {...baseProps} setIsLinkingModeActive={setIsLinkingModeActive} />
-    );
+    renderItem(<AddItem {...baseProps} setIsLinkingModeActive={setIsLinkingModeActive} />);
 
     fireEvent.click(screen.getByTitle('Select Items from Wishlist'));
     expect(setIsLinkingModeActive).toHaveBeenCalledWith(true);
   });
 });
 
-describe('AddItemTemplate suggestion banner', () => {
+describe('AddItem suggestion banner', () => {
   test('shows a Suggestion banner for non-collaborators', () => {
-    render(<AddItemTemplate {...baseProps} isOwner={false} canCollaborate={false} />);
+    renderItem(<AddItem {...baseProps} isOwner={false} canCollaborate={false} />);
 
     expect(screen.getByRole('status')).toHaveTextContent('Suggestion');
   });
 
   test('hides the Suggestion banner for owners', () => {
-    render(<AddItemTemplate {...baseProps} isOwner={true} canCollaborate={true} />);
+    renderItem(<AddItem {...baseProps} isOwner={true} canCollaborate={true} />);
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   test('hides the Suggestion banner for collaborators', () => {
-    render(<AddItemTemplate {...baseProps} isOwner={false} canCollaborate={true} />);
+    renderItem(<AddItem {...baseProps} isOwner={false} canCollaborate={true} />);
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });
 
-describe('AddItemTemplate substitution editor chrome', () => {
+describe('AddItem substitution editor chrome', () => {
   test('nested editor uses Back; Back clears mode without closing drawer', () => {
     const onClose = vi.fn();
-    render(<AddItemTemplate {...baseProps} onClose={onClose} />);
+    renderItem(<AddItem {...baseProps} onClose={onClose} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Open nested substitution editor' }));
 
@@ -260,7 +270,7 @@ describe('AddItemTemplate substitution editor chrome', () => {
 
   test('nested footer Cancel returns from substitution mode without calling onClose', () => {
     const onClose = vi.fn();
-    render(<AddItemTemplate {...baseProps} onClose={onClose} />);
+    renderItem(<AddItem {...baseProps} onClose={onClose} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Open nested substitution editor' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -271,7 +281,7 @@ describe('AddItemTemplate substitution editor chrome', () => {
 
   test('direct substitution editor uses Close and dismisses the whole drawer', () => {
     const onClose = vi.fn();
-    render(<AddItemTemplate {...baseProps} onClose={onClose} />);
+    renderItem(<AddItem {...baseProps} onClose={onClose} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Open direct substitution editor' }));
 
@@ -285,7 +295,7 @@ describe('AddItemTemplate substitution editor chrome', () => {
 
   test('direct footer Cancel closes the drawer', () => {
     const onClose = vi.fn();
-    render(<AddItemTemplate {...baseProps} onClose={onClose} />);
+    renderItem(<AddItem {...baseProps} onClose={onClose} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Open direct substitution editor' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -294,7 +304,7 @@ describe('AddItemTemplate substitution editor chrome', () => {
   });
 });
 
-describe('AddItemTemplate view mode', () => {
+describe('AddItem view mode', () => {
   const viewingItem = {
     Id: 'item-view-1',
     Name: 'Viewed Gift',
@@ -303,19 +313,14 @@ describe('AddItemTemplate view mode', () => {
     Links: [],
     Claims: [],
     SharedWith: [],
-  } as unknown as NonNullable<AddItemTemplateProps['viewingItem']>;
+  } as unknown as NonNullable<Props['viewingItem']>;
 
   test('shows View Item title, View Mode banner, Close only, and read-only form', async () => {
     const { VIEW_MODE_BANNER_DESCRIPTION } = await import(
       'features/items/constants/view-mode-banner.constant'
     );
-    render(
-      <AddItemTemplate
-        {...baseProps}
-        isOwner={false}
-        viewingItem={viewingItem}
-        editingItem={null}
-      />
+    renderItem(
+      <AddItem {...baseProps} isOwner={false} viewingItem={viewingItem} editingItem={null} />
     );
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('View Item');
@@ -333,8 +338,8 @@ describe('AddItemTemplate view mode', () => {
     const { VIEW_MODE_BANNER_DESCRIPTION } = await import(
       'features/items/constants/view-mode-banner.constant'
     );
-    render(
-      <AddItemTemplate
+    renderItem(
+      <AddItem
         {...baseProps}
         isOwner={false}
         viewingItem={{ ...viewingItem, IsSuggestion: true }}

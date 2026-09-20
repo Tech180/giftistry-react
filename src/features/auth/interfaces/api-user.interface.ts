@@ -1,5 +1,5 @@
 import { PublicUserSummary } from 'shared/interfaces/public-user-summary.interface';
-import { GiftistryUserPolicy } from 'features/admin/interfaces/giftistry-user-policy.interface';
+import type { GiftistryUserPolicy } from 'features/admin';
 
 export interface ApiUser extends PublicUserSummary {
   Id: string;

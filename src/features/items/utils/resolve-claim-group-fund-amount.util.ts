@@ -2,16 +2,7 @@ import {
   isMoneyAmountAtLeast,
   moneyAmountLeftover,
 } from 'shared/utils/compare-money-amount.util';
-
-export interface ResolveClaimGroupFundAmountInput {
-  allowGroupFunds: boolean;
-  fundingTarget: number;
-  totalClaimedAmount: number;
-  /** Whether the claimer opted into the group-funding path. */
-  groupFundingEnabled: boolean;
-  /** Parsed contribution; null/NaN treated as unset. */
-  amount: number | null;
-}
+import type { ResolveClaimGroupFundAmountInput } from '../interfaces/resolve-claim-group-fund-amount-input.interface';
 
 /**
  * Resolves the Amount sent to claimItem.

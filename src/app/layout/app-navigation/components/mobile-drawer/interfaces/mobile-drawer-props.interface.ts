@@ -1,8 +1,8 @@
 import { RefObject } from 'react';
 import { NavigateFunction } from 'react-router-dom';
-import { Theme } from 'app/providers/interfaces/theme.interface';
-import { Appearance } from 'app/providers/interfaces/appearance.interface';
-import { User } from 'app/providers/interfaces/user.interface';
+import { Theme } from 'app/providers/theme/interfaces/theme.type';
+import { Appearance } from 'app/providers/theme/interfaces/appearance.type';
+import { User } from 'features/auth';
 
 export interface MobileDrawerProps {
   isOpen: boolean;

@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
-import { Appearance } from 'app/providers/interfaces/appearance.interface';
-import { Theme } from 'app/providers/interfaces/theme.interface';
+import { Appearance } from 'app/providers/theme/interfaces/appearance.type';
+import { Theme } from 'app/providers/theme/interfaces/theme.type';
 import type { SwatchDefinition } from './swatch-definition.interface';
 
 export interface ProfileThemingAppearanceOption {

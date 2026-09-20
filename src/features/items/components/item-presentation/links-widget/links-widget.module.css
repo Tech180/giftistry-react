@@ -1,14 +1,14 @@
 .links-widget {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-xs);
 }
 
-.link-btn {
+.links-widget__link {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  padding: var(--spacing-xs) var(--spacing-base);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -16,15 +16,15 @@
   font-size: var(--font-size-sm);
   transition: all var(--transition-normal);
   background: var(--surface);
+
+  &:hover {
+    border-color: var(--primary);
+    background: var(--surface-hover);
+    color: var(--primary);
+  }
 }
 
-.link-btn:hover {
-  border-color: var(--primary);
-  background: var(--surface-hover);
-  color: var(--primary);
-}
-
-.empty-links {
+.links-widget__empty {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
   font-style: italic;

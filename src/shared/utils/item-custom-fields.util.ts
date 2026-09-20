@@ -3,43 +3,12 @@ import type {
   ItemDescriptionMetadata,
   ItemDescriptionVariation,
 } from 'shared/interfaces/item-description-metadata.interface';
-
-export const CORE_PREDEFINED_FORM_KEYS = [
-  'pantsSize',
-  'shirtSize',
-  'shoesSize',
-  'socksSize',
-  'color',
-] as const;
-
-export type CorePredefinedFormKey = (typeof CORE_PREDEFINED_FORM_KEYS)[number];
-
-const CORE_FORM_TO_STORAGE: Record<CorePredefinedFormKey, string> = {
-  pantsSize: 'PantsSize',
-  shirtSize: 'ShirtSize',
-  shoesSize: 'ShoesSize',
-  socksSize: 'SocksSize',
-  color: 'Color',
-};
-
-const CORE_STORAGE_TO_FORM: Record<string, CorePredefinedFormKey> = {
-  PantsSize: 'pantsSize',
-  ShirtSize: 'shirtSize',
-  ShoesSize: 'shoesSize',
-  SocksSize: 'socksSize',
-  Color: 'color',
-};
-
-const KNOWN_PREDEFINED_LABELS: Record<string, string> = {
-  PantsSize: 'Pants Size',
-  ShirtSize: 'Shirt Size',
-  ShoesSize: 'Shoes Size',
-  SocksSize: 'Socks Size',
-  Color: 'Color',
-  PreferredColor: 'Preferred Color',
-  ModelNumber: 'Model Number',
-  StorageCapacity: 'Storage Capacity',
-};
+import type { CorePredefinedFormKey } from 'shared/interfaces/core-predefined-form-key.type';
+import type { MetadataDisplayEntry } from 'shared/interfaces/metadata-display-entry.interface';
+import { CORE_FORM_TO_STORAGE } from 'shared/constants/core-form-to-storage.constant';
+import { CORE_PREDEFINED_FORM_KEYS } from 'shared/constants/core-predefined-form-keys.constant';
+import { CORE_STORAGE_TO_FORM } from 'shared/constants/core-storage-to-form.constant';
+import { KNOWN_PREDEFINED_LABELS } from 'shared/constants/known-predefined-labels.constant';
 
 export function formatPredefinedKeyToLabel(key: string): string {
   if (KNOWN_PREDEFINED_LABELS[key]) return KNOWN_PREDEFINED_LABELS[key];
@@ -152,11 +121,6 @@ export function getUserDefinedEntries(
     .map(([name, value]) => ({ name, value: value.trim() }));
 }
 
-export interface MetadataDisplayEntry {
-  label: string;
-  value: string;
-}
-
 export function getMetadataDisplayEntries(
   metadata: ItemDescriptionMetadata | null | undefined,
   categoryFieldLabels: Record<string, string> = {}
@@ -178,8 +142,6 @@ export function getMetadataDisplayEntries(
 
   return entries;
 }
-
-export const METADATA_BADGE_EMOJI: Record<string, string> = {};
 
 export function buildItemDescriptionPayload(input: {
   text: string;

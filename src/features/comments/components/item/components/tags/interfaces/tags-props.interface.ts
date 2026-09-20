@@ -1,6 +1,5 @@
 import { Item } from 'features/items';
-
-export type TagsAppearance = 'rail' | 'badges';
+import type { TagsAppearance } from './appearance.type';
 
 export interface TagsProps {
   taggedIds: string[];

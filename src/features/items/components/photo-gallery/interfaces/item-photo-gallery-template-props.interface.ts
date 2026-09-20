@@ -3,6 +3,8 @@ import type { ItemPhotoGalleryEntry } from './item-photo-gallery-props.interface
 export interface ItemPhotoGalleryTemplateProps {
   photos: ItemPhotoGalleryEntry[];
   activeIndex: number;
+  activePhoto: ItemPhotoGalleryEntry | undefined;
+  hasPhotos: boolean;
   countLabel: string;
   canAdd: boolean;
   disabled: boolean;

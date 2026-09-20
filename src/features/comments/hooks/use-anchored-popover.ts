@@ -1,18 +1,7 @@
 import { useLayoutEffect, useState } from 'react';
-
-export type PopoverPlacement = 'above' | 'below';
-
-export interface UseAnchoredPopoverOptions {
-  estimatedHeight?: number;
-  estimatedWidth?: number;
-  gap?: number;
-  viewportPadding?: number;
-}
-
-export interface AnchoredPopoverPosition {
-  placement: PopoverPlacement;
-  style: React.CSSProperties;
-}
+import type { AnchoredPopoverPosition } from './interfaces/anchored-popover-position.interface';
+import type { PopoverPlacement } from './interfaces/popover-placement.type';
+import type { UseAnchoredPopoverOptions } from './interfaces/use-anchored-popover-options.interface';
 
 export function useAnchoredPopover(
   anchorRef: React.RefObject<HTMLElement | null>,
@@ -29,19 +18,21 @@ export function useAnchoredPopover(
 
   const [placement, setPlacement] = useState<PopoverPlacement>('above');
   const [style, setStyle] = useState<React.CSSProperties>({
-    position: 'fixed',
     top: 0,
     left: 0,
-    zIndex: 10000,
     visibility: 'hidden',
   });
 
   useLayoutEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
 
     const updatePosition = () => {
       const anchor = anchorRef.current;
-      if (!anchor) return;
+      if (!anchor) {
+        return;
+      }
 
       const rect = anchor.getBoundingClientRect();
       const popoverHeight = popoverRef.current?.offsetHeight ?? estimatedHeight;
@@ -62,6 +53,7 @@ export function useAnchoredPopover(
       if (left + popoverWidth > window.innerWidth - viewportPadding) {
         left = window.innerWidth - popoverWidth - viewportPadding;
       }
+
       if (left < viewportPadding) {
         left = viewportPadding;
       }
@@ -69,16 +61,15 @@ export function useAnchoredPopover(
       if (top + popoverHeight > window.innerHeight - viewportPadding) {
         top = window.innerHeight - popoverHeight - viewportPadding;
       }
+
       if (top < viewportPadding) {
         top = viewportPadding;
       }
 
       setPlacement(nextPlacement);
       setStyle({
-        position: 'fixed',
         top: `${top}px`,
         left: `${left}px`,
-        zIndex: 10000,
         visibility: 'visible',
       });
     };

@@ -24,11 +24,24 @@ export default tseslint.config(
   },
   {
     files: ['src/shared/**/*.{ts,tsx}'],
-    ignores: ['src/shared/ui/user-preview-card/**'],
     rules: {
       'no-restricted-imports': ['error', {
         patterns: [
           { group: ['features/*', 'features/**', 'app/*', 'app/**'], message: 'shared/ must not import from features/ or app/' },
+        ],
+      }],
+    },
+  },
+  {
+    files: ['src/features/**/*.{ts,tsx}'],
+    ignores: ['src/features/auth/components/preview-card/**'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['app/*', 'app/**'],
+            message: 'features/ must not import from app/ (inject at app boundary or use feature/shared providers)',
+          },
         ],
       }],
     },

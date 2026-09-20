@@ -1,16 +1,15 @@
 import React from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
-import { Button } from 'shared/ui';
-import type { SubstitutionClaimButtonTemplateProps } from './interfaces/substitution-claim-button-template-props.interface';
+import { Button, Modal } from 'shared/ui';
+import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './claim-button.module.css';
 
-export const SubstitutionClaimButtonTemplate: React.FC<
-  SubstitutionClaimButtonTemplateProps
-> = ({
+export const ClaimButtonTemplate: React.FC<TemplateProps> = ({
   mode,
   allowSubstitutions,
   showDisabledConfirm,
   showDeleteConfirm,
+  warningOpen,
   disabled = false,
   busy = false,
   appearance = 'secondary',
@@ -19,18 +18,23 @@ export const SubstitutionClaimButtonTemplate: React.FC<
   createLabel,
   editLabel,
   deleteLabel,
+  warningText,
   onRequest,
   onDisabledConfirm,
   onDisabledCancel,
   onDeleteRequest,
   onDeleteConfirm,
   onDeleteCancel,
+  onWarningClose,
+  onWarningContinue,
 }) => {
   const isGhostText = appearance === 'ghost-text';
 
+  let body: React.ReactNode;
+
   if (mode === 'manage') {
     if (showDeleteConfirm) {
-      return (
+      body = (
         <div className={styles.confirm}>
           <Button
             type="button"
@@ -53,60 +57,54 @@ export const SubstitutionClaimButtonTemplate: React.FC<
           </Button>
         </div>
       );
+    } else {
+      body = (
+        <div className={styles.manage}>
+          <Button
+            type="button"
+            variant={isGhostText ? 'ghost' : 'secondary'}
+            size={size}
+            iconOnly
+            disabled={disabled || busy}
+            onClick={onRequest}
+            aria-label={editLabel}
+            title={editLabel}
+            className={className}
+          >
+            <Pencil size={16} />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size={size}
+            iconOnly
+            disabled={disabled || busy}
+            onClick={onDeleteRequest}
+            aria-label={deleteLabel}
+            title={deleteLabel}
+            className={[styles['delete-btn'], className].filter(Boolean).join(' ')}
+          >
+            <Trash2 size={16} />
+          </Button>
+        </div>
+      );
     }
-
-    return (
-      <div className={styles.manage}>
-        <Button
-          type="button"
-          variant={isGhostText ? 'ghost' : 'secondary'}
-          size={size}
-          iconOnly
-          disabled={disabled || busy}
-          onClick={onRequest}
-          aria-label={editLabel}
-          title={editLabel}
-          className={className}
-        >
-          <Pencil size={16} />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size={size}
-          iconOnly
-          disabled={disabled || busy}
-          onClick={onDeleteRequest}
-          aria-label={deleteLabel}
-          title={deleteLabel}
-          className={[styles['delete-btn'], className].filter(Boolean).join(' ')}
-        >
-          <Trash2 size={16} />
-        </Button>
-      </div>
+  } else if (allowSubstitutions) {
+    body = (
+      <Button
+        type="button"
+        variant={isGhostText ? 'ghost' : 'secondary'}
+        size={size}
+        disabled={disabled || busy}
+        onClick={onRequest}
+        aria-label={createLabel}
+        className={className}
+      >
+        {createLabel}
+      </Button>
     );
-  }
-
-  const trigger = (
-    <Button
-      type="button"
-      variant={isGhostText ? 'ghost' : 'secondary'}
-      size={size}
-      disabled={disabled || busy}
-      onClick={onRequest}
-      aria-label={createLabel}
-      className={className}
-    >
-      {createLabel}
-    </Button>
-  );
-
-  if (allowSubstitutions) {
-    return trigger;
-  }
-
-  if (showDisabledConfirm) {
-    return (
+  } else if (showDisabledConfirm) {
+    body = (
       <div className={styles.confirm}>
         <Button
           type="button"
@@ -122,7 +120,40 @@ export const SubstitutionClaimButtonTemplate: React.FC<
         </Button>
       </div>
     );
+  } else {
+    body = (
+      <div className={styles.wrap}>
+        <Button
+          type="button"
+          variant={isGhostText ? 'ghost' : 'secondary'}
+          size={size}
+          disabled={disabled || busy}
+          onClick={onRequest}
+          aria-label={createLabel}
+          className={className}
+        >
+          {createLabel}
+        </Button>
+      </div>
+    );
   }
 
-  return <div className={styles.wrap}>{trigger}</div>;
+  return (
+    <>
+      {body}
+      <Modal isOpen={warningOpen} onClose={onWarningClose} title="Substitutions disabled">
+        <div className={styles['warning-body']}>
+          <p className={styles['warning-text']}>{warningText}</p>
+          <div className={styles['warning-actions']}>
+            <Button variant="ghost" onClick={onWarningClose}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={onWarningContinue}>
+              Continue
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
 };

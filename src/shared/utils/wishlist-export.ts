@@ -1,10 +1,6 @@
+import { AUTH_TOKEN_STORAGE_KEY } from 'core/api/constants/token-storage-key.constant';
 import { env } from 'core/config/env';
-
-export interface WishlistExportContext {
-  exporterName?: string;
-  isOwner?: boolean;
-  currentUserId?: string;
-}
+import type { WishlistExportContext } from 'shared/interfaces/wishlist-export-context.interface';
 
 const toPascalCase = (str: string): string => {
   if (!str) return '';
@@ -38,7 +34,7 @@ async function downloadExportFile(
   exportContext: WishlistExportContext = {}
 ) {
   try {
-    const token = localStorage.getItem('giftistry-token');
+    const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
     const headers = new Headers();
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);

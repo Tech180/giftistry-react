@@ -3,8 +3,6 @@ import { LoadingStateProps } from './interfaces/loading-state-props.interface';
 import { LoadingStateTemplate } from './loading-state.html';
 import styles from './loading-state.module.css';
 
-export type { LoadingStateProps } from './interfaces/loading-state-props.interface';
-
 export const LoadingState: React.FC<LoadingStateProps> = ({
   message,
   fullHeight = false,
@@ -20,9 +18,15 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 
   return (
     <LoadingStateTemplate
-      message={message}
-      fullHeight={fullHeight}
-      containerClass={containerClass}
+      message = {
+        message
+      }
+      fullHeight = {
+        fullHeight
+      }
+      containerClass = {
+        containerClass
+      }
     />
   );
 };

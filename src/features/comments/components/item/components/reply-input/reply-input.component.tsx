@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ReplyInputProps } from './interfaces/reply-input-props.interface';
 import { ReplyInputTemplate } from './reply-input.html';
-import { CommentEditorHandle } from '../../../input/components/input/editor';
-import { InputFooter } from '../../../input/components/input';
+import { CommentEditorHandle } from '../../../input/components/editor';
+import { InputFooter } from '../../../input/components';
 import {
   convertMentionsToMarkdown,
   getMentionableParticipants,
@@ -35,16 +35,12 @@ export const ReplyInput: React.FC<ReplyInputProps> = ({
     isOwner ? OWNER_DEFAULT_COMMENT_VISIBILITY : DEFAULT_COMMENT_VISIBILITY
   );
 
-  const mentionParticipants = useMemo(
-    () =>
-      getMentionableParticipants(participants, {
-        isOwner,
-        mode: commentVisibility.mode,
-        selectedUserIds: commentVisibility.selectedUserIds,
-        listOwnerId,
-      }),
-    [participants, isOwner, commentVisibility, listOwnerId]
-  );
+  const mentionParticipants = getMentionableParticipants(participants, {
+    isOwner,
+    mode: commentVisibility.mode,
+    selectedUserIds: commentVisibility.selectedUserIds,
+    listOwnerId,
+  });
 
   useEffect(() => {
     const timer = window.setTimeout(() => editorHandle.current?.focus(), 50);

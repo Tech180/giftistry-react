@@ -1,12 +1,12 @@
 import React from 'react';
 import { Button, Input } from 'shared/ui';
-import type { SubstitutionFormTemplateProps } from './interfaces/substitution-form-template-props.interface';
+import type { TemplateProps } from './interfaces/template-props.interface';
 import { SUBSTITUTION_FORM_ID } from '../../../../constants/substitution-form.constant';
 import styles from './form.module.css';
 
 export { SUBSTITUTION_FORM_ID } from '../../../../constants/substitution-form.constant';
 
-export const SubstitutionFormTemplate: React.FC<SubstitutionFormTemplateProps> = ({
+export const FormTemplate: React.FC<TemplateProps> = ({
   formId = SUBSTITUTION_FORM_ID,
   name,
   setName,

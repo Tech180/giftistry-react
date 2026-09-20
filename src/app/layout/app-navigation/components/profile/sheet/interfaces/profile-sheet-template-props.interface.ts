@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react';
 import { LucideIcon } from 'lucide-react';
-import { Appearance } from 'app/providers/interfaces/appearance.interface';
-import { Theme } from 'app/providers/interfaces/theme.interface';
-import { User } from 'app/providers/interfaces/user.interface';
+import { Appearance } from 'app/providers/theme/interfaces/appearance.type';
+import { Theme } from 'app/providers/theme/interfaces/theme.type';
+import { User } from 'features/auth';
 
 export interface ProfileSheetActionView {
   id: string;

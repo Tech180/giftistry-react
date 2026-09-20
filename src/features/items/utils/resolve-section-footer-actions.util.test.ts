@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ItemSubstitutionOption } from '../interfaces/item-substitution.interface';
-import type { ResolveClaimerSubstitutionActionResult } from './resolve-claimer-substitution-action.util';
+import type { ResolveClaimerSubstitutionActionResult } from '../interfaces/resolve-claimer-substitution-action-result.interface';
 import { resolveSectionFooterActions } from './resolve-section-footer-actions.util';
 
 const ownCustom = (): ItemSubstitutionOption => ({

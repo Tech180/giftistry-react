@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { commentsApi } from '../api/comments.api';
 import { Comment } from '../interfaces/comment.interface';
 import { appendUniqueComment } from '../utils/append-unique-comment.util';
@@ -8,9 +8,10 @@ export function useCommentController() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchComments = useCallback(async (listId: string) => {
+  const fetchComments = async (listId: string) => {
     setIsLoading(true);
     setError(null);
+
     try {
       const data = await commentsApi.listComments(listId);
       setComments(data || []);
@@ -19,7 +20,7 @@ export function useCommentController() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   const addComment = async (
     listId: string,
@@ -32,6 +33,7 @@ export function useCommentController() {
     visibleToUserIds?: string[] | null
   ) => {
     setError(null);
+
     try {
       const newComment = await commentsApi.addComment(
         listId,
@@ -58,16 +60,21 @@ export function useCommentController() {
     currentUsername: string
   ) => {
     setError(null);
+
     try {
       const res = await commentsApi.toggleReaction(commentId, reaction);
       setComments((prev) =>
         prev.map((c) => {
-          if (c.Id !== commentId) return c;
+          if (c.Id !== commentId) {
+            return c;
+          }
+
           const existingReactions = c.Reactions || [];
           const hasReacted = existingReactions.some(
             (r) => r.UserId === currentUserId && r.Reaction === reaction
           );
           let newReactions = [...existingReactions];
+
           if (hasReacted) {
             newReactions = newReactions.filter(
               (r) => !(r.UserId === currentUserId && r.Reaction === reaction)
@@ -79,6 +86,7 @@ export function useCommentController() {
               Reaction: reaction,
             });
           }
+
           return { ...c, Reactions: newReactions };
         })
       );

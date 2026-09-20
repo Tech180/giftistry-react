@@ -4,12 +4,11 @@ import {
   COMMENT_ATTACHMENT_SIZE_ERROR,
   COMMENT_ATTACHMENT_TYPE_ERROR,
   COMMENT_GIF_FETCH_ERROR,
-} from '../constants/comment-attachment';
-
-const DATA_URL_PATTERN = /^data:image\/(jpeg|png|gif|webp);base64,/i;
+  COMMENT_IMAGE_DATA_URL_PATTERN,
+} from '../constants/comment-attachment.constant';
 
 export function isCommentImageDataUrl(value: string): boolean {
-  return DATA_URL_PATTERN.test(value);
+  return COMMENT_IMAGE_DATA_URL_PATTERN.test(value);
 }
 
 function isAllowedImageType(mimeType: string): boolean {
@@ -22,6 +21,7 @@ export async function remoteImageUrlToDataUrl(url: string): Promise<string> {
   }
 
   let response: Response;
+
   try {
     response = await fetch(url);
   } catch {
@@ -47,10 +47,12 @@ export async function remoteImageUrlToDataUrl(url: string): Promise<string> {
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result;
+
       if (typeof result !== 'string' || !isCommentImageDataUrl(result)) {
         reject(new Error(COMMENT_GIF_FETCH_ERROR));
         return;
       }
+
       resolve(result);
     };
     reader.onerror = () => reject(new Error(COMMENT_GIF_FETCH_ERROR));

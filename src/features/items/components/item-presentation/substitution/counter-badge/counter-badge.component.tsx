@@ -1,2 +1,11 @@
-export { SubstitutionCounterBadge } from './counter-badge.html';
-export type { SubstitutionCounterBadgeProps } from './interfaces/substitution-counter-badge-props.interface';
+import React from 'react';
+import type { Props } from './interfaces/props.interface';
+import { CounterBadgeTemplate } from './counter-badge.html';
+
+export const CounterBadge: React.FC<Props> = (props) => {
+  return (
+    <CounterBadgeTemplate
+      {...props}
+    />
+  );
+};

@@ -8,14 +8,3 @@ export interface GiftistryUserPolicy {
   CanSendFriendRequests: boolean;
   CanUseCustomThemes: boolean;
 }
-
-export const DEFAULT_USER_POLICY: GiftistryUserPolicy = {
-  CanCreateWishlists: true,
-  MaxActiveWishlists: 0,
-  CanUseComments: true,
-  CanUseAiFeatures: true,
-  CanSharePublicLinks: true,
-  CanUploadImages: true,
-  CanSendFriendRequests: true,
-  CanUseCustomThemes: true,
-};

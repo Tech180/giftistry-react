@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getInitialsFromNames } from 'shared/utils/get-initials.util';
 import {
@@ -8,12 +8,16 @@ import {
   hexToHsl,
   isAvatarImage,
 } from 'shared/utils/avatar.util';
-import { useAuth } from 'app/providers/auth-context';
+import { useAuth } from '../../providers';
 import { authApi } from '../../api/auth.api';
 import { ApiError } from 'core/api/client';
 import { validateUsername } from 'shared/utils/validate-username.util';
 import { ProfileCardTemplate } from './profile-card.html';
-import { ImageCropper } from '../image-cropper/image-cropper.component';
+import { ImageCropper } from 'shared/ui';
+import { AvatarEditor } from './components/avatar-editor/avatar-editor.component';
+import { Form } from './components/profile-form/form.component';
+import { AiPreferences } from './components/ai-preferences/ai-preferences.component';
+import { DangerZone } from './components/danger-zone/danger-zone.component';
 
 export const ProfileCard: React.FC = () => {
   const { user, updateProfile, updateAiEnabled, updateWebSearchEnabled, logout, canShowAiSettings, canShowWebSearchSettings } = useAuth();
@@ -41,7 +45,10 @@ export const ProfileCard: React.FC = () => {
   const [webSearchEnabledLocal, setWebSearchEnabledLocal] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
+
     setUsername(user.Username || '');
     setFirstName(user.FirstName || '');
     setLastName(user.LastName || '');
@@ -51,20 +58,21 @@ export const ProfileCard: React.FC = () => {
     setWebSearchEnabledLocal(user.WebSearchEnabled !== false);
   }, [user?.Id, user?.Username, user?.FirstName, user?.LastName, user?.Bio, user?.Avatar, user?.AiEnabled, user?.WebSearchEnabled]);
 
-  const hasChanges = useMemo(() => {
-    if (!user) return false;
-    return (
-      username !== (user.Username || '') ||
-      firstName !== (user.FirstName || '') ||
-      lastName !== (user.LastName || '') ||
-      bio !== (user.Bio || '') ||
-      avatar !== (user.Avatar ?? null)
-    );
-  }, [user, username, firstName, lastName, bio, avatar]);
+  const hasChanges = !!user && (
+    username !== (user.Username || '') ||
+    firstName !== (user.FirstName || '') ||
+    lastName !== (user.LastName || '') ||
+    bio !== (user.Bio || '') ||
+    avatar !== (user.Avatar ?? null)
+  );
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (!hasChanges) return;
+
+    if (!hasChanges) {
+      return;
+    }
+
     if (!username || !firstName || !lastName) {
       setErrorMsg('First Name, Last Name, and Username are required.');
       return;
@@ -72,12 +80,15 @@ export const ProfileCard: React.FC = () => {
 
     const usernameChanged = username !== (user?.Username || '');
     let nextUsername = username.trim();
+
     if (usernameChanged) {
       const usernameCheck = validateUsername(username);
+
       if (!usernameCheck.ok) {
         setErrorMsg(usernameCheck.message);
         return;
       }
+
       nextUsername = usernameCheck.value;
     }
 
@@ -87,9 +98,11 @@ export const ProfileCard: React.FC = () => {
 
     try {
       const updatedUser = await updateProfile(nextUsername, firstName, lastName, bio, user?.Theme || 'default', avatar);
+
       if (updatedUser) {
         setAvatar(updatedUser.Avatar ?? null);
       }
+
       setSuccessMsg('Profile settings updated successfully!');
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err) {
@@ -101,32 +114,36 @@ export const ProfileCard: React.FC = () => {
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const allowedExtensions = ['png', 'jpg', 'jpeg', 'svg'];
-      const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
-      const isAllowedMimeType = file.type.startsWith('image/') && (
-        file.type.includes('png') ||
-        file.type.includes('jpeg') ||
-        file.type.includes('jpg') ||
-        file.type.includes('svg+xml')
-      );
 
-      if (!allowedExtensions.includes(fileExtension) && !isAllowedMimeType) {
-        setErrorMsg('Invalid file format. Only PNG, JPG, and SVG images are supported.');
-        return;
-      }
-
-      if (file.size > 2 * 1024 * 1024) {
-        setErrorMsg('Image size must be less than 2MB.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCropperSrc(reader.result as string);
-        setErrorMsg(null);
-      };
-      reader.readAsDataURL(file);
+    if (!file) {
+      return;
     }
+
+    const allowedExtensions = ['png', 'jpg', 'jpeg', 'svg'];
+    const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+    const isAllowedMimeType = file.type.startsWith('image/') && (
+      file.type.includes('png') ||
+      file.type.includes('jpeg') ||
+      file.type.includes('jpg') ||
+      file.type.includes('svg+xml')
+    );
+
+    if (!allowedExtensions.includes(fileExtension) && !isAllowedMimeType) {
+      setErrorMsg('Invalid file format. Only PNG, JPG, and SVG images are supported.');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setErrorMsg('Image size must be less than 2MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCropperSrc(reader.result as string);
+      setErrorMsg(null);
+    };
+    reader.readAsDataURL(file);
   };
 
   const randomizeAvatarColor = () => {
@@ -134,8 +151,12 @@ export const ProfileCard: React.FC = () => {
       const confirm = window.confirm(
         'This will replace your custom profile picture with a randomized color. Are you sure you want to proceed?'
       );
-      if (!confirm) return;
+
+      if (!confirm) {
+        return;
+      }
     }
+
     setAvatar(generateAvatarColor());
   };
 
@@ -144,8 +165,12 @@ export const ProfileCard: React.FC = () => {
       const confirm = window.confirm(
         'This will replace your custom profile picture with the selected color. Are you sure you want to proceed?'
       );
-      if (!confirm) return;
+
+      if (!confirm) {
+        return;
+      }
     }
+
     setAvatar(hexToHsl(hex));
   };
 
@@ -153,10 +178,14 @@ export const ProfileCard: React.FC = () => {
     const confirmed = window.confirm(
       'Disable your account? You will be signed out immediately and will not be able to log in again. Your wishlists will become inaccessible to others until an administrator re-enables your account.'
     );
-    if (!confirmed) return;
+
+    if (!confirmed) {
+      return;
+    }
 
     setIsAccountActionLoading(true);
     setErrorMsg(null);
+
     try {
       await authApi.disableAccount();
       await logout();
@@ -176,7 +205,10 @@ export const ProfileCard: React.FC = () => {
   };
 
   const onCloseDeleteModal = () => {
-    if (isAccountActionLoading) return;
+    if (isAccountActionLoading) {
+      return;
+    }
+
     setShowDeleteModal(false);
     setDeletePassword('');
     setDeleteError(null);
@@ -190,6 +222,7 @@ export const ProfileCard: React.FC = () => {
 
     setIsAccountActionLoading(true);
     setDeleteError(null);
+
     try {
       await authApi.deleteAccount(deletePassword);
       await logout();
@@ -211,22 +244,21 @@ export const ProfileCard: React.FC = () => {
     fileInputRef.current?.click();
   };
 
-  const initials = useMemo(
-    () => getInitialsFromNames(firstName, lastName),
-    [firstName, lastName]
-  );
-
+  const initials = getInitialsFromNames(firstName, lastName);
   const isImageAvatar = isAvatarImage(avatar);
-
-  const avatarStyle = useMemo(() => getAvatarStyle(avatar), [avatar]);
-  const avatarPickerHex = useMemo(() => avatarColorToHex(avatar), [avatar]);
+  const avatarStyle = getAvatarStyle(avatar);
+  const avatarPickerHex = avatarColorToHex(avatar);
 
   const handleAiToggle = async () => {
-    if (!user || isAiSaving) return;
+    if (!user || isAiSaving) {
+      return;
+    }
+
     const next = !aiEnabledLocal;
     setIsAiSaving(true);
     setErrorMsg(null);
     setAiEnabledLocal(next);
+
     try {
       await updateAiEnabled(next);
     } catch (err) {
@@ -238,11 +270,15 @@ export const ProfileCard: React.FC = () => {
   };
 
   const handleWebSearchToggle = async () => {
-    if (!user || isWebSearchSaving) return;
+    if (!user || isWebSearchSaving) {
+      return;
+    }
+
     const next = !webSearchEnabledLocal;
     setIsWebSearchSaving(true);
     setErrorMsg(null);
     setWebSearchEnabledLocal(next);
+
     try {
       await updateWebSearchEnabled(next);
     } catch (err) {
@@ -253,65 +289,178 @@ export const ProfileCard: React.FC = () => {
     }
   };
 
-  if (!user) return null;
+  if (!user) {
+    return null;
+  }
 
   return (
     <>
       <ProfileCardTemplate
-        user={user}
-        username={username}
-        setUsername={setUsername}
-        firstName={firstName}
-        setFirstName={setFirstName}
-        lastName={lastName}
-        setLastName={setLastName}
-        bio={bio}
-        setBio={setBio}
-        avatar={avatar}
-        setAvatar={setAvatar}
-        isLoading={isLoading}
-        hasChanges={hasChanges}
-        errorMsg={errorMsg}
-        successMsg={successMsg}
-        handleSubmit={handleSubmit}
-        handleAvatarChange={handleAvatarChange}
-        handleAvatarColorChange={handleAvatarColorChange}
-        avatarPickerHex={avatarPickerHex}
-        randomizeAvatarColor={randomizeAvatarColor}
-        isServerOwner={!!user.IsOwner}
-        handleDisableAccount={handleDisableAccount}
-        handleDeleteAccount={handleDeleteAccount}
-        showDeleteModal={showDeleteModal}
-        deletePassword={deletePassword}
-        setDeletePassword={setDeletePassword}
-        showDeletePassword={showDeletePassword}
-        setShowDeletePassword={setShowDeletePassword}
-        deleteError={deleteError}
-        isAccountActionLoading={isAccountActionLoading}
-        onCloseDeleteModal={onCloseDeleteModal}
-        onConfirmDeleteAccount={onConfirmDeleteAccount}
-        fileInputRef={fileInputRef}
-        handleUploadClick={handleUploadClick}
-        initials={initials}
-        isImageAvatar={isImageAvatar}
-        avatarStyle={avatarStyle}
-        showAiBadge={canShowAiSettings}
-        aiEnabled={aiEnabledLocal}
-        isAiSaving={isAiSaving}
-        onAiToggle={handleAiToggle}
-        showWebSearchBadge={canShowWebSearchSettings}
-        webSearchEnabled={webSearchEnabledLocal}
-        isWebSearchSaving={isWebSearchSaving}
-        onWebSearchToggle={handleWebSearchToggle}
+        errorMsg = {
+          errorMsg
+        }
+        successMsg = {
+          successMsg
+        }
+        avatarEditor = {
+          <AvatarEditor
+            avatar = {
+              avatar
+            }
+            avatarStyle = {
+              avatarStyle
+            }
+            isImageAvatar = {
+              isImageAvatar
+            }
+            initials = {
+              initials
+            }
+            avatarPickerHex = {
+              avatarPickerHex
+            }
+            randomizeAvatarColor = {
+              randomizeAvatarColor
+            }
+            handleUploadClick = {
+              handleUploadClick
+            }
+            handleAvatarChange = {
+              handleAvatarChange
+            }
+            handleAvatarColorChange = {
+              handleAvatarColorChange
+            }
+            fileInputRef = {
+              fileInputRef
+            }
+          />
+        }
+        profileForm = {
+          <Form
+            username = {
+              username
+            }
+            setUsername = {
+              setUsername
+            }
+            firstName = {
+              firstName
+            }
+            setFirstName = {
+              setFirstName
+            }
+            lastName = {
+              lastName
+            }
+            setLastName = {
+              setLastName
+            }
+            bio = {
+              bio
+            }
+            setBio = {
+              setBio
+            }
+            email = {
+              user.Email ?? ''
+            }
+            isLoading = {
+              isLoading
+            }
+            hasChanges = {
+              hasChanges
+            }
+            handleSubmit = {
+              handleSubmit
+            }
+          />
+        }
+        aiPreferences = {
+          <AiPreferences
+            showAiBadge = {
+              canShowAiSettings
+            }
+            aiEnabled = {
+              aiEnabledLocal
+            }
+            isAiSaving = {
+              isAiSaving
+            }
+            onAiToggle = {
+              handleAiToggle
+            }
+            showWebSearchBadge = {
+              canShowWebSearchSettings
+            }
+            webSearchEnabled = {
+              webSearchEnabledLocal
+            }
+            isWebSearchSaving = {
+              isWebSearchSaving
+            }
+            onWebSearchToggle = {
+              handleWebSearchToggle
+            }
+          />
+        }
+        dangerZone = {
+          !user.IsOwner ? (
+            <DangerZone
+              isAccountActionLoading = {
+                isAccountActionLoading
+              }
+              onDisable = {
+                handleDisableAccount
+              }
+              onOpenDelete = {
+                handleDeleteAccount
+              }
+              showDeleteModal = {
+                showDeleteModal
+              }
+              deletePassword = {
+                deletePassword
+              }
+              setDeletePassword = {
+                setDeletePassword
+              }
+              showDeletePassword = {
+                showDeletePassword
+              }
+              setShowDeletePassword = {
+                setShowDeletePassword
+              }
+              deleteError = {
+                deleteError
+              }
+              onCloseDeleteModal = {
+                onCloseDeleteModal
+              }
+              onConfirmDeleteAccount = {
+                onConfirmDeleteAccount
+              }
+            />
+          ) : null
+        }
       />
       {cropperSrc && (
         <ImageCropper
-          imageSrc={cropperSrc}
-          onCrop={(cropped) => {
-            setAvatar(cropped);
-            setCropperSrc(null);
-          }}
-          onCancel={() => setCropperSrc(null)}
+          imageSrc = {
+            cropperSrc
+          }
+          title = {
+            'Crop Profile Picture'
+          }
+          onCrop = {
+            (cropped) => {
+              setAvatar(cropped);
+              setCropperSrc(null);
+            }
+          }
+          onCancel = {
+            () => setCropperSrc(null)
+          }
         />
       )}
     </>

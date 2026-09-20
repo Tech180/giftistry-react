@@ -1,44 +1,55 @@
 import React from 'react';
-import { Eye, Globe, Lock } from 'lucide-react';
-import { hasPriorityValue } from '../../../utils/item-priority.util';
-import { PriorityDisplay } from '../priority-display/priority-display.html';
-import { BadgesProps } from './interfaces/badges-props.interface';
+import { PriorityDisplay } from '../priority-display/priority-display.component';
+import { AudienceIcon } from './components/audience-icon/audience-icon.component';
+import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './badges.module.css';
 
-function AudienceIcon({ label }: { label: string }) {
-  if (label === 'Everyone') {
-    return <Globe size={12} aria-hidden />;
-  }
-  if (label === 'Only Me') {
-    return <Lock size={12} aria-hidden />;
-  }
-  return <Eye size={12} aria-hidden />;
-}
-
-export const Badges: React.FC<BadgesProps> = ({
-  item,
+export const BadgesTemplate: React.FC<TemplateProps> = ({
   audienceLabel,
+  audienceIconKind,
   isPrivate,
-  showPriority = true,
-}) => (
-  <div className={styles.root}>
-    {audienceLabel && (
-      <>
-        <span className={`${styles.badge} ${styles['badge-meta']} ${isPrivate ? styles['badge-private'] : ''}`}>
-          <AudienceIcon label={audienceLabel} />
-          {audienceLabel}
-        </span>
-        {audienceLabel === 'Shared with' && item.SharedWith && item.SharedWith.length > 0 && (
-          <span className={styles['audience-count']}>+{item.SharedWith.length}</span>
-        )}
-      </>
-    )}
-    {showPriority && hasPriorityValue(item.Priority) && (
-      <PriorityDisplay
-        priority={item.Priority}
-        variant="badge"
-        className={styles['priority-end']}
-      />
-    )}
-  </div>
-);
+  sharedWithCount,
+  showPriority,
+  priority,
+}) => {
+  return (
+    <div className={styles.badges}>
+      {audienceLabel && audienceIconKind ? (
+        <>
+          <span
+            className={[
+              styles['badges__badge'],
+              styles['badges__badge--meta'],
+              isPrivate ? styles['badges__badge--private'] : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <AudienceIcon
+              kind = {
+                audienceIconKind
+              }
+            />
+            {audienceLabel}
+          </span>
+          {sharedWithCount > 0 ? (
+            <span className={styles['badges__audience-count']}>+{sharedWithCount}</span>
+          ) : null}
+        </>
+      ) : null}
+      {showPriority && priority !== null ? (
+        <PriorityDisplay
+          priority = {
+            priority
+          }
+          variant = {
+            'badge'
+          }
+          className = {
+            styles['badges__priority-end']
+          }
+        />
+      ) : null}
+    </div>
+  );
+};

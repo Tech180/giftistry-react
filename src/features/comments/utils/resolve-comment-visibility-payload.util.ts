@@ -1,9 +1,5 @@
+import type { CommentVisibilityPayload } from '../interfaces/comment-visibility-payload.interface';
 import type { CommentVisibilityState } from '../interfaces/comment-visibility-state.interface';
-
-export interface CommentVisibilityPayload {
-  isOwnerVisible: boolean;
-  visibleToUserIds: string[] | null;
-}
 
 export function resolveCommentVisibilityPayload(
   state: CommentVisibilityState,

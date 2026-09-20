@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Modal } from 'shared/ui';
 import type { CreateSubstitutionPayload } from '../../../../interfaces/item-substitution.interface';
-import type { SubstitutionFormProps } from './interfaces/substitution-form-props.interface';
-import { SubstitutionFormTemplate } from './form.html';
+import type { Props } from './interfaces/props.interface';
+import { FormTemplate } from './form.html';
 
-export type { SubstitutionFormProps } from './interfaces/substitution-form-props.interface';
-
-export const SubstitutionForm: React.FC<SubstitutionFormProps> = ({
+export const Form: React.FC<Props> = ({
   isOpen,
   onClose,
   title,
@@ -63,7 +61,7 @@ export const SubstitutionForm: React.FC<SubstitutionFormProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
-      <SubstitutionFormTemplate
+      <FormTemplate
         name={name}
         setName={setName}
         description={description}

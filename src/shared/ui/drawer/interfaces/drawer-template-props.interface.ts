@@ -1,26 +1,29 @@
 import React from 'react';
-import { DrawerMobilePresentation, DrawerVariant } from './drawer-props.interface';
 
 export interface DrawerTemplateProps {
   drawerClass: string;
+  headerClass: string;
+  titleClass: string;
+  footerClass: string;
+  overlayClass: string;
   drawerRef: React.RefObject<HTMLDivElement | null>;
   title: string;
   onClose: () => void;
   children: React.ReactNode;
-  overflowVisible?: boolean;
   miniDrawer?: React.ReactNode;
-  variant?: DrawerVariant;
-  mobilePresentation?: DrawerMobilePresentation;
-  /** When true, mount mini drawer inline in the sheet content row (mobile ≤48rem). */
-  integrateMiniInSheet?: boolean;
+  integrateMiniInSheet: boolean;
   position: 'left' | 'right';
-  showScrim?: boolean;
+  showScrim: boolean;
+  showFooter: boolean;
+  showTitleIcon: boolean;
+  showIconClose: boolean;
+  showTextClose: boolean;
   footer?: React.ReactNode;
   titleIcon?: React.ReactNode;
   titleExtra?: React.ReactNode;
   headerExtra?: React.ReactNode;
-  isOpen?: boolean;
-  onOverlayClick?: () => void;
-  closeIcon?: React.ReactNode;
-  closeAriaLabel?: string;
+  isOpen: boolean;
+  onOverlayClick: () => void;
+  resolvedCloseIcon?: React.ReactNode;
+  closeAriaLabel: string;
 }

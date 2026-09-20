@@ -1,5 +1,6 @@
 import { useLayoutEffect, useState, type DependencyList, type RefObject } from 'react';
 import {
+  COMPACT_COLUMN_DATA_ATTR,
   COMPACT_MOBILE_MAX_WIDTH,
   type CompactColumnKey,
 } from '../constants/compact-column-keys.constant';
@@ -53,7 +54,7 @@ export function useCompactColumnSync(
     });
     observer.observe(container);
 
-    const nodes = container.querySelectorAll('[data-compact-col]');
+    const nodes = container.querySelectorAll(`[${COMPACT_COLUMN_DATA_ATTR}]`);
     nodes.forEach((node) => observer.observe(node));
 
     window.addEventListener('resize', remeasure);

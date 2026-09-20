@@ -1,0 +1,107 @@
+.timeline {
+  flex: 1;
+}
+
+.timeline__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.timeline__item {
+  position: relative;
+  --timeline-circle-bg: var(--bg);
+  --timeline-circle-border: var(--border);
+  --timeline-circle-color: var(--text-muted);
+  --timeline-label-color: var(--text-muted);
+  --timeline-line-color: var(--border);
+
+  &.timeline__item--active {
+    --timeline-circle-border: var(--primary);
+    --timeline-circle-color: var(--primary);
+    --timeline-label-color: var(--text);
+  }
+
+  &.timeline__item--completed {
+    --timeline-circle-bg: var(--primary);
+    --timeline-circle-border: var(--primary);
+    --timeline-circle-color: var(--primary-text);
+    --timeline-label-color: var(--text-muted);
+    --timeline-line-color: var(--primary);
+  }
+}
+
+.timeline__line {
+  position: absolute;
+  top: calc(var(--spacing-lg) + var(--spacing-2xs, 0.25rem));
+  left: 0.6875rem;
+  width: 1px;
+  height: calc(100% + var(--spacing-xl) - var(--spacing-sm, 0.5rem));
+  background-color: var(--timeline-line-color);
+  z-index: 0;
+}
+
+.timeline__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  position: relative;
+  z-index: 1;
+}
+
+.timeline__circle {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-full, 50%);
+  border: 2px solid var(--timeline-circle-border);
+  background: var(--timeline-circle-bg);
+  color: var(--timeline-circle-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: var(--spacing-2xs, 0.125rem);
+  transition:
+    border-color var(--transition-fast, 0.2s ease),
+    background-color var(--transition-fast, 0.2s ease),
+    color var(--transition-fast, 0.2s ease);
+}
+
+.timeline__number {
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.timeline__check {
+  color: var(--primary-text);
+}
+
+.timeline__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.timeline__label {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--timeline-label-color);
+  transition: color var(--transition-fast, 0.2s ease);
+}
+
+.timeline__desc {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-muted);
+  margin-top: var(--spacing-2xs, 0.125rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline__circle,
+  .timeline__label {
+    transition: none;
+  }
+}

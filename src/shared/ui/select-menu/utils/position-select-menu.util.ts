@@ -1,8 +1,6 @@
 import type { PositionSelectMenuInput } from '../interfaces/position-select-menu-input.interface';
 import type { PositionSelectMenuResult } from '../interfaces/position-select-menu-result.interface';
-
-const DEFAULT_GAP = 6;
-const DEFAULT_INSET = 12;
+import { DEFAULT_GAP, DEFAULT_INSET } from '../constants/position.constant';
 
 /** Places the menu under the trigger, flips above when clipped, clamps to viewport. */
 export function positionSelectMenu(input: PositionSelectMenuInput): PositionSelectMenuResult {

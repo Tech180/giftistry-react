@@ -1,0 +1,68 @@
+.danger-zone-card {
+  margin-top: var(--spacing-2xl);
+  background: var(--surface);
+  border: 1px solid var(--error-border);
+  border-radius: var(--radius);
+  padding: var(--spacing-lg);
+  background-color: color-mix(in srgb, var(--error) 2%, transparent);
+}
+
+.danger-title {
+  color: var(--error);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.danger-desc {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.danger-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: 1px solid transparent;
+  gap: var(--spacing-sm);
+  transition: all var(--transition-normal);
+  outline: none;
+  width: 100%;
+}
+
+.btn-md {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.btn-danger-outline {
+  background-color: transparent;
+  color: var(--error);
+  border-color: var(--error-border);
+}
+
+.btn-danger-outline:hover {
+  background-color: var(--error-bg);
+}
+
+.btn-danger {
+  background-color: var(--error);
+  color: white;
+  width: auto;
+}
+
+.btn-danger:hover {
+  background-color: var(--error);
+  transform: translateY(-1px);
+}

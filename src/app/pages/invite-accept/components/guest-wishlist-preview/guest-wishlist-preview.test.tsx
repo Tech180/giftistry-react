@@ -6,7 +6,7 @@ import { GuestWishlistPreview } from './guest-wishlist-preview.component';
 import type { Item } from 'features/items';
 import type { PublicLinkPreviewWishlist } from 'features/wishlists/interfaces/public-link-preview-wishlist.interface';
 
-vi.mock('app/providers/auth-context', () => ({
+vi.mock('features/auth', () => ({
   useAuth: () => ({
     user: null,
     canShowAi: false,
@@ -14,7 +14,7 @@ vi.mock('app/providers/auth-context', () => ({
   }),
 }));
 
-vi.mock('app/providers/theme-context', () => ({
+vi.mock('app/providers/theme', () => ({
   useTheme: () => ({ theme: 'light' }),
 }));
 
@@ -71,7 +71,7 @@ describe('GuestWishlistPreview', () => {
     expect(screen.getByRole('heading', { name: 'Birthday Gifts' })).toBeInTheDocument();
     expect(screen.getByText('Headphones')).toBeInTheDocument();
     expect(screen.getByText('Noise cancelling')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /log in/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument();
     expect(screen.getByLabelText('Search ideas')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^claim$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /add manually/i })).not.toBeInTheDocument();

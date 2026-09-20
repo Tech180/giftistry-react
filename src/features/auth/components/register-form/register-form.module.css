@@ -1,27 +1,27 @@
-.register-card{
+.card {
   width: 100%;
   max-width: 30rem;
   margin: var(--spacing-xl) auto;
 }
 
-.header{
+.header {
   text-align: center;
   margin-bottom: var(--spacing-lg);
 }
 
-.title{
+.title {
   font-size: 1.5rem;
   font-weight: var(--font-weight-bold);
   color: var(--text);
   margin-bottom: var(--spacing-sm);
 }
 
-.subtitle{
+.subtitle {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
 }
 
-.alert{
+.alert {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -34,42 +34,25 @@
   margin-bottom: var(--spacing-md);
 }
 
-.form{
+.form {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-.name-row{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-base);
-}
-
-.submit-btn{
-  width: 100%;
-  margin-top: var(--spacing-sm);
-}
-
-.footer{
+.footer {
   margin-top: var(--spacing-lg);
   text-align: center;
   font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
-.link{
+.link {
   color: var(--primary);
   text-decoration: none;
   font-weight: var(--font-weight-medium);
 }
 
-.link:hover{
+.link:hover {
   text-decoration: underline;
-}
-
-@media (max-width: 30rem) {
-  .name-row{
-    grid-template-columns: 1fr;
-  }
 }

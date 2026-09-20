@@ -1,14 +1,6 @@
 import type { Item } from '../interfaces/item.interface';
 import type { ItemSubstitutionOption } from '../interfaces/item-substitution.interface';
-
-export interface SubstitutionBrowseOption {
-  key: string;
-  kind: 'original' | 'owner_approved' | 'claimer_custom';
-  label: string;
-  itemId: string;
-  substitutionId?: string;
-  option?: ItemSubstitutionOption;
-}
+import type { SubstitutionBrowseOption } from '../interfaces/substitution-browse-option.interface';
 
 /** Ordered browse list: original, then owner-approved (by sort), then custom. */
 export function resolveItemSubstitutionOptions(

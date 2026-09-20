@@ -3,16 +3,18 @@
  * Exit code 1 if violations found outside allowlist.
  */
 import { readFileSync, readdirSync, statSync } from 'fs';
-import { join, relative } from 'path';
+import { dirname, join, relative } from 'path';
+import { fileURLToPath } from 'url';
 
-const SRC = join(import.meta.dir, '../src');
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const SRC = join(SCRIPT_DIR, '../src');
 
 const ALLOWLIST = [
   'features/comments/components/input/comment-input.module.css',
   'features/auth/components/image-cropper/image-cropper.module.css',
   'features/auth/components/profile-card/profile-card.component.tsx',
-  'app/pages/settings/tabs/theming/theming-tab.html.tsx',
-  'app/pages/settings/tabs/theming/theming-tab.component.tsx',
+  'app/pages/settings/sections/account/theming/theming.html.tsx',
+  'app/pages/settings/sections/account/theming/theming.component.tsx',
 ];
 
 const HEX_PATTERN = /#[0-9a-fA-F]{3,8}\b/g;
@@ -40,7 +42,7 @@ const files = [
 let violations = 0;
 
 for (const file of files) {
-  const rel = relative(join(import.meta.dir, '..'), file);
+  const rel = relative(join(SCRIPT_DIR, '..'), file);
   if (ALLOWLIST.some((a) => rel.endsWith(a))) continue;
 
   const content = readFileSync(file, 'utf-8');

@@ -1,5 +1,5 @@
 /* Delete dropdown confirmation positioned under comment bubble, matching its full width */
-.comment-delete-dropdown {
+.delete-dropdown {
   background-color: var(--error-bg);
   border: 1px solid var(--border);
   border-top: none;

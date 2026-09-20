@@ -1,0 +1,20 @@
+.select {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 0.125rem solid var(--text-muted);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: transparent;
+  padding: 0;
+  z-index: 51;
+
+  &.select--checked {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-text);
+  }
+}

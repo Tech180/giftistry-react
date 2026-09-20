@@ -4,63 +4,51 @@ import styles from './button.module.css';
 
 export const ButtonTemplate: React.FC<ButtonTemplateProps> = ({
   children,
-  isLoading,
+  buttonClass,
+  innerClass,
+  showRainbow,
+  showDefs,
+  showSpinner,
+  showLeftIcon,
+  showRightIcon,
   leftIcon,
   rightIcon,
-  disabled,
-  buttonClass,
-  variant,
-  size,
-  className,
-  effect = 'none',
   gradientId,
+  disabled,
   ...props
 }) => {
-  const isRainbow = effect === 'rainbow';
-
-  const content = (
+  const body = (
     <>
-      {isRainbow && <div className={styles.glow} aria-hidden="true" />}
-      <div className={isRainbow ? styles['border-wrapper'] : undefined}>
-        {isRainbow && <div className={styles['border-gradient']} aria-hidden="true" />}
-        <div className={isRainbow ? styles.inner : undefined}>
-          {isLoading && <span className={styles.spinner} />}
-          {!isLoading && leftIcon && <span className={styles.icon}>{leftIcon}</span>}
-          <span className={styles.content}>{children}</span>
-          {!isLoading && rightIcon && <span className={styles.icon}>{rightIcon}</span>}
-        </div>
-      </div>
+      {showSpinner && <span className={styles['button__spinner']} />}
+      {showLeftIcon && <span className={styles['button__icon']}>{leftIcon}</span>}
+      <span className={styles['button__content']}>{children}</span>
+      {showRightIcon && <span className={styles['button__icon']}>{rightIcon}</span>}
     </>
   );
 
-  const defs =
-    isRainbow && gradientId ? (
-      <svg className={styles['svg-defs']} aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#5E42F8" />
-            <stop offset="50%" stopColor="#B656CB" />
-            <stop offset="100%" stopColor="#F15565" />
-          </linearGradient>
-        </defs>
-      </svg>
-    ) : null;
+  const defs = showDefs ? (
+    <svg className={styles['button__svg-defs']} aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="var(--primary)" />
+          <stop offset="50%" stopColor="var(--accent)" />
+          <stop offset="100%" stopColor="var(--error)" />
+        </linearGradient>
+      </defs>
+    </svg>
+  ) : null;
 
   return (
     <>
       {defs}
-      <button
-        className={buttonClass}
-        disabled={disabled || isLoading}
-        {...props}
-      >
-        {isRainbow ? content : (
-          <>
-            {isLoading && <span className={styles.spinner} />}
-            {!isLoading && leftIcon && <span className={styles.icon}>{leftIcon}</span>}
-            <span className={styles.content}>{children}</span>
-            {!isLoading && rightIcon && <span className={styles.icon}>{rightIcon}</span>}
-          </>
+      <button className={buttonClass} disabled={disabled} {...props}>
+        {showRainbow ? (
+          <div className={styles['button__border-wrapper']}>
+            <div className={styles['button__border-gradient']} aria-hidden="true" />
+            <div className={innerClass}>{body}</div>
+          </div>
+        ) : (
+          body
         )}
       </button>
     </>

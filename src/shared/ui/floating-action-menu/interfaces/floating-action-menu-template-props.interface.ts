@@ -1,20 +1,22 @@
-import type {
-  FloatingAction,
-  FloatingActionPanelHelpers,
-} from './floating-action.interface';
+import type { CSSProperties, ReactNode } from 'react';
+import type { FloatingAction } from './floating-action.interface';
+import type { FloatingActionPanelHelpers } from './floating-action-panel-helpers.interface';
 
 export interface FloatingActionMenuTemplateProps {
   actions: FloatingAction[];
   dockState: 'closed' | 'toolbar' | 'panel';
   expandedActionId: string | null;
+  expandedAction: FloatingAction | null;
   ariaLabel: string;
-  className?: string;
   rootClass: string;
-  toolbarHeight: number;
-  panelHeight: number;
-  panelWidth: number;
+  dockSizeStyle?: CSSProperties;
   hidePanelHeader: boolean;
-  panelHelpers: FloatingActionPanelHelpers;
+  panelBody: ReactNode;
+  faceClosedClass: string;
+  faceToolbarClass: string;
+  facePanelClass: string;
+  backdropClass: string;
+  tooltipClass: string;
   setDockState: (state: 'closed' | 'toolbar' | 'panel') => void;
   onActionClick: (actionId: string) => void;
   onChildClick: (actionId: string, childId: string) => void;

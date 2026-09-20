@@ -1,0 +1,97 @@
+.header {
+  --smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  padding: var(--spacing-2xl, 2rem) var(--spacing-lg, 1.5rem) var(--spacing-lg, 1.5rem);
+  flex-shrink: 0;
+}
+
+.header__mobile-progress {
+  display: flex;
+  gap: var(--spacing-2xs, 0.25rem);
+  margin-bottom: var(--spacing-lg, 1.5rem);
+}
+
+.header__mobile-dot {
+  flex: 1;
+  height: var(--spacing-2xs, 0.25rem);
+  border-radius: 999px;
+  background: var(--border);
+  transition: background 0.3s var(--smooth);
+
+  &.header__mobile-dot--active {
+    background: var(--accent, var(--primary));
+  }
+}
+
+.header__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md, 1rem);
+
+  &.header__row--hello {
+    align-items: center;
+    gap: var(--spacing-lg, 1.25rem);
+  }
+}
+
+.header__copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.header__title {
+  margin: 0;
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--text);
+
+  &.header__title--hello {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+}
+
+.header__subtitle {
+  margin: var(--spacing-2xs, 0.25rem) 0 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-muted);
+
+  &.header__subtitle--hello {
+    margin-top: var(--spacing-sm, 0.5rem);
+    font-size: clamp(0.9375rem, 2vw, 1.0625rem);
+    line-height: 1.5;
+  }
+}
+
+.header__hello-mark {
+  width: clamp(4.5rem, 12vw, 5.75rem);
+  height: clamp(4.5rem, 12vw, 5.75rem);
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+}
+
+.header__hello-mark svg {
+  width: 55%;
+  height: 55%;
+}
+
+@media (min-width: 768px) {
+  .header {
+    padding: var(--spacing-3xl, 3rem) var(--spacing-3xl, 3rem) var(--spacing-lg, 1.5rem);
+  }
+
+  .header__mobile-progress {
+    display: none;
+  }
+}

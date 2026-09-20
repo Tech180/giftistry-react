@@ -1,0 +1,26 @@
+.audit__toolbar-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.audit__table-wrap--bordered {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.audit__table--mono {
+  font-family: var(--font-family-mono, ui-monospace, monospace);
+  font-size: 0.8125rem;
+}
+
+.audit__table-header--mono th {
+  background: var(--surface);
+}
+
+.audit__action--primary {
+  color: var(--primary);
+}
+
+.audit__action--error {
+  color: var(--error);
+}

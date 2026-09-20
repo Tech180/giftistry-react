@@ -38,6 +38,18 @@
   transition: color var(--transition-fast, 0.2s ease);
 }
 
+.label--active {
+  color: var(--text);
+}
+
+.label--done {
+  color: var(--text);
+}
+
+.label--error {
+  color: var(--error);
+}
+
 .metric {
   min-height: 1.25rem;
   margin-top: var(--spacing-xxs, 0.25rem);
@@ -47,23 +59,11 @@
   line-height: 1.25rem;
 }
 
-.step--active .label {
-  color: var(--text);
-}
-
-.step--active .metric {
+.metric--active {
   color: var(--primary);
 }
 
-.step--done .label {
-  color: var(--text);
-}
-
-.step--error .label {
-  color: var(--error);
-}
-
-.step--error .metric {
+.metric--error {
   color: var(--error);
 }
 

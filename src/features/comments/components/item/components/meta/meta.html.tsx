@@ -1,6 +1,6 @@
 import React from 'react';
 import { MetaTemplateProps } from './interfaces/meta-template-props.interface';
-import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
+import { UserPreviewCard } from 'features/auth';
 import { UserAvatar } from 'shared/ui/user-avatar/user-avatar.component';
 import styles from './meta.module.css';
 
@@ -18,8 +18,8 @@ export const MetaTemplate: React.FC<MetaTemplateProps> = ({
   timePart,
 }) => {
   return (
-    <div className={styles['comment-meta']}>
-      <div className={styles['comment-meta-left']}>
+    <div className={styles.meta}>
+      <div className={styles['meta-left']}>
         {isSystemComment ? (
           <span className={`${styles.author} ${styles['system-author']}`}>System</span>
         ) : isAnonymousComment ? (
@@ -40,14 +40,14 @@ export const MetaTemplate: React.FC<MetaTemplateProps> = ({
                   : undefined
               }
             >
-              <span className={styles['comment-author']}>
+              <span className={styles['author-wrap']}>
                 <UserAvatar
                   avatar={authorAvatar}
                   alt={authorUsername}
                   initials={authorUsername.slice(0, 1).toUpperCase()}
-                  className={styles['comment-author-avatar']}
-                  imageClassName={styles['comment-author-avatar-img']}
-                  initialsClassName={styles['comment-author-avatar-initials']}
+                  className={styles['author-avatar']}
+                  imageClassName={styles['author-avatar-img']}
+                  initialsClassName={styles['author-avatar-initials']}
                 />
                 <span className={styles.author}>{authorUsername}</span>
               </span>

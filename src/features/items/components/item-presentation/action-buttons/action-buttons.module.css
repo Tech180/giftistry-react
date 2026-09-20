@@ -1,11 +1,11 @@
-.actions-row {
+.action-buttons__row {
   display: flex;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 
-.leading-actions,
-.editor-actions {
+.action-buttons__leading,
+.action-buttons__editor {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -13,7 +13,7 @@
 }
 
 /* Keep Add substitution immediately left of claim/unclaim controls. */
-.claim-actions {
+.action-buttons__claims {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
@@ -22,9 +22,14 @@
   flex: 1 1 auto;
   min-width: 0;
   margin-inline-start: auto;
+
+  &.action-buttons__claims--stacked {
+    margin-inline-start: 0;
+    flex: 0 1 auto;
+  }
 }
 
-.actions-stack {
+.action-buttons__stack {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -32,47 +37,43 @@
   gap: var(--spacing-xs);
   width: fit-content;
   margin-inline: auto;
+
+  &.action-buttons__stack--split {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-inline: 0;
+    gap: var(--spacing-sm);
+  }
+
+  /* Icon-only footer (view / edit / trash): keep the cluster on the trailing edge. */
+  &.action-buttons__stack--split-trailing {
+    justify-content: flex-end;
+  }
 }
 
-.actions-stack .claim-actions {
-  margin-inline-start: 0;
-  flex: 0 1 auto;
-}
-
-.actions-stack-split {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  margin-inline: 0;
-  gap: var(--spacing-sm);
-}
-
-/* Icon-only footer (view / edit / trash): keep the cluster on the trailing edge. */
-.actions-stack-split:has(> .leading-actions:only-child) {
-  justify-content: flex-end;
-}
-
-.actions-update {
+.action-buttons__update {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: var(--spacing-sm);
 }
 
-.unclaim-all-btn {
-  color: var(--error);
-  background-color: transparent;
-}
+.action-buttons__action-btn {
+  &.action-buttons__action-btn--unclaim-all {
+    color: var(--error);
+    background-color: transparent;
+  }
 
-.claim-action-btn.unclaim-all-btn:hover:not(:disabled) {
-  background-color: color-mix(in srgb, var(--error) 10%, transparent);
-  color: var(--error);
+  &.action-buttons__action-btn--unclaim-all:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--error) 10%, transparent);
+    color: var(--error);
+  }
 }
 
 @media (max-width: 900px) {
-  .actions-stack-split .claim-icon-btn {
+  .action-buttons__icon-btn--split {
     flex: 0 0 2.75rem;
     width: 2.75rem;
     min-width: 2.75rem;
@@ -87,23 +88,23 @@
 
 /* Phone: claim fills remaining row space beside icon controls. */
 @media (max-width: 48rem) {
-  .actions-row,
-  .actions-stack {
+  .action-buttons__row,
+  .action-buttons__stack {
     width: 100%;
     margin-inline: 0;
     gap: var(--spacing-sm);
   }
 
-  .actions-row {
+  .action-buttons__row {
     flex-wrap: nowrap;
   }
 
-  .claim-actions {
+  .action-buttons__claims {
     margin-inline-start: 0;
     align-items: stretch;
   }
 
-  .claim-action-btn {
+  .action-buttons__action-btn {
     flex: 1 1 auto;
     min-width: 0;
     width: auto;
@@ -113,15 +114,14 @@
     font-weight: var(--font-weight-semibold);
   }
 
-  /* Solo claim/unclaim (no icon siblings) still spans the footer. */
-  .actions-stack-split > .claim-action-btn:only-child,
-  .actions-stack-split > .claim-actions:only-child,
-  .actions-stack-split > .actions-update:only-child {
+  .action-buttons__action-btn--solo,
+  .action-buttons__claims--solo,
+  .action-buttons__update--solo {
     width: 100%;
     margin-inline-start: 0;
   }
 
-  .claim-icon-btn {
+  .action-buttons__icon-btn {
     flex: 0 0 2.75rem;
     width: 2.75rem;
     min-width: 2.75rem;
@@ -129,7 +129,7 @@
     min-height: 2.75rem;
   }
 
-  .actions-stack-split .claim-icon-btn {
+  .action-buttons__icon-btn--split {
     flex-basis: 3.5rem;
     width: 3.5rem;
     min-width: 3.5rem;
@@ -137,12 +137,7 @@
     min-height: 3.5rem;
   }
 
-  .actions-stack-split .claim-icon-btn svg {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-
-  .actions-update {
+  .action-buttons__update {
     flex: 1 1 auto;
     min-width: 0;
     flex-direction: column-reverse;

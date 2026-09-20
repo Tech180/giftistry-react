@@ -3,9 +3,9 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, test, vi } from 'vitest';
 import { Header } from './header.component';
-import type { HeaderProps } from './interfaces/header-props.interface';
+import type { Props } from './interfaces/props.interface';
 
-vi.mock('app/providers/auth-context', () => ({
+vi.mock('features/auth', () => ({
   useAuth: () => ({
     canShowAi: false,
     canShowWebSearch: false,
@@ -13,12 +13,12 @@ vi.mock('app/providers/auth-context', () => ({
   }),
 }));
 
-vi.mock('app/providers/theme-context', () => ({
+vi.mock('app/providers/theme', () => ({
   useTheme: () => ({ theme: 'light' }),
 }));
 
-vi.mock('../list-settings-panel/list-settings-panel.component', () => ({
-  ListSettingsPanel: ({ readOnly }: { readOnly?: boolean }) => (
+vi.mock('../settings-panel/settings-panel.component', () => ({
+  SettingsPanel: ({ readOnly }: { readOnly?: boolean }) => (
     <div data-testid="list-settings" data-read-only={String(!!readOnly)} />
   ),
 }));
@@ -42,13 +42,14 @@ const wishlist = {
   WebSearchEnabled: false,
   ManualJobBackground: true,
   AutoRollover: false,
-} as HeaderProps['wishlist'];
+} as Props['wishlist'];
 
-const baseProps: HeaderProps = {
+const baseProps: Props = {
   wishlist,
   items: [],
   priorities: [],
   isOwner: true,
+  onGoHome: vi.fn(),
   isExpired: false,
   isArchived: false,
   isDeactivating: false,
@@ -86,7 +87,7 @@ describe('Header list settings read-only', () => {
     );
 
     const settingsBtn = screen.getByRole('button', { name: /list settings/i });
-    expect(settingsBtn.className).not.toMatch(/action-pill-muted/);
+    expect(settingsBtn.className).not.toMatch(/action-pill--muted/);
     fireEvent.click(settingsBtn);
     expect(screen.getByTestId('list-settings')).toHaveAttribute('data-read-only', 'false');
   });
@@ -103,7 +104,7 @@ describe('Header list settings read-only', () => {
     );
 
     const settingsBtn = screen.getByRole('button', { name: /list settings/i });
-    expect(settingsBtn.className).toMatch(/action-pill-muted/);
+    expect(settingsBtn.className).toMatch(/action-pill--muted/);
     fireEvent.click(settingsBtn);
     expect(screen.getByTestId('list-settings')).toHaveAttribute('data-read-only', 'true');
   });

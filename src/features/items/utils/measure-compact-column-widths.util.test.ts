@@ -8,13 +8,13 @@ describe('measureCompactColumnWidths', () => {
   it('takes the max offsetWidth per column key', () => {
     const container = document.createElement('div');
     const a = document.createElement('div');
-    a.setAttribute('data-compact-col', 'leading');
+    a.setAttribute('data-col', 'leading');
     Object.defineProperty(a, 'offsetWidth', { value: 24 });
     const b = document.createElement('div');
-    b.setAttribute('data-compact-col', 'leading');
+    b.setAttribute('data-col', 'leading');
     Object.defineProperty(b, 'offsetWidth', { value: 40 });
     const c = document.createElement('div');
-    c.setAttribute('data-compact-col', 'price');
+    c.setAttribute('data-col', 'price');
     Object.defineProperty(c, 'offsetWidth', { value: 56 });
     container.append(a, b, c);
 
@@ -37,16 +37,16 @@ describe('toCompactColumnWidthCssVars', () => {
       )
     ).toEqual(
       expect.objectContaining({
-        '--compact-col-leading': '32px',
-        '--compact-col-price': '48px',
-        '--compact-col-relations': '0px',
+        '--col-leading': '32px',
+        '--col-price': '48px',
+        '--col-relations': '0px',
       })
     );
   });
 
   it('uses auto when an active column has zero measured width', () => {
     expect(
-      toCompactColumnWidthCssVars({ leading: 0 }, ['leading'])['--compact-col-leading']
+      toCompactColumnWidthCssVars({ leading: 0 }, ['leading'])['--col-leading']
     ).toBe('auto');
   });
 });

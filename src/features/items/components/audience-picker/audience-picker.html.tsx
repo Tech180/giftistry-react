@@ -1,11 +1,10 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Switch } from 'shared/ui';
-import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
+import { UserPreviewCard } from 'features/auth';
+import { SEARCH_THRESHOLD } from './constants/search-threshold.constant';
 import { AudiencePickerTemplateProps } from './interfaces/audience-picker-template-props.interface';
 import styles from './audience-picker.module.css';
-
-const SEARCH_THRESHOLD = 5;
 
 export const AudiencePickerTemplate: React.FC<AudiencePickerTemplateProps> = ({
   listShares,

@@ -1,10 +1,14 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { X } from 'lucide-react';
 import { DrawerProps } from './interfaces/drawer-props.interface';
 import { DrawerTemplate } from './drawer.html';
+import {
+  CLOSE_ARIA_LABEL,
+  CLOSE_SIDEBAR_ARIA_LABEL,
+} from './constants/close-aria-label.constant';
+import { SHEET_MOBILE_QUERY, SHEET_OPEN_ATTR } from './constants/sheet.constant';
+import { buildClasses } from './utils/build-classes.util';
 import styles from './drawer.module.css';
-
-const SHEET_OPEN_ATTR = 'data-drawer-sheet-open';
-const SHEET_MOBILE_QUERY = '(max-width: 48rem)';
 
 export const Drawer: React.FC<DrawerProps> = ({
   isOpen,
@@ -25,6 +29,7 @@ export const Drawer: React.FC<DrawerProps> = ({
   closeAriaLabel,
 }) => {
   const drawerRef = useRef<HTMLDivElement>(null);
+  const isOverlay = variant === 'overlay';
   const isSheet = mobilePresentation === 'sheet';
   const [isSheetMobile, setIsSheetMobile] = useState(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return false;
@@ -57,18 +62,18 @@ export const Drawer: React.FC<DrawerProps> = ({
   }, [isSheet]);
 
   const showSheetScrim = isSheet && isSheetMobile;
-  const showScrim = variant === 'overlay' || showSheetScrim;
+  const showScrim = isOverlay || showSheetScrim;
 
   useLayoutEffect(() => {
     const el = drawerRef.current;
     if (!el) return;
 
     if (isOpen) {
-      el.classList.remove(styles.active);
+      el.classList.remove(styles['drawer--active']);
       void el.getBoundingClientRect();
-      el.classList.add(styles.active);
+      el.classList.add(styles['drawer--active']);
     } else {
-      el.classList.remove(styles.active);
+      el.classList.remove(styles['drawer--active']);
     }
   }, [isOpen]);
 
@@ -106,37 +111,93 @@ export const Drawer: React.FC<DrawerProps> = ({
         })
       : miniDrawer;
 
-  const drawerClass = [
-    styles['drawer-wrapper'],
-    position === 'left' ? styles.left : styles.right,
-    variant === 'overlay' ? styles['overlay-variant'] : '',
-    isSheet ? styles.sheet : '',
-    overflowVisible ? styles['overflow-visible'] : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const classes = buildClasses({
+    position,
+    variant,
+    isSheet,
+    overflowVisible,
+    isOpen,
+  });
+
+  const showIconClose = isOverlay || Boolean(closeIcon);
+  const resolvedCloseIcon = isOverlay ? (closeIcon ?? <X size={20} />) : closeIcon;
+  const resolvedCloseAriaLabel =
+    closeAriaLabel ?? (isOverlay ? CLOSE_SIDEBAR_ARIA_LABEL : CLOSE_ARIA_LABEL);
 
   return (
     <DrawerTemplate
-      drawerRef={drawerRef}
-      drawerClass={drawerClass}
-      title={title}
-      onClose={onClose}
-      overflowVisible={overflowVisible}
-      miniDrawer={resolvedMiniDrawer}
-      variant={variant}
-      mobilePresentation={mobilePresentation}
-      integrateMiniInSheet={integrateMiniInSheet}
-      position={position}
-      showScrim={showScrim}
-      footer={footer}
-      titleIcon={titleIcon}
-      titleExtra={titleExtra}
-      headerExtra={headerExtra}
-      isOpen={isOpen}
-      onOverlayClick={onOverlayClick ?? onClose}
-      closeIcon={closeIcon}
-      closeAriaLabel={closeAriaLabel}
+      drawerRef = {
+        drawerRef
+      }
+      drawerClass = {
+        classes.drawerClass
+      }
+      headerClass = {
+        classes.headerClass
+      }
+      titleClass = {
+        classes.titleClass
+      }
+      footerClass = {
+        classes.footerClass
+      }
+      overlayClass = {
+        classes.overlayClass
+      }
+      title = {
+        title
+      }
+      onClose = {
+        onClose
+      }
+      miniDrawer = {
+        resolvedMiniDrawer
+      }
+      integrateMiniInSheet = {
+        integrateMiniInSheet
+      }
+      position = {
+        position
+      }
+      showScrim = {
+        showScrim
+      }
+      showFooter = {
+        Boolean(footer)
+      }
+      showTitleIcon = {
+        Boolean(titleIcon)
+      }
+      showIconClose = {
+        showIconClose
+      }
+      showTextClose = {
+        !showIconClose
+      }
+      footer = {
+        footer
+      }
+      titleIcon = {
+        titleIcon
+      }
+      titleExtra = {
+        titleExtra
+      }
+      headerExtra = {
+        headerExtra
+      }
+      isOpen = {
+        isOpen
+      }
+      onOverlayClick = {
+        onOverlayClick ?? onClose
+      }
+      resolvedCloseIcon = {
+        resolvedCloseIcon
+      }
+      closeAriaLabel = {
+        resolvedCloseAriaLabel
+      }
     >
       {children}
     </DrawerTemplate>

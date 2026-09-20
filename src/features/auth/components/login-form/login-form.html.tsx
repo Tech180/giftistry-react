@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { Lock, AlertCircle, ShieldCheck, ArrowLeft, Fingerprint, UserCheck, X, User as UserIcon, Eye, EyeOff } from 'lucide-react';
 import { Input, Button, Card, EnterPanel } from 'shared/ui';
 import { UserAvatar } from 'shared/ui/user-avatar/user-avatar.component';
-import { LoginFormTemplateProps } from '../../interfaces/login-form-template-props.interface';
+import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './login-form.module.css';
 
-export const LoginFormTemplate: React.FC<LoginFormTemplateProps> = ({
+export const LoginFormTemplate: React.FC<TemplateProps> = ({
   username,
   setUsername,
   password,

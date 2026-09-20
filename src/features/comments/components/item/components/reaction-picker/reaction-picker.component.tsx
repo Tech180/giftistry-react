@@ -1,5 +1,5 @@
 import React from 'react';
-import { useToolbarPickers } from '../../../input/components/input/toolbar/use-toolbar-pickers';
+import { useToolbarPickers } from '../../../input/components/toolbar/use-toolbar-pickers';
 import { ReactionPickerProps } from './interfaces/reaction-picker-props.interface';
 import { ReactionPickerTemplate } from './reaction-picker.html';
 

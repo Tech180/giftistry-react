@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
+import type { Mock } from 'vitest';
 import { apiClient } from 'core/api/client';
 import { systemApi } from './system.api';
 
@@ -15,7 +16,7 @@ describe('systemApi.listModels', () => {
   });
 
   test('requests openrouter models and normalizes DTO', async () => {
-    vi.mocked(apiClient.get).mockResolvedValue({
+    (apiClient.get as Mock).mockResolvedValue({
       Models: [
         {
           Id: 'google/gemini',
@@ -40,7 +41,7 @@ describe('systemApi.listModels', () => {
   });
 
   test('includes endpoint and api key for local provider', async () => {
-    vi.mocked(apiClient.get).mockResolvedValue({
+    (apiClient.get as Mock).mockResolvedValue({
       Models: [{ Id: 'llama3', Name: 'llama3', Company: 'Local', DisplayName: 'llama3' }],
     });
 

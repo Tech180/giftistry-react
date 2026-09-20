@@ -1,8 +1,11 @@
 import { apiClient } from 'core/api/client';
+import { AUTH_TOKEN_STORAGE_KEY } from 'core/api/constants/token-storage-key.constant';
 import { env } from 'core/config/env';
 import { ApiUser } from '../interfaces/api-user.interface';
 import { AuthResponse } from '../interfaces/auth-response.interface';
-import { OnboardingPatchPayload, OnboardingState } from '../interfaces/onboarding-state.interface';
+import { OnboardingPatchPayload } from '../interfaces/onboarding-patch-payload.interface';
+import { OnboardingState } from '../interfaces/onboarding-state.interface';
+import type { Passkey } from '../interfaces/passkey.interface';
 
 export const authApi = {
   login: (username: string, password: string) =>
@@ -91,7 +94,7 @@ export const authApi = {
     apiClient.post<Record<string, never>>('/api/auth/2fa/disable', { Code: code }, 'Auth'),
 
   getPasskeys: () =>
-    apiClient.get<{ Passkeys: unknown[] }>('/api/auth/passkeys'),
+    apiClient.get<{ Passkeys: Passkey[] }>('/api/auth/passkeys'),
 
   deletePasskey: (passkeyId: string) =>
     apiClient.delete<Record<string, never>>(`/api/auth/passkeys/${passkeyId}`),
@@ -109,7 +112,7 @@ export const authApi = {
       'Auth'
     );
     if (res?.Token) {
-      localStorage.setItem('giftistry-token', res.Token);
+      localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, res.Token);
     }
     return res;
   },

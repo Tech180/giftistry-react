@@ -1,0 +1,25 @@
+.category-list {
+  --col-leading: auto;
+  --col-select: 0;
+  --col-relations: 0;
+  --col-audience: 0;
+  --col-quantity: 0;
+  --col-price: auto;
+  --col-funding: 0;
+  --col-trailing: 0;
+  --col-claimActions: 10.75rem;
+}
+
+@media (max-width: 48rem) {
+  .category-list {
+    --col-leading: auto !important;
+    --col-select: 0 !important;
+    --col-relations: 0 !important;
+    --col-audience: 0 !important;
+    --col-quantity: 0 !important;
+    --col-price: auto !important;
+    --col-funding: 0 !important;
+    --col-trailing: auto !important;
+    --col-claimActions: auto !important;
+  }
+}

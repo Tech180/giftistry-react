@@ -3,8 +3,6 @@ import { ChipProps } from './interfaces/chip-props.interface';
 import { ChipTemplate } from './chip.html';
 import styles from './chip.module.css';
 
-export type { ChipProps } from './interfaces/chip-props.interface';
-
 export const Chip: React.FC<ChipProps> = ({
   label,
   isActive = false,
@@ -15,5 +13,20 @@ export const Chip: React.FC<ChipProps> = ({
     .filter(Boolean)
     .join(' ');
 
-  return <ChipTemplate label={label} isActive={isActive} onClick={onClick} chipClass={chipClass} />;
+  return (
+    <ChipTemplate
+      label = {
+        label
+      }
+      isActive = {
+        isActive
+      }
+      onClick = {
+        onClick
+      }
+      chipClass = {
+        chipClass
+      }
+    />
+  );
 };

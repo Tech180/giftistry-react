@@ -1,0 +1,54 @@
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 1.5rem);
+  padding-top: var(--spacing-sm, 0.5rem);
+  max-width: 25rem;
+}
+
+.profile__row {
+  display: flex;
+  gap: var(--spacing-md, 1rem);
+}
+
+.profile__row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile__label-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm, 0.5rem);
+}
+
+.profile__label {
+  display: block;
+  font-size: var(--font-size-sm, 0.8125rem);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.profile__optional {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-muted);
+}
+
+.profile__textarea {
+  width: 100%;
+  min-height: 6rem;
+  resize: none;
+  border: 1px solid var(--input-border-color, var(--border));
+  border-radius: var(--radius-md);
+  background: var(--input-fill, var(--surface));
+  color: var(--text);
+  padding: var(--spacing-sm, 0.625rem) var(--spacing-md, 0.875rem);
+  font: inherit;
+  font-size: var(--font-size-sm, 0.875rem);
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent, var(--primary));
+    box-shadow: var(--input-shadow-focus);
+  }
+}

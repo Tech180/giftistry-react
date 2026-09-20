@@ -1,10 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { APPEARANCES } from './constants/appearances.constant';
-import { HOLIDAY_THEMES } from './constants/holiday-themes.constant';
-import { STANDARD_THEMES } from './constants/standard-themes.constant';
+import { APPEARANCES } from 'core/theme/constants/appearances.constant';
+import {
+  getHolidayThemes,
+  getStandardThemes,
+} from 'core/theme/utils/theme-catalog.util';
+import { Moon, Palette, Sun } from 'lucide-react';
 import type { ThemeMenuProps } from './interfaces/theme-menu-props.interface';
 import { ThemeMenuTemplate } from './theme-menu.html';
 import styles from './theme-menu.module.css';
+
+const APPEARANCE_ICONS = {
+  light: Sun,
+  dark: Moon,
+  system: Palette,
+} as const;
 
 export const ThemeMenu: React.FC<ThemeMenuProps> = ({
   theme,
@@ -21,7 +30,9 @@ export const ThemeMenu: React.FC<ThemeMenuProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (themeRef.current?.contains(e.target as Node) === false) setIsThemeOpen(false);
+      if (themeRef.current?.contains(e.target as Node) === false) {
+        setIsThemeOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -29,7 +40,7 @@ export const ThemeMenu: React.FC<ThemeMenuProps> = ({
 
   const closeTheme = () => setIsThemeOpen(false);
 
-  const standardThemes = STANDARD_THEMES.map((t) => {
+  const standardThemes = getStandardThemes().map((t) => {
     const unlocked = isThemeUnlocked(t.value);
     return {
       value: t.value,
@@ -37,22 +48,26 @@ export const ThemeMenu: React.FC<ThemeMenuProps> = ({
       unlocked,
       isActive: theme === t.value,
       onSelect: () => {
-        if (!unlocked) return;
+        if (!unlocked) {
+          return;
+        }
         setTheme(t.value);
         closeTheme();
       },
     };
   });
 
-  const holidayThemes = HOLIDAY_THEMES.filter((t) => isThemeUnlocked(t.value)).map((t) => ({
-    value: t.value,
-    label: t.label,
-    isActive: theme === t.value,
-    onSelect: () => {
-      setTheme(t.value);
-      closeTheme();
-    },
-  }));
+  const holidayThemes = getHolidayThemes()
+    .filter((t) => isThemeUnlocked(t.value))
+    .map((t) => ({
+      value: t.value,
+      label: t.label,
+      isActive: theme === t.value,
+      onSelect: () => {
+        setTheme(t.value);
+        closeTheme();
+      },
+    }));
 
   const customThemeItems = (customThemes ?? []).map((ct) => ({
     id: ct.id,
@@ -77,7 +92,7 @@ export const ThemeMenu: React.FC<ThemeMenuProps> = ({
     : null;
 
   const appearances = APPEARANCES.map((a) => {
-    const Icon = a.icon;
+    const Icon = APPEARANCE_ICONS[a.value];
     return {
       value: a.value,
       label: a.label,

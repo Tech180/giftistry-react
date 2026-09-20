@@ -1,0 +1,10 @@
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: var(--spacing-sm);
+}

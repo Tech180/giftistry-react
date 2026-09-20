@@ -2,7 +2,7 @@ import { normalizeItemDescriptionMetadata } from 'shared/utils/item-custom-field
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
 import type { Item } from '../interfaces/item.interface';
 import type { ItemSubstitutionSummary } from '../interfaces/item-substitution.interface';
-import type { SubstitutionBrowseOption } from './resolve-item-substitution-options.util';
+import type { SubstitutionBrowseOption } from '../interfaces/substitution-browse-option.interface';
 
 function metadataFromSubstitutionSummary(
   child: ItemSubstitutionSummary

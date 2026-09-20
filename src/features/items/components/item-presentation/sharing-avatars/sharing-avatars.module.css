@@ -1,10 +1,10 @@
-.user-avatar-box-avatars {
+.sharing-avatars__list {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.sharing-avatar {
+.sharing-avatars__avatar {
   width: 1.375rem;
   height: 1.375rem;
   border-radius: var(--radius-full);
@@ -12,58 +12,64 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 2px solid var(--surface-hover);
-  margin-left: -6px;
+  border: 0.125rem solid var(--surface-hover);
+  margin-inline-start: calc(var(--spacing-2xs, 0.375rem) * -1);
   box-shadow: var(--shadow);
   transition: transform var(--transition-normal);
   cursor: pointer;
+
+  &.sharing-avatars__avatar--lead {
+    margin-inline-start: 0;
+  }
+
+  &:hover {
+    transform: scale(1.08);
+    z-index: 1;
+    position: relative;
+  }
 }
 
-.user-avatar-box-avatars > :first-child .sharing-avatar {
-  margin-left: 0;
-}
-
-.sharing-avatar:hover {
-  transform: scale(1.08);
-  z-index: 1;
-  position: relative;
-}
-
-.sharing-avatar-img {
+.sharing-avatars__avatar-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.sharing-avatar-initials {
-  font-size: 0.625rem;
+.sharing-avatars__avatar-initials {
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
-.sharing-avatar-count-text {
-  font-size: 0.6875rem;
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-muted);
-  margin-left: 6px;
-  display: inline-flex;
-  align-items: center;
-}
-
-.sharing-avatar-overflow {
+.sharing-avatars__overflow {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 1.375rem;
   height: 1.375rem;
-  padding: 0 4px;
-  margin-left: -6px;
+  padding: 0 var(--spacing-2xs, 0.25rem);
+  margin-inline-start: calc(var(--spacing-2xs, 0.375rem) * -1);
   border-radius: var(--radius-full);
-  border: 2px solid var(--surface-hover);
+  border: 0.125rem solid var(--surface-hover);
   background: var(--surface);
-  font-size: 0.625rem;
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
   box-shadow: var(--shadow);
+}
+
+.sharing-avatars__count {
+  font-size: 0.6875rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  margin-inline-start: var(--spacing-2xs, 0.375rem);
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sharing-avatars__avatar {
+    transition: none;
+  }
 }

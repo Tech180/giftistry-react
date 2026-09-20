@@ -1,9 +1,8 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { CalendarTemplateProps } from './interfaces/calendar-template-props.interface';
+import { WEEKDAYS } from './constants/weekdays.constant';
 import styles from './calendar.module.css';
-
-const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] as const;
 
 export const CalendarTemplate: React.FC<CalendarTemplateProps> = ({
   monthYearLabel,

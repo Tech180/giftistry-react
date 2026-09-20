@@ -1,8 +1,6 @@
 import React from 'react';
-
-export type DrawerVariant = 'default' | 'overlay';
-/** On viewports ≤48rem, `sheet` fills the viewport; `rail` keeps the side panel. */
-export type DrawerMobilePresentation = 'rail' | 'sheet';
+import type { DrawerMobilePresentation } from './drawer-mobile-presentation.type';
+import type { DrawerVariant } from './drawer-variant.type';
 
 export interface DrawerProps {
   isOpen: boolean;

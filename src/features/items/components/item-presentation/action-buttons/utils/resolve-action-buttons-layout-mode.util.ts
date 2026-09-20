@@ -1,4 +1,4 @@
-import type { ActionButtonsLayoutMode } from '../interfaces/action-buttons-template-props.interface';
+import type { LayoutMode } from '../interfaces/layout-mode.type';
 import type { ActionButtonsVisibility } from '../interfaces/action-buttons-visibility.interface';
 
 export function resolveActionButtonsLayoutMode({
@@ -11,7 +11,7 @@ export function resolveActionButtonsLayoutMode({
   canEditItem,
   isArchived = false,
   isExpired = false,
-}: ActionButtonsVisibility): ActionButtonsLayoutMode | null {
+}: ActionButtonsVisibility): LayoutMode | null {
   if (isArchived || isExpired || isPublicGuest) {
     return null;
   }

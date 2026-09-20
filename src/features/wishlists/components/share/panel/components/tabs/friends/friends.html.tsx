@@ -1,15 +1,15 @@
 import React from 'react';
 import { Search, AlertCircle, Check } from 'lucide-react';
 import { Button, SelectMenu } from 'shared/ui';
+import { getDisplayName } from 'shared/utils/get-display-name.util';
 import {
   SHARE_ROLE_MENU_TITLE,
   SHARE_ROLE_OPTIONS,
 } from 'features/wishlists/constants/share-role-options.constant';
-import styles from '../../../panel.module.css';
-import fabStyles from '../../../../share-fab-panel/share-fab-panel.module.css';
-import { FriendsTabTemplateProps } from './interfaces/friends.interface';
+import { TemplateProps } from './interfaces/template-props.interface';
+import styles from './friends.module.css';
 
-export const FriendsTabTemplate: React.FC<FriendsTabTemplateProps> = ({
+export const FriendsTabTemplate: React.FC<TemplateProps> = ({
   variant = 'classic',
   search,
   setSearch,
@@ -24,51 +24,66 @@ export const FriendsTabTemplate: React.FC<FriendsTabTemplateProps> = ({
 }) => {
   if (variant === 'compact') {
     return (
-      <div className={fabStyles.compactRoot}>
-        {errorMsg && <p className={fabStyles.compactAlert}>{errorMsg}</p>}
+      <div className={styles.compactRoot}>
+        {errorMsg && <p className={styles.compactAlert}>{errorMsg}</p>}
         {successMsg && (
-          <p className={fabStyles.compactStatus} style={{ color: 'var(--success)' }}>
+          <p className={styles.compactStatus} style={{ color: 'var(--success)' }}>
             {successMsg}
           </p>
         )}
 
-        <div className={fabStyles.searchWrap}>
-          <Search size={14} className={fabStyles.searchIcon} aria-hidden />
+        <div className={styles.searchWrap}>
+          <Search
+            size = {
+              14
+            }
+            className = {
+              styles.searchIcon
+            }
+            aria-hidden
+          />
           <input
             type="search"
             placeholder="Search friends or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className={fabStyles.searchInput}
+            className={styles.searchInput}
             aria-label="Search friends"
           />
         </div>
 
         {filteredFriends.length === 0 ? (
-          <p className={fabStyles.compactEmpty}>No friends found to invite.</p>
+          <p className={styles.compactEmpty}>No friends found to invite.</p>
         ) : (
-          <ul className={fabStyles.compactList}>
+          <ul className={styles.compactList}>
             {filteredFriends.map((friend) => {
-              const displayName =
-                `${friend.FirstName || ''} ${friend.LastName || ''}`.trim() || friend.Username || '';
+              const displayName = getDisplayName(friend);
               const initials = getInitials(friend.FirstName, friend.LastName, friend.Username);
 
               return (
-                <li key={friend.UserId} className={fabStyles.compactListItem}>
-                  <div className={fabStyles.compactUserInfo}>
-                    <div className={fabStyles.compactAvatar}>{initials}</div>
-                    <div className={fabStyles.compactUserDetails}>
-                      <span className={fabStyles.compactUserName}>{displayName}</span>
-                      <span className={fabStyles.compactUserSub}>
+                <li key={friend.UserId} className={styles.compactListItem}>
+                  <div className={styles.compactUserInfo}>
+                    <div className={styles.compactAvatar}>{initials}</div>
+                    <div className={styles.compactUserDetails}>
+                      <span className={styles.compactUserName}>{displayName}</span>
+                      <span className={styles.compactUserSub}>
                         {friend.Email || `@${friend.Username}`}
                       </span>
                     </div>
                   </div>
                   <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleShareSingle(friend.UserId)}
-                    isLoading={loadingIds[friend.UserId]}
+                    variant = {
+                      'secondary'
+                    }
+                    size = {
+                      'sm'
+                    }
+                    onClick = {
+                      () => handleShareSingle(friend.UserId)
+                    }
+                    isLoading = {
+                      loadingIds[friend.UserId]
+                    }
                   >
                     Invite
                   </Button>
@@ -85,19 +100,34 @@ export const FriendsTabTemplate: React.FC<FriendsTabTemplateProps> = ({
     <div className={styles['friends-tab']}>
       {errorMsg && (
         <div className={`${styles.alert} ${styles['alert-error']}`}>
-          <AlertCircle size={16} />
+          <AlertCircle
+            size = {
+              16
+            }
+          />
           <span>{errorMsg}</span>
         </div>
       )}
       {successMsg && (
         <div className={`${styles.alert} ${styles['alert-success']}`}>
-          <Check size={16} />
+          <Check
+            size = {
+              16
+            }
+          />
           <span>{successMsg}</span>
         </div>
       )}
 
       <div className={styles['search-container']}>
-        <Search size={14} className={styles['search-icon']} />
+        <Search
+          size = {
+            14
+          }
+          className = {
+            styles['search-icon']
+          }
+        />
         <input
           type="text"
           placeholder="Search friends..."
@@ -114,7 +144,7 @@ export const FriendsTabTemplate: React.FC<FriendsTabTemplateProps> = ({
       ) : (
         <ul className={styles.list}>
           {filteredFriends.map(friend => {
-            const displayName = `${friend.FirstName || ''} ${friend.LastName || ''}`.trim() || friend.Username;
+            const displayName = getDisplayName(friend);
             const initials = getInitials(friend.FirstName, friend.LastName, friend.Username);
             const friendRole = roles[friend.UserId] || 'viewer';
 
@@ -129,19 +159,41 @@ export const FriendsTabTemplate: React.FC<FriendsTabTemplateProps> = ({
                 </div>
                 <div className={styles['item-actions']}>
                   <SelectMenu
-                    value={friendRole}
-                    options={SHARE_ROLE_OPTIONS}
-                    onChange={(next) => setRole(friend.UserId, next as 'viewer' | 'collaborator')}
-                    disabled={loadingIds[friend.UserId]}
-                    variant="compact"
-                    menuTitle={SHARE_ROLE_MENU_TITLE}
-                    aria-label={`Role for ${displayName}`}
+                    value = {
+                      friendRole
+                    }
+                    options = {
+                      SHARE_ROLE_OPTIONS
+                    }
+                    onChange = {
+                      (next) => setRole(friend.UserId, next as 'viewer' | 'collaborator')
+                    }
+                    disabled = {
+                      loadingIds[friend.UserId]
+                    }
+                    variant = {
+                      'compact'
+                    }
+                    menuTitle = {
+                      SHARE_ROLE_MENU_TITLE
+                    }
+                    aria-label = {
+                      `Role for ${displayName}`
+                    }
                   />
                   <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleShareSingle(friend.UserId)}
-                    isLoading={loadingIds[friend.UserId]}
+                    variant = {
+                      'secondary'
+                    }
+                    size = {
+                      'sm'
+                    }
+                    onClick = {
+                      () => handleShareSingle(friend.UserId)
+                    }
+                    isLoading = {
+                      loadingIds[friend.UserId]
+                    }
                   >
                     Invite
                   </Button>

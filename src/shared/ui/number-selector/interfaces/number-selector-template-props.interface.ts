@@ -10,8 +10,7 @@ export interface NumberSelectorTemplateProps {
   onIncrease: () => void;
   decreaseLabel: string;
   increaseLabel: string;
-  size: 'sm' | 'md';
-  className: string;
+  rootClass: string;
   editable: boolean;
   isEditing: boolean;
   draft: string;

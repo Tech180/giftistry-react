@@ -1,11 +1,8 @@
 import React from 'react';
+import type { Props as SparklesIconProps } from './interfaces/sparkles-icon-props.interface';
+import type { Props as DisabledIconProps } from './interfaces/disabled-icon-props.interface';
 
-interface AiSparklesIconProps {
-  gradientId: string;
-  className?: string;
-}
-
-export const AiSparklesIcon: React.FC<AiSparklesIconProps> = ({ gradientId, className }) => (
+export const AiSparklesIcon: React.FC<SparklesIconProps> = ({ gradientId, className }) => (
   <svg
     className={className}
     viewBox="0 0 24 24"
@@ -24,7 +21,7 @@ export const AiSparklesIcon: React.FC<AiSparklesIconProps> = ({ gradientId, clas
   </svg>
 );
 
-export const AiDisabledIcon: React.FC<{ className?: string }> = ({ className }) => (
+export const AiDisabledIcon: React.FC<DisabledIconProps> = ({ className }) => (
   <svg
     className={className}
     viewBox="0 0 24 24"

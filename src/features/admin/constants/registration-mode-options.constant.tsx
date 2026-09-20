@@ -1,5 +1,5 @@
 import type { SelectMenuOption } from 'shared/ui';
-import type { RegistrationMode } from '../interfaces/site-policy.interface';
+import type { RegistrationMode } from '../interfaces/registration-mode.type';
 
 export const REGISTRATION_MODE_MENU_TITLE = 'Registration mode';
 

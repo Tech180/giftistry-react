@@ -1,21 +1,20 @@
-/** Deduplicate job-completion toasts across list WS + notification.received. */
-const claimed = new Set<string>();
+import { CLAIMED_JOB_NOTIFICATION_TOASTS } from '../constants/claimed-job-notification-toasts.constant';
 
 export function claimJobNotificationToast(jobId: string, status?: string): boolean {
-  if (claimed.has(jobId)) return false;
+  if (CLAIMED_JOB_NOTIFICATION_TOASTS.has(jobId)) return false;
   const key = status ? `${jobId}:${status}` : jobId;
-  if (claimed.has(key)) return false;
-  claimed.add(key);
-  claimed.add(jobId);
+  if (CLAIMED_JOB_NOTIFICATION_TOASTS.has(key)) return false;
+  CLAIMED_JOB_NOTIFICATION_TOASTS.add(key);
+  CLAIMED_JOB_NOTIFICATION_TOASTS.add(jobId);
   return true;
 }
 
 /** Mark a job as handled on the wishlist page so notification toasts are skipped. */
 export function markJobNotificationHandled(jobId: string): void {
-  claimed.add(jobId);
+  CLAIMED_JOB_NOTIFICATION_TOASTS.add(jobId);
 }
 
 /** Test-only helper */
 export function clearJobNotificationToasts(): void {
-  claimed.clear();
+  CLAIMED_JOB_NOTIFICATION_TOASTS.clear();
 }

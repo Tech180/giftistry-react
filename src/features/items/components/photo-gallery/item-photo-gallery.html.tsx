@@ -6,6 +6,8 @@ import styles from './item-photo-gallery.module.css';
 export const ItemPhotoGalleryTemplate: React.FC<ItemPhotoGalleryTemplateProps> = ({
   photos,
   activeIndex,
+  activePhoto,
+  hasPhotos,
   countLabel,
   canAdd,
   disabled,
@@ -31,9 +33,6 @@ export const ItemPhotoGalleryTemplate: React.FC<ItemPhotoGalleryTemplateProps> =
   onScrollRight,
   onThumbsScroll,
 }) => {
-  const activePhoto = photos[activeIndex];
-  const hasPhotos = photos.length > 0;
-
   return (
     <div className={styles['photo-gallery']}>
       <div className={styles['photo-header']}>

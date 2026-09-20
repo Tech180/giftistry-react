@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { SubstitutionCounterBadge } from './counter-badge.component';
+import { CounterBadge as SubstitutionCounterBadge } from './counter-badge.component';
 
 describe('SubstitutionCounterBadge', () => {
   it('renders Main Item only on the original option', () => {

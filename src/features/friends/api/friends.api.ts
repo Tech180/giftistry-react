@@ -1,5 +1,8 @@
 import { apiClient } from 'core/api/client';
-import { Friend, FriendRequest, FriendRequestsResult, UserSearchResult } from '../interfaces/friend.interface';
+import type { Friend } from '../interfaces/friend.interface';
+import type { FriendRequest } from '../interfaces/friend-request.interface';
+import type { FriendRequestsResult } from '../interfaces/friend-requests-result.interface';
+import type { UserSearchResult } from '../interfaces/user-search-result.interface';
 
 export const friendsApi = {
   listFriends: () =>

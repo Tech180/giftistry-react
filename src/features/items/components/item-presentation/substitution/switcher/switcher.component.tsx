@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { SUBSTITUTION_SWITCH_LABEL } from '../../../../constants/substitution-messages.constant';
 import { resolveDisplayVariantIndex } from '../../../../utils/resolve-display-variant.util';
 import { resolveItemSubstitutionOptions } from '../../../../utils/resolve-item-substitution-options.util';
-import type { SubstitutionSwitcherProps } from './interfaces/substitution-switcher-props.interface';
-import type { SubstitutionSlideDirection } from './interfaces/substitution-switcher-template-props.interface';
-import { SubstitutionSwitcherTemplate } from './switcher.html';
+import type { Props } from './interfaces/props.interface';
+import type { SlideDirection } from './interfaces/slide-direction.type';
+import { SwitcherTemplate } from './switcher.html';
+import styles from './switcher.module.css';
 
-export type { SubstitutionSwitcherProps } from './interfaces/substitution-switcher-props.interface';
-export type { SubstitutionSlideDirection } from './interfaces/substitution-switcher-template-props.interface';
-
-export const SubstitutionSwitcher: React.FC<SubstitutionSwitcherProps> = ({
+export const Switcher: React.FC<Props> = ({
   parent,
   options,
   userId,
@@ -20,7 +19,7 @@ export const SubstitutionSwitcher: React.FC<SubstitutionSwitcherProps> = ({
   const browse = resolveItemSubstitutionOptions(parent, options);
   const defaultIndex = resolveDisplayVariantIndex(parent, options, userId);
   const [internalIndex, setInternalIndex] = useState(defaultIndex);
-  const [direction, setDirection] = useState<SubstitutionSlideDirection>('none');
+  const [direction, setDirection] = useState<SlideDirection>('none');
 
   useEffect(() => {
     setInternalIndex(resolveDisplayVariantIndex(parent, options, userId));
@@ -40,7 +39,7 @@ export const SubstitutionSwitcher: React.FC<SubstitutionSwitcherProps> = ({
     prevIndexRef.current = clampedIndex;
   }, [clampedIndex]);
 
-  const setIndex = (index: number, slideDir?: SubstitutionSlideDirection) => {
+  const setIndex = (index: number, slideDir?: SlideDirection) => {
     const next = Math.min(Math.max(index, 0), browse.length - 1);
     if (slideDir) {
       setDirection(slideDir);
@@ -60,23 +59,52 @@ export const SubstitutionSwitcher: React.FC<SubstitutionSwitcherProps> = ({
     return <>{children(active, browse)}</>;
   }
 
+  const panelAnimClass =
+    direction === 'forward'
+      ? styles['switcher__panel--slide-forward']
+      : direction === 'backward'
+        ? styles['switcher__panel--slide-backward']
+        : styles['switcher__panel--fade'];
+
   return (
-    <SubstitutionSwitcherTemplate
-      browse={browse}
-      activeIndex={clampedIndex}
-      canPrev={canPrev}
-      canNext={canNext}
-      direction={direction}
-      onPrev={() => {
-        if (canPrev) setIndex(clampedIndex - 1, 'backward');
-      }}
-      onNext={() => {
-        if (canNext) setIndex(clampedIndex + 1, 'forward');
-      }}
-      content={children(active, browse)}
-      animationKey={active.key}
-      className={className}
+    <SwitcherTemplate
+      canPrev = {
+        canPrev
+      }
+      canNext = {
+        canNext
+      }
+      onPrev = {
+        () => {
+          if (canPrev) setIndex(clampedIndex - 1, 'backward');
+        }
+      }
+      onNext = {
+        () => {
+          if (canNext) setIndex(clampedIndex + 1, 'forward');
+        }
+      }
+      content = {
+        children(active, browse)
+      }
+      animationKey = {
+        active.key
+      }
+      rootClassName = {
+        [styles.switcher, className ?? ''].filter(Boolean).join(' ')
+      }
+      panelClassName = {
+        `${styles['switcher__panel']} ${panelAnimClass}`
+      }
+      prevNavClassName = {
+        `${styles['switcher__nav']} ${styles['switcher__nav--prev']}`
+      }
+      nextNavClassName = {
+        `${styles['switcher__nav']} ${styles['switcher__nav--next']}`
+      }
+      ariaLabel = {
+        SUBSTITUTION_SWITCH_LABEL
+      }
     />
   );
 };
-

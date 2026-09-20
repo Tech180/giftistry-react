@@ -3,10 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import { ITEM_VIEW_MODES, ITEM_VIEW_MODE_LABELS } from 'features/items/constants/item-view-mode.constants';
 import { normalizeStoredViewMode } from 'features/items/utils/item-view-mode.util';
-import { ItemCardRouter } from 'features/items/components/views/item-card-router.component';
+import { ItemCardRouter } from 'features/items';
 
-vi.mock('app/providers/auth-context', () => ({
-  useAuth: () => ({
+vi.mock('features/items/providers/session', () => ({
+  useItemsSession: () => ({
     user: { Id: 'user-1', FirstName: 'Test', LastName: 'User', Username: 'testuser' },
     canShowAi: false,
   }),
@@ -133,7 +133,7 @@ describe('ItemCardRouter', () => {
   it('calls onSelect in grid view when clicked', () => {
     const onSelect = vi.fn();
     const { container } = render(<ItemCardRouter {...baseProps} viewMode="grid" onSelect={onSelect} />);
-    fireEvent.click(container.querySelector('[class*="gift-card"]') as Element);
+    fireEvent.click(container.querySelector('[data-testid="item-card-view"]') as Element);
     expect(onSelect).toHaveBeenCalled();
   });
 
@@ -142,7 +142,7 @@ describe('ItemCardRouter', () => {
     const { container } = render(
       <ItemCardRouter {...baseProps} viewMode="compact" onSelect={onSelect} setIsExpanded={vi.fn()} />
     );
-    fireEvent.click(container.querySelector('[class*="v-compact-row"]') as Element);
+    fireEvent.click(container.querySelector('[class*="view__row"]') as Element);
     expect(onSelect).toHaveBeenCalled();
   });
 
@@ -151,7 +151,7 @@ describe('ItemCardRouter', () => {
     const { container } = render(
       <ItemCardRouter {...baseProps} viewMode="detailed" onSelect={onSelect} />
     );
-    fireEvent.click(container.querySelector('[class*="v-detailed-card"]') as Element);
+    fireEvent.click(container.querySelector('[data-testid="item-card-view"]') as Element);
     expect(onSelect).toHaveBeenCalled();
   });
 });

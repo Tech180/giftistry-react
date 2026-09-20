@@ -1,0 +1,52 @@
+import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
+import type { Item } from '../../../interfaces/item.interface';
+import type { ItemSubstitutionOption } from '../../../interfaces/item-substitution.interface';
+import type { ShowcaseRelationItem } from '../../../interfaces/showcase-relation-item.interface';
+import type { ShowcaseVariationProgress } from '../../../interfaces/showcase-variation-progress.interface';
+import type { Props as ClaimFooterProps } from '../components/claim-footer/interfaces/props.interface';
+import type { MetaBadgeEntry } from '../components/meta-badges/interfaces/props.interface';
+
+export interface TemplateProps {
+  item: Item;
+  /** Visual variant currently shown (parent or a substitution child overlay). */
+  displayItem: Item;
+  substitutionOptions?: ItemSubstitutionOption[];
+  substitutionActiveIndex?: number;
+  onSubstitutionIndexChange?: (index: number) => void;
+  claimUserId: string | null;
+  isOwner: boolean;
+  localIsFavorite: boolean;
+  displayDescription: string;
+  metadata: ItemDescriptionMetadata | null;
+  predefinedEntries: MetaBadgeEntry[];
+  userDefinedEntries: { name: string; value: string }[];
+  totalExtractedPrice: number;
+  totalClaimedAmount: number;
+  progressPercent: number;
+  onClose: () => void;
+  onCopyMarkdown?: () => void;
+  getSiteName: (url: string, retailerName?: string | null) => string;
+  audienceLabel: string | null;
+  variant: 'card' | 'inline';
+  displayCategory: string;
+  bestPriceDisplay: string;
+  quantityProgressMetric: string;
+  hasNumericPriority: boolean;
+  priorityDisplay: number | null;
+  isLinkedToItems: boolean;
+  isRelatedToItems: boolean;
+  showGroupFunding: boolean;
+  showQuantityProgress: boolean;
+  showVariationsProgress: boolean;
+  showHeroMeta: boolean;
+  showSuggestionBadge: boolean;
+  showHiddenSuggestionBadge: boolean;
+  suggestionLabel: string;
+  variationProgress: ShowcaseVariationProgress[];
+  linkedRelationItems: ShowcaseRelationItem[];
+  relatedRelationItems: ShowcaseRelationItem[];
+  primaryImageUrl: string | null;
+  rootClassName: string;
+  audienceBadgeClassName: string;
+  claimFooter: ClaimFooterProps;
+}

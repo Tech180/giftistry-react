@@ -5,10 +5,7 @@ import {
   USERNAME_REGEX,
   USERNAME_REQUIRED_MESSAGE,
 } from '../constants/username-policy.constant';
-
-export type UsernameValidationResult =
-  | { ok: true; value: string }
-  | { ok: false; message: string };
+import type { UsernameValidationResult } from '../interfaces/username-validation-result.type';
 
 /**
  * Client-side username policy — mirrors giftistry-bun Username VO.

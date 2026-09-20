@@ -1,6 +1,5 @@
-import { GiftistryUserPolicy } from './giftistry-user-policy.interface';
-
-export type RegistrationMode = 'open' | 'invite_only' | 'disabled';
+import type { GiftistryUserPolicy } from './giftistry-user-policy.interface';
+import type { RegistrationMode } from './registration-mode.type';
 
 export interface SitePolicy {
   RegistrationMode: RegistrationMode;

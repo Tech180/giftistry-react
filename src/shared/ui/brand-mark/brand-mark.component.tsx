@@ -16,12 +16,24 @@ export const BrandMark: React.FC<BrandMarkProps> = ({
 
   return (
     <BrandMarkTemplate
-      size={size}
-      showLabel={showLabel}
-      to={to}
-      className={className}
-      rootClass={rootClass}
-      iconSize={iconSize}
+      size = {
+        size
+      }
+      showLabel = {
+        showLabel
+      }
+      to = {
+        to
+      }
+      className = {
+        className
+      }
+      rootClass = {
+        rootClass
+      }
+      iconSize = {
+        iconSize
+      }
     />
   );
 };

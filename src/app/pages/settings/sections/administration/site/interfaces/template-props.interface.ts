@@ -1,0 +1,44 @@
+import type { SelectMenuOption } from 'shared/ui';
+import type { DefaultPolicyToggleItem } from './default-policy-toggle-item.interface';
+import type { InviteRow } from './invite-row.interface';
+
+export interface TemplateProps {
+  isLoading: boolean;
+  hasPolicy: boolean;
+  isSaving: boolean;
+  showInviteControls: boolean;
+  registrationMode: string;
+  registrationModeDescription: string;
+  registrationModeOptions: SelectMenuOption[];
+  registrationModeMenuTitle: string;
+  onRegistrationModeChange: (value: string) => void;
+  allowPasswordLogin: boolean;
+  onAllowPasswordLoginChange: (checked: boolean) => void;
+  domainsText: string;
+  onDomainsTextChange: (value: string) => void;
+  inviteTtlHours: number;
+  onInviteTtlHoursChange: (value: number) => void;
+  inviteMaxUses: number;
+  onInviteMaxUsesChange: (value: number) => void;
+  inviteSummaryDescription: string;
+  headerInviteDisplayUrl: string;
+  headerInviteCopied: boolean;
+  canCopyHeaderInvite: boolean;
+  onCopyHeaderInvite: () => void;
+  onRegenerateInvite: () => void;
+  isRegeneratingInvite: boolean;
+  showInviteList: boolean;
+  inviteRows: InviteRow[];
+  requireStrongPasswords: boolean;
+  onRequireStrongPasswordsChange: (checked: boolean) => void;
+  loginAttemptsBeforeLockout: number;
+  onLoginAttemptsChange: (value: number) => void;
+  lockoutDurationMinutes: number;
+  onLockoutDurationChange: (value: number) => void;
+  maintenanceMode: boolean;
+  onMaintenanceModeChange: (checked: boolean) => void;
+  maintenanceMessage: string;
+  onMaintenanceMessageChange: (value: string) => void;
+  defaultPolicyToggles: DefaultPolicyToggleItem[];
+  onSave: () => void;
+}

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   mapPreferencesFromApi,
   mapPreferencesToApi,
-} from './notifications.api';
+} from '../utils/map-preferences.util';
 
 describe('notification preferences mapping', () => {
   it('defaults JobCompletions to true when API omits it', () => {

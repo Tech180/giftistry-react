@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { Badges } from './badges.html';
+import { Badges } from './badges.component';
 
 const baseItem = {
   Id: 'item-1',

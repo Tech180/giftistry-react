@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { UserSearchProps } from './interfaces/user-search-props.interface';
+import React, { useEffect, useRef, useState } from 'react';
+import { getDisplayName } from 'shared/utils/get-display-name.util';
+import { SEARCH_DEBOUNCE_MS } from '../../constants/search-debounce-ms.constant';
+import type { Props } from './interfaces/props.interface';
 import { UserSearchTemplate } from './user-search.html';
-import { UserSearchResult } from '../../interfaces/friend.interface';
 
-export const UserSearch: React.FC<UserSearchProps> = ({
+export const UserSearch: React.FC<Props> = ({
   searchResults,
   isSearching,
   onSearch,
@@ -13,34 +14,45 @@ export const UserSearch: React.FC<UserSearchProps> = ({
   pendingUserIds = [],
 }) => {
   const [query, setQuery] = useState('');
+  const onSearchRef = useRef(onSearch);
+  onSearchRef.current = onSearch;
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      onSearch(query);
-    }, 300);
+      onSearchRef.current(query);
+    }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [query, onSearch]);
+  }, [query]);
 
-  const discoverableResults = useMemo(() => {
-    const friendIds = new Set(existingFriendIds);
-    return searchResults.filter((user) => !friendIds.has(user.Id));
-  }, [searchResults, existingFriendIds]);
-
-  const getDisplayName = (user: UserSearchResult) => {
-    if (user.FirstName) return `${user.FirstName} ${user.LastName || ''}`.trim();
-    return user.Username;
-  };
+  const friendIds = new Set(existingFriendIds);
+  const discoverableResults = searchResults.filter((user) => !friendIds.has(user.Id));
 
   return (
     <UserSearchTemplate
-      query={query}
-      setQuery={setQuery}
-      searchResults={discoverableResults}
-      isSearching={isSearching}
-      onSendRequest={onSendRequest}
-      sendingId={sendingId}
-      pendingUserIds={pendingUserIds}
-      getDisplayName={getDisplayName}
+      query = {
+        query
+      }
+      setQuery = {
+        setQuery
+      }
+      searchResults = {
+        discoverableResults
+      }
+      isSearching = {
+        isSearching
+      }
+      onSendRequest = {
+        onSendRequest
+      }
+      sendingId = {
+        sendingId
+      }
+      pendingUserIds = {
+        pendingUserIds
+      }
+      getDisplayName = {
+        getDisplayName
+      }
     />
   );
 };

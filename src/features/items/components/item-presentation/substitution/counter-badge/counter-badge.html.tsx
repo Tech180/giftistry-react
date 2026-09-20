@@ -3,10 +3,10 @@ import {
   MAIN_ITEM_COUNTER_LABEL,
   SUBSTITUTION_COUNTER_LABEL,
 } from '../../../../constants/substitution-messages.constant';
-import type { SubstitutionCounterBadgeProps } from './interfaces/substitution-counter-badge-props.interface';
+import type { Props } from './interfaces/props.interface';
 import styles from './counter-badge.module.css';
 
-export const SubstitutionCounterBadge: React.FC<SubstitutionCounterBadgeProps> = ({
+export const CounterBadgeTemplate: React.FC<Props> = ({
   activeIndex,
   total,
   isOriginal = activeIndex === 0,

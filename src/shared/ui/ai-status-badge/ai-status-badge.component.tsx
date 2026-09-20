@@ -1,21 +1,9 @@
 import React, { useId } from 'react';
-import { Badge } from '../badge/badge.component';
-import { AiDisabledIcon, AiSparklesIcon } from '../badge/icons/ai-badge-icons';
+import type { Props } from './interfaces/props.interface';
+export type { AiStatusBadgeProps, AiStatusBadgeSize } from './interfaces/props.interface';
+import { AiStatusBadgeTemplate } from './ai-status-badge.html';
 
-export type AiStatusBadgeSize = 'default' | 'compact';
-
-export interface AiStatusBadgeProps {
-  enabled: boolean;
-  size?: AiStatusBadgeSize;
-  label?: string;
-  onToggle?: () => void;
-  disabled?: boolean;
-  ariaLabel?: string;
-  ariaLabelEnabled?: string;
-  ariaLabelDisabled?: string;
-}
-
-export const AiStatusBadge: React.FC<AiStatusBadgeProps> = ({
+export const AiStatusBadge: React.FC<Props> = ({
   enabled,
   size = 'default',
   label,
@@ -33,19 +21,43 @@ export const AiStatusBadge: React.FC<AiStatusBadgeProps> = ({
     : (enabled ? ariaLabelEnabled : ariaLabelDisabled);
 
   return (
-    <Badge
-      effect="rainbow"
-      active={enabled}
-      size={isCompact ? 'compact' : 'md'}
-      gradientId={gradientId}
-      icon={<AiSparklesIcon gradientId={gradientId} />}
-      iconInactive={<AiDisabledIcon />}
-      onClick={onToggle}
-      disabled={disabled}
-      ariaLabel={resolvedAriaLabel}
-      ariaPressed={label ? undefined : enabled}
-    >
-      {isCompact ? undefined : displayLabel}
-    </Badge>
+    <AiStatusBadgeTemplate
+      enabled = {
+        enabled
+      }
+      size = {
+        size
+      }
+      label = {
+        label
+      }
+      onToggle = {
+        onToggle
+      }
+      disabled = {
+        disabled
+      }
+      ariaLabel = {
+        ariaLabel
+      }
+      ariaLabelEnabled = {
+        ariaLabelEnabled
+      }
+      ariaLabelDisabled = {
+        ariaLabelDisabled
+      }
+      gradientId = {
+        gradientId
+      }
+      isCompact = {
+        isCompact
+      }
+      displayLabel = {
+        displayLabel
+      }
+      resolvedAriaLabel = {
+        resolvedAriaLabel
+      }
+    />
   );
 };

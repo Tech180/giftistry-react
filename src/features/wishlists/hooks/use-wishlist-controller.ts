@@ -1,16 +1,12 @@
 import { useState, useCallback } from 'react';
 import { wishlistsApi } from '../api/wishlists.api';
-import { Wishlist } from '../interfaces/wishlist.interface';
-
-export interface WishlistListCounts {
-  My: number;
-  Shared: number;
-  Archive: number;
-}
+import type { ListCounts } from '../interfaces/list-counts.interface';
+import type { Wishlist } from '../interfaces/wishlist.interface';
+import type { WishlistsPayload } from '../interfaces/wishlists-payload.interface';
 
 function normalizeWishlistsPayload(data: unknown): {
   wishlists: Wishlist[];
-  counts: WishlistListCounts;
+  counts: ListCounts;
 } {
   if (Array.isArray(data)) {
     return {
@@ -19,10 +15,7 @@ function normalizeWishlistsPayload(data: unknown): {
     };
   }
   if (data && typeof data === 'object') {
-    const payload = data as {
-      Wishlists?: Wishlist[];
-      Counts?: WishlistListCounts;
-    };
+    const payload = data as WishlistsPayload;
     return {
       wishlists: payload.Wishlists ?? [],
       counts: payload.Counts ?? { My: 0, Shared: 0, Archive: 0 },
@@ -33,7 +26,7 @@ function normalizeWishlistsPayload(data: unknown): {
 
 export function useWishlistController() {
   const [wishlists, setWishlists] = useState<Wishlist[]>([]);
-  const [counts, setCounts] = useState<WishlistListCounts>({
+  const [counts, setCounts] = useState<ListCounts>({
     My: 0,
     Shared: 0,
     Archive: 0,

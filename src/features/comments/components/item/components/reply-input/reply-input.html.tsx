@@ -1,8 +1,8 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { CommentEditor } from '../../../input/components/input/editor';
-import { AttachmentPreview, UploadErrorBar, TagModeToggle } from '../../../input/components/input';
-import { ToolbarPickers } from '../../../input/components/input/toolbar/toolbar-pickers';
+import { CommentEditor } from '../../../input/components/editor';
+import { AttachmentPreview, UploadErrorBar, TagModeToggle } from '../../../input/components';
+import { ToolbarPickers } from '../../../input/components/toolbar/toolbar-pickers';
 import { ReplyInputTemplateProps } from './interfaces/reply-input-template-props.interface';
 import styles from './reply-input.module.css';
 

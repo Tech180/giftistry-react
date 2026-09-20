@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Item } from '../../../../interfaces/item.interface';
 import type { ItemSubstitutionOption } from '../../../../interfaces/item-substitution.interface';
-import { SubstitutionSwitcher } from './switcher.component';
+import { Switcher as SubstitutionSwitcher } from './switcher.component';
 
 const parent: Item = {
   Id: 'parent-1',

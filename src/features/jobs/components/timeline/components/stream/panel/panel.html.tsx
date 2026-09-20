@@ -1,28 +1,33 @@
 import React from 'react';
 import { Row } from '../row/row.component';
-import type { PanelProps } from './interfaces/panel-props.interface';
-import styles from './panel.module.css';
+import type { TemplateProps } from './interfaces/template-props.interface';
 
-function counterFromCaption(caption: string | null | undefined, count: number): string {
-  if (!caption) return String(count);
-  const match = caption.match(/(\d+\s*\/\s*\d+|\d+)/);
-  return match?.[1]?.replace(/\s/g, '') ?? String(count);
-}
-
-export const PanelTemplate: React.FC<PanelProps> = ({ streams, caption = null }) => {
-  if (streams.length === 0) return null;
-
+export const PanelTemplate: React.FC<TemplateProps> = ({
+  streams,
+  counter,
+  panelClassName,
+  headerClassName,
+  headerRowClassName,
+  titleClassName,
+  counterClassName,
+  listClassName,
+}) => {
   return (
-    <div className={styles.panel}>
-      <div className={styles.header}>
-        <div className={styles.headerRow}>
-          <span className={styles.title}>Active Streams</span>
-          <span className={styles.counter}>{counterFromCaption(caption, streams.length)}</span>
+    <div className={panelClassName}>
+      <div className={headerClassName}>
+        <div className={headerRowClassName}>
+          <span className={titleClassName}>Active Streams</span>
+          <span className={counterClassName}>{counter}</span>
         </div>
       </div>
-      <ol className={styles.list} aria-label="Active grab streams">
+      <ol className={listClassName} aria-label="Active grab streams">
         {streams.map((lane) => (
-          <Row key={lane.id} lane={lane} />
+          <Row
+            key={lane.id}
+            lane = {
+              lane
+            }
+          />
         ))}
       </ol>
     </div>

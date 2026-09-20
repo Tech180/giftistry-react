@@ -1,55 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { wishlistsApi } from 'features/wishlists/api/wishlists.api';
-import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
+import { getDisplayName } from 'shared/utils/get-display-name.util';
+import { useShares } from '../../../hooks/use-shares';
 import {
   COLLABORATOR_TO_VIEWER_WARNING_DESCRIPTION,
   COLLABORATOR_TO_VIEWER_WARNING_PROCEED_PROMPT,
   COLLABORATOR_TO_VIEWER_WARNING_TITLE,
 } from './constants/collaborator-to-viewer-warning.constant';
-import { ManagementProps } from './interfaces/management.interface';
+import { Props } from './interfaces/props.interface';
 import { ShareManagementTemplate } from './management.html';
 import { shouldConfirmCollaboratorToViewer } from './utils/should-confirm-collaborator-to-viewer.util';
 
-export const ShareManagement: React.FC<ManagementProps> = ({
+export const ShareManagement: React.FC<Props> = ({
   listId,
   isOwner,
   variant = 'classic',
   ownerInfo,
   onCautionModeChange,
 }) => {
-  const [shares, setShares] = useState<ListShare[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { shares, isLoading, error, setError, loadShares } = useShares(listId);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [pendingDemotionShareId, setPendingDemotionShareId] = useState<string | null>(null);
-
-  const loadShares = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await wishlistsApi.listShares(listId);
-      setShares(result || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load shares.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadShares();
-  }, [listId]);
 
   useEffect(() => {
     onCautionModeChange?.(pendingDemotionShareId !== null);
     return () => onCautionModeChange?.(false);
   }, [pendingDemotionShareId, onCautionModeChange]);
-
-  const getDisplayName = (share: ListShare) => {
-    if (share.FirstName) return `${share.FirstName} ${share.LastName || ''}`.trim();
-    return share.Username || share.Email || 'Unknown User';
-  };
 
   const applyRoleChange = async (shareId: string, role: 'viewer' | 'collaborator') => {
     setUpdatingId(shareId);
@@ -78,7 +55,9 @@ export const ShareManagement: React.FC<ManagementProps> = ({
   };
 
   const handleConfirmDemotion = async () => {
-    if (!pendingDemotionShareId) return;
+    if (!pendingDemotionShareId) {
+      return;
+    }
     const shareId = pendingDemotionShareId;
     setUpdatingId(shareId);
     setError(null);
@@ -107,23 +86,57 @@ export const ShareManagement: React.FC<ManagementProps> = ({
 
   return (
     <ShareManagementTemplate
-      variant={variant}
-      ownerInfo={ownerInfo}
-      shares={shares}
-      isOwner={isOwner}
-      isLoading={isLoading}
-      error={error}
-      updatingId={updatingId}
-      removingId={removingId}
-      pendingDemotionShareId={pendingDemotionShareId}
-      cautionTitle={COLLABORATOR_TO_VIEWER_WARNING_TITLE}
-      cautionDescription={COLLABORATOR_TO_VIEWER_WARNING_DESCRIPTION}
-      cautionProceedPrompt={COLLABORATOR_TO_VIEWER_WARNING_PROCEED_PROMPT}
-      onRoleChange={handleRoleChange}
-      onRemove={handleRemove}
-      onConfirmDemotion={handleConfirmDemotion}
-      onCancelDemotion={handleCancelDemotion}
-      getDisplayName={getDisplayName}
+      variant = {
+        variant
+      }
+      ownerInfo = {
+        ownerInfo
+      }
+      shares = {
+        shares
+      }
+      isOwner = {
+        isOwner
+      }
+      isLoading = {
+        isLoading
+      }
+      error = {
+        error
+      }
+      updatingId = {
+        updatingId
+      }
+      removingId = {
+        removingId
+      }
+      pendingDemotionShareId = {
+        pendingDemotionShareId
+      }
+      cautionTitle = {
+        COLLABORATOR_TO_VIEWER_WARNING_TITLE
+      }
+      cautionDescription = {
+        COLLABORATOR_TO_VIEWER_WARNING_DESCRIPTION
+      }
+      cautionProceedPrompt = {
+        COLLABORATOR_TO_VIEWER_WARNING_PROCEED_PROMPT
+      }
+      onRoleChange = {
+        handleRoleChange
+      }
+      onRemove = {
+        handleRemove
+      }
+      onConfirmDemotion = {
+        handleConfirmDemotion
+      }
+      onCancelDemotion = {
+        handleCancelDemotion
+      }
+      getDisplayName = {
+        getDisplayName
+      }
     />
   );
 };

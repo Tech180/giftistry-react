@@ -2,8 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { Drawer } from './drawer.component';
-
-const SHEET_MOBILE_QUERY = '(max-width: 48rem)';
+import { SHEET_MOBILE_QUERY } from './constants/sheet.constant';
 
 describe('Drawer', () => {
   let sheetMobileMatches = true;
@@ -69,8 +68,8 @@ describe('Drawer', () => {
     );
 
     expect(screen.getByTestId('drawer-scrim')).toBeInTheDocument();
-    expect(screen.getByTestId('drawer-scrim').className).toMatch(/overlay-active/);
-    expect(screen.getByTestId('drawer-panel').className).toMatch(/sheet/);
+    expect(screen.getByTestId('drawer-scrim').className).toMatch(/overlay--active|overlay-active/);
+    expect(screen.getByTestId('drawer-panel').className).toMatch(/drawer--sheet|sheet/);
   });
 
   test('sheet presentation does not show scrim on desktop', () => {
@@ -170,7 +169,7 @@ describe('Drawer', () => {
 
     expect(document.body.style.overflow).not.toBe('hidden');
     expect(document.body.getAttribute('data-drawer-sheet-open')).toBeNull();
-    expect(screen.getByTestId('drawer-scrim').className).not.toMatch(/overlay-active/);
+    expect(screen.getByTestId('drawer-scrim').className).not.toMatch(/overlay--active|overlay-active/);
   });
 
   test('overlay variant shows scrim on desktop', () => {
@@ -183,7 +182,7 @@ describe('Drawer', () => {
     );
 
     expect(screen.getByTestId('drawer-scrim')).toBeInTheDocument();
-    expect(screen.getByTestId('drawer-scrim').className).toMatch(/overlay-active/);
+    expect(screen.getByTestId('drawer-scrim').className).toMatch(/overlay--active|overlay-active/);
   });
 
   function MiniProbe({ inlineOnMobile }: { inlineOnMobile?: boolean }) {

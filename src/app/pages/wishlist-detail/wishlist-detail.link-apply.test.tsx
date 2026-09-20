@@ -2,8 +2,8 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, test, vi } from 'vitest';
-import { WishlistDetailTemplate } from './wishlist-detail.html';
-import type { WishlistDetailTemplateProps } from './interfaces/wishlist-detail-template-props.interface';
+import { PageTemplate } from './page.html';
+import type { PageTemplateProps } from './interfaces/page-template-props.interface';
 
 vi.mock('./components/drawer/add-item/add-item.component', () => ({
   AddItem: ({
@@ -24,8 +24,8 @@ vi.mock('./components/drawer/add-item/add-item.component', () => ({
   ),
 }));
 
-vi.mock('./components/add-item-widget/add-item-widget.component', () => ({
-  AddItemWidget: () => null,
+vi.mock('./components/add-widget/add-widget.component', () => ({
+  AddWidget: () => null,
 }));
 
 vi.mock('./components/drawer/comments/comments.component', () => ({
@@ -52,12 +52,13 @@ vi.mock('features/items', () => ({
   ItemCard: () => null,
   ItemCardSkeleton: () => null,
   ItemShowcase: () => null,
+  ImportStrip: React.forwardRef(() => null),
   getCategoryMeta: () => ({ label: '', icon: () => null }),
   CompactCategoryList: () => null,
 }));
 
-vi.mock('features/items/components/import/import-strip/import-strip.component', () => ({
-  ImportStrip: () => null,
+vi.mock('features/items/components/import/strip/strip.component', () => ({
+  Strip: () => null,
 }));
 
 vi.mock('features/comments', () => ({
@@ -104,11 +105,21 @@ const wishlist = {
   ManualJobBackground: true,
   AllowGroupFunds: false,
   ExpiresAt: null,
-} as WishlistDetailTemplateProps['wishlist'];
+} as PageTemplateProps['wishlist'];
 
-const baseProps: WishlistDetailTemplateProps = {
+const baseProps: PageTemplateProps = {
   isWishlistLoading: false,
   wishlistError: null,
+  onGoHome: vi.fn(),
+  canAutoAdd: false,
+  isLocked: false,
+  isItemFormSessionActive: true,
+  collapseDrawerWhileLinking: false,
+  collapseDrawerWhileTagging: false,
+  isItemDrawerVisible: true,
+  showApplyBar: false,
+  isInspectorOpen: false,
+  pageClassName: 'page',
   wishlist,
   items: [],
   priorities: [],
@@ -162,7 +173,7 @@ const baseProps: WishlistDetailTemplateProps = {
   loadData: vi.fn(async () => undefined),
   reloadListContent: vi.fn(async () => undefined),
   onItemsChange: vi.fn(),
-  itemActions: {} as WishlistDetailTemplateProps['itemActions'],
+  itemActions: {} as PageTemplateProps['itemActions'],
   confirmAction: null,
   setConfirmAction: vi.fn(),
   isDeactivating: false,
@@ -219,14 +230,18 @@ const baseProps: WishlistDetailTemplateProps = {
   onCancelJob: vi.fn(),
 };
 
-describe('WishlistDetailTemplate link apply bar', () => {
+describe('PageTemplate link apply bar', () => {
   test('shows a bottom Apply button while linking when sidebar stays open', () => {
     render(
       <MemoryRouter>
-        <WishlistDetailTemplate
+        <PageTemplate
           {...baseProps}
           isLinkingModeActive
           doesAddSidebarOverlayList={false}
+          showApplyBar
+          collapseDrawerWhileLinking={false}
+          isItemDrawerVisible
+          isItemFormSessionActive
         />
       </MemoryRouter>
     );
@@ -241,12 +256,16 @@ describe('WishlistDetailTemplate link apply bar', () => {
 
     render(
       <MemoryRouter>
-        <WishlistDetailTemplate
+        <PageTemplate
           {...baseProps}
           isLinkingModeActive
           doesAddSidebarOverlayList
           setIsLinkingModeActive={setIsLinkingModeActive}
           linkedItemIds={['item-a']}
+          showApplyBar
+          collapseDrawerWhileLinking
+          isItemDrawerVisible={false}
+          isItemFormSessionActive
         />
       </MemoryRouter>
     );
@@ -261,7 +280,7 @@ describe('WishlistDetailTemplate link apply bar', () => {
   test('hides Apply bar when linking mode is inactive', () => {
     render(
       <MemoryRouter>
-        <WishlistDetailTemplate {...baseProps} isLinkingModeActive={false} />
+        <PageTemplate {...baseProps} isLinkingModeActive={false} showApplyBar={false} />
       </MemoryRouter>
     );
 
@@ -273,7 +292,7 @@ describe('WishlistDetailTemplate link apply bar', () => {
 
     render(
       <MemoryRouter>
-        <WishlistDetailTemplate
+        <PageTemplate
           {...baseProps}
           isAddOpen={false}
           viewMode="detailed"
@@ -281,6 +300,11 @@ describe('WishlistDetailTemplate link apply bar', () => {
           isTaggingModeActive
           doesAddSidebarOverlayList
           setIsTaggingModeActive={setIsTaggingModeActive}
+          showApplyBar
+          collapseDrawerWhileTagging
+          isItemFormSessionActive={false}
+          isItemDrawerVisible={false}
+          isInspectorOpen
         />
       </MemoryRouter>
     );
@@ -295,13 +319,17 @@ describe('WishlistDetailTemplate link apply bar', () => {
   test('hides tagging Apply bar when comments do not overlay the list', () => {
     render(
       <MemoryRouter>
-        <WishlistDetailTemplate
+        <PageTemplate
           {...baseProps}
           isAddOpen={false}
           viewMode="detailed"
           isCommentsOpen
           isTaggingModeActive
           doesAddSidebarOverlayList={false}
+          showApplyBar={false}
+          collapseDrawerWhileTagging={false}
+          isItemFormSessionActive={false}
+          isInspectorOpen
         />
       </MemoryRouter>
     );
@@ -313,14 +341,17 @@ describe('WishlistDetailTemplate link apply bar', () => {
   test('viewer sees add and auto-add while import stays collaborator-only', () => {
     render(
       <MemoryRouter>
-        <WishlistDetailTemplate
+        <PageTemplate
           {...baseProps}
           wishlist={{ ...wishlist, AiEnabled: true }}
           canShowAi
           isOwner={false}
           canCollaborate={false}
           canSuggest
+          canAutoAdd
           isAddOpen={false}
+          isItemFormSessionActive={false}
+          isItemDrawerVisible={false}
         />
       </MemoryRouter>
     );
@@ -333,14 +364,17 @@ describe('WishlistDetailTemplate link apply bar', () => {
   test('viewer without AI does not see auto-add', () => {
     render(
       <MemoryRouter>
-        <WishlistDetailTemplate
+        <PageTemplate
           {...baseProps}
           wishlist={{ ...wishlist, AiEnabled: false }}
           canShowAi
           isOwner={false}
           canCollaborate={false}
           canSuggest
+          canAutoAdd={false}
           isAddOpen={false}
+          isItemFormSessionActive={false}
+          isItemDrawerVisible={false}
         />
       </MemoryRouter>
     );
@@ -352,11 +386,15 @@ describe('WishlistDetailTemplate link apply bar', () => {
   test('keeps form session props open while linking so the drawer can hide without reset', () => {
     render(
       <MemoryRouter>
-        <WishlistDetailTemplate
+        <PageTemplate
           {...baseProps}
           isAddOpen
           isLinkingModeActive
           doesAddSidebarOverlayList
+          showApplyBar
+          collapseDrawerWhileLinking
+          isItemFormSessionActive
+          isItemDrawerVisible={false}
         />
       </MemoryRouter>
     );
@@ -367,7 +405,7 @@ describe('WishlistDetailTemplate link apply bar', () => {
   test('renders share modal on desktop when share is open', () => {
     render(
       <MemoryRouter>
-        <WishlistDetailTemplate {...baseProps} isShareOpen isMobileFab={false} />
+        <PageTemplate {...baseProps} isShareOpen isMobileFab={false} />
       </MemoryRouter>
     );
 
@@ -377,7 +415,7 @@ describe('WishlistDetailTemplate link apply bar', () => {
   test('does not render share modal on mobile FAB viewport', () => {
     render(
       <MemoryRouter>
-        <WishlistDetailTemplate {...baseProps} isShareOpen isMobileFab />
+        <PageTemplate {...baseProps} isShareOpen isMobileFab />
       </MemoryRouter>
     );
 

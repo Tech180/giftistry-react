@@ -1,13 +1,7 @@
 import { useState } from 'react';
+import type { ItemAiReviews } from '../interfaces/item-ai-reviews.interface';
 // Future: AI item reviews — re-enable itemsApi.getItemReviews when shipping the feature.
 // import { itemsApi } from '../api/items.api';
-
-export interface ItemAiReviews {
-  summary: string;
-  pros: string[];
-  cons: string[];
-  reviews: string[];
-}
 
 /**
  * Fetch AI review synthesis for an item.

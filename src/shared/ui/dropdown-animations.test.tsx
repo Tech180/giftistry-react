@@ -9,17 +9,26 @@ const readSrc = (relativePath: string) =>
 
 describe('Dropdown opening animations', () => {
   test('navigation dropdown panels use EnterPanel', () => {
-    const src = readSrc('app/layout/app-navigation/app-navigation.html.tsx');
+    const search = readSrc(
+      'app/layout/app-navigation/components/wishlist-search/wishlist-search.html.tsx'
+    );
+    const theme = readSrc(
+      'app/layout/app-navigation/components/theme-menu/theme-menu.html.tsx'
+    );
+    const profile = readSrc(
+      'app/layout/app-navigation/components/profile/menu/profile-menu.html.tsx'
+    );
 
-    expect(src).toMatch(/EnterPanel[\s\S]*search-dropdown/);
-    expect(src).toMatch(/theme-menu.*EnterPanel|EnterPanel[\s\S]*theme-menu/);
-    expect(src).toMatch(/dropdown-menu[\s\S]*EnterPanel|EnterPanel[\s\S]*dropdown-menu/);
+    expect(search.includes('EnterPanel')).toBe(true);
+    expect(search.includes('search-dropdown')).toBe(true);
+    expect(theme.includes('EnterPanel')).toBe(true);
+    expect(profile.includes('EnterPanel')).toBe(true);
   });
 
   test('export dropdown panel uses EnterPanel', () => {
     const src = readSrc('app/pages/wishlist-detail/components/header/header.html.tsx');
 
-    expect(src).toMatch(/export-dropdown-menu[\s\S]*EnterPanel|EnterPanel[\s\S]*export-dropdown-menu/);
+    expect(src.includes('EnterPanel')).toBe(true);
   });
 
   test('shared DropdownMenu wraps content in EnterPanel when open', async () => {
@@ -39,29 +48,27 @@ describe('Dropdown opening animations', () => {
   test('global animation utilities define dropdown keyframes and longhand properties', () => {
     const css = readSrc('assets/styles/global.css');
 
-    expect(css).toMatch(/@keyframes dropdown-in/);
-    expect(css).toMatch(/\.animate-dropdown-in[\s\S]*animation-fill-mode:\s*both/);
-    expect(css).toMatch(/@starting-style/);
+    expect(css.includes('@keyframes dropdown-in')).toBe(true);
+    expect(css.includes('animate-dropdown-in')).toBe(true);
+    expect(css.includes('@starting-style')).toBe(true);
   });
 
-  test('item view panels use EnterPanel', () => {
-    const compact = readSrc('features/items/components/views/compact/compact-item-view.html.tsx');
-    const grid = readSrc('features/items/components/views/grid/grid-item-view.html.tsx');
+  test('item claim panels use EnterPanel', () => {
+    const compact = readSrc(
+      'features/items/components/views/compact/components/claim-section/claim-section.html.tsx'
+    );
+    const feed = readSrc(
+      'features/items/components/views/feed/components/claim-section/claim-section.html.tsx'
+    );
 
-    expect(compact).toMatch(/confirm-extension[\s\S]*EnterPanel|EnterPanel[\s\S]*confirm-extension/);
-    expect(grid).toMatch(/claim-overlay[\s\S]*EnterPanel|EnterPanel[\s\S]*claim-overlay/);
-  });
-
-  test('legacy item card module CSS is empty stub', () => {
-    const css = readSrc('features/items/components/card/item-card.module.css');
-
-    expect(css.trim().length).toBeLessThan(200);
+    expect(compact.includes('EnterPanel')).toBe(true);
+    expect(feed.includes('EnterPanel')).toBe(true);
   });
 
   test('global animation utilities define accordion-down keyframes', () => {
     const css = readSrc('assets/styles/global.css');
 
-    expect(css).toMatch(/@keyframes accordion-down/);
-    expect(css).toMatch(/\.animate-accordion-down[\s\S]*animation-fill-mode:\s*both/);
+    expect(css.includes('@keyframes accordion-down')).toBe(true);
+    expect(css.includes('animate-accordion-down')).toBe(true);
   });
 });

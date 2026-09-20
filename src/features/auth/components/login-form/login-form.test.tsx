@@ -3,9 +3,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 import { LoginFormTemplate } from './login-form.html';
-import type { LoginFormTemplateProps } from '../../interfaces/login-form-template-props.interface';
+import type { TemplateProps } from './interfaces/template-props.interface';
 
-const baseProps: LoginFormTemplateProps = {
+const baseProps: TemplateProps = {
   username: '',
   setUsername: vi.fn(),
   password: '',
@@ -34,7 +34,7 @@ const baseProps: LoginFormTemplateProps = {
   onToggleShowPassword: vi.fn(),
 };
 
-function renderLoginForm(overrides: Partial<LoginFormTemplateProps> = {}) {
+function renderLoginForm(overrides: Partial<TemplateProps> = {}) {
   return render(
     <MemoryRouter>
       <LoginFormTemplate {...baseProps} {...overrides} />

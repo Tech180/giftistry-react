@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { MetadataGrid } from './metadata-grid.html';
+import { MetadataGrid } from './metadata-grid.component';
 
 describe('MetadataGrid', () => {
   const emoji = { 'Shirt Size': '👕', Color: '🎨' };

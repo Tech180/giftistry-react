@@ -2,14 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Infinity } from 'lucide-react';
 import type { NumberSelectorProps } from './interfaces/number-selector-props.interface';
 import { NumberSelectorTemplate } from './number-selector.html';
+import { buildRootClass } from './utils/build-root-class.util';
+import { clampValue } from './utils/clamp-value.util';
 import styles from './number-selector.module.css';
-
-export type { NumberSelectorProps } from './interfaces/number-selector-props.interface';
-
-function clampValue(value: number, min: number, max: number | undefined): number {
-  const lower = Math.max(min, value);
-  return typeof max === 'number' ? Math.min(max, lower) : lower;
-}
 
 export const NumberSelector: React.FC<NumberSelectorProps> = ({
   value,
@@ -119,27 +114,64 @@ export const NumberSelector: React.FC<NumberSelectorProps> = ({
         ? 'Edit value'
         : 'Edit quantity');
 
+  const rootClass = buildRootClass({ size, className });
+
   return (
     <NumberSelectorTemplate
-      value={clamped}
-      displayValue={displayValue}
-      disabled={disabled}
-      decreaseDisabled={disabled || atMin || isEditing}
-      increaseDisabled={disabled || atMax || isEditing}
-      onDecrease={onDecrease}
-      onIncrease={onIncrease}
-      decreaseLabel={decreaseLabel}
-      increaseLabel={increaseLabel}
-      size={size}
-      className={className}
-      editable={editable}
-      isEditing={isEditing}
-      draft={draft}
-      onStartEdit={onStartEdit}
-      onDraftChange={onDraftChange}
-      onCommitEdit={onCommitEdit}
-      onCancelEdit={onCancelEdit}
-      editLabel={editLabel}
+      value = {
+        clamped
+      }
+      displayValue = {
+        displayValue
+      }
+      disabled = {
+        disabled
+      }
+      decreaseDisabled = {
+        disabled || atMin || isEditing
+      }
+      increaseDisabled = {
+        disabled || atMax || isEditing
+      }
+      onDecrease = {
+        onDecrease
+      }
+      onIncrease = {
+        onIncrease
+      }
+      decreaseLabel = {
+        decreaseLabel
+      }
+      increaseLabel = {
+        increaseLabel
+      }
+      rootClass = {
+        rootClass
+      }
+      editable = {
+        editable
+      }
+      isEditing = {
+        isEditing
+      }
+      draft = {
+        draft
+      }
+      onStartEdit = {
+        onStartEdit
+      }
+      onDraftChange = {
+        onDraftChange
+      }
+      onCommitEdit = {
+        onCommitEdit
+      }
+      onCancelEdit = {
+        onCancelEdit
+      }
+      editLabel = {
+        editLabel
+      }
     />
   );
 };

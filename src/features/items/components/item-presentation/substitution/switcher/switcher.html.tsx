@@ -1,49 +1,38 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { SUBSTITUTION_SWITCH_LABEL } from '../../../../constants/substitution-messages.constant';
-import type { SubstitutionSwitcherTemplateProps } from './interfaces/substitution-switcher-template-props.interface';
+import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './switcher.module.css';
 
-export const SubstitutionSwitcherTemplate: React.FC<SubstitutionSwitcherTemplateProps> = ({
-  browse,
+export const SwitcherTemplate: React.FC<TemplateProps> = ({
   canPrev,
   canNext,
   onPrev,
   onNext,
-  direction = 'none',
   content,
   animationKey,
-  className = '',
+  rootClassName,
+  panelClassName,
+  prevNavClassName,
+  nextNavClassName,
+  ariaLabel,
 }) => {
-  const showControls = browse.length > 1;
-
-  const panelAnimClass =
-    direction === 'forward'
-      ? styles['panel-slide-forward']
-      : direction === 'backward'
-        ? styles['panel-slide-backward']
-        : styles['panel-fade'];
-
   return (
-    <div
-      className={[styles.switcher, className].filter(Boolean).join(' ')}
-      aria-label={showControls ? SUBSTITUTION_SWITCH_LABEL : undefined}
-    >
+    <div className={rootClassName} aria-label={ariaLabel}>
       {canPrev ? (
         <button
           type="button"
           onClick={onPrev}
           aria-label="Previous option"
-          className={`${styles['nav-edge']} ${styles['nav-edge-prev']}`}
+          className={prevNavClassName}
         >
-          <span className={styles['nav-icon-wrapper']}>
+          <span className={styles['switcher__nav-icon']}>
             <ChevronLeft size={20} strokeWidth={2.5} />
           </span>
         </button>
       ) : null}
 
-      <div className={styles.content}>
-        <div key={animationKey} className={`${styles.panel} ${panelAnimClass}`}>
+      <div className={styles['switcher__content']}>
+        <div key={animationKey} className={panelClassName}>
           {content}
         </div>
       </div>
@@ -53,9 +42,9 @@ export const SubstitutionSwitcherTemplate: React.FC<SubstitutionSwitcherTemplate
           type="button"
           onClick={onNext}
           aria-label="Next option"
-          className={`${styles['nav-edge']} ${styles['nav-edge-next']}`}
+          className={nextNavClassName}
         >
-          <span className={styles['nav-icon-wrapper']}>
+          <span className={styles['switcher__nav-icon']}>
             <ChevronRight size={20} strokeWidth={2.5} />
           </span>
         </button>

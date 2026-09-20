@@ -1,8 +1,8 @@
 import type { RefObject } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import type { Theme } from 'app/providers/interfaces/theme.interface';
-import type { Appearance } from 'app/providers/interfaces/appearance.interface';
-import type { User } from 'app/providers/interfaces/user.interface';
+import type { Theme } from 'app/providers/theme/interfaces/theme.type';
+import type { Appearance } from 'app/providers/theme/interfaces/appearance.type';
+import type { User } from 'features/auth';
 
 export interface NavigationTemplateProps {
   user: User | null;

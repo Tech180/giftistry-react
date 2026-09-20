@@ -3,22 +3,24 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, test, vi } from 'vitest';
 import { HeaderTemplate } from './header.html';
-import type { HeaderTemplateProps } from './interfaces/header-template-props.interface';
+import type { TemplateProps } from './interfaces/template-props.interface';
+import styles from './header.module.css';
 
-vi.mock('app/providers/auth-context', () => ({
+vi.mock('features/auth', () => ({
   useAuth: () => ({
     canShowAi: false,
     canShowWebSearch: false,
     user: { Id: 'u1', Username: 'owner' },
   }),
+  UserPreviewCard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('app/providers/theme-context', () => ({
+vi.mock('app/providers/theme', () => ({
   useTheme: () => ({ theme: 'light' }),
 }));
 
-vi.mock('../list-settings-panel/list-settings-panel.component', () => ({
-  ListSettingsPanel: () => null,
+vi.mock('../settings-panel/settings-panel.component', () => ({
+  SettingsPanel: () => null,
 }));
 
 vi.mock('shared/utils/wishlist-export', () => ({
@@ -36,25 +38,25 @@ const wishlist = {
   ExpiresAt: null,
   AllowGroupFunds: false,
   IsActive: true,
-} as HeaderTemplateProps['wishlist'];
+} as TemplateProps['wishlist'];
 
-const baseProps: HeaderTemplateProps = {
+const baseProps: TemplateProps = {
   wishlist,
   items: [],
   priorities: [],
   isOwner: true,
+  onGoHome: vi.fn(),
   isExpired: false,
   isArchived: false,
   isDeactivating: false,
   isActivating: false,
   isDeleting: false,
   confirmAction: null,
-  setConfirmAction: vi.fn(),
-  handleDeactivateConfirm: vi.fn(),
-  handleActivateConfirm: vi.fn(),
-  handleDeleteConfirm: vi.fn(),
-  saveTitle: vi.fn(async () => undefined),
-  saveDate: vi.fn(async () => undefined),
+  confirmMessage: '',
+  confirmBannerClassName: styles['header__confirm-banner'],
+  confirmYesBtnClassName: `${styles['header__confirm-btn']} ${styles['header__yes-btn']}`,
+  onConfirmYes: vi.fn(),
+  onConfirmNo: vi.fn(),
   formatDate: () => '',
   toggleAiEnabled: vi.fn(),
   toggleWebSearchEnabled: vi.fn(),
@@ -64,34 +66,50 @@ const baseProps: HeaderTemplateProps = {
   canShowAi: false,
   canShowWebSearch: false,
   isCommentsOpen: false,
-  setIsCommentsOpen: vi.fn(),
-  setIsShareOpen: vi.fn(),
   canImport: true,
   isImportOpen: false,
   onImportToggle: vi.fn(),
-  onDuplicate: vi.fn(),
   isDuplicating: false,
+  duplicateLabel: 'Duplicate',
   isEditingTitle: false,
-  setIsEditingTitle: vi.fn(),
   tempTitle: 'Party List',
-  setTempTitle: vi.fn(),
+  onTitleChange: vi.fn(),
+  onTitleBlur: vi.fn(),
+  onTitleKeyDown: vi.fn(),
+  onStartEditTitle: vi.fn(),
   isEditingDate: false,
-  setIsEditingDate: vi.fn(),
   tempDate: '',
-  setTempDate: vi.fn(),
+  onDateChange: vi.fn(),
+  onStartEditDate: vi.fn(),
   isExportDropdownOpen: false,
-  setIsExportDropdownOpen: vi.fn(),
   exportRef: { current: null },
   isListSettingsOpen: false,
-  setIsListSettingsOpen: vi.fn(),
   listSettingsRef: { current: null },
-  exportContext: { exporterName: 'Owner', isOwner: true, currentUserId: 'u1' },
   showListSettings: false,
   listSettingsReadOnly: false,
+  listSettingsPillClassName: styles['header__action-pill'],
   showOwnerBadgeRegion: false,
+  ownerBadgeClassName: styles['header__owner-badge'],
+  ownerDisplayName: 'Owner',
+  backLinkLabel: 'Back to Dashboard',
+  actionsBusy: false,
+  importPillClassName: styles['header__action-pill'],
+  onOpenShare: vi.fn(),
+  onToggleComments: vi.fn(),
+  onToggleListSettings: vi.fn(),
+  onToggleExport: vi.fn(),
+  onRequestActivate: vi.fn(),
+  onRequestDeactivate: vi.fn(),
+  onRequestDelete: vi.fn(),
+  onRequestDuplicate: vi.fn(),
+  onExportCsv: vi.fn(),
+  onExportXlsx: vi.fn(),
+  onExportTxt: vi.fn(),
+  onExportJson: vi.fn(),
+  onExportPdf: vi.fn(),
 };
 
-function renderHeader(overrides: Partial<HeaderTemplateProps> = {}) {
+function renderHeader(overrides: Partial<TemplateProps> = {}) {
   return render(
     <MemoryRouter>
       <HeaderTemplate {...baseProps} {...overrides} />
@@ -121,10 +139,16 @@ describe('HeaderTemplate archive actions', () => {
   });
 
   test('public guest header hides discuss, export, and dashboard link', () => {
-    renderHeader({ isPublicGuest: true, isOwner: false, canImport: false, showOwnerBadgeRegion: true });
-    expect(screen.getByRole('link', { name: /log in/i })).toBeInTheDocument();
+    renderHeader({
+      isPublicGuest: true,
+      isOwner: false,
+      canImport: false,
+      showOwnerBadgeRegion: true,
+      backLinkLabel: 'Log in',
+    });
+    expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument();
     expect(screen.getByText('Owner')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /back to dashboard/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /back to dashboard/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /discussion/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /export/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /share registry/i })).not.toBeInTheDocument();
@@ -134,7 +158,8 @@ describe('HeaderTemplate archive actions', () => {
     const { container } = renderHeader({
       isOwner: false,
       showOwnerBadgeRegion: true,
-      hideOwnerBadgeOnMobile: true,
+      ownerBadgeClassName: `${styles['header__owner-badge']} ${styles['header__owner-badge--hide-mobile']}`,
+      ownerDisplayName: 'Ada',
       wishlist: {
         ...wishlist,
         UserId: 'owner-2',
@@ -143,7 +168,7 @@ describe('HeaderTemplate archive actions', () => {
       },
     });
 
-    const badgeRegion = container.querySelector('[class*="hideOwnerBadgeOnMobile"]');
+    const badgeRegion = container.querySelector('[class*="owner-badge--hide-mobile"]');
     expect(badgeRegion).not.toBeNull();
     expect(screen.getAllByLabelText('Owner: Ada').length).toBeGreaterThan(0);
   });
@@ -154,7 +179,9 @@ describe('HeaderTemplate archive actions', () => {
       isOwner: false,
       canImport: false,
       showOwnerBadgeRegion: true,
-      hideOwnerBadgeOnMobile: false,
+      ownerBadgeClassName: styles['header__owner-badge'],
+      ownerDisplayName: 'Ada',
+      backLinkLabel: 'Log in',
       wishlist: {
         ...wishlist,
         UserId: 'owner-2',
@@ -163,7 +190,7 @@ describe('HeaderTemplate archive actions', () => {
       },
     });
 
-    expect(container.querySelector('[class*="hideOwnerBadgeOnMobile"]')).toBeNull();
+    expect(container.querySelector('[class*="owner-badge--hide-mobile"]')).toBeNull();
     expect(screen.getAllByLabelText('Owner: Ada').length).toBeGreaterThan(0);
   });
 });

@@ -1,61 +1,71 @@
 import React from 'react';
-import { X } from 'lucide-react';
 import { IconButton } from '../icon-button/icon-button.component';
 import { DrawerTemplateProps } from './interfaces/drawer-template-props.interface';
 import styles from './drawer.module.css';
 
 export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
   drawerClass,
+  headerClass,
+  titleClass,
+  footerClass,
+  overlayClass,
   drawerRef,
   title,
   onClose,
   children,
   miniDrawer,
-  variant = 'default',
-  mobilePresentation = 'rail',
-  integrateMiniInSheet = false,
+  integrateMiniInSheet,
   position,
-  showScrim = false,
+  showScrim,
+  showFooter,
+  showTitleIcon,
+  showIconClose,
+  showTextClose,
   footer,
   titleIcon,
   titleExtra,
   headerExtra,
-  isOpen = false,
+  isOpen,
   onOverlayClick,
-  closeIcon,
+  resolvedCloseIcon,
   closeAriaLabel,
 }) => {
-  const isOverlay = variant === 'overlay';
-  const isSheet = mobilePresentation === 'sheet';
-  const resolvedCloseAriaLabel = closeAriaLabel ?? (isOverlay ? 'Close sidebar' : 'Close');
-
   const header = (
-    <div className={isOverlay ? styles['drawer-header-overlay'] : styles['drawer-header']}>
-      <h4 className={isOverlay ? styles['drawer-title-overlay'] : styles['drawer-title']}>
-        {titleIcon && <span className={styles['drawer-title-icon']}>{titleIcon}</span>}
+    <div className={headerClass}>
+      <h4 className={titleClass}>
+        {showTitleIcon && (
+          <span className={styles['drawer__title-icon']}>{titleIcon}</span>
+        )}
         {title}
         {titleExtra}
       </h4>
-      <div className={styles['drawer-header-actions']}>
+      <div className={styles['drawer__header-actions']}>
         {headerExtra}
-        {isOverlay ? (
+        {showIconClose && (
           <IconButton
-            icon={closeIcon ?? <X size={20} />}
-            ariaLabel={resolvedCloseAriaLabel}
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
+            icon = {
+              resolvedCloseIcon
+            }
+            ariaLabel = {
+              closeAriaLabel
+            }
+            variant = {
+              'ghost'
+            }
+            size = {
+              'sm'
+            }
+            onClick = {
+              onClose
+            }
           />
-        ) : closeIcon ? (
-          <IconButton
-            icon={closeIcon}
-            ariaLabel={resolvedCloseAriaLabel}
-            variant="ghost"
-            size="sm"
+        )}
+        {showTextClose && (
+          <button
             onClick={onClose}
-          />
-        ) : (
-          <button onClick={onClose} className={styles['drawer-close']} aria-label={resolvedCloseAriaLabel}>
+            className={styles['drawer__close']}
+            aria-label={closeAriaLabel}
+          >
             &times;
           </button>
         )}
@@ -65,15 +75,13 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
 
   const bodyAndFooter = (
     <>
-      <div className={isOverlay ? styles['drawer-body-overlay'] : styles['drawer-body']}>
-        {children}
-      </div>
-      {footer && <div className={styles['drawer-footer']}>{footer}</div>}
+      <div className={styles['drawer__body']}>{children}</div>
+      {showFooter && <div className={footerClass}>{footer}</div>}
     </>
   );
 
   const mainColumn = integrateMiniInSheet ? (
-    <div className={styles['drawer-sheet-main']}>{bodyAndFooter}</div>
+    <div className={styles['drawer__sheet-main']}>{bodyAndFooter}</div>
   ) : (
     bodyAndFooter
   );
@@ -82,7 +90,7 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
     <>
       {showScrim && (
         <div
-          className={`${styles.overlay} ${isSheet ? styles['sheet-scrim'] : ''} ${isOpen ? styles['overlay-active'] : ''}`}
+          className={overlayClass}
           onClick={onOverlayClick}
           aria-hidden={!isOpen}
           data-testid="drawer-scrim"
@@ -95,10 +103,13 @@ export const DrawerTemplate: React.FC<DrawerTemplateProps> = ({
         aria-hidden={!isOpen}
       >
         {!integrateMiniInSheet && miniDrawer}
-        <div className={styles['drawer-panel']}>
+        <div className={styles['drawer__panel']}>
           {header}
           {integrateMiniInSheet ? (
-            <div className={styles['drawer-sheet-content']} data-testid="drawer-sheet-content">
+            <div
+              className={styles['drawer__sheet-content']}
+              data-testid="drawer-sheet-content"
+            >
               {position === 'right' && miniDrawer}
               {mainColumn}
               {position === 'left' && miniDrawer}

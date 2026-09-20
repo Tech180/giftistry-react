@@ -1,88 +1,17 @@
 import React from 'react';
-import { ShieldAlert, X } from 'lucide-react';
-import { Button, SelectMenu, UserAvatar } from 'shared/ui';
+import { X } from 'lucide-react';
+import { SelectMenu } from 'shared/ui';
+import { getInitialsFromDisplayName } from 'shared/utils/get-initials.util';
 import {
   SHARE_ROLE_MENU_TITLE,
   SHARE_ROLE_OPTIONS,
 } from 'features/wishlists/constants/share-role-options.constant';
-import type { DemotionCautionViewProps } from './interfaces/demotion-caution-view-props.interface';
-import { ManagementTemplateProps } from './interfaces/management.interface';
+import { DemotionCaution } from './components/demotion-caution/demotion-caution.component';
+import { TemplateProps } from './interfaces/template-props.interface';
 import styles from './management.module.css';
-import fabStyles from '../share-fab-panel/share-fab-panel.module.css';
+import fabStyles from '../fab-panel/fab-panel.module.css';
 
-const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase();
-
-const DemotionCautionView: React.FC<DemotionCautionViewProps> = ({
-  title,
-  description,
-  proceedPrompt,
-  displayName,
-  username,
-  avatar,
-  error,
-  isConfirming,
-  onConfirm,
-  onCancel,
-}) => {
-  const initials = displayName ? getInitials(displayName) : '?';
-
-  return (
-    <div className={styles.caution} role="region" aria-labelledby="role-demotion-caution-title">
-      <div className={styles['caution-body']}>
-        <div className={styles['caution-header']}>
-          <ShieldAlert className={styles['caution-icon']} aria-hidden />
-          <h3 id="role-demotion-caution-title" className={styles['caution-title']}>
-            {title}
-          </h3>
-        </div>
-        {displayName && (
-          <div className={styles['caution-person']}>
-            <UserAvatar
-              avatar={avatar}
-              alt={displayName}
-              initials={initials || displayName[0]?.toUpperCase() || '?'}
-              className={styles['caution-avatar']}
-              imageClassName={styles['caution-avatar-img']}
-              initialsClassName={styles['caution-avatar-initials']}
-            />
-            <div className={styles['caution-person-text']}>
-              <p className={styles['caution-subject']}>{displayName}</p>
-              {username && <p className={styles['caution-username']}>@{username}</p>}
-            </div>
-          </div>
-        )}
-        <p className={styles['caution-desc']}>{description}</p>
-        {error && <p className={styles['error-text']}>{error}</p>}
-      </div>
-      <div className={styles['caution-footer']}>
-        <p className={styles['caution-proceed-prompt']}>{proceedPrompt}</p>
-        <div className={styles['caution-actions']}>
-          <Button type="button" variant="secondary" size="sm" onClick={onCancel} disabled={isConfirming}>
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={onConfirm}
-            disabled={isConfirming}
-            isLoading={isConfirming}
-          >
-            Proceed
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export const ShareManagementTemplate: React.FC<ManagementTemplateProps> = ({
+export const ShareManagementTemplate: React.FC<TemplateProps> = ({
   variant = 'classic',
   ownerInfo,
   shares,
@@ -104,17 +33,37 @@ export const ShareManagementTemplate: React.FC<ManagementTemplateProps> = ({
   if (pendingDemotionShareId) {
     const pendingShare = shares.find((share) => share.Id === pendingDemotionShareId) ?? null;
     return (
-      <DemotionCautionView
-        title={cautionTitle}
-        description={cautionDescription}
-        proceedPrompt={cautionProceedPrompt}
-        displayName={pendingShare ? getDisplayName(pendingShare) : null}
-        username={pendingShare?.Username ?? null}
-        avatar={pendingShare?.Avatar ?? null}
-        error={error}
-        isConfirming={updatingId === pendingDemotionShareId}
-        onConfirm={onConfirmDemotion}
-        onCancel={onCancelDemotion}
+      <DemotionCaution
+        title = {
+          cautionTitle
+        }
+        description = {
+          cautionDescription
+        }
+        proceedPrompt = {
+          cautionProceedPrompt
+        }
+        displayName = {
+          pendingShare ? getDisplayName(pendingShare) : null
+        }
+        username = {
+          pendingShare?.Username ?? null
+        }
+        avatar = {
+          pendingShare?.Avatar ?? null
+        }
+        error = {
+          error
+        }
+        isConfirming = {
+          updatingId === pendingDemotionShareId
+        }
+        onConfirm = {
+          onConfirmDemotion
+        }
+        onCancel = {
+          onCancelDemotion
+        }
       />
     );
   }
@@ -148,7 +97,7 @@ export const ShareManagementTemplate: React.FC<ManagementTemplateProps> = ({
         ) : (
           shares.map((share) => {
             const displayName = getDisplayName(share);
-            const initials = getInitials(displayName);
+            const initials = getInitialsFromDisplayName(displayName);
 
             return (
               <li key={share.Id} className={fabStyles.compactListItem}>
@@ -163,15 +112,28 @@ export const ShareManagementTemplate: React.FC<ManagementTemplateProps> = ({
                 </div>
                 {isOwner ? (
                   <SelectMenu
-                    value={share.Role}
-                    options={SHARE_ROLE_OPTIONS}
-                    onChange={(next) =>
-                      onRoleChange(share.Id, next as 'viewer' | 'collaborator')
+                    value = {
+                      share.Role
                     }
-                    disabled={updatingId === share.Id}
-                    variant="compact"
-                    menuTitle={SHARE_ROLE_MENU_TITLE}
-                    aria-label={`Role for ${displayName}`}
+                    options = {
+                      SHARE_ROLE_OPTIONS
+                    }
+                    onChange = {
+                      (next) =>
+                                            onRoleChange(share.Id, next as 'viewer' | 'collaborator')
+                    }
+                    disabled = {
+                      updatingId === share.Id
+                    }
+                    variant = {
+                      'compact'
+                    }
+                    menuTitle = {
+                      SHARE_ROLE_MENU_TITLE
+                    }
+                    aria-label = {
+                      `Role for ${displayName}`
+                    }
                   />
                 ) : (
                   <span className={fabStyles.compactUserSub}>
@@ -202,7 +164,7 @@ export const ShareManagementTemplate: React.FC<ManagementTemplateProps> = ({
     <ul className={styles.list}>
       {shares.map((share) => {
         const displayName = getDisplayName(share);
-        const initials = getInitials(displayName);
+        const initials = getInitialsFromDisplayName(displayName);
 
         return (
           <li key={share.Id} className={styles['list-item']}>
@@ -218,15 +180,28 @@ export const ShareManagementTemplate: React.FC<ManagementTemplateProps> = ({
             {isOwner ? (
               <div className={styles.actions}>
                 <SelectMenu
-                  value={share.Role}
-                  options={SHARE_ROLE_OPTIONS}
-                  onChange={(next) =>
-                    onRoleChange(share.Id, next as 'viewer' | 'collaborator')
+                  value = {
+                    share.Role
                   }
-                  disabled={updatingId === share.Id}
-                  variant="compact"
-                  menuTitle={SHARE_ROLE_MENU_TITLE}
-                  aria-label={`Role for ${displayName}`}
+                  options = {
+                    SHARE_ROLE_OPTIONS
+                  }
+                  onChange = {
+                    (next) =>
+                                        onRoleChange(share.Id, next as 'viewer' | 'collaborator')
+                  }
+                  disabled = {
+                    updatingId === share.Id
+                  }
+                  variant = {
+                    'compact'
+                  }
+                  menuTitle = {
+                    SHARE_ROLE_MENU_TITLE
+                  }
+                  aria-label = {
+                    `Role for ${displayName}`
+                  }
                 />
                 <button
                   type="button"
@@ -235,7 +210,11 @@ export const ShareManagementTemplate: React.FC<ManagementTemplateProps> = ({
                   disabled={removingId === share.Id}
                   title="Remove access"
                 >
-                  <X size={14} />
+                  <X
+                    size = {
+                      14
+                    }
+                  />
                 </button>
               </div>
             ) : (

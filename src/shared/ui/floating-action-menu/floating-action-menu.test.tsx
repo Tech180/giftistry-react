@@ -147,10 +147,10 @@ describe('FloatingActionMenu', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /page actions/i }));
     const menu = screen.getByRole('menu', { name: /page actions/i });
-    const dividers = menu.querySelectorAll('[class*="toolDivider"]');
+    const dividers = menu.querySelectorAll('[class*="tool-divider"]');
     expect(dividers).toHaveLength(1);
     expect(screen.getByRole('menuitem', { name: /view owner: ada/i })).toBeInTheDocument();
-    expect(container.querySelector('[class*="toolDivider"]')).toBeTruthy();
+    expect(container.querySelector('[class*="tool-divider"]')).toBeTruthy();
   });
 
   test('grows toolbar height to fit five or more actions', () => {
@@ -173,7 +173,7 @@ describe('FloatingActionMenu', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /page actions/i }));
 
-    const dock = container.querySelector('[class*="stateToolbar"]') as HTMLElement | null;
+    const dock = container.querySelector('[class*="state-toolbar"]') as HTMLElement | null;
     expect(dock).not.toBeNull();
     expect(dock!.style.height).toBe('329px');
     expect(screen.getByRole('menuitem', { name: /five/i })).toBeInTheDocument();
@@ -202,7 +202,7 @@ describe('FloatingActionMenu', () => {
     fireEvent.click(screen.getByRole('button', { name: /page actions/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /^export$/i }));
 
-    const dock = container.querySelector('[class*="statePanel"]') as HTMLElement | null;
+    const dock = container.querySelector('[class*="state-panel"]') as HTMLElement | null;
     expect(dock).not.toBeNull();
     // PAD 32 + HEADER 44 + 5×38 + 4×4 = 282
     expect(dock!.style.height).toBe('282px');
@@ -265,7 +265,7 @@ describe('FloatingActionMenu', () => {
     fireEvent.click(screen.getByRole('button', { name: /page actions/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /^share$/i }));
 
-    const dock = container.querySelector('[class*="statePanel"]') as HTMLElement | null;
+    const dock = container.querySelector('[class*="state-panel"]') as HTMLElement | null;
     expect(dock).not.toBeNull();
     expect(dock!.style.width).toBe('320px');
     expect(dock!.style.height).toBe('380px');
@@ -318,7 +318,7 @@ describe('FloatingActionMenu', () => {
     fireEvent.click(screen.getByRole('button', { name: /page actions/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /^import$/i }));
 
-    const dock = container.querySelector('[class*="statePanel"]') as HTMLElement | null;
+    const dock = container.querySelector('[class*="state-panel"]') as HTMLElement | null;
     expect(dock).not.toBeNull();
     expect(dock!.style.width).toBe('288px');
     expect(dock!.style.height).toBe('268px');

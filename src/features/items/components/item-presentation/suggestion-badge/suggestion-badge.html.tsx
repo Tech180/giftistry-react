@@ -1,35 +1,80 @@
 import React from 'react';
 import { UserAvatar } from 'shared/ui';
-import { UserPreviewCard } from 'shared/ui/user-preview-card/user-preview-card.component';
-import { UserAvatarBox } from '../user-avatar-box/user-avatar-box.html';
-import { getClaimInitials } from '../claim-badge/utils/claim-badge-display.util';
-import { SuggestionBadgeProps } from './interfaces/suggestion-badge-props.interface';
-import styles from './suggestion-badge.module.css';
+import { UserPreviewCard } from 'features/auth';
+import { UserAvatarBox } from '../user-avatar-box/user-avatar-box.component';
+import type { TemplateProps } from './interfaces/template-props.interface';
 
-export const SuggestionBadge: React.FC<SuggestionBadgeProps> = ({ userId, displayName }) => {
-  const ariaLabel = `Suggestion by ${displayName}`;
-
+export const SuggestionBadgeTemplate: React.FC<TemplateProps> = ({
+  userId,
+  displayName,
+  ariaLabel,
+  initials,
+  avatarClassName,
+  avatarImageClassName,
+  avatarInitialsClassName,
+}) => {
   return (
-    <UserAvatarBox title="Suggestion" ariaLabel={ariaLabel} variant="suggestion">
+    <UserAvatarBox
+      title = {
+        'Suggestion'
+      }
+      ariaLabel = {
+        ariaLabel
+      }
+      variant = {
+        'suggestion'
+      }
+    >
       {userId ? (
-        <UserPreviewCard userId={userId} displayName={displayName}>
+        <UserPreviewCard
+          userId = {
+            userId
+          }
+          displayName = {
+            displayName
+          }
+        >
           <UserAvatar
-            avatar={null}
-            alt={displayName}
-            initials={getClaimInitials(displayName)}
-            className={styles['suggestion-badge-avatar']}
-            imageClassName={styles['suggestion-badge-avatar-img']}
-            initialsClassName={styles['suggestion-badge-avatar-initials']}
+            avatar = {
+              null
+            }
+            alt = {
+              displayName
+            }
+            initials = {
+              initials
+            }
+            className = {
+              avatarClassName
+            }
+            imageClassName = {
+              avatarImageClassName
+            }
+            initialsClassName = {
+              avatarInitialsClassName
+            }
           />
         </UserPreviewCard>
       ) : (
         <UserAvatar
-          avatar={null}
-          alt={displayName}
-          initials={getClaimInitials(displayName)}
-          className={styles['suggestion-badge-avatar']}
-          imageClassName={styles['suggestion-badge-avatar-img']}
-          initialsClassName={styles['suggestion-badge-avatar-initials']}
+          avatar = {
+            null
+          }
+          alt = {
+            displayName
+          }
+          initials = {
+            initials
+          }
+          className = {
+            avatarClassName
+          }
+          imageClassName = {
+            avatarImageClassName
+          }
+          initialsClassName = {
+            avatarInitialsClassName
+          }
         />
       )}
     </UserAvatarBox>

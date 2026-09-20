@@ -1,4 +1,5 @@
 import type { BackgroundJobView } from '../interfaces/background-job.interface';
+import type { ImportMode } from '../interfaces/import-mode.type';
 import type {
   JobTimelineView,
   TimelineStreamLane,
@@ -6,15 +7,13 @@ import type {
 import type {
   ImportTimelineStep,
   ImportTimelineStepId,
-} from 'features/items/components/import/import-strip/interfaces/import-timeline-step.interface';
+} from 'features/items/components/import/strip/interfaces/import-timeline-step.interface';
 import { IMPORT_TIMELINE_STEP_ORDER } from '../constants/job.constants';
 import { formatProgressRate } from './format-progress-rate.util';
 import {
   formatStreamLaneCaption,
   formatStreamLaneDetail,
 } from './format-stream-lane-caption.util';
-
-type ImportMode = 'create-list' | 'existing-list';
 
 function progressPercent(done: number, total: number): number {
   if (total <= 0) return done > 0 ? 100 : 0;

@@ -1,10 +1,12 @@
 import React from 'react';
-import { Drawer, MiniDrawer } from 'shared/ui';
+import { Drawer } from 'shared/ui';
+import { MiniDrawer } from 'features/items';
 import { CommentSection, DeletedCommentsToggle } from 'features/comments';
-import { CommentsTemplateProps } from './interfaces/comments-template-props.interface';
+import type { TemplateProps } from './interfaces/template-props.interface';
+import styles from './comments.module.css';
 
-export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
-  isOpen,
+export const CommentsTemplate: React.FC<TemplateProps> = ({
+  isDrawerOpen,
   onClose,
   items,
   taggedItemIds,
@@ -24,67 +26,129 @@ export const CommentsTemplate: React.FC<CommentsTemplateProps> = ({
   isArchived,
   autoRollover,
   handleItemTaggedClick,
-  collapseDrawerWhileTagging = false,
   showDeletedComments,
   onToggleShowDeletedComments,
-}) => {
-  const drawerTaggingActive = isTaggingModeActive || isReplyTaggingModeActive;
-  const drawerTaggedIds = isReplyTaggingModeActive ? replyTaggedItemIds : taggedItemIds;
-  const isDrawerOpen = isOpen && !collapseDrawerWhileTagging;
-
-  return (
+  drawerTitle,
+  tagsLabel,
+  drawerTaggingActive,
+  drawerTaggedIds,
+  onRemoveTaggedId,
+}) => (
+  <div className={styles.comments}>
     <Drawer
-      isOpen={isDrawerOpen}
-      position="right"
-      title="Comments"
-      onClose={onClose}
-      mobilePresentation="sheet"
-      overflowVisible={true}
-      headerExtra={
+      isOpen = {
+        isDrawerOpen
+      }
+      position = {
+        'right'
+      }
+      title = {
+        drawerTitle
+      }
+      onClose = {
+        onClose
+      }
+      mobilePresentation = {
+        'sheet'
+      }
+      overflowVisible = {
+        true
+      }
+      headerExtra = {
         <DeletedCommentsToggle
-          showDeletedComments={showDeletedComments}
-          onToggle={onToggleShowDeletedComments}
+          showDeletedComments = {
+            showDeletedComments
+          }
+          onToggle = {
+            onToggleShowDeletedComments
+          }
         />
       }
-      miniDrawer={
+      miniDrawer = {
         <MiniDrawer
-          items={items}
-          selectedIds={drawerTaggedIds}
-          onRemoveId={(id) => {
-            if (isReplyTaggingModeActive) {
-              setReplyTaggedItemIds(replyTaggedItemIds.filter((tagId) => tagId !== id));
-            } else {
-              setTaggedItemIds(taggedItemIds.filter((tagId) => tagId !== id));
-            }
-          }}
-          onItemClick={handleItemTaggedClick}
-          isActive={drawerTaggingActive}
-          position="right"
-          label="Tags"
+          items = {
+            items
+          }
+          selectedIds = {
+            drawerTaggedIds
+          }
+          onRemoveId = {
+            onRemoveTaggedId
+          }
+          onItemClick = {
+            handleItemTaggedClick
+          }
+          isActive = {
+            drawerTaggingActive
+          }
+          position = {
+            'right'
+          }
+          label = {
+            tagsLabel
+          }
         />
       }
     >
       <CommentSection
-        listId={listId}
-        listOwnerId={listOwnerId}
-        ownerUsername={ownerUsername}
-        ownerDisplayName={ownerDisplayName}
-        isOwner={isOwner}
-        isExpired={isExpired}
-        isArchived={isArchived}
-        autoRollover={autoRollover}
-        items={items}
-        onItemTaggedClick={handleItemTaggedClick}
-        isTaggingModeActive={isTaggingModeActive}
-        setIsTaggingModeActive={setIsTaggingModeActive}
-        taggedItemIds={taggedItemIds}
-        setTaggedItemIds={setTaggedItemIds}
-        isReplyTaggingModeActive={isReplyTaggingModeActive}
-        setIsReplyTaggingModeActive={setIsReplyTaggingModeActive}
-        replyTaggedItemIds={replyTaggedItemIds}
-        setReplyTaggedItemIds={setReplyTaggedItemIds}
-        showDeletedComments={showDeletedComments}
+        listId = {
+          listId
+        }
+        listOwnerId = {
+          listOwnerId
+        }
+        ownerUsername = {
+          ownerUsername
+        }
+        ownerDisplayName = {
+          ownerDisplayName
+        }
+        isOwner = {
+          isOwner
+        }
+        isExpired = {
+          isExpired
+        }
+        isArchived = {
+          isArchived
+        }
+        autoRollover = {
+          autoRollover
+        }
+        items = {
+          items
+        }
+        onItemTaggedClick = {
+          handleItemTaggedClick
+        }
+        isTaggingModeActive = {
+          isTaggingModeActive
+        }
+        setIsTaggingModeActive = {
+          setIsTaggingModeActive
+        }
+        taggedItemIds = {
+          taggedItemIds
+        }
+        setTaggedItemIds = {
+          setTaggedItemIds
+        }
+        isReplyTaggingModeActive = {
+          isReplyTaggingModeActive
+        }
+        setIsReplyTaggingModeActive = {
+          setIsReplyTaggingModeActive
+        }
+        replyTaggedItemIds = {
+          replyTaggedItemIds
+        }
+        setReplyTaggedItemIds = {
+          setReplyTaggedItemIds
+        }
+        showDeletedComments = {
+          showDeletedComments
+        }
       />
     </Drawer>
-  );
-};
+  </div>
+);

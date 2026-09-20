@@ -11,7 +11,7 @@ describe('Button Primitive', () => {
   test('displays loading spinner when isLoading is true', () => {
     render(<Button isLoading>Click Me</Button>);
     expect(screen.getByText('Click Me')).toBeInTheDocument();
-    const spinner = screen.getByRole('button').querySelector('.spinner');
+    const spinner = screen.getByRole('button').querySelector('[class*="spinner"]');
     expect(spinner).toBeInTheDocument();
   });
 });

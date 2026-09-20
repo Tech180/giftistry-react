@@ -1,10 +1,11 @@
 import React from 'react';
 import { AlertCircle, Eye, EyeOff, Lock } from 'lucide-react';
 import { Input, Button, Card, EnterPanel } from 'shared/ui';
-import { ChangePasswordFormTemplateProps } from '../../interfaces/change-password-form-template-props.interface';
+import type { TemplateProps } from './interfaces/template-props.interface';
+
 import styles from './change-password-form.module.css';
 
-export const ChangePasswordFormTemplate: React.FC<ChangePasswordFormTemplateProps> = ({
+export const ChangePasswordFormTemplate: React.FC<TemplateProps> = ({
   currentPassword,
   setCurrentPassword,
   newPassword,

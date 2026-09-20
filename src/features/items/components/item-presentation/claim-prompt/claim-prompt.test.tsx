@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
-import { ClaimPrompt } from './claim-prompt.html';
+import { ClaimPrompt } from './claim-prompt.component';
 
 describe('ClaimPrompt', () => {
   test('stacks anonymous toggle under the claim prompt', () => {

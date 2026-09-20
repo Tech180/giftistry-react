@@ -1,10 +1,10 @@
 export { jobsApi } from './api/jobs.api';
 export { useWishlistJob } from './hooks/use-wishlist-job';
 export { useBackgroundJobs } from './hooks/use-background-jobs';
-export type { BackgroundJobsScope } from './hooks/use-background-jobs';
-export { JobProgressBox } from './components/job-progress-box/job-progress-box.html';
+export type { BackgroundJobsScope } from './interfaces/background-jobs-scope.type';
+export { ProgressBox as JobProgressBox } from './components/progress-box/progress-box.component';
 export { Timeline } from './components/timeline/timeline.component';
-export { BackgroundProcessesPanel } from './components/background-processes-panel/background-processes-panel.html';
+export { ProcessesPanel as BackgroundProcessesPanel } from './components/processes-panel/processes-panel.component';
 export { mapJobToTimeline, buildSeedTimeline } from './utils/map-job-to-timeline.util';
 export { formatImportJobSummary } from './utils/format-import-job-summary.util';
 export { formatJobTerminalSummary } from './utils/format-job-summary.util';

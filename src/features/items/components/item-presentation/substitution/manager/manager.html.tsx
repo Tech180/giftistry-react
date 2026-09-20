@@ -1,10 +1,10 @@
 import React from 'react';
 import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Button, Switch } from 'shared/ui';
-import type { SubstitutionManagerTemplateProps } from './interfaces/substitution-manager-template-props.interface';
+import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './manager.module.css';
 
-export const SubstitutionManagerTemplate: React.FC<SubstitutionManagerTemplateProps> = ({
+export const ManagerTemplate: React.FC<TemplateProps> = ({
   allowSubstitutions,
   onAllowSubstitutionsChange,
   ownerOptions,
@@ -20,10 +20,10 @@ export const SubstitutionManagerTemplate: React.FC<SubstitutionManagerTemplatePr
 }) => {
   return (
     <section className={styles.manager} aria-label="Substitutions">
-      <div className={styles.header}>
-        <div className={styles.title}>Substitutions</div>
-        <div className={styles['switch-row']}>
-          <label htmlFor="allow-substitutions" className={styles['switch-label']}>
+      <div className={styles['manager__header']}>
+        <div className={styles['manager__title']}>Substitutions</div>
+        <div className={styles['manager__switch-row']}>
+          <label htmlFor="allow-substitutions" className={styles['manager__switch-label']}>
             Allow substitutions
           </label>
           <Switch
@@ -36,14 +36,14 @@ export const SubstitutionManagerTemplate: React.FC<SubstitutionManagerTemplatePr
           />
         </div>
         {allowSubstitutions ? (
-          <div className={styles['action-row']}>
-            <p className={styles['action-hint']}>
+          <div className={styles['manager__action-row']}>
+            <p className={styles['manager__action-hint']}>
               Add owner-approved alternatives. Claimers can still add one custom option.
               {!hasParentItem ? ' Save the item first to add approved substitutions.' : ''}
             </p>
             <button
               type="button"
-              className={styles['action-btn']}
+              className={styles['manager__action-btn']}
               disabled={disabled || busy || !canAddMore || !hasParentItem}
               onClick={onAddClick}
               title="Add approved substitution"
@@ -51,12 +51,12 @@ export const SubstitutionManagerTemplate: React.FC<SubstitutionManagerTemplatePr
             >
               <Plus size={16} />
               {ownerOptions.length > 0 && (
-                <span className={styles['action-badge']}>{ownerOptions.length}</span>
+                <span className={styles['manager__action-badge']}>{ownerOptions.length}</span>
               )}
             </button>
           </div>
         ) : (
-          <p className={styles.hint}>
+          <p className={styles['manager__hint']}>
             Add owner-approved alternatives. Claimers can still add one custom option after a
             warning when this is off.
           </p>
@@ -66,13 +66,13 @@ export const SubstitutionManagerTemplate: React.FC<SubstitutionManagerTemplatePr
       {allowSubstitutions ? (
         <>
           {ownerOptions.length > 0 && (
-            <ul className={styles.list}>
+            <ul className={styles['manager__list']}>
               {ownerOptions.map((option, index) => (
-                <li key={option.Id} className={styles.row}>
-                  <span className={styles['row-name']}>
-                    <span className={styles['row-name-text']}>{option.Item.Name}</span>
+                <li key={option.Id} className={styles['manager__row']}>
+                  <span className={styles['manager__row-name']}>
+                    <span className={styles['manager__row-name-text']}>{option.Item.Name}</span>
                   </span>
-                  <div className={styles['row-actions']}>
+                  <div className={styles['manager__row-actions']}>
                     <Button
                       variant="ghost"
                       size="sm"

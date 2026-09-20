@@ -4,22 +4,22 @@
   gap: var(--spacing-sm);
 }
 
-.header {
+.manager__header {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
 }
 
-.title {
+.manager__title {
   margin: 0;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.switch-row {
+.manager__switch-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,23 +27,23 @@
   gap: var(--spacing-base);
 }
 
-.switch-label {
+.manager__switch-label {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   font-size: 0.8125rem;
   color: var(--text);
 }
 
-.hint {
+.manager__hint {
   margin: 0;
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   line-height: 1.4;
 }
 
-.list {
+.manager__list {
   display: flex;
   flex-direction: column;
   list-style: none;
@@ -51,20 +51,20 @@
   padding: 0;
 }
 
-.row {
+.manager__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) 0;
   border-bottom: 1px solid var(--border);
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
-.row:last-child {
-  border-bottom: none;
-}
-
-.row-name {
+.manager__row-name {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -75,26 +75,26 @@
   overflow: hidden;
 }
 
-.row-name-text {
+.manager__row-name-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.row-actions {
+.manager__row-actions {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
   flex-shrink: 0;
 }
 
-.action-row {
+.manager__action-row {
   display: flex;
   gap: var(--spacing-base);
   align-items: stretch;
 }
 
-.action-hint {
+.manager__action-hint {
   flex: 1;
   font-size: var(--font-size-xs);
   color: var(--text-muted);
@@ -102,7 +102,7 @@
   line-height: 1.4;
 }
 
-.action-btn {
+.manager__action-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -113,33 +113,33 @@
   border-radius: var(--radius-md, var(--radius));
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast, 0.15s ease);
   padding: var(--spacing-xs);
   position: relative;
   outline: none;
-  width: 56px;
+  width: 3.5rem;
   align-self: stretch;
   font-family: inherit;
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+    background-color: var(--surface-hover);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
-.action-btn:hover:not(:disabled) {
-  border-color: var(--primary);
-  color: var(--primary);
-  background-color: var(--surface-hover);
-}
-
-.action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.action-badge {
+.manager__action-badge {
   position: absolute;
   top: -0.375rem;
   right: -0.375rem;
   background-color: var(--primary);
   color: var(--primary-text);
-  font-size: 0.625rem;
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-bold);
   border-radius: var(--radius-full);
   min-width: var(--spacing-md);

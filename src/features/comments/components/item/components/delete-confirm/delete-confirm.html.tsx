@@ -7,7 +7,7 @@ export const DeleteConfirmTemplate: React.FC<DeleteConfirmProps> = ({
   onCancel,
 }) => {
   return (
-    <div className={styles['comment-delete-dropdown']}>
+    <div className={styles['delete-dropdown']}>
       <span className={styles['delete-confirm-text']}>Are you sure you want to delete this comment?</span>
       <div className={styles['delete-confirm-actions']}>
         <button

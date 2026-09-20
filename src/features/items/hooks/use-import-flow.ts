@@ -12,19 +12,17 @@ import {
 import type { TimelineStreamLane } from 'features/jobs/interfaces/job-timeline-view.interface';
 import { useElapsedSeconds } from 'features/jobs/hooks/use-elapsed-seconds';
 import { withActiveStepCaptions } from 'features/jobs/utils/with-active-step-captions.util';
-import {
-  readImportFile,
-  type ReadImportFileResult,
-} from 'features/items/utils/read-import-file.util';
+import { readImportFile } from 'features/items/utils/read-import-file.util';
+import type { ReadImportFileResult } from 'features/items/interfaces/read-import-file-result.interface';
 import { filenameStemAsTitle } from 'features/items/utils/detect-import-format.util';
 import {
   detectPasteImportFormat,
   pasteFileNameForFormat,
 } from 'features/items/utils/detect-paste-import-format.util';
-import { useToast } from 'app/providers/toast-context';
-import { useUserSocket } from 'app/providers/user-socket-context';
-import type { ImportTimelineStep } from 'features/items/components/import/import-strip/interfaces/import-timeline-step.interface';
-import type { ImportStripPhase } from 'features/items/components/import/import-strip/interfaces/import-strip-props.interface';
+import { useToast } from 'shared/providers/toast';
+import { useUserSocket } from 'shared/providers/user-socket';
+import type { ImportTimelineStep } from 'features/items/components/import/strip/interfaces/import-timeline-step.interface';
+import type { Phase } from 'features/items/components/import/strip/interfaces/phase.type';
 import type { UseImportFlowOptions } from './interfaces/use-import-flow-options.interface';
 import type { UseImportFlowResult } from './interfaces/use-import-flow-result.interface';
 
@@ -35,7 +33,7 @@ export function useImportFlow({
   onImported,
 }: UseImportFlowOptions): UseImportFlowResult {
   const { showToast } = useToast();
-  const [phase, setPhase] = useState<ImportStripPhase>('idle');
+  const [phase, setPhase] = useState<Phase>('idle');
   const [dropzoneError, setDropzoneError] = useState<string | null>(null);
   const [uploadPercent, setUploadPercent] = useState(0);
   const [uploadLabel, setUploadLabel] = useState('Reading file…');
@@ -118,16 +116,22 @@ export function useImportFlow({
       }
     };
 
-    const handleJobUpdate = (data: { Job?: BackgroundJobView }) => {
-      if (data?.Job?.Id !== activeJobId) return;
-      applyJobTimeline(data.Job);
+    const handleJobUpdate = (data: unknown) => {
+      const job =
+        data && typeof data === 'object' && 'Job' in data
+          ? (data as { Job?: BackgroundJobView }).Job
+          : undefined;
+      if (!job || job.Id !== activeJobId) {
+        return;
+      }
+      applyJobTimeline(job);
 
-      if (isTerminalJobStatus(data.Job.Status)) {
-        finishTerminal(data.Job);
+      if (isTerminalJobStatus(job.Status)) {
+        finishTerminal(job);
       } else {
-        const nextListId = data.Job.ListId ?? listId ?? null;
+        const nextListId = job.ListId ?? listId ?? null;
         if (nextListId) {
-          notifyListReady(nextListId, data.Job);
+          notifyListReady(nextListId, job);
         }
       }
     };

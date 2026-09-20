@@ -1,0 +1,52 @@
+import type React from 'react';
+import type { Item } from '../../../interfaces/item.interface';
+import type { ListShare } from 'features/wishlists/interfaces/list-share.interface';
+import type { LinkingAudienceContext } from '../../../interfaces/linking-audience-context.interface';
+import type { ItemEnrichJobResult } from 'features/jobs/interfaces/item-enrich-job-result.interface';
+import type { SubstitutionDrawerChrome } from '../../../interfaces/substitution-drawer-chrome.interface';
+
+export interface Props {
+  listId: string;
+  isOwner: boolean;
+  /** Item authority (owner or collaborator). Defaults to `isOwner` when omitted. */
+  canCollaborate?: boolean;
+  onSuccess: () => void;
+  existingCategories?: string[];
+  item?: Item | null;
+  /** Fired after an `update-item` enrich job wrote fresh details onto the item. */
+  onItemEnriched?: () => void;
+  /** Fired when closing mid-enrich promotes a draft to create-from-url (like Auto-add). */
+  onAutoEnrichStarted?: (result: ItemEnrichJobResult) => void;
+  onDraftChange?: (draft: Partial<Item> | null) => void;
+  wishlistItems?: Item[];
+  linkedItemIds: string[];
+  setLinkedItemIds: React.Dispatch<React.SetStateAction<string[]>>;
+  resolvedLinkedCount: number;
+  relatedItemIds: string[];
+  resolvedRelatedCount: number;
+  isLinkingModeActive: boolean;
+  setIsLinkingModeActive: React.Dispatch<React.SetStateAction<boolean>>;
+  isRelatingModeActive: boolean;
+  setIsRelatingModeActive: React.Dispatch<React.SetStateAction<boolean>>;
+  onLinkingAudienceChange?: (context: LinkingAudienceContext) => void;
+  onPriorityChange?: () => void;
+  isOpen?: boolean;
+  listShares?: ListShare[];
+  onLoadingChange?: (loading: boolean) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
+  canShowAi?: boolean;
+  listAiEnabled?: boolean;
+  listManualJobBackground?: boolean;
+  canUseWebSearchOnList?: boolean;
+  /** When true, form fields are non-editable (View Item drawer). */
+  readOnly?: boolean;
+  /** Notifies the parent drawer when the in-sidebar substitution editor is active. */
+  onSubstitutionChromeChange?: (chrome: SubstitutionDrawerChrome | null) => void;
+  /** Parent increments to request exit from substitution editor (Back / Cancel). */
+  substitutionExitNonce?: number;
+  /** Parent increments to auto-open claimer custom substitution create surface. */
+  autoOpenClaimerSubstitutionNonce?: number;
+  /** Parent bumps with edit id to auto-open a substitution edit (claimer own custom, or any option for owners). */
+  autoOpenClaimerSubstitutionEditNonce?: number;
+  autoOpenClaimerSubstitutionEditId?: string | null;
+}

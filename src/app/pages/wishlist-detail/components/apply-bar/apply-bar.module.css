@@ -1,0 +1,15 @@
+.apply-bar {
+  position: fixed;
+  left: var(--spacing-md);
+  right: var(--spacing-md);
+  bottom: max(var(--spacing-md), env(safe-area-inset-bottom, 0px));
+  z-index: calc(var(--zindex-overlay) - 1);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.apply-bar__btn {
+  width: min(100%, 28rem);
+  pointer-events: auto;
+}

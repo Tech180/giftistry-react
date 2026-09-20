@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronDown, ChevronUp, Tag } from 'lucide-react';
 import { TagsTemplateProps } from './interfaces/tags-template-props.interface';
-import { getCommentTagStackNumber } from './utils/get-comment-tag-stack-number.util';
+import { getTagStackNumber } from './utils/get-tag-stack-number.util';
 import styles from './tags.module.css';
 
 export const TagsTemplate: React.FC<TagsTemplateProps> = ({
@@ -21,15 +21,15 @@ export const TagsTemplate: React.FC<TagsTemplateProps> = ({
   const isBadges = appearance === 'badges';
   const showScrollChrome = canScroll && !isBadges;
   const containerClass = [
-    styles['comment-tags-container'],
-    isBadges ? styles['comment-tags-container-badges'] : '',
+    styles['tags-container'],
+    isBadges ? styles['tags-container-badges'] : '',
   ]
     .filter(Boolean)
     .join(' ');
   const listClass = [
-    styles['comment-tags-list'],
-    isBadges ? styles['comment-tags-list-badges'] : '',
-    showScrollChrome ? styles['comment-tags-list-scrollable'] : '',
+    styles['tags-list'],
+    isBadges ? styles['tags-list-badges'] : '',
+    showScrollChrome ? styles['tags-list-scrollable'] : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -39,12 +39,12 @@ export const TagsTemplate: React.FC<TagsTemplateProps> = ({
       {showScrollChrome && (
         <button
           type="button"
-          className={styles['comment-tags-scroll-btn']}
+          className={styles['tags-scroll-btn']}
           aria-label="Show previous tagged items"
           disabled={!canScrollUp}
           onClick={onScrollUp}
         >
-          <ChevronUp size={14} className={styles['comment-tags-scroll-icon']} />
+          <ChevronUp size={14} className={styles['tags-scroll-icon']} />
         </button>
       )}
 
@@ -58,21 +58,21 @@ export const TagsTemplate: React.FC<TagsTemplateProps> = ({
         {taggedIds.map((itemId, index) => {
           const matchedItem = items.find((i) => i.Id === itemId);
           const itemName = matchedItem ? matchedItem.Name : 'View item';
-          const stackNumber = getCommentTagStackNumber(index);
+          const stackNumber = getTagStackNumber(index);
           return (
             <button
               key={itemId}
               type="button"
               onClick={() => onItemTaggedClick?.(itemId)}
-              className={styles['comment-tag-icon-btn']}
+              className={styles['tag-icon-btn']}
               title={`${itemName} (${stackNumber})`}
               aria-label={`${itemName}, tag ${stackNumber} of ${taggedIds.length}`}
             >
               <Tag
                 size={isBadges ? 20 : 12}
-                className={styles['comment-tag-icon']}
+                className={styles['tag-icon']}
               />
-              <span className={styles['comment-tag-index']} aria-hidden="true">
+              <span className={styles['tag-index']} aria-hidden="true">
                 {stackNumber}
               </span>
             </button>
@@ -83,12 +83,12 @@ export const TagsTemplate: React.FC<TagsTemplateProps> = ({
       {showScrollChrome && (
         <button
           type="button"
-          className={styles['comment-tags-scroll-btn']}
+          className={styles['tags-scroll-btn']}
           aria-label="Show more tagged items"
           disabled={!canScrollDown}
           onClick={onScrollDown}
         >
-          <ChevronDown size={14} className={styles['comment-tags-scroll-icon']} />
+          <ChevronDown size={14} className={styles['tags-scroll-icon']} />
         </button>
       )}
     </div>

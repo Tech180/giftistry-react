@@ -1,5 +1,5 @@
-import type { Appearance } from 'app/providers/interfaces/appearance.interface';
-import type { Theme } from 'app/providers/interfaces/theme.interface';
+import type { Appearance } from 'app/providers/theme/interfaces/appearance.type';
+import type { Theme } from 'app/providers/theme/interfaces/theme.type';
 
 export interface ThemeMenuProps {
   theme: Theme;

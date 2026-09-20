@@ -1,10 +1,10 @@
 .funding-widget {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--spacing-2xs, 0.375rem);
 }
 
-.funding-header {
+.funding-widget__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -14,27 +14,27 @@
   font-weight: var(--font-weight-medium);
 }
 
-.funding-amount-row {
+.funding-widget__amount-row {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-2xs, 0.375rem);
   flex-shrink: 0;
 }
 
-.progress-bg {
-  height: 6px;
+.funding-widget__progress {
+  height: var(--spacing-2xs, 0.375rem);
   background: var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
-.progress-fill {
+.funding-widget__progress-fill {
   height: 100%;
   background: var(--primary);
-  border-radius: 4px;
-  transition: background 0.2s ease;
-}
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-normal);
 
-.progress-fill-complete {
-  background: var(--success);
+  &.funding-widget__progress-fill--complete {
+    background: var(--success);
+  }
 }

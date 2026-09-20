@@ -1,55 +1,36 @@
 import type { ExtractMetadataResult } from '../interfaces/extract-metadata-result.interface';
-import { formatPredefinedKeyToLabel, toStoragePredefinedKey } from 'shared/utils/item-custom-fields.util';
-
-export type CustomFieldRow = {
-  id: string;
-  name: string;
-  value: string;
-  bucket: 'predefined' | 'userDefined';
-  storageKey?: string;
-};
-
-/** Maps scrape/storage keys onto item_field_definitions.FieldKey (PascalCase). */
-const CANONICAL_TO_DEFINITION_KEY: Record<string, string> = {
-  Color: 'PreferredColor',
-  PreferredColor: 'PreferredColor',
-  PantsSize: 'PantsSize',
-  ShirtSize: 'ShirtSize',
-  ShoesSize: 'ShoesSize',
-  SocksSize: 'SocksSize',
-  ModelNumber: 'ModelNumber',
-  StorageCapacity: 'StorageCapacity',
-};
-
-function normalizeFieldKey(key: string): string {
-  if (!key) return key;
-  if (/^[a-z]/.test(key)) return key;
-  return key.charAt(0).toLowerCase() + key.slice(1);
-}
-
-function toStorageKey(key: string): string {
-  return toStoragePredefinedKey(normalizeFieldKey(key));
-}
-
-function normalizeLabel(label: string): string {
-  return label.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
+import type { CustomFieldRow } from '../interfaces/custom-field-row.interface';
+import { CANONICAL_TO_DEFINITION_KEY } from '../constants/canonical-to-definition-key.constant';
+import { formatPredefinedKeyToLabel } from 'shared/utils/item-custom-fields.util';
+import {
+  normalizeFieldKey,
+  normalizeLabel,
+  toStorageKey,
+} from './normalize-custom-field-key.util';
 
 export function resolveDefinitionFieldKey(
   scrapeKey: string,
   definitionFieldKeys: string[]
 ): string | null {
   const defSet = new Set(definitionFieldKeys);
-  if (defSet.has(scrapeKey)) return scrapeKey;
+  if (defSet.has(scrapeKey)) {
+    return scrapeKey;
+  }
 
   const camelKey = normalizeFieldKey(scrapeKey);
-  if (defSet.has(camelKey)) return camelKey;
+  if (defSet.has(camelKey)) {
+    return camelKey;
+  }
 
   const alias = CANONICAL_TO_DEFINITION_KEY[scrapeKey] ?? CANONICAL_TO_DEFINITION_KEY[toStorageKey(scrapeKey)];
-  if (alias && defSet.has(alias)) return alias;
+  if (alias && defSet.has(alias)) {
+    return alias;
+  }
 
   for (const defKey of definitionFieldKeys) {
-    if (toStorageKey(defKey) === toStorageKey(scrapeKey)) return defKey;
+    if (toStorageKey(defKey) === toStorageKey(scrapeKey)) {
+      return defKey;
+    }
   }
 
   return null;

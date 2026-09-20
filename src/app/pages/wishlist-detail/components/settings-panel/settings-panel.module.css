@@ -1,0 +1,140 @@
+.settings-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.25rem);
+  min-height: 0;
+  justify-content: flex-start;
+}
+
+.settings-panel--read-only {
+  opacity: 0.85;
+}
+
+.settings-panel__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 0.625rem;
+  border: 1px solid transparent;
+  border-radius: 0.625rem;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.settings-panel__row:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+  border-color: var(--border-subtle);
+}
+
+.settings-panel__row:active {
+  transform: scale(0.98);
+}
+
+.settings-panel__row--read-only {
+  cursor: default;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.settings-panel__row--read-only:hover {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: transparent;
+}
+
+.settings-panel__row--read-only.settings-panel__row--active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.settings-panel__row--read-only.settings-panel__row--active:hover {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.settings-panel__row--active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.settings-panel__row--active:hover {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.settings-panel__row-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  background: var(--surface-hover);
+  color: var(--text-muted);
+}
+
+/* Lucide icons render as svg; size hook is not exposed */
+.settings-panel__row-icon :global(svg) {
+  width: 1rem;
+  height: 1rem;
+}
+
+.settings-panel__row-icon--ai {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 18%, transparent),
+    color-mix(in srgb, var(--error) 18%, transparent)
+  );
+  color: var(--accent);
+}
+
+.settings-panel__row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.0625rem;
+  min-width: 0;
+}
+
+.settings-panel__row-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+
+.settings-panel__row-meta {
+  font-size: var(--font-size-2xs);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.settings-panel__row-meta--active {
+  color: color-mix(in srgb, var(--primary) 75%, var(--text-muted));
+}
+
+.settings-panel__switch-slot {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-panel__row {
+    transition-duration: 0.01ms;
+  }
+
+  .settings-panel__row:active {
+    transform: none;
+  }
+}

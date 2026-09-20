@@ -1,0 +1,4 @@
+/* Layout comes from page.module.css `.page` wrapper. */
+.error-view__action {
+  display: inline-flex;
+}

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { wishlistsApi } from 'features/wishlists/api/wishlists.api';
-import { LinkTabProps } from './interfaces/link.interface';
-import type { LinkInvite } from './interfaces/link-invite.interface';
+import { Props } from './interfaces/props.interface';
+import type { LinkInvite } from '../../../../../../interfaces/link-invite.interface';
 import { LinkTabTemplate } from './link.html';
 
-export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner, variant = 'classic' }) => {
+export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' }) => {
   const [activeInvite, setActiveInvite] = useState<LinkInvite | null>(null);
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,10 +26,14 @@ export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner, variant = 'cl
     try {
       const invites = await wishlistsApi.listLinkInvites(listId);
       const active = invites.find((invite) => {
-        if (invite.RevokedAt) return false;
-        if (invite.ExpiresAt && new Date(invite.ExpiresAt) < new Date()) return false;
+        if (invite.RevokedAt) {
+          return false;
+        }
+        if (invite.ExpiresAt && new Date(invite.ExpiresAt) < new Date()) {
+          return false;
+        }
         return true;
-      }) as LinkInvite | undefined;
+      });
       setActiveInvite(active ?? null);
       setGeneratedToken(active?.Token ?? null);
     } catch (err) {
@@ -63,7 +67,7 @@ export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner, variant = 'cl
         hasPassword && password ? password : null
       );
       setGeneratedToken(result.Token);
-      setActiveInvite(result.Invite as LinkInvite);
+      setActiveInvite(result.Invite);
       setSuccessMsg('Share link generated successfully!');
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to generate link.');
@@ -119,32 +123,84 @@ export const LinkTab: React.FC<LinkTabProps> = ({ listId, isOwner, variant = 'cl
 
   return (
     <LinkTabTemplate
-      variant={variant}
-      isOwner={isOwner}
-      isLoading={isLoading}
-      isGenerating={isGenerating}
-      errorMsg={errorMsg}
-      successMsg={successMsg}
-      activeInvite={activeInvite}
-      generatedToken={generatedToken}
-      copied={copied}
-      role={role}
-      setRole={setRole}
-      hasExpiration={hasExpiration}
-      setHasExpiration={setHasExpiration}
-      expDate={expDate}
-      setExpDate={setExpDate}
-      expTime={expTime}
-      setExpTime={setExpTime}
-      hasPassword={hasPassword}
-      setHasPassword={setHasPassword}
-      password={password}
-      setPassword={setPassword}
-      handleGenerate={handleGenerate}
-      handleCopy={handleCopy}
-      handleRevoke={handleRevoke}
-      handleSettings={handleSettings}
-      handleToggleLink={handleToggleLink}
+      variant = {
+        variant
+      }
+      isOwner = {
+        isOwner
+      }
+      isLoading = {
+        isLoading
+      }
+      isGenerating = {
+        isGenerating
+      }
+      errorMsg = {
+        errorMsg
+      }
+      successMsg = {
+        successMsg
+      }
+      activeInvite = {
+        activeInvite
+      }
+      generatedToken = {
+        generatedToken
+      }
+      copied = {
+        copied
+      }
+      role = {
+        role
+      }
+      setRole = {
+        setRole
+      }
+      hasExpiration = {
+        hasExpiration
+      }
+      setHasExpiration = {
+        setHasExpiration
+      }
+      expDate = {
+        expDate
+      }
+      setExpDate = {
+        setExpDate
+      }
+      expTime = {
+        expTime
+      }
+      setExpTime = {
+        setExpTime
+      }
+      hasPassword = {
+        hasPassword
+      }
+      setHasPassword = {
+        setHasPassword
+      }
+      password = {
+        password
+      }
+      setPassword = {
+        setPassword
+      }
+      handleGenerate = {
+        handleGenerate
+      }
+      handleCopy = {
+        handleCopy
+      }
+      handleRevoke = {
+        handleRevoke
+      }
+      handleSettings = {
+        handleSettings
+      }
+      handleToggleLink = {
+        handleToggleLink
+      }
     />
   );
 };

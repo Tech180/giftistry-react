@@ -1,68 +1,14 @@
 import { apiClient } from 'core/api/client';
 import { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import type { PublicLinkPreview } from 'features/wishlists/interfaces/public-link-preview.interface';
-import {
-  NotificationPreferences,
-  PushSubscription,
-  PushTransport,
-} from '../interfaces/notification.interface';
-import { mapNotification, type NotificationPayload } from '../utils/map-notification.util';
-
-type ApiNotificationPreferences = {
-  EmailAlerts?: boolean;
-  Marketing?: boolean;
-  FriendRequests?: boolean;
-  ListShares?: boolean;
-  ItemClaims?: boolean;
-  Comments?: boolean;
-  JobCompletions?: boolean;
-  PushAlerts?: boolean;
-};
-
-export type RegisterPushPayload = {
-  Platform: PushSubscription['Platform'];
-  Transport: PushTransport;
-  Endpoint?: string;
-  Keys?: {
-    P256dh?: string;
-    Auth?: string;
-  };
-  IsPrimary?: boolean;
-};
-
-export type RegisterPushResult =
-  | {
-      SubscriptionId: string;
-      Topic: string;
-      AccessToken: string;
-    }
-  | PushSubscription;
-
-export function mapPreferencesFromApi(api: ApiNotificationPreferences): NotificationPreferences {
-  return {
-    EmailAlerts: api.EmailAlerts ?? true,
-    MarketingPromos: api.Marketing ?? false,
-    FriendRequests: api.FriendRequests ?? true,
-    ListShares: api.ListShares ?? true,
-    ItemClaims: api.ItemClaims ?? true,
-    Comments: api.Comments ?? true,
-    JobCompletions: api.JobCompletions ?? true,
-    PushAlerts: api.PushAlerts ?? true,
-  };
-}
-
-export function mapPreferencesToApi(preferences: Partial<NotificationPreferences>): ApiNotificationPreferences {
-  const body: ApiNotificationPreferences = {};
-  if (preferences.EmailAlerts !== undefined) body.EmailAlerts = preferences.EmailAlerts;
-  if (preferences.MarketingPromos !== undefined) body.Marketing = preferences.MarketingPromos;
-  if (preferences.FriendRequests !== undefined) body.FriendRequests = preferences.FriendRequests;
-  if (preferences.ListShares !== undefined) body.ListShares = preferences.ListShares;
-  if (preferences.ItemClaims !== undefined) body.ItemClaims = preferences.ItemClaims;
-  if (preferences.Comments !== undefined) body.Comments = preferences.Comments;
-  if (preferences.JobCompletions !== undefined) body.JobCompletions = preferences.JobCompletions;
-  if (preferences.PushAlerts !== undefined) body.PushAlerts = preferences.PushAlerts;
-  return body;
-}
+import type { ApiNotificationPreferences } from '../interfaces/api-notification-preferences.interface';
+import type { NotificationPreferences } from '../interfaces/notification-preferences.interface';
+import type { NotificationPayload } from '../interfaces/notification-payload.interface';
+import type { PushSubscription } from '../interfaces/push-subscription.interface';
+import type { RegisterPushPayload } from '../interfaces/register-push-payload.interface';
+import type { RegisterPushResult } from '../interfaces/register-push-result.type';
+import { mapNotification } from '../utils/map-notification.util';
+import { mapPreferencesFromApi, mapPreferencesToApi } from '../utils/map-preferences.util';
 
 export const notificationsApi = {
   listNotifications: async () => {
@@ -91,7 +37,7 @@ export const notificationsApi = {
     apiClient.patch<ApiNotificationPreferences>(
       '/api/notifications/preferences',
       mapPreferencesToApi(preferences),
-      'Notifications'
+      'Notifications',
     ).then(mapPreferencesFromApi),
 
   registerPush: (payload: RegisterPushPayload) =>
@@ -106,19 +52,19 @@ export const notificationsApi = {
   setPrimaryPushSubscription: (subscriptionId: string) =>
     apiClient.put<PushSubscription>(
       `/api/notifications/push/register/${subscriptionId}/primary`,
-      {}
+      {},
     ),
 
   acceptListInvite: (token: string, password?: string) =>
     apiClient.post<ListShare>(
       `/api/invites/link/${token}/accept`,
       password ? { Password: password } : {},
-      password ? 'Invites' : undefined
+      password ? 'Invites' : undefined,
     ),
 
   getInviteLinkDetails: (token: string) =>
     apiClient.get<{ ListId: string; Role: string; PasswordProtected: boolean; ExpiresAt: string | null }>(
-      `/api/invites/link/${token}`
+      `/api/invites/link/${token}`,
     ),
 
   getPublicLinkPreview: (token: string) =>
@@ -128,6 +74,6 @@ export const notificationsApi = {
     apiClient.post<PublicLinkPreview>(
       `/api/invites/link/${token}/preview`,
       { Password: password },
-      'Invites'
+      'Invites',
     ),
 };

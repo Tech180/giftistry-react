@@ -10,6 +10,14 @@ export const ITEM_PHOTO_ALLOWED_TYPES = [
 
 export const ITEM_PHOTO_ACCEPT = ITEM_PHOTO_ALLOWED_TYPES.join(',');
 
+export const ITEM_PHOTO_MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+};
+
 export const ITEM_PHOTO_SIZE_ERROR = 'Image size exceeds the 20MB limit.';
 export const ITEM_PHOTO_TYPE_ERROR = 'Only JPEG, PNG, GIF, and WEBP formats are allowed.';
 export const ITEM_PHOTO_MAX_COUNT_ERROR = 'An item may have at most 10 photos.';

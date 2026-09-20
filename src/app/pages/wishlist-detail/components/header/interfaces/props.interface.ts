@@ -1,0 +1,38 @@
+import type { ReactNode } from 'react';
+import { Wishlist, Priority } from 'features/wishlists';
+import { Item } from 'features/items';
+
+export interface Props {
+  wishlist: Wishlist;
+  items: Item[];
+  priorities: Priority[];
+  isOwner: boolean;
+  isPublicGuest?: boolean;
+  onGoHome: () => void;
+  isExpired: boolean;
+  isArchived: boolean;
+  isDeactivating: boolean;
+  isActivating: boolean;
+  isDeleting: boolean;
+  confirmAction: 'deactivate' | 'activate' | 'delete' | 'duplicate' | null;
+  setConfirmAction: (val: 'deactivate' | 'activate' | 'delete' | 'duplicate' | null) => void;
+  handleDeactivateConfirm: () => void;
+  handleActivateConfirm: () => void;
+  handleDeleteConfirm: () => void;
+  saveTitle: (val: string) => Promise<void>;
+  saveDate: (val: string) => Promise<void>;
+  formatDate: (dateStr: string | null) => string;
+  toggleAiEnabled: () => void;
+  toggleWebSearchEnabled: () => void;
+  toggleManualJobBackground: () => void;
+  toggleAutoRollover: () => void;
+  toggleAllowGroupFunds: () => void;
+  isCommentsOpen: boolean;
+  setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsShareOpen: (open: boolean) => void;
+  canImport: boolean;
+  isImportOpen: boolean;
+  onImportToggle: () => void;
+  onDuplicate: () => void;
+  isDuplicating: boolean;
+}

@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import type { User } from 'app/providers/interfaces/user.interface';
+import type { User } from 'features/auth';
 import type { ProfileMenuActionId } from '../../interfaces/profile-menu-action-id.type';
 
 export interface ProfileMenuActionView {

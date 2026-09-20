@@ -3,9 +3,6 @@ import { MenuItemProps } from './interfaces/menu-item-props.interface';
 import { MenuItemTemplate } from './menu-item.html';
 import styles from './menu-item.module.css';
 
-export type { MenuItemProps } from './interfaces/menu-item-props.interface';
-export type { MenuItemVariant } from './interfaces/menu-item-variant.interface';
-
 export const MenuItem: React.FC<MenuItemProps> = ({
   icon,
   label,
@@ -25,12 +22,24 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   return (
     <MenuItemTemplate
-      icon={icon}
-      label={label}
-      onClick={onClick}
-      isActive={isActive}
-      variant={variant}
-      itemClass={itemClass}
+      icon = {
+        icon
+      }
+      label = {
+        label
+      }
+      onClick = {
+        onClick
+      }
+      isActive = {
+        isActive
+      }
+      variant = {
+        variant
+      }
+      itemClass = {
+        itemClass
+      }
     />
   );
 };

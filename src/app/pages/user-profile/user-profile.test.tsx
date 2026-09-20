@@ -12,7 +12,7 @@ vi.mock('features/auth', () => ({
   },
 }));
 
-vi.mock('app/providers/theme-context', () => ({
+vi.mock('app/providers/theme', () => ({
   useTheme: () => ({
     tryTheme: vi.fn(),
   }),

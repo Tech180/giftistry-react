@@ -1,0 +1,40 @@
+import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
+import type { Item } from '../../../../../interfaces/item.interface';
+import type { ItemActions } from '../../../../../interfaces/item-actions.interface';
+import type { ClaimerSubstitutionAction } from '../../../../../interfaces/claimer-substitution-action.interface';
+
+export interface Props {
+  isArchived: boolean;
+  isExpired: boolean;
+  isPublicGuest: boolean;
+  canCollaborate: boolean;
+  canEditItem: boolean;
+  canAdjustClaim: boolean;
+  claimedByCurrentUser: boolean;
+  isFullyClaimed: boolean;
+  isClaimUnavailable: boolean;
+  claimLoading: boolean;
+  showClaimForm: boolean;
+  setShowClaimForm: (val: boolean) => void;
+  handleUnclaim: () => void;
+  substitutionAction?: ClaimerSubstitutionAction | null;
+  substitutionManageIconClassName: string | undefined;
+  displayItem: Item;
+  metadata: ItemDescriptionMetadata | null;
+  claimUserId: string | null;
+  claimActorName: string | null;
+  itemActions: ItemActions;
+  anonymous: boolean;
+  setAnonymous: (val: boolean) => void;
+  linkedClaimPeers: Item[];
+  wishlistItemsForLinkedClaim: Item[];
+  onLinkedClaimItemClick?: (itemId: string) => void;
+  allowGroupFunds: boolean;
+  totalExtractedPrice: number;
+  totalClaimedAmount: number;
+  onEdit?: () => void;
+  showDeleteConfirm: boolean;
+  setShowDeleteConfirm: (val: boolean) => void;
+  deleteLoading: boolean;
+  handleDelete: () => void;
+}

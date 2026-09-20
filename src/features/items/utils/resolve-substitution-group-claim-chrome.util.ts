@@ -1,15 +1,13 @@
 import type { Claim } from '../interfaces/item-claim.interface';
 import type { Item } from '../interfaces/item.interface';
-import type { ItemSubstitutionOption } from '../interfaces/item-substitution.interface';
+import type { ResolveSubstitutionGroupClaimChromeInput } from '../interfaces/resolve-substitution-group-claim-chrome-input.interface';
+import type { SubstitutionBrowseOption } from '../interfaces/substitution-browse-option.interface';
 import type { SubstitutionGroupClaimChrome } from '../interfaces/substitution-group-claim-chrome.interface';
 import {
   isBrowseSectionGfFullyFunded,
   resolveBrowseSectionFullyClaimed,
 } from './resolve-item-section-fully-claimed.util';
-import {
-  resolveItemSubstitutionOptions,
-  type SubstitutionBrowseOption,
-} from './resolve-item-substitution-options.util';
+import { resolveItemSubstitutionOptions } from './resolve-item-substitution-options.util';
 
 function sectionHasClaims(claims: Claim[] | null | undefined): boolean {
   return (claims?.length ?? 0) > 0;
@@ -23,14 +21,6 @@ function resolveSectionClaims(
     return parent.Claims ?? [];
   }
   return entry.option?.Item.Claims ?? [];
-}
-
-export interface ResolveSubstitutionGroupClaimChromeInput {
-  parent: Item;
-  options: ItemSubstitutionOption[] | null | undefined;
-  active: SubstitutionBrowseOption;
-  userId: string | null | undefined;
-  allowGroupFunds: boolean;
 }
 
 /** Group-aware claim flags so sibling sections stay grayed when one is claimed. */

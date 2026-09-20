@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from 'app/App';
+import App from 'app/app.component';
 import { env } from 'core/config/env';
+import { resolveAppearance } from 'core/theme/resolve-appearance.util';
 import { loadStylesheet } from './load-stylesheet';
 
 const BOOTSTRAP_TIMEOUT_MS = 5000;
@@ -10,9 +11,9 @@ export async function bootstrapApp(): Promise<void> {
   const savedTheme = localStorage.getItem('giftistry-theme') || 'default';
   const savedAppearance = localStorage.getItem('giftistry-appearance') || 'system';
   const effectiveTheme = savedTheme.startsWith('custom-') ? 'default' : savedTheme;
-  const effectiveAppearance = savedAppearance === 'system'
-    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-    : savedAppearance;
+  const effectiveAppearance = resolveAppearance(
+    savedAppearance as 'light' | 'dark' | 'system',
+  );
 
   document.documentElement.setAttribute('data-theme', effectiveTheme);
   document.documentElement.setAttribute('data-appearance', effectiveAppearance);

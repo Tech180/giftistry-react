@@ -14,7 +14,7 @@ vi.mock('../api/jobs.api', () => ({
   },
 }));
 
-vi.mock('app/providers/user-socket-context', () => ({
+vi.mock('shared/providers/user-socket', () => ({
   useUserSocket: () => ({
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),

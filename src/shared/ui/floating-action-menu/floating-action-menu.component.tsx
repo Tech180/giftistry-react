@@ -1,22 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { FloatingActionMenuProps } from './interfaces/floating-action-menu-props.interface';
-import type { FloatingActionPanelHelpers } from './interfaces/floating-action.interface';
+import type { FloatingActionPanelHelpers } from './interfaces/floating-action-panel-helpers.interface';
 import { FloatingActionMenuTemplate } from './floating-action-menu.html';
+import { actionOpensPanel } from './utils/action-opens-panel.util';
+import { buildFaceClasses } from './utils/build-face-classes.util';
 import styles from './floating-action-menu.module.css';
-
-export type {
-  FloatingAction,
-  FloatingActionChild,
-  FloatingActionPanelHelpers,
-} from './interfaces/floating-action.interface';
-export type { FloatingActionMenuProps } from './interfaces/floating-action-menu-props.interface';
-
-function actionOpensPanel(action: {
-  children?: unknown[] | undefined;
-  panelContent?: unknown;
-}): boolean {
-  return Boolean(action.panelContent) || (action.children?.length ?? 0) > 0;
-}
 
 export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
   actions,
@@ -228,14 +216,39 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
 
   const stateClass =
     dockState === 'closed'
-      ? styles.stateClosed
+      ? styles['floating-action-menu--state-closed']
       : dockState === 'toolbar'
-        ? styles.stateToolbar
-        : styles.statePanel;
+        ? styles['floating-action-menu--state-toolbar']
+        : styles['floating-action-menu--state-panel'];
 
-  const rootClass = [styles.root, stateClass, sizeFluid ? styles.sizeFluid : '', className]
+  const rootClass = [
+    styles['floating-action-menu'],
+    stateClass,
+    sizeFluid ? styles['floating-action-menu--size-fluid'] : '',
+    className,
+  ]
     .filter(Boolean)
     .join(' ');
+
+  const dockSizeStyle =
+    dockState === 'toolbar'
+      ? { height: toolbarHeight }
+      : dockState === 'panel'
+        ? { height: panelHeight, width: panelWidth }
+        : undefined;
+
+  const panelBody =
+    expandedAction?.panelContent == null
+      ? null
+      : typeof expandedAction.panelContent === 'function'
+        ? expandedAction.panelContent(panelHelpers)
+        : expandedAction.panelContent;
+
+  const faceClasses = buildFaceClasses({
+    dockState,
+    hidePanelHeader,
+    tooltipVisible: tooltip.visible,
+  });
 
   if (actions.length === 0) {
     return null;
@@ -243,23 +256,66 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
 
   return (
     <FloatingActionMenuTemplate
-      actions={actions}
-      dockState={dockState}
-      expandedActionId={expandedActionId}
-      ariaLabel={ariaLabel}
-      className={className}
-      rootClass={rootClass}
-      toolbarHeight={toolbarHeight}
-      panelHeight={panelHeight}
-      panelWidth={panelWidth}
-      hidePanelHeader={hidePanelHeader}
-      panelHelpers={panelHelpers}
-      setDockState={setDockState}
-      onActionClick={handleActionClick}
-      onChildClick={handleChildClick}
-      tooltip={tooltip}
-      onTooltipHover={handleTooltipHover}
-      onTooltipLeave={handleTooltipLeave}
+      actions = {
+        actions
+      }
+      dockState = {
+        dockState
+      }
+      expandedActionId = {
+        expandedActionId
+      }
+      expandedAction = {
+        expandedAction
+      }
+      ariaLabel = {
+        ariaLabel
+      }
+      rootClass = {
+        rootClass
+      }
+      dockSizeStyle = {
+        dockSizeStyle
+      }
+      hidePanelHeader = {
+        hidePanelHeader
+      }
+      panelBody = {
+        panelBody
+      }
+      faceClosedClass = {
+        faceClasses.faceClosedClass
+      }
+      faceToolbarClass = {
+        faceClasses.faceToolbarClass
+      }
+      facePanelClass = {
+        faceClasses.facePanelClass
+      }
+      backdropClass = {
+        faceClasses.backdropClass
+      }
+      tooltipClass = {
+        faceClasses.tooltipClass
+      }
+      setDockState = {
+        setDockState
+      }
+      onActionClick = {
+        handleActionClick
+      }
+      onChildClick = {
+        handleChildClick
+      }
+      tooltip = {
+        tooltip
+      }
+      onTooltipHover = {
+        handleTooltipHover
+      }
+      onTooltipLeave = {
+        handleTooltipLeave
+      }
     />
   );
 };

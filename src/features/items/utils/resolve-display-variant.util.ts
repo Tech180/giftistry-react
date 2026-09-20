@@ -1,9 +1,7 @@
 import type { Item } from '../interfaces/item.interface';
 import type { ItemSubstitutionOption } from '../interfaces/item-substitution.interface';
-import {
-  resolveItemSubstitutionOptions,
-  type SubstitutionBrowseOption,
-} from './resolve-item-substitution-options.util';
+import type { SubstitutionBrowseOption } from '../interfaces/substitution-browse-option.interface';
+import { resolveItemSubstitutionOptions } from './resolve-item-substitution-options.util';
 import { resolveUserClaimedSubstitutionItemId } from './resolve-user-claimed-substitution.util';
 
 export { resolveUserClaimedSubstitutionItemId } from './resolve-user-claimed-substitution.util';

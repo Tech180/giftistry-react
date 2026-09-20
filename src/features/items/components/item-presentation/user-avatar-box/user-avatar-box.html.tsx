@@ -1,18 +1,18 @@
 import React from 'react';
-import { UserAvatarBoxProps } from './interfaces/user-avatar-box-props.interface';
-import styles from './user-avatar-box.module.css';
+import type { TemplateProps } from './interfaces/template-props.interface';
 
-export const UserAvatarBox: React.FC<UserAvatarBoxProps> = ({
+export const UserAvatarBoxTemplate: React.FC<TemplateProps> = ({
   title,
   ariaLabel,
-  variant = 'sharing',
   children,
-}) => (
-  <div
-    className={`${styles['user-avatar-box']} ${styles[`user-avatar-box-${variant}`]}`}
-    aria-label={ariaLabel}
-  >
-    <span className={styles['user-avatar-box-title']}>{title}</span>
-    <div className={styles['user-avatar-box-body']}>{children}</div>
-  </div>
-);
+  rootClassName,
+  titleClassName,
+  bodyClassName,
+}) => {
+  return (
+    <div className={rootClassName} aria-label={ariaLabel}>
+      <span className={titleClassName}>{title}</span>
+      <div className={bodyClassName}>{children}</div>
+    </div>
+  );
+};

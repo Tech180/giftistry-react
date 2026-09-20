@@ -1,7 +1,7 @@
 import React from 'react';
-import type { TimelineProps } from './interfaces/timeline-props.interface';
+import type { Props } from './interfaces/props.interface';
 import { TimelineTemplate } from './timeline.html';
 
-export const Timeline: React.FC<TimelineProps> = (props) => {
+export const Timeline: React.FC<Props> = (props) => {
   return <TimelineTemplate {...props} />;
 };

@@ -2,8 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { ModalProps } from './interfaces/modal-props.interface';
 import { ModalTemplate } from './modal.html';
 
-export type { ModalProps } from './interfaces/modal-props.interface';
-
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
@@ -37,12 +35,24 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <ModalTemplate
-      isOpen={isOpen}
-      onClose={onClose}
-      title={title}
-      subtitle={subtitle}
-      modalRef={modalRef}
-      handleBackdropClick={handleBackdropClick}
+      isOpen = {
+        isOpen
+      }
+      onClose = {
+        onClose
+      }
+      title = {
+        title
+      }
+      subtitle = {
+        subtitle
+      }
+      modalRef = {
+        modalRef
+      }
+      handleBackdropClick = {
+        handleBackdropClick
+      }
     >
       {children}
     </ModalTemplate>

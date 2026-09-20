@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { UserAvatarBox } from './user-avatar-box.html';
+import { UserAvatarBox } from './user-avatar-box.component';
 
 describe('UserAvatarBox', () => {
   it('renders a compact title strip above avatar content', () => {

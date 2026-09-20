@@ -1,9 +1,9 @@
 import React from 'react';
 import { Switch } from 'shared/ui';
-import { ClaimAnonymousToggleProps } from './interfaces/claim-anonymous-toggle-props.interface';
+import { Props } from './interfaces/props.interface';
 import styles from './claim-anonymous-toggle.module.css';
 
-export const ClaimAnonymousToggle: React.FC<ClaimAnonymousToggleProps> = ({
+export const ClaimAnonymousToggleTemplate: React.FC<Props> = ({
   checked,
   onChange,
 }) => (

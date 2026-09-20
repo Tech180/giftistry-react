@@ -1,0 +1,18 @@
+.moderation__table-wrap--spaced {
+  margin-bottom: var(--spacing-xl);
+}
+
+.moderation__content {
+  max-width: 17.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.moderation__link--danger {
+  color: var(--error);
+
+  &:hover {
+    color: var(--error);
+  }
+}

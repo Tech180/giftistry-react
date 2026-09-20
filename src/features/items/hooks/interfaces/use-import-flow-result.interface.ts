@@ -1,14 +1,12 @@
 import type { CollapsibleStripStatus } from 'shared/ui';
 import type { TimelineStreamLane } from 'features/jobs/interfaces/job-timeline-view.interface';
-import type { ImportTimelineStep } from 'features/items/components/import/import-strip/interfaces/import-timeline-step.interface';
-import type {
-  ImportStripMode,
-  ImportStripPhase,
-} from 'features/items/components/import/import-strip/interfaces/import-strip-props.interface';
+import type { ImportTimelineStep } from 'features/items/components/import/strip/interfaces/import-timeline-step.interface';
+import type { Mode } from 'features/items/components/import/strip/interfaces/mode.type';
+import type { Phase } from 'features/items/components/import/strip/interfaces/phase.type';
 
 export interface UseImportFlowResult {
-  mode: ImportStripMode;
-  phase: ImportStripPhase;
+  mode: Mode;
+  phase: Phase;
   dropzoneError: string | null;
   errorMessage: string | null;
   uploadPercent: number;

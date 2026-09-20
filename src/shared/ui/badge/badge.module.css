@@ -1,11 +1,11 @@
-.svg-defs {
+.badge__svg-defs {
   position: absolute;
   width: 0;
   height: 0;
   overflow: hidden;
 }
 
-.root {
+.badge {
   position: relative;
   display: inline-flex;
   flex-shrink: 0;
@@ -19,89 +19,130 @@
   color: inherit;
   appearance: none;
   box-sizing: border-box;
+
+  &:not(.badge--interactive) {
+    pointer-events: none;
+  }
+
+  &.badge--interactive {
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  &.badge--interactive:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+
+  &.badge--interactive:not(:disabled):active {
+    transform: scale(0.96);
+  }
+
+  &.badge--size-compact.badge--interactive:not(:disabled):active {
+    transform: scale(0.92);
+  }
+
+  &.badge--tone-success {
+    color: inherit;
+  }
+
+  /* Rainbow glow via ::before so hover stays on the same element */
+  &.badge--effect-rainbow::before {
+    content: '';
+    display: block;
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-md);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 40%, transparent) 0%,
+      color-mix(in srgb, var(--error) 40%, transparent) 100%
+    );
+    filter: blur(1rem);
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0.125rem) scale(0.95);
+    pointer-events: none;
+  }
+
+  &.badge--effect-rainbow.badge--size-compact::before {
+    border-radius: var(--radius-full);
+  }
+
+  &.badge--effect-rainbow.badge--active::before {
+    opacity: 0.6;
+  }
+
+  &.badge--interactive.badge--effect-rainbow.badge--active:not(:disabled):hover::before {
+    opacity: 0.8;
+    filter: blur(1.25rem);
+    transform: translateY(0.125rem) scale(1);
+  }
 }
 
-.root:not(.interactive) {
-  pointer-events: none;
-}
-
-.interactive {
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.interactive:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.interactive:not(:disabled):active {
-  transform: scale(0.96);
-}
-
-.size-compact.interactive:not(:disabled):active {
-  transform: scale(0.92);
-}
-
-/* --- Rainbow chrome --- */
-
-.glow {
-  display: none;
-}
-
-.effect-rainbow .glow {
-  display: block;
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-md);
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, #5e42f8 40%, transparent) 0%,
-    color-mix(in srgb, #f15565 40%, transparent) 100%
-  );
-  filter: blur(1rem);
-  opacity: 0;
-  z-index: 0;
-  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(2px) scale(0.95);
-}
-
-.border-wrapper {
+.badge__border-wrapper {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-md);
   padding: 0;
   transition: background 0.3s ease, border-color 0.3s ease;
+
+  &.badge__border-wrapper--size-sm {
+    border-radius: var(--radius-sm);
+  }
+
+  &.badge__border-wrapper--size-compact {
+    border-radius: var(--radius-full);
+  }
+
+  &.badge__border-wrapper--rainbow {
+    padding: 1px;
+  }
+
+  &.badge__border-wrapper--tone-success {
+    border: 1px solid var(--success-border);
+    background: var(--success-bg);
+  }
+
+  &.badge__border-wrapper--rainbow-inactive {
+    background: color-mix(in srgb, var(--border) 60%, transparent);
+  }
+
+  &.badge__border-wrapper--rainbow-inactive.badge__border-wrapper--interactive:hover {
+    background: var(--surface-hover);
+  }
 }
 
-.effect-rainbow .border-wrapper {
-  padding: 1px;
-}
-
-.border-gradient {
+.badge__border-gradient {
   display: none;
+
+  &.badge__border-gradient--rainbow {
+    display: block;
+    position: absolute;
+    inset: -50%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0%,
+      transparent 30%,
+      var(--primary) 40%,
+      var(--accent) 50%,
+      var(--error) 60%,
+      transparent 70%,
+      transparent 100%
+    );
+    animation: badge-rainbow-spin 4s linear infinite;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  &.badge__border-gradient--visible {
+    opacity: 1;
+  }
 }
 
-.effect-rainbow .border-gradient {
-  display: block;
-  position: absolute;
-  inset: -50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0%,
-    transparent 30%,
-    #5e42f8 40%,
-    #b656cb 50%,
-    #f15565 60%,
-    transparent 70%,
-    transparent 100%
-  );
-  animation: badge-rainbow-spin 4s linear infinite;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.inner {
+.badge__inner {
   position: relative;
   z-index: 1;
   display: flex;
@@ -117,138 +158,85 @@
     box-shadow 0.3s ease,
     color 0.3s ease;
   color: var(--text-muted);
+
+  &.badge__inner--size-sm {
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.6875rem;
+    font-weight: var(--font-weight-medium, 500);
+    line-height: 1;
+  }
+
+  &.badge__inner--size-md {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8125rem;
+    font-weight: var(--font-weight-medium);
+    letter-spacing: 0.02em;
+    line-height: 1.25rem;
+  }
+
+  &.badge__inner--size-compact {
+    width: 2.125rem;
+    height: 2.125rem;
+    padding: 0;
+    justify-content: center;
+    border-radius: calc(var(--radius-full) - 1px);
+    gap: 0;
+  }
+
+  &.badge__inner--rainbow {
+    border: none;
+    background: var(--surface);
+    border-radius: calc(var(--radius-md) - 1px);
+    box-shadow: inset 0 1px 1px color-mix(in srgb, var(--text) 5%, transparent);
+  }
+
+  &.badge__inner--rainbow.badge__inner--size-compact {
+    border-radius: calc(var(--radius-full) - 1px);
+  }
+
+  &.badge__inner--tone-success {
+    color: var(--success);
+    background: transparent;
+    border-color: transparent;
+  }
+
+  &.badge__inner--active {
+    color: var(--text);
+    background: color-mix(in srgb, var(--primary) 12%, var(--surface-elevated));
+    border-color: color-mix(in srgb, var(--primary) 40%, var(--border-subtle));
+  }
+
+  &.badge__inner--rainbow-active {
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+    backdrop-filter: blur(0.5rem);
+    border: none;
+    box-shadow: inset 0 1px 1px color-mix(in srgb, var(--text) 5%, transparent);
+    color: transparent;
+  }
+
+  &.badge__inner--rainbow-inactive {
+    background: color-mix(in srgb, var(--bg) 95%, var(--surface));
+    box-shadow: none;
+    color: color-mix(in srgb, var(--text) 50%, transparent);
+  }
+
+  &.badge__inner--interactive:hover {
+    background: var(--surface-hover);
+  }
+
+  &.badge__inner--interactive.badge__inner--active:hover {
+    background: color-mix(in srgb, var(--primary) 18%, var(--surface-elevated));
+    border-color: color-mix(in srgb, var(--primary) 50%, var(--border-subtle));
+  }
+
+  &.badge__inner--rainbow-inactive.badge__inner--interactive:hover {
+    background: color-mix(in srgb, var(--bg) 95%, var(--surface));
+  }
 }
 
-.effect-rainbow .inner {
-  border: none;
-  background: var(--surface);
-  border-radius: calc(var(--radius-md) - 1px);
-  box-shadow: inset 0 1px 1px color-mix(in srgb, var(--text) 5%, transparent);
-}
-
-/* --- Sizes --- */
-
-.size-sm .border-wrapper {
-  border-radius: var(--radius-sm);
-}
-
-.size-md .border-wrapper {
-  border-radius: var(--radius-md);
-}
-
-.size-sm .inner {
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  font-weight: var(--font-weight-medium, 500);
-  line-height: 1;
-}
-
-.size-md .inner {
-  padding: 0.375rem 0.625rem;
-  font-size: 0.8125rem;
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.02em;
-  line-height: 1.25rem;
-}
-
-.size-compact .glow,
-.size-compact .border-wrapper {
-  border-radius: var(--radius-full);
-}
-
-.size-compact .inner {
-  width: 2.125rem;
-  height: 2.125rem;
-  padding: 0;
-  justify-content: center;
-  border-radius: calc(var(--radius-full) - 1px);
-  gap: 0;
-}
-
-.size-compact.effect-rainbow .inner {
-  border-radius: calc(var(--radius-full) - 1px);
-}
-
-/* --- Tones --- */
-
-.tone-success .border-wrapper {
-  border: 1px solid var(--success-border);
-  background: var(--success-bg);
-}
-
-.tone-success .inner {
-  color: var(--success);
-  background: transparent;
-  border-color: transparent;
-}
-
-/* --- Active / inactive --- */
-
-.active .inner {
-  color: var(--text);
-  background: color-mix(in srgb, var(--primary) 12%, var(--surface-elevated));
-  border-color: color-mix(in srgb, var(--primary) 40%, var(--border-subtle));
-}
-
-.effect-rainbow.active .border-gradient {
-  opacity: 1;
-}
-
-.effect-rainbow.active .glow {
-  opacity: 0.6;
-}
-
-.effect-rainbow.active .inner {
-  background: color-mix(in srgb, var(--surface) 90%, transparent);
-  backdrop-filter: blur(8px);
-  border: none;
-  box-shadow: inset 0 1px 1px color-mix(in srgb, var(--text) 5%, transparent);
-  color: transparent;
-}
-
-/* Lucide / currentColor icons stay visible; gradient SVG icons use fill url(#id). */
-.effect-rainbow.active .icon-face {
-  color: var(--text);
-}
-
-.effect-rainbow:not(.active) .border-wrapper {
-  background: color-mix(in srgb, var(--border) 60%, transparent);
-}
-
-.effect-rainbow:not(.active) .inner {
-  background: color-mix(in srgb, var(--bg) 95%, var(--surface));
-  box-shadow: none;
-  color: color-mix(in srgb, var(--text) 50%, transparent);
-}
-
-.interactive:not(.effect-rainbow):hover:not(:disabled) .inner {
-  background: var(--surface-hover);
-}
-
-.interactive:not(.effect-rainbow).active:hover:not(:disabled) .inner {
-  background: color-mix(in srgb, var(--primary) 18%, var(--surface-elevated));
-  border-color: color-mix(in srgb, var(--primary) 50%, var(--border-subtle));
-}
-
-.interactive.effect-rainbow.active:not(:disabled):hover .glow {
-  opacity: 0.8;
-  filter: blur(1.25rem);
-  transform: translateY(2px) scale(1);
-}
-
-.interactive.effect-rainbow:not(.active):not(:disabled):hover .border-wrapper {
-  background: var(--surface-hover);
-}
-
-.interactive.effect-rainbow:not(.active):not(:disabled):hover .inner {
-  background: color-mix(in srgb, var(--bg) 95%, var(--surface));
-}
-
-/* --- Icons --- */
-
-.icon-slot {
+.badge__icon-slot {
   position: relative;
   display: flex;
   align-items: center;
@@ -257,14 +245,14 @@
   height: 1rem;
   overflow: hidden;
   flex-shrink: 0;
+
+  &.badge__icon-slot--compact {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
 }
 
-.size-compact .icon-slot {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.icon-face {
+.badge__icon-face {
   position: absolute;
   display: flex;
   align-items: center;
@@ -273,54 +261,51 @@
   height: 1rem;
   transition: opacity 0.3s ease, transform 0.3s ease;
   color: inherit;
+
+  &.badge__icon-face--compact {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &.badge__icon-face--single {
+    position: relative;
+    opacity: 1;
+    transform: none;
+  }
+
+  &.badge__icon-face--shown {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  &.badge__icon-face--hidden {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  &.badge__icon-face--inactive-tone {
+    color: color-mix(in srgb, var(--text) 40%, transparent);
+  }
+
+  &.badge__icon-face--rainbow-active {
+    color: var(--text);
+  }
 }
 
-.size-compact .icon-face {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.icon-face svg {
+.badge__icon-face svg {
   width: 100%;
   height: 100%;
 }
 
-.icon-slot-single .icon-face {
-  position: relative;
-  opacity: 1;
-  transform: none;
-}
-
-.icon-active {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.icon-inactive {
-  opacity: 0;
-  transform: scale(0.5);
-  color: color-mix(in srgb, var(--text) 40%, transparent);
-}
-
-.root:not(.active) .icon-slot-pair .icon-active {
-  opacity: 0;
-  transform: scale(0.5);
-}
-
-.root:not(.active) .icon-slot-pair .icon-inactive {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.label {
+.badge__label {
   white-space: nowrap;
-}
 
-.effect-rainbow.active .label {
-  background: linear-gradient(to right, var(--text), color-mix(in srgb, var(--text) 70%, transparent));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  &.badge__label--rainbow-active {
+    background: linear-gradient(to right, var(--text), color-mix(in srgb, var(--text) 70%, transparent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 @keyframes badge-rainbow-spin {
@@ -330,5 +315,22 @@
 
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge,
+  .badge.badge--interactive,
+  .badge.badge--effect-rainbow::before,
+  .badge__border-wrapper,
+  .badge__border-gradient,
+  .badge__border-gradient--rainbow,
+  .badge__inner,
+  .badge__icon-face {
+    transition-duration: 0.01ms;
+  }
+
+  .badge__border-gradient--rainbow {
+    animation: none;
   }
 }

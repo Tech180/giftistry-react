@@ -1,9 +1,9 @@
 import React from 'react';
 import { Track } from './components/track/track.component';
-import type { TimelineProps } from './interfaces/timeline-props.interface';
+import type { Props } from './interfaces/props.interface';
 import styles from './timeline.module.css';
 
-export const TimelineTemplate: React.FC<TimelineProps> = ({
+export const TimelineTemplate: React.FC<Props> = ({
   steps,
   streams = [],
   streamsCaption = null,
@@ -13,7 +13,17 @@ export const TimelineTemplate: React.FC<TimelineProps> = ({
 
   return (
     <div className={[styles.root, className].filter(Boolean).join(' ')}>
-      <Track steps={steps} streams={streams} streamsCaption={streamsCaption} />
+      <Track
+        steps = {
+          steps
+        }
+        streams = {
+          streams
+        }
+        streamsCaption = {
+          streamsCaption
+        }
+      />
     </div>
   );
 };

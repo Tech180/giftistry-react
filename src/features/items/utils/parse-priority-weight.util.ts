@@ -1,5 +1,4 @@
-/** Form sentinel for priority infinity (lowest / unlimited rank in the stepper). */
-export const PRIORITY_WEIGHT_INFINITY = 'inf';
+import { PRIORITY_WEIGHT_INFINITY } from '../constants/priority-weight.constant';
 
 export function encodePrioritySelectorValue(priorityWeight: string): number {
   const trimmed = priorityWeight.trim();

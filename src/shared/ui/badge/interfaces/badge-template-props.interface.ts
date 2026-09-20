@@ -1,17 +1,26 @@
 import { ReactNode, MouseEventHandler } from 'react';
-import type { BadgeEffect, BadgeSize } from './badge-props.interface';
 
 export interface BadgeTemplateProps {
   children?: ReactNode;
   rootClass: string;
+  borderWrapperClass: string;
+  borderGradientClass: string;
+  showBorderGradient: boolean;
+  innerClass: string;
+  hasIcon: boolean;
+  iconSlotClass: string;
+  showActiveIcon: boolean;
+  activeIconClass: string;
+  showInactiveIcon: boolean;
+  inactiveIconClass: string;
+  showLabel: boolean;
+  labelClass: string;
+  showDefs: boolean;
+  gradientId?: string;
   icon?: ReactNode;
   iconInactive?: ReactNode;
-  active?: boolean;
-  effect?: BadgeEffect;
-  size?: BadgeSize;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;
   ariaLabel?: string;
   ariaPressed?: boolean;
-  gradientId?: string;
 }

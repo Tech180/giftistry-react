@@ -1,4 +1,4 @@
-import type { User } from 'app/providers/interfaces/user.interface';
+import type { User } from 'features/auth';
 
 export interface ProfileTriggerProps {
   user: User;

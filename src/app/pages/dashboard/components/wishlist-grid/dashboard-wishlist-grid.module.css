@@ -1,0 +1,17 @@
+.dashboard-grid {
+  width: 100%;
+  overflow: visible;
+}
+
+.dashboard-grid__items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
+  gap: var(--spacing-md);
+  overflow: visible;
+}
+
+@media (max-width: 48rem) {
+  .dashboard-grid__items {
+    grid-template-columns: 1fr;
+  }
+}

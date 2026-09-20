@@ -1,0 +1,27 @@
+.danger-zone {
+  width: 100%;
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-xl);
+  border-top: 1px solid var(--border);
+}
+
+.danger-zone__title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--error);
+  margin-bottom: var(--spacing-xs);
+}
+
+.danger-zone__desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin: 0 0 var(--spacing-md);
+  max-width: 40rem;
+  line-height: 1.5;
+}
+
+.danger-zone__group {
+  margin-bottom: 0;
+  border-color: color-mix(in srgb, var(--error) 28%, var(--border));
+  background: var(--surface);
+}

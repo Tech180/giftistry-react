@@ -1,8 +1,7 @@
 import { ReactNode, MouseEventHandler } from 'react';
-
-export type BadgeSize = 'sm' | 'md' | 'compact';
-export type BadgeEffect = 'none' | 'rainbow';
-export type BadgeTone = 'default' | 'success';
+import type { BadgeEffect } from './badge-effect.type';
+import type { BadgeSize } from './badge-size.type';
+import type { BadgeTone } from './badge-tone.type';
 
 export interface BadgeProps {
   children?: ReactNode;

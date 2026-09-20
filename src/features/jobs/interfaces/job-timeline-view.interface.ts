@@ -1,7 +1,7 @@
 import type {
   ImportTimelineStep,
   ImportTimelineTone,
-} from 'features/items/components/import/import-strip/interfaces/import-timeline-step.interface';
+} from 'features/items/components/import/strip/interfaces/import-timeline-step.interface';
 
 export interface TimelineStreamLane {
   id: string;

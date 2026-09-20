@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { QuantityBadge } from './quantity-badge.html';
+import { QuantityBadge } from './quantity-badge.component';
 
 const baseItem = {
   Id: 'item-1',

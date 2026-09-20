@@ -3,8 +3,6 @@ import { CardProps } from './interfaces/card-props.interface';
 import { CardTemplate } from './card.html';
 import styles from './card.module.css';
 
-export type { CardProps } from './interfaces/card-props.interface';
-
 export const Card: React.FC<CardProps> = ({
   children,
   hoverable = false,
@@ -23,11 +21,21 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <CardTemplate
-      cardClass={cardClass}
-      hoverable={hoverable}
-      glass={glass}
-      padding={padding}
-      className={className}
+      cardClass = {
+        cardClass
+      }
+      hoverable = {
+        hoverable
+      }
+      glass = {
+        glass
+      }
+      padding = {
+        padding
+      }
+      className = {
+        className
+      }
       {...props}
     >
       {children}
