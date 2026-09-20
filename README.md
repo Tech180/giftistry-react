@@ -1,70 +1,81 @@
-# Getting Started with Create React App
+<p align="center">
+  <img src="src/logo.svg" alt="Giftistry" width="120" />
+</p>
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<h1 align="center">Giftistry</h1>
 
-## Available Scripts
+<p align="center">
+  <strong>Self-hosted wishlists that stay private, shareable, and actually useful.</strong>
+</p>
 
-In the project directory, you can run:
+<p align="center">
+  <a href="#"><img alt="License" src="https://img.shields.io/badge/license-TODO-blue.svg" /></a>
+  <a href="#"><img alt="Status" src="https://img.shields.io/badge/status-early%20access-orange.svg" /></a>
+  <a href="#"><img alt="React" src="https://img.shields.io/badge/react-19-61dafb.svg" /></a>
+</p>
 
-### `npm start`
+<p align="center">
+  <a href="#features">Features</a> ·
+  <a href="#getting-started">Getting started</a> ·
+  <a href="#documentation">Docs</a> ·
+  <a href="#contributing">Contributing</a>
+</p>
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Giftistry helps people collect gifts, share lists with friends and family, and coordinate claims — without stuffing your data into someone else's SaaS. This repository is the **React web client**; pair it with the Giftistry API for a full stack.
 
-### `npm test`
+> **Note**  
+> Screenshots and a public demo URL go here when you have them. Immich/Jellyfin-style READMEs lead with a visual — one hero image beats three paragraphs.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Features
 
-### `npm run build`
+| | |
+| :--- | :--- |
+| **Wishlists** | Create lists, organize items, and keep ownership clear |
+| **Sharing** | Invite friends, control who sees what, accept invites in-app |
+| **Claims** | Mark gifts claimed so nobody doubles up |
+| **Friends** | Stay connected around birthdays and gifting moments |
+| **Theming** | Appearance and holiday themes that feel like *your* product |
+| **Privacy-first** | Self-host the stack; you keep the data |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Getting started
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+# Install
+bun install   # or: npm install
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Dev server (Vite)
+bun run dev
 
-### `npm run eject`
+# Optional: client + API together
+bun run dev:all
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Open the URL Vite prints (typically `http://localhost:5173`).
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+For a full local environment, API config, and troubleshooting, see [docs/development.md](docs/development.md).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Documentation
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+| Doc | What it's for |
+| --- | --- |
+| [Architecture](docs/architecture.md) | Layers (`app` / `features` / `shared` / `core`), SoC |
+| [Development](docs/development.md) | Scripts, audits, tests, env |
+| [UI conventions](docs/ui-conventions.md) | SoC trio, CSS Modules, interfaces |
+| [Contributing](CONTRIBUTING.md) | PRs, style, review expectations |
+| [Source map](src/README.md) | Nested folder READMEs under `src/` |
 
-## Learn More
+## Stack
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- **UI:** React 19, React Router, Vite, CSS Modules  
+- **Language:** TypeScript (strict)  
+- **Tests:** Vitest + Testing Library  
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Contributing
 
-### Code Splitting
+Ideas, bugs, and PRs are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), then skim [docs/architecture.md](docs/architecture.md) so new UI lands in the right layer.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## License
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+TODO — add your license (e.g. AGPL / MIT / proprietary) and link the full text.

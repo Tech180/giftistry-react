@@ -156,3 +156,10 @@ Overlays: `rgba(var(--primary-rgb), 0.08)` is allowed.
 - `bun run audit:colors` — scans CSS/templates for hardcoded theme colors
 - `bun run audit:css` — scans CSS modules for raw px, deep nesting, descendant selectors
 - `bun run lint` — ESLint with layer boundary rules for `shared/`
+
+## Related
+
+- [architecture.md](./architecture.md) — layers and import rules  
+- [development.md](./development.md) — audits and local loop  
+- [../src/shared/ui/README.md](../src/shared/ui/README.md) — shared UI folder notes  
+- [../CONTRIBUTING.md](../CONTRIBUTING.md)
