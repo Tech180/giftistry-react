@@ -4,7 +4,6 @@ export interface SystemStatusPatch {
   allowPasswordLogin?: boolean;
   requireStrongPasswords?: boolean;
   oauthEnabled?: boolean;
-  oauthButtonText?: string;
   globalAiEnabled?: boolean;
   globalWebSearchEnabled?: boolean;
   registrationMode?: 'open' | 'invite_only' | 'disabled';

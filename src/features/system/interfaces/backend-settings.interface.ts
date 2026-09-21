@@ -19,7 +19,6 @@ export interface BackendSettings {
   OAuthClientId?: string;
   OAuthClientSecret?: string;
   OAuthScopes?: string;
-  OAuthButtonText?: string;
   OAuthAutoRegister?: boolean;
   OAuthAutoLaunch?: boolean;
   AiEnabled?: boolean;

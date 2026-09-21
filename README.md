@@ -41,11 +41,15 @@ Giftistry helps people collect gifts, share lists with friends and family, and c
 
 ## Getting started
 
+**Self-host (Docker / NixOS):** use the packaging repo [`giftistry`](../giftistry) — [Compose](../giftistry/docs/install/docker.md) or [`services.giftistry`](../giftistry/docs/install/nixos.md).
+
+### Local web development
+
 ```bash
 # Install
 bun install   # or: npm install
 
-# Dev server (Vite)
+# Dev server (Vite) — API expected at http://localhost:3001
 bun run dev
 
 # Optional: client + API together
@@ -54,7 +58,7 @@ bun run dev:all
 
 Open the URL Vite prints (typically `http://localhost:5173`).
 
-For a full local environment, API config, and troubleshooting, see [docs/development.md](docs/development.md).
+For a full local environment, API config, and troubleshooting, see [docs/development.md](docs/development.md) and the packaging [development guide](../giftistry/docs/development.md).
 
 ## Documentation
 

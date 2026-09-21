@@ -27,8 +27,6 @@ export const ServerTemplate: React.FC<ServerTemplateProps> = ({
   setOauthClientId,
   oauthClientSecret,
   setOauthClientSecret,
-  oauthButtonText,
-  setOauthButtonText,
   oauthAutoRegister,
   setOauthAutoRegister,
   smtpType,
@@ -223,12 +221,6 @@ export const ServerTemplate: React.FC<ServerTemplateProps> = ({
           }
           setOauthClientSecret = {
             setOauthClientSecret
-          }
-          oauthButtonText = {
-            oauthButtonText
-          }
-          setOauthButtonText = {
-            setOauthButtonText
           }
           oauthAutoRegister = {
             oauthAutoRegister

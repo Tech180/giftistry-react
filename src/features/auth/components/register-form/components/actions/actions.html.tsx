@@ -7,7 +7,6 @@ export const ActionsTemplate: React.FC<TemplateProps> = ({
   isLoading,
   disabled,
   oauthEnabled,
-  oauthButtonText,
   onOauthSignup,
 }) => {
   return (
@@ -30,7 +29,7 @@ export const ActionsTemplate: React.FC<TemplateProps> = ({
           onClick={onOauthSignup}
           disabled={disabled}
         >
-          {oauthButtonText}
+          Sign in with SSO
         </Button>
       )}
     </div>

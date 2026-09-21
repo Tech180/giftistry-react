@@ -6,7 +6,6 @@ export function useOauthSettings(): UseOauthSettingsResult {
   const [oauthIssuerUrl, setOauthIssuerUrl] = useState('');
   const [oauthClientId, setOauthClientId] = useState('');
   const [oauthClientSecret, setOauthClientSecret] = useState('');
-  const [oauthButtonText, setOauthButtonText] = useState('Sign in with SSO');
   const [oauthAutoRegister, setOauthAutoRegister] = useState(true);
 
   return {
@@ -18,8 +17,6 @@ export function useOauthSettings(): UseOauthSettingsResult {
     setOauthClientId,
     oauthClientSecret,
     setOauthClientSecret,
-    oauthButtonText,
-    setOauthButtonText,
     oauthAutoRegister,
     setOauthAutoRegister,
   };

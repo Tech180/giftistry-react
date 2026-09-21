@@ -28,7 +28,6 @@ export const LoginFormTemplate: React.FC<TemplateProps> = ({
   cancelBiometrics,
   allowPasswordLogin,
   oauthEnabled,
-  oauthButtonText,
   handleOauthLogin,
   showRegisterLink,
   showPassword,
@@ -140,7 +139,7 @@ export const LoginFormTemplate: React.FC<TemplateProps> = ({
                       className={styles['full-width-btn']}
                       type="button"
                     >
-                      {oauthButtonText}
+                      Sign in with SSO
                     </Button>
                   </div>
                 )}

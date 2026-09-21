@@ -24,7 +24,6 @@ export function buildSettingsStateSetters(input: {
     setOauthIssuerUrl: oauth.setOauthIssuerUrl,
     setOauthClientId: oauth.setOauthClientId,
     setOauthClientSecret: oauth.setOauthClientSecret,
-    setOauthButtonText: oauth.setOauthButtonText,
     setOauthAutoRegister: oauth.setOauthAutoRegister,
     setSmtpType: smtp.setSmtpType,
     setSmtpHost: smtp.setSmtpHost,

@@ -13,8 +13,6 @@ export const OauthTemplate: React.FC<Props> = ({
   setOauthClientId,
   oauthClientSecret,
   setOauthClientSecret,
-  oauthButtonText,
-  setOauthButtonText,
   oauthAutoRegister,
   setOauthAutoRegister,
 }) => (
@@ -55,13 +53,6 @@ export const OauthTemplate: React.FC<Props> = ({
               className={styles['oauth__input']}
               value={oauthClientSecret}
               onChange={(e) => setOauthClientSecret(e.target.value)}
-            />
-          </SettingItem>
-          <SettingItem title="Button text" layout="column">
-            <input
-              className={styles['oauth__input']}
-              value={oauthButtonText}
-              onChange={(e) => setOauthButtonText(e.target.value)}
             />
           </SettingItem>
           <SettingItem title="Auto-register new SSO users">

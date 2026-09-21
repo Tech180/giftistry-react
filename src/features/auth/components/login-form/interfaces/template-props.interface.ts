@@ -29,7 +29,6 @@ export interface TemplateProps {
 
   allowPasswordLogin: boolean;
   oauthEnabled: boolean;
-  oauthButtonText: string;
   handleOauthLogin: () => void;
   showRegisterLink: boolean;
 

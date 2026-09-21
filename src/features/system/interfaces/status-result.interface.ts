@@ -4,7 +4,6 @@ export interface SystemStatusResult {
   AllowPasswordLogin?: boolean;
   RequireStrongPasswords?: boolean;
   OAuthEnabled?: boolean;
-  OAuthButtonText?: string;
   AiEnabled?: boolean;
   AiWebSearchEnabled?: boolean;
   RegistrationMode?: 'open' | 'invite_only' | 'disabled';

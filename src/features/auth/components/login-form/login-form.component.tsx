@@ -20,7 +20,6 @@ export const LoginForm: React.FC = () => {
     refreshUser,
     allowPasswordLogin,
     oauthEnabled,
-    oauthButtonText,
     registrationMode,
   } = useAuth();
   const navigate = useNavigate();
@@ -379,9 +378,6 @@ export const LoginForm: React.FC = () => {
       }
       oauthEnabled = {
         oauthEnabled
-      }
-      oauthButtonText = {
-        oauthButtonText
       }
       handleOauthLogin = {
         () => authApi.beginOauthLogin()

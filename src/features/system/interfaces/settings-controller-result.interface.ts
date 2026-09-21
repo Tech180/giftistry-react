@@ -23,8 +23,6 @@ export interface Result {
   setOauthClientId: (id: string) => void;
   oauthClientSecret: string;
   setOauthClientSecret: (secret: string) => void;
-  oauthButtonText: string;
-  setOauthButtonText: (text: string) => void;
   oauthAutoRegister: boolean;
   setOauthAutoRegister: (enabled: boolean) => void;
   smtpType: 'local' | 'remote';

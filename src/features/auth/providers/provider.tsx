@@ -31,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [allowPasswordLogin, setAllowPasswordLogin] = useState(true);
   const [requireStrongPasswords, setRequireStrongPasswords] = useState(true);
   const [oauthEnabled, setOauthEnabled] = useState(false);
-  const [oauthButtonText, setOauthButtonText] = useState('Sign in with SSO');
   const [globalAiEnabled, setGlobalAiEnabled] = useState(false);
   const [globalWebSearchEnabled, setGlobalWebSearchEnabled] = useState(false);
   const [registrationMode, setRegistrationMode] = useState<'open' | 'invite_only' | 'disabled'>('open');
@@ -112,10 +111,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (patch.oauthEnabled !== undefined) {
         setOauthEnabled(patch.oauthEnabled);
-      }
-
-      if (patch.oauthButtonText !== undefined) {
-        setOauthButtonText(patch.oauthButtonText);
       }
 
       if (patch.globalAiEnabled !== undefined) {
@@ -316,7 +311,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       allowPasswordLogin,
       requireStrongPasswords,
       oauthEnabled,
-      oauthButtonText,
       globalAiEnabled,
       globalWebSearchEnabled,
       canShowAi,
@@ -338,7 +332,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       allowPasswordLogin,
       requireStrongPasswords,
       oauthEnabled,
-      oauthButtonText,
       globalAiEnabled,
       globalWebSearchEnabled,
       canShowAi,

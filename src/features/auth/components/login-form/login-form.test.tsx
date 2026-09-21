@@ -27,7 +27,6 @@ const baseProps: TemplateProps = {
   cancelBiometrics: vi.fn(),
   allowPasswordLogin: true,
   oauthEnabled: false,
-  oauthButtonText: 'Sign in with SSO',
   handleOauthLogin: vi.fn(),
   showRegisterLink: true,
   showPassword: false,

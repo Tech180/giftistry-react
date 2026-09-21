@@ -35,7 +35,6 @@ export interface AuthContextType {
   allowPasswordLogin: boolean;
   requireStrongPasswords: boolean;
   oauthEnabled: boolean;
-  oauthButtonText: string;
   globalAiEnabled: boolean;
   globalWebSearchEnabled: boolean;
   canShowAi: boolean;

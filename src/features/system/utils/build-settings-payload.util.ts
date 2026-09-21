@@ -13,7 +13,6 @@ export function buildSettingsPayload(
     OAuthIssuerUrl: input.oauthIssuerUrl.trim(),
     OAuthClientId: input.oauthClientId.trim(),
     OAuthClientSecret: input.oauthClientSecret,
-    OAuthButtonText: input.oauthButtonText.trim() || 'Sign in with SSO',
     OAuthAutoRegister: input.oauthAutoRegister,
     SmtpType: input.smtpType,
     SmtpHost: input.smtpType === 'remote' ? input.smtpHost : '',

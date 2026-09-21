@@ -13,7 +13,6 @@ export function applySettingsToState(s: BackendSettings, setters: SettingsStateS
   setters.setOauthIssuerUrl(s.OAuthIssuerUrl || '');
   setters.setOauthClientId(s.OAuthClientId || '');
   setters.setOauthClientSecret(s.OAuthClientSecret || '');
-  setters.setOauthButtonText(s.OAuthButtonText || 'Sign in with SSO');
   setters.setOauthAutoRegister(s.OAuthAutoRegister !== false);
   setters.setSmtpType(s.SmtpType);
   setters.setSmtpHost(s.SmtpHost || '');

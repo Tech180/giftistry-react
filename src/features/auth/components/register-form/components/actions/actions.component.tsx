@@ -6,7 +6,6 @@ export const Actions: React.FC<Props> = ({
   isLoading,
   disabled,
   oauthEnabled,
-  oauthButtonText,
   onOauthSignup,
 }) => (
   <ActionsTemplate
@@ -18,9 +17,6 @@ export const Actions: React.FC<Props> = ({
     }
     oauthEnabled = {
       oauthEnabled
-    }
-    oauthButtonText = {
-      oauthButtonText
     }
     onOauthSignup = {
       onOauthSignup

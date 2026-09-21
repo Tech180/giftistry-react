@@ -65,7 +65,6 @@ export function useSettingsController({ showToast }: Props): Result {
     oauthIssuerUrl: oauth.oauthIssuerUrl,
     oauthClientId: oauth.oauthClientId,
     oauthClientSecret: oauth.oauthClientSecret,
-    oauthButtonText: oauth.oauthButtonText,
     oauthAutoRegister: oauth.oauthAutoRegister,
     smtpType: smtp.smtpType,
     smtpHost: smtp.smtpHost,

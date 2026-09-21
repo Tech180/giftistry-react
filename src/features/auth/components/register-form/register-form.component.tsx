@@ -15,7 +15,6 @@ export const RegisterForm: React.FC = () => {
     registrationMode,
     requireStrongPasswords,
     oauthEnabled,
-    oauthButtonText,
   } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -218,9 +217,6 @@ export const RegisterForm: React.FC = () => {
           }
           oauthEnabled = {
             oauthEnabled && !registrationClosed
-          }
-          oauthButtonText = {
-            oauthButtonText
           }
           onOauthSignup = {
             () => authApi.beginOauthLogin(inviteToken)

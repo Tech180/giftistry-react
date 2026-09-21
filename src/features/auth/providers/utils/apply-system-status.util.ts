@@ -29,10 +29,6 @@ export function applySystemStatus(res: SystemStatusResult | null | undefined): S
     patch.oauthEnabled = Boolean(res.OAuthEnabled);
   }
 
-  if (res.OAuthButtonText) {
-    patch.oauthButtonText = res.OAuthButtonText;
-  }
-
   if (res.AiEnabled !== undefined) {
     patch.globalAiEnabled = Boolean(res.AiEnabled);
   }

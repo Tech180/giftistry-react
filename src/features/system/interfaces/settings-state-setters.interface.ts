@@ -12,7 +12,6 @@ export interface SettingsStateSetters {
   setOauthIssuerUrl: (url: string) => void;
   setOauthClientId: (id: string) => void;
   setOauthClientSecret: (secret: string) => void;
-  setOauthButtonText: (text: string) => void;
   setOauthAutoRegister: (enabled: boolean) => void;
   setSmtpType: (type: 'local' | 'remote') => void;
   setSmtpHost: (host: string) => void;

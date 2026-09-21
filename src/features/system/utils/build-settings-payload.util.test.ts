@@ -10,7 +10,6 @@ const baseInput = (): SettingsPayloadInput => ({
   oauthIssuerUrl: '',
   oauthClientId: '',
   oauthClientSecret: '',
-  oauthButtonText: '',
   oauthAutoRegister: true,
   smtpType: 'local',
   smtpHost: 'smtp.example.com',

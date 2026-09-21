@@ -9,7 +9,6 @@ export interface SettingsPayloadInput {
   oauthIssuerUrl: string;
   oauthClientId: string;
   oauthClientSecret: string;
-  oauthButtonText: string;
   oauthAutoRegister: boolean;
   smtpType: 'local' | 'remote';
   smtpHost: string;
