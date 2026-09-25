@@ -1,0 +1,86 @@
+.tutorial {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.tutorial__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.tutorial__title {
+  margin: 0;
+  font-size: var(--font-size-lg, 1.125rem);
+  color: var(--text);
+}
+
+.tutorial__subtitle {
+  margin: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-muted);
+}
+
+.tutorial__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.tutorial__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.tutorial__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  border-top: 1px solid var(--border);
+}
+
+.tutorial__row-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 12rem;
+  flex: 1;
+}
+
+.tutorial__row-title {
+  margin: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text);
+}
+
+.tutorial__row-desc {
+  margin: 0;
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-muted);
+}
+
+.tutorial__status {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-muted);
+}
+
+.tutorial__status--completed {
+  color: var(--success, var(--primary));
+}
+
+.tutorial__status--skipped {
+  color: var(--warning, var(--text-muted));
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { TOUR_TARGETS } from 'features/tour';
 import { TemplateProps } from './interfaces/template-props.interface';
 import styles from './panel.module.css';
 
@@ -17,6 +18,7 @@ export const SharePanelTemplate: React.FC<TemplateProps> = ({
           type="button"
           onClick={() => setActiveTab('friends')}
           className={`${styles['tab-btn']} ${activeTab === 'friends' ? styles['tab-btn-active'] : ''}`}
+          data-tour={TOUR_TARGETS.shareTabFriends}
         >
           Friends
         </button>
@@ -24,6 +26,7 @@ export const SharePanelTemplate: React.FC<TemplateProps> = ({
           type="button"
           onClick={() => setActiveTab('link')}
           className={`${styles['tab-btn']} ${activeTab === 'link' ? styles['tab-btn-active'] : ''}`}
+          data-tour={TOUR_TARGETS.shareTabLink}
         >
           Link
         </button>
@@ -31,6 +34,7 @@ export const SharePanelTemplate: React.FC<TemplateProps> = ({
           type="button"
           onClick={() => setActiveTab('manage')}
           className={`${styles['tab-btn']} ${activeTab === 'manage' ? styles['tab-btn-active'] : ''}`}
+          data-tour={TOUR_TARGETS.shareTabManage}
         >
           Manage
           {manageCount > 0 && <span className={styles['manage-badge']}>{manageCount}</span>}

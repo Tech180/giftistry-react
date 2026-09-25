@@ -17,6 +17,7 @@ export interface FloatingActionMenuTemplateProps {
   facePanelClass: string;
   backdropClass: string;
   tooltipClass: string;
+  closedTourTarget?: string;
   setDockState: (state: 'closed' | 'toolbar' | 'panel') => void;
   onActionClick: (actionId: string) => void;
   onChildClick: (actionId: string, childId: string) => void;

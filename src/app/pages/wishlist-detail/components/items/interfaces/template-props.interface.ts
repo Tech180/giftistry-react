@@ -23,4 +23,6 @@ export interface TemplateProps {
   chevronSize: number;
   groupsClassName: string;
   buildItemCard: (item: Item, priorityLabel: string) => ItemCardRender;
+  demoItemsTourTarget?: string;
+  highlightedItemId?: string | null;
 }

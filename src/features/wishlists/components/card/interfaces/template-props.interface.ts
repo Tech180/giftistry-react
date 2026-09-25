@@ -13,4 +13,5 @@ export interface TemplateProps {
   onSidebarPageUp: (e: React.MouseEvent) => void;
   onSidebarPageDown: (e: React.MouseEvent) => void;
   pageSize: number;
+  tourTarget?: string;
 }

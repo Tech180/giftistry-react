@@ -6,6 +6,8 @@ import { AuthResponse } from '../interfaces/auth-response.interface';
 import { OnboardingPatchPayload } from '../interfaces/onboarding-patch-payload.interface';
 import { OnboardingState } from '../interfaces/onboarding-state.interface';
 import type { Passkey } from '../interfaces/passkey.interface';
+import type { TourState } from '../interfaces/tour-state.interface';
+import type { TutorialPatchPayload } from '../interfaces/tutorial-patch-payload.interface';
 
 export const authApi = {
   login: (username: string, password: string) =>
@@ -122,6 +124,9 @@ export const authApi = {
 
   patchOnboarding: (payload: OnboardingPatchPayload) =>
     apiClient.patch<OnboardingState & { User?: ApiUser }>('/api/auth/onboarding', payload, 'Onboarding'),
+
+  patchTutorial: (payload: TutorialPatchPayload) =>
+    apiClient.patch<{ Tour: TourState; User: ApiUser }>('/api/auth/tutorial', payload, 'Tutorial'),
 
   beginOauthLogin: (inviteToken?: string | null) => {
     const qs =

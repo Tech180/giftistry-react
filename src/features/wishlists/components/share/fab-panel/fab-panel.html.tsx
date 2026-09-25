@@ -1,7 +1,14 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { TOUR_TARGETS } from 'features/tour';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './fab-panel.module.css';
+
+const FAB_TAB_TOUR: Record<string, string> = {
+  link: TOUR_TARGETS.shareTabLink,
+  invite: TOUR_TARGETS.shareTabFriends,
+  access: TOUR_TARGETS.shareTabManage,
+};
 
 export const FabPanelTemplate: React.FC<TemplateProps> = ({
   activeTab,
@@ -32,6 +39,7 @@ export const FabPanelTemplate: React.FC<TemplateProps> = ({
             aria-selected={activeTab === tab.id}
             aria-controls={`share-fab-panel-${tab.id}`}
             className={`${styles.tabBtn} ${activeTab === tab.id ? styles.tabBtnActive : ''}`}
+            data-tour={FAB_TAB_TOUR[tab.id]}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}

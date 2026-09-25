@@ -4,6 +4,7 @@ import { itemsApi } from 'features/items/api/items.api';
 import type { ImportStripHandle } from 'features/items';
 import type { ItemEnrichJobResult } from 'features/jobs';
 import { useAuth } from 'features/auth';
+import { useTourOptional } from 'features/tour';
 import { useToast } from 'shared/providers/toast';
 import type { UseItemSessionOptions } from '../interfaces/use-item-session-options.interface';
 import type { UseItemSessionResult } from '../interfaces/use-item-session-result.interface';
@@ -20,6 +21,7 @@ export function useItemSession({
   associationsRef,
 }: UseItemSessionOptions): UseItemSessionResult {
   const { user } = useAuth();
+  const tour = useTourOptional();
   const { showToast } = useToast();
 
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -156,7 +158,8 @@ export function useItemSession({
     associationsRef.current?.resetForAdd();
     setIsAutoAddOpen(false);
     setIsAddOpen(true);
-  }, [clearSubstitutionAutoOpen, associationsRef]);
+    tour?.notifyEvent('tour:add-drawer-opened');
+  }, [clearSubstitutionAutoOpen, associationsRef, tour]);
 
   const openAutoAdd = useCallback(() => {
     if (!canAutoAdd) {

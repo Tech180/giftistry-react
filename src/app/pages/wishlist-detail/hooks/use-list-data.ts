@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useItemController } from 'features/items';
 import {
@@ -10,6 +10,7 @@ import {
 import { markJobNotificationHandled } from 'features/notifications';
 import { wishlistsApi, type Priority, type Wishlist } from 'features/wishlists';
 import type { ListShare } from 'features/wishlists';
+import { isDemoListId, useTourDemoOptional } from 'features/tour';
 import { useToast } from 'shared/providers/toast';
 import type { UseListDataResult } from '../interfaces/use-list-data-result.interface';
 
@@ -17,6 +18,8 @@ export function useListData(): UseListDataResult {
   const { listId } = useParams<{ listId: string }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const demo = useTourDemoOptional();
+  const isDemo = isDemoListId(listId);
 
   const [wishlist, setWishlist] = useState<Wishlist | null>(null);
   const [isWishlistLoading, setIsWishlistLoading] = useState(true);
@@ -26,8 +29,31 @@ export function useListData(): UseListDataResult {
 
   const { items, itemGroups, isLoading: isItemsLoading, fetchItems, itemActions } = useItemController();
 
+  useLayoutEffect(() => {
+    if (!isDemo) {
+      return;
+    }
+
+    // Never stay on the sample route once the demo session is over.
+    if (!demo?.active) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isDemo, demo?.active, navigate]);
+
+  useEffect(() => {
+    if (!isDemo || !demo?.active || !demo.wishlist) {
+      return;
+    }
+
+    setWishlist(demo.wishlist);
+    setListShares(demo.wishlist.Shares ?? []);
+    setPriorities([]);
+    setWishlistError(null);
+    setIsWishlistLoading(false);
+  }, [isDemo, demo?.active, demo?.wishlist, demo?.items]);
+
   const reloadListContent = useCallback(async () => {
-    if (!listId) {
+    if (!listId || isDemoListId(listId)) {
       return;
     }
 
@@ -52,7 +78,7 @@ export function useListData(): UseListDataResult {
   }, [listId, fetchItems, navigate]);
 
   const softReloadItems = useCallback(async () => {
-    if (!listId) {
+    if (!listId || isDemoListId(listId)) {
       return;
     }
 
@@ -65,6 +91,11 @@ export function useListData(): UseListDataResult {
 
   const loadData = useCallback(async () => {
     if (!listId) {
+      return;
+    }
+
+    if (isDemoListId(listId)) {
+      setIsWishlistLoading(false);
       return;
     }
 
@@ -109,13 +140,14 @@ export function useListData(): UseListDataResult {
     };
   }, []);
 
+  const jobListId = isDemo ? undefined : listId;
   const {
     job: activeJob,
     isActive: isJobActive,
     cancel: cancelJob,
     refresh: refreshJob,
     enrichingItemIds,
-  } = useWishlistJob(listId, { onListChanged: handleListChanged });
+  } = useWishlistJob(jobListId, { onListChanged: handleListChanged });
 
   useEffect(() => {
     void loadData();
@@ -126,7 +158,7 @@ export function useListData(): UseListDataResult {
   const [isCancellingJob, setIsCancellingJob] = useState(false);
 
   useEffect(() => {
-    if (!activeJob) {
+    if (!activeJob || isDemo) {
       return;
     }
 
@@ -169,7 +201,7 @@ export function useListData(): UseListDataResult {
       }
       showToast(summary.message, summary.tone);
     }
-  }, [activeJob, isJobActive, loadData, softReloadItems, showToast]);
+  }, [activeJob, isJobActive, loadData, softReloadItems, showToast, isDemo]);
 
   const handleCancelJob = useCallback(async () => {
     setIsCancellingJob(true);
@@ -186,24 +218,30 @@ export function useListData(): UseListDataResult {
     void handleCancelJob();
   }, [handleCancelJob]);
 
+  // Prefer live demo fixtures; while leaving keep the last synced sample so detail never 404s.
+  const resolvedWishlist =
+    isDemo && demo?.active && demo.wishlist ? demo.wishlist : wishlist;
+  const resolvedListShares =
+    isDemo && demo?.active && demo.wishlist ? (demo.wishlist.Shares ?? []) : listShares;
+
   return {
-    wishlist,
+    wishlist: resolvedWishlist,
     setWishlist,
-    isWishlistLoading,
-    wishlistError,
-    priorities,
-    listShares,
-    items,
-    itemGroups,
-    isItemsLoading,
+    isWishlistLoading: isDemo ? false : isWishlistLoading,
+    wishlistError: isDemo ? null : wishlistError,
+    priorities: isDemo ? [] : priorities,
+    listShares: resolvedListShares,
+    items: isDemo && demo?.active ? demo.items : isDemo ? [] : items,
+    itemGroups: isDemo ? null : itemGroups,
+    isItemsLoading: isDemo ? false : isItemsLoading,
     itemActions,
     loadData,
     reloadListContent,
     softReloadItems,
-    activeJob,
+    activeJob: isDemo ? null : activeJob,
     isCancellingJob,
     onCancelJob,
-    enrichingItemIds,
+    enrichingItemIds: isDemo ? new Set<string>() : enrichingItemIds,
     refreshJob,
   };
 }

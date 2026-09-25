@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useTourOptional } from 'features/tour';
 import type { Item } from '../../../interfaces/item.interface';
 import type { ListShare } from 'features/wishlists/interfaces/list-share.interface';
 import type { ItemPhotoGalleryEntry } from '../../photo-gallery/interfaces/item-photo-gallery-props.interface';
@@ -131,6 +132,8 @@ export function useSubmitItem(options: {
     initialPhotosSnapshotRef,
     onSuccess,
   } = options;
+
+  const tour = useTourOptional();
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -330,6 +333,9 @@ export function useSubmitItem(options: {
       setPhotoEntries([]);
       initialPhotosSnapshotRef.current = '[]';
       setPhotoError(null);
+      if (createdItem) {
+        tour?.notifyEvent('tour:item-created', { listId });
+      }
       onSuccess();
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to add item.');

@@ -1,13 +1,40 @@
 import { useEffect, useRef, useState } from 'react';
+import { isDemoListId, useTourDemoOptional } from 'features/tour';
 import { useCommentController } from '../../../hooks/use-comment-controller';
 import { useCommentsSession } from '../../../providers/session';
 import { formatCommentDate } from 'shared/utils/format-date.util';
 import { buildVisibleCommentTree } from '../../../utils/build-visible-comment-tree.util';
+import type { Comment } from '../../../interfaces/comment.interface';
 import type { Props } from '../interfaces/props.interface';
 import type { UseSectionResult } from '../interfaces/use-section-result.interface';
 import { useParticipants } from './use-participants';
 import { useCommentRealtime } from './use-comment-realtime';
 import { useComposer } from './use-composer';
+
+function mapDemoComments(
+  listId: string,
+  demoComments: {
+    Id: string;
+    ListId: string;
+    UserId: string;
+    Username: string;
+    Body: string;
+    CreatedAt: string;
+    ParentId?: string | null;
+  }[]
+): Comment[] {
+  return demoComments.map((comment) => ({
+    Id: comment.Id,
+    ListId: comment.ListId || listId,
+    UserId: comment.UserId,
+    CommenterName: comment.Username,
+    Content: comment.Body,
+    IsOwnerVisible: true,
+    IsRollover: false,
+    ParentId: comment.ParentId ?? null,
+    CreatedAt: comment.CreatedAt,
+  }));
+}
 
 export function useSection({
   listId,
@@ -31,6 +58,8 @@ export function useSection({
   showDeletedComments = false,
 }: Props): UseSectionResult {
   const { user, isAuthenticated } = useCommentsSession();
+  const demo = useTourDemoOptional();
+  const isDemo = isDemoListId(listId);
 
   const {
     comments,
@@ -146,8 +175,25 @@ export function useSection({
   }, [comments]);
 
   useEffect(() => {
+    if (isDemo) {
+      return;
+    }
+
     fetchComments(listId);
-  }, [listId]);
+  }, [listId, isDemo]);
+
+  useEffect(() => {
+    if (!isDemo) {
+      return;
+    }
+
+    if (!demo?.active) {
+      setComments([]);
+      return;
+    }
+
+    setComments(mapDemoComments(listId, demo.comments ?? []));
+  }, [isDemo, demo?.active, demo?.comments, listId, setComments]);
 
   return {
     isOwner,
@@ -161,7 +207,7 @@ export function useSection({
     repliesMap,
     handleReplySubmit: composer.handleReplySubmit,
     toggleReaction: composer.handleToggleReaction,
-    isLoading,
+    isLoading: isDemo ? false : isLoading,
     displayError: composer.displayError,
     content: composer.content,
     setContent: composer.setContent,
@@ -177,7 +223,7 @@ export function useSection({
     formatDate: formatCommentDate,
     items,
     onlineUsers: realtime.onlineUsers,
-    typingUsers: realtime.typingUsers,
+    typingUsers: isDemo ? (demo?.typingUsers ?? []) : realtime.typingUsers,
     onItemTaggedClick,
     handleSelectTagItem: composer.handleSelectTagItem,
     isTaggingModeActive,
@@ -199,5 +245,6 @@ export function useSection({
     setReplyTaggedItemIds,
     listContainerRef,
     onMentionSelect: composer.handleMentionSelect,
+    highlightedCommentId: isDemo ? (demo?.highlightedCommentId ?? null) : null,
   };
 }

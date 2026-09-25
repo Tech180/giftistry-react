@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plus, ChevronDown, Wand2 } from 'lucide-react';
 import { ItemCard, ItemCardSkeleton, CompactCategoryList } from 'features/items';
+import { DEMO_JORDAN_ITEM_ID, TOUR_TARGETS } from 'features/tour';
 import { Button, Card } from 'shared/ui';
 import {
   ADD_MANUAL_LABEL,
@@ -15,6 +16,8 @@ import { getGroupChevronClassName } from './utils/get-group-chevron-class-name.u
 import { getGroupClassName } from './utils/get-group-class-name.util';
 import { getGroupTitleClassName } from './utils/get-group-title-class-name.util';
 import styles from './items.module.css';
+
+const ATTENTION_PULSE_CLASS = 'attention-pulse';
 
 export const ItemsTemplate: React.FC<TemplateProps> = ({
   items,
@@ -36,21 +39,34 @@ export const ItemsTemplate: React.FC<TemplateProps> = ({
   chevronSize,
   groupsClassName,
   buildItemCard,
+  demoItemsTourTarget,
+  highlightedItemId,
 }) => {
   const renderCard = (item: (typeof items)[number], priorityLabel: string) => {
     const render = buildItemCard(item, priorityLabel);
+    const tourTarget = item.Id === DEMO_JORDAN_ITEM_ID ? TOUR_TARGETS.demoNewItem : undefined;
+
     if (render.kind === 'skeleton') {
       return (
-        <ItemCardSkeleton
-          viewMode = {
-            render.viewMode
-          }
-        />
+        <div data-tour={tourTarget}>
+          <ItemCardSkeleton
+            viewMode = {
+              render.viewMode
+            }
+          />
+        </div>
       );
     }
 
-    return <ItemCard {...render.props} />;
+    return (
+      <div data-tour={tourTarget}>
+        <ItemCard {...render.props} />
+      </div>
+    );
   };
+
+  const itemShellClassName = (itemId: string) =>
+    itemId === highlightedItemId ? ATTENTION_PULSE_CLASS : undefined;
 
   if (isLoading) {
     return (
@@ -77,6 +93,9 @@ export const ItemsTemplate: React.FC<TemplateProps> = ({
         padding = {
           'lg'
         }
+        data-tour = {
+          demoItemsTourTarget
+        }
       >
         <p
           className = {
@@ -89,6 +108,9 @@ export const ItemsTemplate: React.FC<TemplateProps> = ({
           <div
             className = {
               styles['items__empty-actions']
+            }
+            data-tour = {
+              TOUR_TARGETS.addManually
             }
           >
             {canAutoAdd ? (
@@ -104,6 +126,9 @@ export const ItemsTemplate: React.FC<TemplateProps> = ({
                 }
                 onClick = {
                   openAutoAdd
+                }
+                data-tour = {
+                  TOUR_TARGETS.autoAdd
                 }
               >
                 {AUTO_ADD_LABEL}
@@ -171,6 +196,9 @@ export const ItemsTemplate: React.FC<TemplateProps> = ({
     <div
       className = {
         groupsClassName
+      }
+      data-tour = {
+        demoItemsTourTarget
       }
     >
       {groupedItems.map((group, groupIndex) => {
@@ -267,6 +295,9 @@ export const ItemsTemplate: React.FC<TemplateProps> = ({
                       id = {
                         `item-card-${item.Id}`
                       }
+                      className = {
+                        itemShellClassName(item.Id)
+                      }
                     >
                       {renderCard(item, group.label)}
                     </div>
@@ -288,6 +319,9 @@ export const ItemsTemplate: React.FC<TemplateProps> = ({
                       }
                       id = {
                         `item-card-${item.Id}`
+                      }
+                      className = {
+                        itemShellClassName(item.Id)
                       }
                     >
                       {renderCard(item, group.label)}

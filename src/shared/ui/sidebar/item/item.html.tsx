@@ -9,6 +9,7 @@ export const ItemTemplate: React.FC<TemplateProps> = ({
   href,
   onClick,
   itemClass,
+  dataTour,
 }) => {
   const content = (
     <>
@@ -26,6 +27,7 @@ export const ItemTemplate: React.FC<TemplateProps> = ({
         className={itemClass}
         onClick={onClick}
         aria-current={isActive ? 'page' : undefined}
+        data-tour={dataTour}
       >
         {content}
       </a>
@@ -33,7 +35,7 @@ export const ItemTemplate: React.FC<TemplateProps> = ({
   }
 
   return (
-    <button type="button" className={itemClass} onClick={onClick}>
+    <button type="button" className={itemClass} onClick={onClick} data-tour={dataTour}>
       {content}
     </button>
   );

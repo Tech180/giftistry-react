@@ -55,4 +55,5 @@ export interface Props {
   displayItems: Item[];
   handleItemTaggedClick: (itemId: string, returnToItemId?: string) => void;
   onLinkedItemsUnsupported: () => void;
+  demoItemsTourTarget?: string;
 }

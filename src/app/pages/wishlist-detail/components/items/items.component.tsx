@@ -1,12 +1,14 @@
 import React from 'react';
 import type { Item } from 'features/items';
 import type { ItemCardProps } from 'features/items';
+import { TOUR_TARGETS, useTourDemoOptional } from 'features/tour';
 import type { Props } from './interfaces/props.interface';
 import type { ItemCardRender } from './interfaces/item-card-render.interface';
 import { getGroupsClassName } from './utils/get-groups-class-name.util';
 import { ItemsTemplate } from './items.html';
 
 export const Items: React.FC<Props> = (props) => {
+  const demo = useTourDemoOptional();
   const {
     enrichingItemIds,
     viewMode,
@@ -188,6 +190,12 @@ export const Items: React.FC<Props> = (props) => {
       }
       buildItemCard = {
         buildItemCard
+      }
+      demoItemsTourTarget = {
+        demo?.active ? TOUR_TARGETS.demoItems : undefined
+      }
+      highlightedItemId = {
+        demo?.highlightedItemId ?? null
       }
     />
   );

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { NotificationBell } from 'features/notifications';
+import { TOUR_TARGETS } from 'features/tour';
 import { NavigationTemplateProps } from './interfaces/navigation-template-props.interface';
 import { BrandMark } from 'shared/ui/brand-mark/brand-mark.component';
 import { MobileDrawer } from './components/mobile-drawer/mobile-drawer.component';
@@ -38,6 +39,7 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
           aria-label="Open navigation menu"
           aria-expanded={isMobileMenuOpen}
           type="button"
+          data-tour={TOUR_TARGETS.hamburger}
         >
           {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>

@@ -243,6 +243,18 @@
     min-width: 0;
   }
 
+  .controls__search-input {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    height: 2.75rem;
+    box-sizing: border-box;
+
+    &:focus {
+      width: auto;
+    }
+  }
+
   .controls__view-switcher {
     display: none;
   }
@@ -311,6 +323,7 @@
 
   /* Compact search while add-widget is in input mode (sibling state via :has). */
   .controls__actions:has([data-add-widget][data-input-mode='true']) .controls__search-input {
+    flex: 0 1 4rem;
     width: 4rem;
     opacity: 0.5;
   }
@@ -318,7 +331,9 @@
 
 @media (max-width: 37.5rem) {
   .controls__actions:has([data-add-widget][data-input-mode='true']) .controls__search-input {
+    flex: 0 0 0;
     width: 0;
+    min-width: 0;
     padding: 0;
     border: none;
     opacity: 0;

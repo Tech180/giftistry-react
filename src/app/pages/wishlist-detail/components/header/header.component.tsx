@@ -11,7 +11,7 @@ import {
 } from 'shared/utils/wishlist-export';
 import { getDisplayName } from 'shared/utils/get-display-name.util';
 import { BACK_LINK_AUTH_LABEL, BACK_LINK_GUEST_LABEL } from './constants/back-link-labels.constant';
-import { CONFIRM_MESSAGES } from './constants/confirm-messages.constant';
+import { getConfirmMessage } from './constants/confirm-messages.constant';
 import type { Props } from './interfaces/props.interface';
 import { getConfirmBannerClassName } from './utils/get-confirm-banner-class-name.util';
 import { getConfirmYesBtnClassName } from './utils/get-confirm-yes-btn-class-name.util';
@@ -226,7 +226,7 @@ export const Header: React.FC<Props> = (props) => {
         confirmAction
       }
       confirmMessage = {
-        confirmAction ? CONFIRM_MESSAGES[confirmAction] : ''
+        confirmAction ? getConfirmMessage(confirmAction, isOwner) : ''
       }
       confirmBannerClassName = {
         confirmAction ? getConfirmBannerClassName(confirmAction) : ''

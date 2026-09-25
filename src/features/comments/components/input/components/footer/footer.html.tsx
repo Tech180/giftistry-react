@@ -22,6 +22,7 @@ export const FooterTemplate: React.FC<FooterTemplateProps> = ({
   setIsPanelOpen,
   isMobile,
   badgeLabel,
+  anchorRef,
 }) => {
   const mode = commentVisibility.mode;
   const isHidden = mode === 'hiddenFromOwner';
@@ -56,7 +57,11 @@ export const FooterTemplate: React.FC<FooterTemplateProps> = ({
         ) : null}
       </div>
 
-      <div className={styles['visibility-anchor']} data-comment-visibility-anchor>
+      <div
+        ref={anchorRef}
+        className={styles['visibility-anchor']}
+        data-comment-visibility-anchor
+      >
         <button
           type="button"
           onClick={() => setIsPanelOpen(!isPanelOpen)}
@@ -79,6 +84,7 @@ export const FooterTemplate: React.FC<FooterTemplateProps> = ({
           listOwnerId={listOwnerId}
           isOwner={isOwner}
           isMobile={isMobile}
+          anchorRef={anchorRef}
         />
       </div>
     </div>

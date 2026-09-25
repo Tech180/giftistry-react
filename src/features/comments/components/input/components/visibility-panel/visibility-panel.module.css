@@ -9,13 +9,11 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg, 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12));
-  z-index: 40;
 }
 
 .panel.panel--dropdown {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + var(--spacing-xs));
+  width: max-content;
+  max-width: min(22rem, calc(100vw - 1.5rem));
 }
 
 .panel.panel--sheet {
@@ -27,16 +25,18 @@
   min-width: 0;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + env(safe-area-inset-bottom, 0));
-  z-index: 60;
+  z-index: 10001;
 }
 
-.sheet-scrim {
+/* Tap-outside dismiss only — no dimming overlay. */
+.sheet-dismiss {
   position: fixed;
   inset: 0;
-  background-color: color-mix(in srgb, var(--text) 35%, transparent);
-  z-index: 55;
+  z-index: 10000;
   border: none;
   padding: 0;
+  margin: 0;
+  background: transparent;
   cursor: pointer;
 }
 
@@ -65,11 +65,6 @@
 .option.option--active {
   border-color: var(--primary);
   background-color: color-mix(in srgb, var(--primary) 10%, var(--background));
-}
-
-.option.option--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .option-label {

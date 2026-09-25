@@ -6,3 +6,15 @@ export const CONFIRM_MESSAGES: Record<Exclude<ConfirmAction, null>, string> = {
   duplicate: 'Duplicate this list for yourself?',
   delete: 'Are you sure you want to permanently delete this wishlist and all of its items?',
 };
+
+export function getConfirmMessage(
+  action: Exclude<ConfirmAction, null>,
+  isOwner: boolean
+): string {
+  if (action === 'duplicate' && isOwner) {
+    return 'Duplicate this list?';
+  }
+
+  return CONFIRM_MESSAGES[action];
+}
+

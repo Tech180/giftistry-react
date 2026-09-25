@@ -5,6 +5,7 @@ import type { TemplateProps } from './interfaces/template-props.interface';
 export const HostTemplate: React.FC<TemplateProps> = ({
   pageActions,
   ariaLabel,
+  closedTourTarget,
 }) => {
   return (
     <FloatingActionMenu
@@ -13,6 +14,9 @@ export const HostTemplate: React.FC<TemplateProps> = ({
       }
       ariaLabel = {
         ariaLabel
+      }
+      closedTourTarget = {
+        closedTourTarget
       }
     />
   );

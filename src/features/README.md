@@ -20,6 +20,7 @@ Domain packages. Each folder is a feature with a public barrel (`index.ts`).
 | [jobs](jobs/README.md) | Background jobs / timeline |
 | [notifications](notifications/README.md) | Bell, push, job toasts |
 | [system](system/README.md) | System settings, AI, metadata packs |
+| [tour](tour/README.md) | Product tutorial (demo, beginner, advanced) |
 | [wishlists](wishlists/README.md) | Lists, create form, share |
 
 ## Related

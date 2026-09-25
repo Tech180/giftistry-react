@@ -20,6 +20,7 @@ export const CardTemplate: React.FC<TemplateProps> = ({
   onSidebarPageUp,
   onSidebarPageDown,
   pageSize,
+  tourTarget,
 }) => {
   const hasShares = wishlist.Shares && wishlist.Shares.length > 0;
 
@@ -33,6 +34,9 @@ export const CardTemplate: React.FC<TemplateProps> = ({
         }
         className = {
           styles['link-wrapper']
+        }
+        data-tour = {
+          tourTarget
         }
       >
         <div className={styles.content}>

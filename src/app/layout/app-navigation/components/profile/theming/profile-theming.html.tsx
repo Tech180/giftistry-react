@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { TOUR_TARGETS } from 'features/tour';
 import { ProfileThemingTemplateProps } from './interfaces/profile-theming-template-props.interface';
 import styles from './profile-theming.module.css';
 
@@ -17,7 +18,7 @@ export const ProfileThemingTemplate: React.FC<ProfileThemingTemplateProps> = ({
   onPreviousSwatches,
   onNextSwatches,
 }) => (
-  <div className={styles['profile-theming']}>
+  <div className={styles['profile-theming']} data-tour={TOUR_TARGETS.profileTheming}>
     <div
       className={styles['segmented-control']}
       data-state={appearance}

@@ -7,6 +7,7 @@ import { authApi } from '../../api/auth.api';
 import { LoginFormTemplate } from './login-form.html';
 import { ApiUser } from '../../interfaces/api-user.interface';
 import { postAuthPath } from '../../utils/post-auth-path.util';
+import { webAuthnErrorMessage } from '../../utils/webauthn-error-message.util';
 import { camelcaseKeys } from 'shared/utils/api-case.util';
 import type { LocationState } from './interfaces/location-state.interface';
 import type { Step } from './interfaces/step.type';
@@ -242,7 +243,10 @@ export const LoginForm: React.FC = () => {
       }
     } catch (err) {
       setIsBiometricModalOpen(false);
-      setLocalError(err instanceof Error ? err.message : 'Passkey authentication failed.');
+      const message = webAuthnErrorMessage(err);
+      if (message) {
+        setLocalError(message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -308,7 +312,10 @@ export const LoginForm: React.FC = () => {
       }
     } catch (err) {
       setIsBiometricModalOpen(false);
-      setLocalError(err instanceof Error ? err.message : 'Passkey authentication failed.');
+      const message = webAuthnErrorMessage(err);
+      if (message) {
+        setLocalError(message);
+      }
     } finally {
       setIsLoading(false);
     }

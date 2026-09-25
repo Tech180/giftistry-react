@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import type { CommentVisibilityMode } from '../../../../interfaces/comment-visibility-mode.type';
+import { AnchoredPopover } from '../toolbar/anchored-popover/anchored-popover.component';
 import type { Props } from './interfaces/props.interface';
 import { VisibilityPanelTemplate } from './visibility-panel.html';
 
@@ -12,20 +14,31 @@ export const VisibilityPanel: React.FC<Props> = ({
   currentUserId,
   listOwnerId,
   isOwner,
-  isMobile,
+  isMobile = false,
+  anchorRef,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
+  const fallbackAnchorRef = useRef<HTMLDivElement>(null);
+  const resolvedAnchorRef = anchorRef ?? fallbackAnchorRef;
 
   useEffect(() => {
-    if (!isOpen || isMobile) return;
+    if (!isOpen || isMobile) {
+      return;
+    }
 
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      if (panelRef.current?.contains(target)) return;
+      if (panelRef.current?.contains(target)) {
+        return;
+      }
+
       const anchor = (event.target as HTMLElement | null)?.closest?.(
         '[data-comment-visibility-anchor]'
       );
-      if (anchor) return;
+      if (anchor) {
+        return;
+      }
+
       onClose();
     }
 
@@ -33,18 +46,21 @@ export const VisibilityPanel: React.FC<Props> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, isMobile, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   const onSelectMode = (mode: CommentVisibilityMode) => {
     if (mode === 'visibleToSelected') {
+      const seededIds =
+        visibility.selectedUserIds.length > 0
+          ? visibility.selectedUserIds
+          : !isOwner && currentUserId
+            ? [currentUserId]
+            : [];
       onChange({
         mode,
-        selectedUserIds:
-          visibility.selectedUserIds.length > 0
-            ? visibility.selectedUserIds
-            : currentUserId
-              ? [currentUserId]
-              : [],
+        selectedUserIds: seededIds,
       });
       return;
     }
@@ -59,19 +75,69 @@ export const VisibilityPanel: React.FC<Props> = ({
     onChange({ mode: 'visibleToSelected', selectedUserIds: nextIds });
   };
 
-  return (
+  const panel = (
     <VisibilityPanelTemplate
-      isMobile={isMobile}
-      isOwner={isOwner}
-      mode={visibility.mode}
-      selectedUserIds={visibility.selectedUserIds}
-      participants={participants}
-      currentUserId={currentUserId}
-      listOwnerId={listOwnerId}
-      onSelectMode={onSelectMode}
-      onToggleUser={onToggleUser}
-      onDone={onClose}
-      panelRef={panelRef}
+      isMobile = {
+        isMobile
+      }
+      isOwner = {
+        isOwner
+      }
+      mode = {
+        visibility.mode
+      }
+      selectedUserIds = {
+        visibility.selectedUserIds
+      }
+      participants = {
+        participants
+      }
+      currentUserId = {
+        currentUserId
+      }
+      listOwnerId = {
+        listOwnerId
+      }
+      onSelectMode = {
+        onSelectMode
+      }
+      onToggleUser = {
+        onToggleUser
+      }
+      onDone = {
+        onClose
+      }
+      panelRef = {
+        panelRef
+      }
     />
+  );
+
+  if (isMobile) {
+    return ReactDOM.createPortal(panel, document.body);
+  }
+
+  return (
+    <AnchoredPopover
+      anchorRef = {
+        resolvedAnchorRef
+      }
+      popoverRef = {
+        panelRef
+      }
+      isOpen = {
+        isOpen
+      }
+      estimatedHeight = {
+        360
+      }
+      estimatedWidth = {
+        352
+      }
+    >
+      {
+        panel
+      }
+    </AnchoredPopover>
   );
 };

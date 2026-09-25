@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileUp, Upload } from 'lucide-react';
 import { getWishlistImportAccept } from 'features/items/constants/wishlist-import.constants';
+import { TOUR_TARGETS } from 'features/tour';
 import { AiSparklesIcon } from 'shared/ui';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './dropzone.module.css';
@@ -141,6 +142,7 @@ export const DropzoneTemplate: React.FC<TemplateProps> = ({
         className={className}
         role={interactive ? 'button' : undefined}
         tabIndex={interactive ? 0 : -1}
+        data-tour={TOUR_TARGETS.importDropzone}
         aria-label={
           interactive
             ? 'Drop a wishlist export file here, or press Enter to browse'

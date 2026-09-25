@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Sidebar as SidebarRail, SidebarItem } from 'shared/ui';
+import { TOUR_TARGETS } from 'features/tour';
 import type { SidebarTemplateProps } from './interfaces/sidebar-template-props.interface';
 import styles from './sidebar.module.css';
 
@@ -69,6 +70,7 @@ export const SidebarTemplate: React.FC<SidebarTemplateProps> = ({
             label="Notifications"
             isActive={activePath === '/settings/notifications'}
             onClick={() => onNavigate('/settings/notifications')}
+            dataTour={TOUR_TARGETS.settingsNotifications}
           />
           <SidebarItem
             icon={<Palette size={15} />}

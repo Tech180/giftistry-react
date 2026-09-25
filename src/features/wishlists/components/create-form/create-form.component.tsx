@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTourOptional } from 'features/tour';
 import { wishlistsApi } from '../../api/wishlists.api';
 import { Props } from './interfaces/props.interface';
 import { CreateFormTemplate } from './create-form.html';
@@ -7,6 +8,7 @@ import { dateInputToExpiresAtIso } from '../../utils/date-input-to-expires-at-is
 
 export const CreateForm: React.FC<Props> = ({ onSuccess, onCancel }) => {
   const { canShowAi, canShowWebSearch } = useWishlistSession();
+  const tour = useTourOptional();
 
   const [title, setTitle] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
@@ -74,6 +76,8 @@ export const CreateForm: React.FC<Props> = ({ onSuccess, onCancel }) => {
       setWebSearchEnabled(canShowWebSearch);
       setAutoRollover(true);
       setAdvancedOpen(false);
+      tour?.notifyEvent('tour:wishlist-created', { listId: res.Id });
+      tour?.setCreatedListId(res.Id);
       onSuccess(res);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to create wishlist.');

@@ -7,7 +7,9 @@ export interface Props {
   href?: string;
   onClick?: () => void;
   className?: string;
+  dataTour?: string;
 }
+
 
 /** @deprecated Prefer `Props`; kept for barrel consumers. */
 export type SidebarItemProps = Props;

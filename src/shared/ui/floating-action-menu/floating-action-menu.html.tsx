@@ -19,6 +19,7 @@ export const FloatingActionMenuTemplate: React.FC<FloatingActionMenuTemplateProp
   facePanelClass,
   backdropClass,
   tooltipClass,
+  closedTourTarget,
   setDockState,
   onActionClick,
   onChildClick,
@@ -42,8 +43,11 @@ export const FloatingActionMenuTemplate: React.FC<FloatingActionMenuTemplateProp
         aria-haspopup="menu"
         aria-hidden={dockState !== 'closed'}
         tabIndex={dockState === 'closed' ? 0 : -1}
+        data-tour={closedTourTarget}
         onClick={() => {
-          if (dockState === 'closed') setDockState('toolbar');
+          if (dockState === 'closed') {
+            setDockState('toolbar');
+          }
         }}
       >
         <Gift size={24} aria-hidden />
@@ -89,6 +93,7 @@ export const FloatingActionMenuTemplate: React.FC<FloatingActionMenuTemplateProp
                   aria-expanded={opensPanel ? expandedActionId === action.id : undefined}
                   disabled={action.disabled}
                   tabIndex={dockState === 'toolbar' ? 0 : -1}
+                  data-tour={action.tourTarget}
                   onMouseEnter={(e) => onTooltipHover(e, action.label)}
                   onMouseLeave={onTooltipLeave}
                   onClick={() => onActionClick(action.id)}

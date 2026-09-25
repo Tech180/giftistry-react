@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, Wand2, Pencil, X, Info, AlertTriangle, LoaderCircle } from 'lucide-react';
+import { TOUR_TARGETS } from 'features/tour';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './add-widget.module.css';
 
@@ -52,6 +53,9 @@ export const AddWidgetTemplate: React.FC<TemplateProps> = ({
     <div
       className = {
         barClassName
+      }
+      data-tour = {
+        TOUR_TARGETS.addManually
       }
     >
       <div
@@ -109,6 +113,9 @@ export const AddWidgetTemplate: React.FC<TemplateProps> = ({
               }
               tabIndex = {
                 actionTabIndex
+              }
+              data-tour = {
+                TOUR_TARGETS.autoAdd
               }
               onClick = {
                 onAutoClick

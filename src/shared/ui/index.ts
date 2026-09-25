@@ -72,3 +72,11 @@ export type { FloatingAction } from './floating-action-menu/interfaces/floating-
 export type { FloatingActionChild } from './floating-action-menu/interfaces/floating-action-child.interface';
 export type { FloatingActionPanelHelpers } from './floating-action-menu/interfaces/floating-action-panel-helpers.interface';
 export type { FloatingActionMenuProps } from './floating-action-menu/interfaces/floating-action-menu-props.interface';
+export * from './spotlight/spotlight.component';
+export type { SpotlightProps } from './spotlight/interfaces/spotlight-props.interface';
+export type { SpotlightRect } from './spotlight/interfaces/spotlight-rect.interface';
+export type { SpotlightPlacement } from './spotlight/interfaces/spotlight-props.interface';
+export type { SpotlightMode } from './spotlight/interfaces/spotlight-mode.type';
+export type { SpotlightProgress } from './spotlight/interfaces/spotlight-progress.interface';
+export type { SpotlightFeature } from './spotlight/interfaces/spotlight-feature.interface';
+export { measureElement, measureElements, padRect } from './spotlight/utils/measure-target.util';

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { jobsApi } from 'features/jobs';
+import { useTourOptional } from 'features/tour';
 import { isValidUrl } from 'shared/utils/is-valid-url.util';
 import { BUSY_HINT, IDLE_HINT } from './constants/hints.constant';
 import { MOBILE_MENU_QUERY } from './constants/mobile-menu-query.constant';
@@ -17,6 +18,9 @@ export const AddWidget: React.FC<Props> = ({
   onManual,
   onStarted,
 }) => {
+  const tour = useTourOptional();
+  const forceTourExpanded =
+    tour?.isActive === true && tour.activeStepId === 'beginner-add' && !isInputMode;
   const effectiveInputMode = isInputMode && canAutoAdd;
   const [url, setUrl] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -93,6 +97,14 @@ export const AddWidget: React.FC<Props> = ({
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [isMenuOpen, isMobileViewport]);
+
+  useEffect(() => {
+    if (!forceTourExpanded || !isMobileViewport) {
+      return;
+    }
+
+    setIsMenuOpen(true);
+  }, [forceTourExpanded, isMobileViewport]);
 
   const handleExitInputMode = () => {
     if (isSubmitting) {
@@ -177,7 +189,7 @@ export const AddWidget: React.FC<Props> = ({
     }
   };
 
-  const isExpanded = !effectiveInputMode && isMenuOpen;
+  const isExpanded = !effectiveInputMode && (isMenuOpen || forceTourExpanded);
 
   return (
     <AddWidgetTemplate
@@ -185,7 +197,7 @@ export const AddWidget: React.FC<Props> = ({
         effectiveInputMode
       }
       isMenuOpen = {
-        isMenuOpen
+        isMenuOpen || forceTourExpanded
       }
       isExpanded = {
         isExpanded
@@ -206,13 +218,13 @@ export const AddWidget: React.FC<Props> = ({
         isSubmitting ? BUSY_HINT : IDLE_HINT
       }
       menuToggleLabel = {
-        isMenuOpen ? 'Close add options' : 'Open add options'
+        isMenuOpen || forceTourExpanded ? 'Close add options' : 'Open add options'
       }
       actionTabIndex = {
-        isMenuOpen || !effectiveInputMode ? 0 : -1
+        isMenuOpen || forceTourExpanded || !effectiveInputMode ? 0 : -1
       }
       rootClassName = {
-        getRootClassName(effectiveInputMode, canAutoAdd)
+        getRootClassName(effectiveInputMode, canAutoAdd, forceTourExpanded)
       }
       barClassName = {
         getBarClassName(effectiveInputMode, isExpanded, canAutoAdd)

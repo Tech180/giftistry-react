@@ -1,4 +1,5 @@
 import React from 'react';
+import { TOUR_TARGETS } from 'features/tour';
 import styles from './controls.module.css';
 import type { TemplateProps } from './interfaces/template-props.interface';
 
@@ -115,6 +116,9 @@ export const ControlsTemplate: React.FC<TemplateProps> = ({
           aria-label = {
             'Item view mode'
           }
+          data-tour = {
+            TOUR_TARGETS.viewMode
+          }
         >
           {viewModeOptions.map(({ mode, Icon, label, isActive }) => (
             <button
@@ -155,6 +159,9 @@ export const ControlsTemplate: React.FC<TemplateProps> = ({
         <details
           className = {
             styles['controls__view-mode-menu']
+          }
+          data-tour = {
+            TOUR_TARGETS.viewMode
           }
           onToggle = {
             (event) => onViewModeMenuOpenChange(event.currentTarget.open)

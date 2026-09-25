@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { EnterPanel, DateField } from 'shared/ui';
 import { OwnerBadge } from 'features/items/components/item-presentation';
+import { TOUR_TARGETS } from 'features/tour';
 import { SettingsPanel } from '../settings-panel/settings-panel.component';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './header.module.css';
@@ -302,6 +303,7 @@ export const HeaderTemplate: React.FC<TemplateProps> = ({
                   onClick={onOpenShare}
                   title="Share Registry"
                   aria-label="Share Registry"
+                  data-tour={TOUR_TARGETS.shareRegistry}
                 >
                   <Share2
                     size = {
@@ -320,6 +322,7 @@ export const HeaderTemplate: React.FC<TemplateProps> = ({
                 title="Discussion"
                 aria-label="Discussion"
                 aria-pressed={isCommentsOpen}
+                data-tour={TOUR_TARGETS.discussion}
               >
                 <MessageSquare
                   size = {
@@ -340,6 +343,7 @@ export const HeaderTemplate: React.FC<TemplateProps> = ({
                     aria-label="List settings"
                     aria-expanded={isListSettingsOpen}
                     aria-pressed={isListSettingsOpen}
+                    data-tour={TOUR_TARGETS.listSettings}
                   >
                     <Settings
                       size = {
@@ -433,6 +437,7 @@ export const HeaderTemplate: React.FC<TemplateProps> = ({
                   onClick={onImportToggle}
                   aria-label="Import wishlist"
                   aria-pressed={isImportOpen}
+                  data-tour={TOUR_TARGETS.importWishlist}
                 >
                   <Upload
                     size = {

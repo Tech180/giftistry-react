@@ -1,0 +1,11 @@
+.preparing {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--zindex-overlay) + 200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(in srgb, var(--overlay-backdrop-dark, rgba(0, 0, 0, 0.72)) 88%, transparent);
+  pointer-events: auto;
+  color: var(--surface);
+}

@@ -10,6 +10,7 @@ export const Item: React.FC<Props> = ({
   href,
   onClick,
   className = '',
+  dataTour,
 }) => {
   const itemClass = [styles.item, isActive ? styles.active : '', className]
     .filter(Boolean)
@@ -34,6 +35,9 @@ export const Item: React.FC<Props> = ({
       }
       itemClass = {
         itemClass
+      }
+      dataTour = {
+        dataTour
       }
     />
   );

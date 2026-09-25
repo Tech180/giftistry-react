@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronDown, Lock, Moon, Palette, Sun } from 'lucide-react';
+import { TOUR_TARGETS } from 'features/tour';
 import { EnterPanel } from 'shared/ui/enter-panel/enter-panel.component';
 import type { ThemeMenuTemplateProps } from './interfaces/theme-menu-template-props.interface';
 import styles from './theme-menu.module.css';
@@ -28,6 +29,7 @@ export const ThemeMenuTemplate: React.FC<ThemeMenuTemplateProps> = ({
       aria-label="Theme settings"
       title="Change theme"
       type="button"
+      data-tour={TOUR_TARGETS.themeMenu}
     >
       <div className={styles['theme-toggle-wrapper']}>
         <Palette size={18} className={styles['palette-icon']} />

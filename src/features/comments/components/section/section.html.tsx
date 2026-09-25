@@ -1,10 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
+import { DEMO_SAM_COMMENT_ID, TOUR_TARGETS } from 'features/tour';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import { Item } from '../item/item.component';
 import { Input } from '../input/input.component';
 import styles from './section.module.css';
+
+const ATTENTION_PULSE_CLASS = 'attention-pulse';
 
 export const SectionTemplate: React.FC<TemplateProps> = ({
   isOwner,
@@ -52,6 +55,7 @@ export const SectionTemplate: React.FC<TemplateProps> = ({
   setReplyTaggedItemIds,
   listContainerRef,
   onMentionSelect,
+  highlightedCommentId,
 }) => {
   return (
     <div className={styles.section}>
@@ -62,39 +66,50 @@ export const SectionTemplate: React.FC<TemplateProps> = ({
         </div>
       )}
 
-      <div ref={listContainerRef} className={styles['list-container']}>
+      <div ref={listContainerRef} className={styles['list-container']} data-tour={TOUR_TARGETS.demoComments}>
         {isLoading ? (
           <div className={styles['loading-spinner']}>
             <div className={styles.spinner} />
           </div>
         ) : parentComments.length > 0 ? (
           <div className={styles['comments-list']}>
-            {parentComments.map((comment) => (
-              <Item
-                key={comment.Id}
-                comment={comment}
-                replies={repliesMap[comment.Id] || []}
-                listOwnerId={listOwnerId}
-                currentUserId={currentUserId}
-                items={items}
-                formatDate={formatDate}
-                onItemTaggedClick={onItemTaggedClick}
-                handleDeleteComment={handleDeleteComment}
-                deletingCommentId={deletingCommentId}
-                setDeletingCommentId={setDeletingCommentId}
-                onlineUsers={onlineUsers}
-                participants={participants}
-                toggleReaction={toggleReaction}
-                handleReplySubmit={handleReplySubmit}
-                activeReplyId={activeReplyId}
-                onReplyOpen={onReplyOpen}
-                isReplyTaggingModeActive={isReplyTaggingModeActive}
-                setIsReplyTaggingModeActive={setIsReplyTaggingModeActive}
-                replyTaggedItemIds={replyTaggedItemIds}
-                setReplyTaggedItemIds={setReplyTaggedItemIds}
-                isOwner={isOwner}
-              />
-            ))}
+            {parentComments.map((comment) => {
+              const isTourComment = comment.Id === DEMO_SAM_COMMENT_ID;
+              const shellClass =
+                comment.Id === highlightedCommentId ? ATTENTION_PULSE_CLASS : undefined;
+
+              return (
+                <div
+                  key={comment.Id}
+                  className={shellClass}
+                  data-tour={isTourComment ? TOUR_TARGETS.demoNewComment : undefined}
+                >
+                  <Item
+                    comment={comment}
+                    replies={repliesMap[comment.Id] || []}
+                    listOwnerId={listOwnerId}
+                    currentUserId={currentUserId}
+                    items={items}
+                    formatDate={formatDate}
+                    onItemTaggedClick={onItemTaggedClick}
+                    handleDeleteComment={handleDeleteComment}
+                    deletingCommentId={deletingCommentId}
+                    setDeletingCommentId={setDeletingCommentId}
+                    onlineUsers={onlineUsers}
+                    participants={participants}
+                    toggleReaction={toggleReaction}
+                    handleReplySubmit={handleReplySubmit}
+                    activeReplyId={activeReplyId}
+                    onReplyOpen={onReplyOpen}
+                    isReplyTaggingModeActive={isReplyTaggingModeActive}
+                    setIsReplyTaggingModeActive={setIsReplyTaggingModeActive}
+                    replyTaggedItemIds={replyTaggedItemIds}
+                    setReplyTaggedItemIds={setReplyTaggedItemIds}
+                    isOwner={isOwner}
+                  />
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className={styles['empty-state-wrap']}>

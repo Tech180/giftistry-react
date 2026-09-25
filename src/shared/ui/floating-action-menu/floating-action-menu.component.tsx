@@ -12,6 +12,7 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
   onOpenChange,
   ariaLabel = 'Page actions',
   className = '',
+  closedTourTarget,
 }) => {
   const isControlled = openProp !== undefined;
   const [dockStateInternal, setDockStateInternal] = useState<'closed' | 'toolbar' | 'panel'>('closed');
@@ -203,6 +204,7 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
 
   const panelHelpers: FloatingActionPanelHelpers = {
     closeMenu: () => setDockState('closed'),
+    backToToolbar: () => setDockState('toolbar'),
     setPanelSize: (width, height) => {
       setPanelSizeOverride((prev) => {
         if (prev?.width === width && prev?.height === height) return prev;
@@ -297,6 +299,9 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
       }
       tooltipClass = {
         faceClasses.tooltipClass
+      }
+      closedTourTarget = {
+        closedTourTarget
       }
       setDockState = {
         setDockState

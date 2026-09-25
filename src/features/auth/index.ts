@@ -13,6 +13,8 @@ export * from './interfaces/api-user.interface';
 export * from './interfaces/auth-response.interface';
 export * from './interfaces/passkey.interface';
 export * from './interfaces/post-auth-path.type';
+export * from './interfaces/tour-state.interface';
+export * from './interfaces/tutorial-patch-payload.interface';
 export * from './hooks/use-security-settings';
 export * from './utils/post-auth-path.util';
 export * from './utils/is-session-unauthorized.util';

@@ -9,6 +9,7 @@ import { ThemeProvider } from 'app/providers/theme';
 import { ToastProvider, UserSocketProvider } from 'shared/providers';
 import { FriendsProvider } from 'features/friends';
 import { JobNotificationToastHost, NotificationsProvider } from 'features/notifications';
+import { TourHost, TourProvider } from 'features/tour';
 import { Content } from './components/content/content.component';
 import { ErrorBoundary } from './components/error-boundary/error-boundary.component';
 import { Loading } from './components/loading/loading.component';
@@ -23,6 +24,7 @@ function AppContent() {
     systemStatus,
     allowSetup,
     checkSystemStatus,
+    isAuthenticated,
   } = useAuth();
   const location = useLocation();
   const isSettingsPage = location.pathname.startsWith('/settings');
@@ -70,6 +72,9 @@ function AppContent() {
         }
       />
       <MobilePageActionsHost />
+      {
+        isAuthenticated && !isAuthPage ? <TourHost /> : null
+      }
     </MobilePageActionsProvider>
   );
 }
@@ -103,11 +108,17 @@ function App() {
   return (
     <AuthProvider>
       <AppProviders>
-        <BrowserRouter>
-          <JobNotificationToastHost />
-          <ErrorBoundary>
-            <AppContent />
-          </ErrorBoundary>
+        <BrowserRouter
+          useTransitions = {
+            false
+          }
+        >
+          <TourProvider>
+            <JobNotificationToastHost />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
+          </TourProvider>
         </BrowserRouter>
       </AppProviders>
     </AuthProvider>

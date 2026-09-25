@@ -9,8 +9,8 @@ export const DoneTemplate: React.FC<DoneTemplateProps> = () => (
       <div className={styles['done__copy']}>
         <h2 className={styles['done__title']}>Enjoy Giftistry</h2>
         <p className={styles['done__body']}>
-          Your preferences are saved. Jump in, create a wishlist, and invite the people you
-          celebrate with.
+          Your preferences are saved. After you enter the dashboard, a short walkthrough will
+          help you create a list, add an item, and find the tools you will use most.
         </p>
       </div>
     </StaggerItem>

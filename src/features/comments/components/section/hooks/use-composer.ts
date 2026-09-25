@@ -1,4 +1,5 @@
 import { useEffect, useState, type SyntheticEvent } from 'react';
+import { isDemoListId } from 'features/tour';
 import { convertMentionsToMarkdown } from '../../../utils/comment-content.util';
 import {
   COMMENT_ANON_STORAGE_KEY,
@@ -80,7 +81,7 @@ export function useComposer({
     replyIsRollover?: boolean,
     replyImageUrl?: string | null,
   ) => {
-    if (isArchived) {
+    if (isArchived || isDemoListId(listId)) {
       return;
     }
 
@@ -128,7 +129,7 @@ export function useComposer({
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
 
-    if (!isAuthenticated || !userId || isArchived) {
+    if (!isAuthenticated || !userId || isArchived || isDemoListId(listId)) {
       return;
     }
 

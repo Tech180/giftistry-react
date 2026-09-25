@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bell as BellIcon, Check, Layers, Trash2 } from 'lucide-react';
+import { TOUR_TARGETS } from 'features/tour';
 import { EnterPanel } from 'shared/ui';
 import type { TemplateProps } from './interfaces/template-props.interface';
 
@@ -42,6 +43,7 @@ export const BellTemplate: React.FC<TemplateProps> = ({
         onClick={onToggle}
         aria-label="Notifications"
         title="Notifications"
+        data-tour={TOUR_TARGETS.notificationBell}
       >
         <BellIcon size={18} />
         {unreadBadgeLabel ? <span className={badgeClassName}>{unreadBadgeLabel}</span> : null}

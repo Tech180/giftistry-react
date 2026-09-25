@@ -6,7 +6,7 @@ import styles from './card.module.css';
 import { isWishlistExpired } from '../../utils/is-expired.util';
 import { formatWishlistCardDate } from 'shared/utils/format-date.util';
 
-export const Card: React.FC<Props> = ({ wishlist, isArchived = false }) => {
+export const Card: React.FC<Props> = ({ wishlist, isArchived = false, tourTarget }) => {
   const { user } = useWishlistSession();
   const isOwner = user?.Id === wishlist.UserId;
   const [isSharesSidebarOpen, setIsSharesSidebarOpen] = React.useState(false);
@@ -80,6 +80,9 @@ export const Card: React.FC<Props> = ({ wishlist, isArchived = false }) => {
       }
       pageSize = {
         pageSize
+      }
+      tourTarget = {
+        tourTarget
       }
     />
   );

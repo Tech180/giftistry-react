@@ -7,4 +7,6 @@ export interface FloatingActionMenuProps {
   onOpenChange?: (open: boolean) => void;
   ariaLabel?: string;
   className?: string;
+  /** Optional tour spotlight target on the closed-face button. */
+  closedTourTarget?: string;
 }

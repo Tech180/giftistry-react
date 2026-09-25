@@ -1,5 +1,6 @@
 import React from 'react';
 import { Globe, DollarSign, Star, Pin } from 'lucide-react';
+import { TOUR_TARGETS } from 'features/tour';
 import { NumberSelector } from 'shared/ui';
 import type { Props } from './interfaces/props.interface';
 import styles from './core-details.module.css';
@@ -43,6 +44,7 @@ export const CoreDetailsTemplate: React.FC<Props> = ({
         placeholder="e.g. Sony WH-1000XM5"
         value={name}
         onChange={(e) => setName(e.target.value)}
+        data-tour={TOUR_TARGETS.addItemName}
         required
       />
     </div>

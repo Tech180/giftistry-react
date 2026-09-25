@@ -1,7 +1,14 @@
 import React from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
+import { TOUR_TARGETS } from 'features/tour';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './controls.module.css';
+
+const FRIENDS_TAB_TOUR: Record<string, string> = {
+  current: TOUR_TARGETS.friendsTabCurrent,
+  requests: TOUR_TARGETS.friendsTabRequests,
+  search: TOUR_TARGETS.friendsTabDiscover,
+};
 
 export const ControlsTemplate: React.FC<TemplateProps> = ({
   tabs,
@@ -32,6 +39,7 @@ export const ControlsTemplate: React.FC<TemplateProps> = ({
             ]
               .filter(Boolean)
               .join(' ')}
+            data-tour={FRIENDS_TAB_TOUR[tab.id]}
             onClick={() => onTabChange(tab.id)}
           >
             {tab.label}

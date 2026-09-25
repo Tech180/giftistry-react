@@ -8,8 +8,14 @@ function roleLabel(
   participant: { userId: string; role?: string },
   listOwnerId?: string
 ): string {
-  if (participant.role) return participant.role;
-  if (listOwnerId && participant.userId === listOwnerId) return 'owner';
+  if (participant.role) {
+    return participant.role;
+  }
+
+  if (listOwnerId && participant.userId === listOwnerId) {
+    return 'owner';
+  }
+
   return 'member';
 }
 
@@ -31,46 +37,55 @@ export const VisibilityPanelTemplate: React.FC<TemplateProps> = ({
     isMobile ? styles['panel--sheet'] : styles['panel--dropdown'],
   ].join(' ');
 
+  const showAudience = isOwner || mode === 'visibleToSelected';
+  const chooseWhoActive = isOwner || mode === 'visibleToSelected';
+
   const body = (
-    <div ref={panelRef} className={panelClass} role="dialog" aria-label="Comment visibility">
+    <div
+      ref={isMobile ? panelRef : undefined}
+      className={panelClass}
+      role="dialog"
+      aria-label="Comment visibility"
+    >
       <h3 className={styles.title}>Who can see this?</h3>
 
-      <button
-        type="button"
-        className={`${styles.option} ${mode === 'hiddenFromOwner' ? styles['option--active'] : ''} ${isOwner ? styles['option--disabled'] : ''}`}
-        onClick={() => !isOwner && onSelectMode('hiddenFromOwner')}
-        disabled={isOwner}
-        aria-pressed={mode === 'hiddenFromOwner'}
-      >
-        <span className={styles['option-label']}>Invisible to Owner</span>
-        <span className={styles['option-help']}>
-          {isOwner
-            ? 'Owners cannot hide comments from themselves.'
-            : 'Everyone on the list except the owner can see this.'}
-        </span>
-      </button>
+      {!isOwner ? (
+        <>
+          <button
+            type="button"
+            className={`${styles.option} ${mode === 'hiddenFromOwner' ? styles['option--active'] : ''}`}
+            onClick={() => onSelectMode('hiddenFromOwner')}
+            aria-pressed={mode === 'hiddenFromOwner'}
+          >
+            <span className={styles['option-label']}>Invisible to Owner</span>
+            <span className={styles['option-help']}>
+              Everyone on the list except the owner can see this.
+            </span>
+          </button>
 
-      <button
-        type="button"
-        className={`${styles.option} ${mode === 'visibleToAll' ? styles['option--active'] : ''}`}
-        onClick={() => onSelectMode('visibleToAll')}
-        aria-pressed={mode === 'visibleToAll'}
-      >
-        <span className={styles['option-label']}>Visible to Owner</span>
-        <span className={styles['option-help']}>Everyone with list access can see this.</span>
-      </button>
+          <button
+            type="button"
+            className={`${styles.option} ${mode === 'visibleToAll' ? styles['option--active'] : ''}`}
+            onClick={() => onSelectMode('visibleToAll')}
+            aria-pressed={mode === 'visibleToAll'}
+          >
+            <span className={styles['option-label']}>Visible to Owner</span>
+            <span className={styles['option-help']}>Everyone with list access can see this.</span>
+          </button>
 
-      {mode === 'visibleToAll' && !isOwner ? (
-        <p className={styles.warning}>
-          The list owner will be able to read this comment. Surprises may be spoiled.
-        </p>
+          {mode === 'visibleToAll' ? (
+            <p className={styles.warning}>
+              The list owner will be able to read this comment. Surprises may be spoiled.
+            </p>
+          ) : null}
+        </>
       ) : null}
 
       <button
         type="button"
-        className={`${styles.option} ${mode === 'visibleToSelected' ? styles['option--active'] : ''}`}
+        className={`${styles.option} ${chooseWhoActive ? styles['option--active'] : ''}`}
         onClick={() => onSelectMode('visibleToSelected')}
-        aria-pressed={mode === 'visibleToSelected'}
+        aria-pressed={chooseWhoActive}
       >
         <span className={styles['option-label']}>Choose who can see</span>
         <span className={styles['option-help']}>
@@ -78,7 +93,7 @@ export const VisibilityPanelTemplate: React.FC<TemplateProps> = ({
         </span>
       </button>
 
-      {mode === 'visibleToSelected' ? (
+      {showAudience ? (
         <div className={styles.audience}>
           <p className={styles['audience-hint']}>Mention adds to audience</p>
           {participants.map((participant) => {
@@ -90,7 +105,9 @@ export const VisibilityPanelTemplate: React.FC<TemplateProps> = ({
                 type="button"
                 className={`${styles['audience-row']} ${checked ? styles['audience-row--checked'] : ''}`}
                 onClick={() => {
-                  if (!isAuthor) onToggleUser(participant.userId);
+                  if (!isAuthor) {
+                    onToggleUser(participant.userId);
+                  }
                 }}
                 disabled={isAuthor}
                 aria-pressed={checked}
@@ -122,7 +139,7 @@ export const VisibilityPanelTemplate: React.FC<TemplateProps> = ({
       <>
         <button
           type="button"
-          className={styles['sheet-scrim']}
+          className={styles['sheet-dismiss']}
           aria-label="Close visibility picker"
           onClick={onDone}
         />

@@ -4,6 +4,8 @@ TODO:
 - fix greying for fully funded items that other users haven't contributed to
 - when a user selects anonymous for an item (group funding), it should be anonymous for any users except those who contribute.
 - viewers can see all settings in the list (greyed out) even when AI is disabled server wide.
+- passkeys not working properly
+- upload without ai
 - new features
     - price comparer
     - price fetcher (auto)

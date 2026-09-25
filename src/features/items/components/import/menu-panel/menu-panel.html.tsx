@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, File, X } from 'lucide-react';
+import { ChevronLeft, File } from 'lucide-react';
 import { Button } from 'shared/ui';
 import { AiPanel } from '../ai-panel/ai-panel.component';
 import { Dropzone } from '../dropzone/dropzone.component';
@@ -52,11 +52,11 @@ export const MenuPanelTemplate: React.FC<TemplateProps> = ({
             <button
               type="button"
               className={styles['menu-panel__chrome-btn']}
-              aria-label="Close"
+              aria-label="Go back"
               tabIndex={isDetails ? -1 : 0}
               onClick={onClose}
             >
-              <X size={18} aria-hidden />
+              <ChevronLeft size={18} aria-hidden />
             </button>
             <span>Import</span>
           </div>

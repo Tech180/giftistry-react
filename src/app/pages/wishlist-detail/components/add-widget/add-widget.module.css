@@ -14,6 +14,7 @@
   position: relative;
   height: var(--add-widget-bar-height);
   display: inline-flex;
+  justify-content: flex-end;
   outline: none;
   z-index: 10;
 }
@@ -50,6 +51,7 @@
   position: absolute;
   inset: 1px;
   display: flex;
+  flex-direction: row-reverse;
   align-items: center;
   transition:
     opacity 0.15s ease-out,
@@ -59,7 +61,7 @@
 .add-widget__menu-layer--hidden {
   opacity: 0;
   pointer-events: none;
-  transform: translateX(-1.25rem);
+  transform: translateX(1.25rem);
 }
 
 .add-widget__icon-trigger {
@@ -90,7 +92,7 @@
 .add-widget__actions {
   display: flex;
   gap: 0.125rem;
-  padding-left: var(--spacing-xs);
+  padding-right: var(--spacing-xs);
   opacity: var(--add-widget-actions-opacity);
   transition: opacity 0.2s ease;
   transition-delay: var(--add-widget-actions-delay);
@@ -265,7 +267,8 @@
 /* Desktop: expand on hover / keyboard focus via root custom properties */
 @media (min-width: 48.0625rem) {
   .add-widget:not(.add-widget--input-mode):hover,
-  .add-widget:not(.add-widget--input-mode):focus-within {
+  .add-widget:not(.add-widget--input-mode):focus-within,
+  .add-widget--tour-expanded:not(.add-widget--input-mode) {
     --add-widget-bar-width: 13.125rem;
     --add-widget-bar-shadow: var(--shadow-md, var(--shadow));
     --add-widget-icon-bg: color-mix(in srgb, var(--primary-text) 12%, transparent);
@@ -279,7 +282,8 @@
   }
 
   .add-widget:not(.add-widget--auto-add):not(.add-widget--input-mode):hover,
-  .add-widget:not(.add-widget--auto-add):not(.add-widget--input-mode):focus-within {
+  .add-widget:not(.add-widget--auto-add):not(.add-widget--input-mode):focus-within,
+  .add-widget--tour-expanded:not(.add-widget--auto-add):not(.add-widget--input-mode) {
     --add-widget-bar-width: 9.5rem;
   }
 

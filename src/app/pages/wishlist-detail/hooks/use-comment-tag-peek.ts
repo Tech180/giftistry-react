@@ -4,13 +4,13 @@ import {
   COMMENT_TAG_PEEK_CLOSE_MS,
   COMMENT_TAG_PEEK_DWELL_MS,
   COMMENT_TAG_PEEK_SCROLL_FALLBACK_MS,
+  ITEM_CARD_HIGHLIGHT_CLASS,
   ITEM_CARD_HIGHLIGHT_DURATION_MS,
 } from '../constants/comment-tag-peek.constant';
 import type { UseCommentTagPeekOptions } from '../interfaces/use-comment-tag-peek-options.interface';
 import type { UseCommentTagPeekResult } from '../interfaces/use-comment-tag-peek-result.interface';
 import { highlightItemCard, peekHighlightItemCard } from '../utils/highlight-item-card.util';
 import { shouldPeekCommentTag } from '../utils/should-peek-comment-tag.util';
-import styles from '../page.module.css';
 
 export function useCommentTagPeek({
   isCommentsOpen,
@@ -77,7 +77,7 @@ export function useCommentTagPeek({
 
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const shouldReturnAfterPeek = !!returnToItemId && returnToItemId !== itemId;
-      const highlightClass = styles['page__item-highlight'] ?? '';
+      const highlightClass = ITEM_CARD_HIGHLIGHT_CLASS;
 
       if (!shouldPeek && !shouldReturnAfterPeek) {
         clearCommentTagPeekTimeouts();

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { isDemoListId } from 'features/tour';
 import type { OnlineUser } from '../../../interfaces/online-user.interface';
 import { appendUniqueComment } from '../../../utils/append-unique-comment.util';
 import { getCommentWsUrl } from '../../../utils/comment-ws.util';
@@ -24,9 +25,10 @@ export function useCommentRealtime({
   const socketRef = useRef<WebSocket | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
+  const isDemo = isDemoListId(listId);
 
   useEffect(() => {
-    if (!isAuthenticated || !userId) {
+    if (isDemo || !isAuthenticated || !userId) {
       setOnlineUsers([]);
       setTypingUsersMap({});
       return;
@@ -147,6 +149,10 @@ export function useCommentRealtime({
   }, [listId, userId, isAuthenticated, setComments, isOwner, isExpired]);
 
   const notifyTypingStart = () => {
+    if (isDemo) {
+      return;
+    }
+
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
       return;
     }
@@ -169,6 +175,10 @@ export function useCommentRealtime({
   };
 
   const notifyTypingStop = () => {
+    if (isDemo) {
+      return;
+    }
+
     if (isTypingRef.current && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify({ Type: 'typing', IsTyping: false }));
       isTypingRef.current = false;

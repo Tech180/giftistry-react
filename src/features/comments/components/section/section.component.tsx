@@ -155,6 +155,9 @@ export const Section: React.FC<Props> = (props) => {
       onMentionSelect = {
         section.onMentionSelect
       }
+      highlightedCommentId = {
+        section.highlightedCommentId
+      }
     />
   );
 };

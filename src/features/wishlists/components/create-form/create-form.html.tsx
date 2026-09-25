@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronDown, Bot, Globe, ArrowRight, Loader2 } from 'lucide-react';
 import { DateField, Input, SelectMenu, Switch } from 'shared/ui';
+import { TOUR_TARGETS } from 'features/tour';
 import {
   CATEGORY_MENU_TITLE,
   CATEGORY_OPTIONS,
@@ -79,6 +80,9 @@ export const CreateFormTemplate: React.FC<TemplateProps> = ({
           }
           className = {
             styles['input-group']
+          }
+          data-tour = {
+            TOUR_TARGETS.createTitle
           }
           required
         />
@@ -338,6 +342,9 @@ export const CreateFormTemplate: React.FC<TemplateProps> = ({
           }
           className = {
             `${styles['submit-btn']} ${isLoading ? styles.loading : ''}`
+          }
+          data-tour = {
+            TOUR_TARGETS.createSubmit
           }
         >
           {isLoading ? (

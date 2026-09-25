@@ -64,4 +64,5 @@ export interface TemplateProps {
   replyTaggedItemIds: string[];
   setReplyTaggedItemIds: (ids: string[]) => void;
   listContainerRef: React.RefObject<HTMLDivElement | null>;
+  highlightedCommentId?: string | null;
 }

@@ -19,4 +19,5 @@ export interface FooterTemplateProps {
   setIsPanelOpen: (open: boolean) => void;
   isMobile: boolean;
   badgeLabel: string;
+  anchorRef: React.RefObject<HTMLDivElement | null>;
 }

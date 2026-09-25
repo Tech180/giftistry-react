@@ -1,5 +1,6 @@
 import { PublicUserSummary } from 'shared/interfaces/public-user-summary.interface';
 import type { GiftistryUserPolicy } from 'features/admin';
+import type { TourState } from './tour-state.interface';
 
 export interface ApiUser extends PublicUserSummary {
   Id: string;
@@ -14,4 +15,5 @@ export interface ApiUser extends PublicUserSummary {
   HasPasskey?: boolean;
   IsOnboarded?: boolean;
   ForcePasswordChange?: boolean;
+  Tour?: TourState;
 }

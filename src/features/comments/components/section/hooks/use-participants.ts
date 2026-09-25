@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { authApi } from 'features/auth';
+import { isDemoListId } from 'features/tour';
 import { wishlistsApi } from 'features/wishlists';
 import type { ListParticipant } from '../../../interfaces/list-participant.interface';
 import { buildOwnerParticipant } from '../../../utils/build-owner-participant.util';
@@ -20,6 +21,7 @@ export function useParticipants({
   const [participants, setParticipants] = useState<ListParticipant[]>([]);
   const fetchedAvatarsRef = useRef<Set<string>>(new Set());
   const participantsRef = useRef<ListParticipant[]>([]);
+  const isDemo = isDemoListId(listId);
 
   participantsRef.current = participants;
 
@@ -28,7 +30,7 @@ export function useParticipants({
   }, [listId]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || isDemo) {
       setParticipants([]);
       return;
     }
@@ -83,10 +85,11 @@ export function useParticipants({
     isAuthenticated,
     currentUserId,
     currentUserAvatar,
+    isDemo,
   ]);
 
   useEffect(() => {
-    if (!isAuthenticated || comments.length === 0) {
+    if (!isAuthenticated || isDemo || comments.length === 0) {
       return;
     }
 
@@ -144,7 +147,7 @@ export function useParticipants({
     return () => {
       cancelled = true;
     };
-  }, [comments, isAuthenticated]);
+  }, [comments, isAuthenticated, isDemo]);
 
   return { participants };
 }

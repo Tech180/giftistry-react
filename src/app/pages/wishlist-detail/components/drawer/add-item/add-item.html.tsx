@@ -2,6 +2,7 @@ import React from 'react';
 import { Copy } from 'lucide-react';
 import { Drawer, Button, AiStatusBadge } from 'shared/ui';
 import { AddItemForm, ADD_ITEM_FORM_ID, SUBSTITUTION_FORM_ID } from 'features/items';
+import { TOUR_TARGETS } from 'features/tour';
 import { VIEW_MODE_BANNER_DESCRIPTION } from 'features/items/constants/view-mode-banner.constant';
 import { AssociationRails } from './components/association-rails/association-rails.component';
 import type { TemplateProps } from './interfaces/template-props.interface';
@@ -256,6 +257,9 @@ export const AddItemTemplate: React.FC<TemplateProps> = ({
             }
             disabled = {
               isEdit && !isFormDirty
+            }
+            data-tour = {
+              TOUR_TARGETS.addItemSave
             }
           >
             {isEdit ? 'Save' : 'Add'}

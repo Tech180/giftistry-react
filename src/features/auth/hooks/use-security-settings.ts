@@ -5,6 +5,7 @@ import { authApi } from '../api/auth.api';
 import type { Passkey } from '../interfaces/passkey.interface';
 import type { UseSecuritySettingsProps } from '../interfaces/use-security-settings-props.interface';
 import type { UseSecuritySettingsResult } from '../interfaces/use-security-settings-result.interface';
+import { webAuthnErrorMessage } from '../utils/webauthn-error-message.util';
 
 export function useSecuritySettings({
   showToast,
@@ -160,7 +161,11 @@ export function useSecuritySettings({
       let regResponse;
       try {
         regResponse = await startRegistration({ optionsJSON: camelcaseKeys(res.Options) });
-      } catch {
+      } catch (webAuthnErr) {
+        const message = webAuthnErrorMessage(webAuthnErr);
+        if (message) {
+          showToast(message, 'error');
+        }
         return;
       }
 

@@ -35,4 +35,6 @@ export interface FloatingAction {
   toolbarMuted?: boolean;
   /** When true, render a toolbar divider after this action. */
   separateAfter?: boolean;
+  /** Optional tour spotlight target rendered as `data-tour` on the tool button. */
+  tourTarget?: string;
 }

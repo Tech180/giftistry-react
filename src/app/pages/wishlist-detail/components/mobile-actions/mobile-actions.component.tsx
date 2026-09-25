@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { ShareFabPanel } from 'features/wishlists';
 import { ImportMenuPanel } from 'features/items';
+import { TOUR_TARGETS } from 'features/tour';
 import { useRegisterActions } from 'app/providers/mobile-page-actions';
 import type { FloatingAction } from 'shared/ui';
 import { UserAvatar } from 'shared/ui';
@@ -104,7 +105,7 @@ export function MobileActions({
       panelContent: ({ closeMenu }) => (
         <ConfirmPanel
           tone="primary"
-          message="Duplicate this list for yourself?"
+          message={isOwner ? 'Duplicate this list?' : 'Duplicate this list for yourself?'}
           yesDisabled={isDuplicating}
           onYes={() => {
             closeMenu();
@@ -120,16 +121,17 @@ export function MobileActions({
         id: 'import',
         label: 'Import',
         icon: <Upload size={18} aria-hidden />,
+        tourTarget: TOUR_TARGETS.importFab,
         hideToolbarDivider: true,
         panelWidth: 288,
         panelHeight: 268,
         hidePanelHeader: true,
-        panelContent: ({ closeMenu, setPanelSize, setPanelEscapeHandler }) => (
+        panelContent: ({ closeMenu, backToToolbar, setPanelSize, setPanelEscapeHandler }) => (
           <ImportMenuPanel
             mode="existing-list"
             listId={wishlist.Id}
             allowAi={Boolean(canShowAi && wishlist.AiEnabled)}
-            onClose={closeMenu}
+            onClose={backToToolbar}
             onSizeChange={setPanelSize}
             setPanelEscapeHandler={setPanelEscapeHandler}
             onImported={() => {
@@ -180,6 +182,7 @@ export function MobileActions({
       id: 'comments',
       label: 'Comments',
       icon: <MessageSquare size={18} aria-hidden />,
+      tourTarget: TOUR_TARGETS.commentsFab,
       onClick: () => setIsCommentsOpen((prev) => !prev),
     });
 
@@ -189,6 +192,7 @@ export function MobileActions({
             id: 'share',
             label: 'Share',
             icon: <Share2 size={18} aria-hidden />,
+            tourTarget: TOUR_TARGETS.shareFab,
             panelWidth: 320,
             panelHeight: 380,
             hidePanelHeader: true,
@@ -208,6 +212,7 @@ export function MobileActions({
             id: 'share',
             label: 'Share',
             icon: <Share2 size={18} aria-hidden />,
+            tourTarget: TOUR_TARGETS.shareFab,
             onClick: () => setIsShareOpen(true),
           };
 
@@ -292,6 +297,7 @@ export function MobileActions({
       id: 'settings',
       label: 'Settings',
       icon: <Settings size={18} aria-hidden />,
+      tourTarget: TOUR_TARGETS.settingsFab,
       toolbarTone: listSettingsReadOnly ? 'default' : undefined,
       toolbarMuted: listSettingsReadOnly,
       panelWidth: SETTINGS_PANEL_WIDTH,

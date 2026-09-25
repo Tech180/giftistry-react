@@ -21,8 +21,13 @@ export const DashboardWishlistGridTemplate: React.FC<DashboardWishlistGridTempla
       <LoadingState message="Loading wishlists..." />
     ) : cards.length > 0 ? (
       <div className={styles['dashboard-grid__items']} ref={gridRef} data-columns={columns}>
-        {cards.map(({ wishlist, isArchived }) => (
-          <WishlistCard key={wishlist.Id} wishlist={wishlist} isArchived={isArchived} />
+        {cards.map(({ wishlist, isArchived, tourTarget }) => (
+          <WishlistCard
+            key={wishlist.Id}
+            wishlist={wishlist}
+            isArchived={isArchived}
+            tourTarget={tourTarget}
+          />
         ))}
       </div>
     ) : (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FooterProps } from './interfaces/footer-props.interface';
 import { FooterTemplate } from './footer.html';
 import { resolveCommentVisibilityBadgeLabel } from '../../../../utils/resolve-comment-visibility-badge-label.util';
@@ -6,6 +6,7 @@ import { resolveCommentVisibilityBadgeLabel } from '../../../../utils/resolve-co
 const SHEET_MOBILE_QUERY = '(max-width: 48rem)';
 
 export const InputFooter: React.FC<FooterProps> = (props) => {
+  const anchorRef = useRef<HTMLDivElement>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia(SHEET_MOBILE_QUERY).matches : false
@@ -73,6 +74,9 @@ export const InputFooter: React.FC<FooterProps> = (props) => {
       }
       badgeLabel = {
         badgeLabel
+      }
+      anchorRef = {
+        anchorRef
       }
     />
   );
