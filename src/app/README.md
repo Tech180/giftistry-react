@@ -15,8 +15,9 @@ Application shell: bootstrap, routes, layout, pages, and app-scoped providers.
 | [pages/](pages/README.md) | Route screens |
 | [layout/](layout/README.md) | App shell / navigation |
 | [providers/](providers/README.md) | Theme, mobile actions, etc. |
-| `components/` | App-level chrome pieces (loading, error boundary, setup) |
-| `bootstrap/`, `routes/` | Startup and route wiring |
+| [components/](components/README.md) | App-level chrome pieces (loading, error boundary, setup) |
+| [routes/](routes/README.md) | Auth / admin / owner guards + legacy profile redirect |
+| `bootstrap/` | Startup wiring |
 
 ## Related
 
