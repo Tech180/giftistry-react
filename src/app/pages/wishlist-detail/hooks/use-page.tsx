@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppLoadingGate } from 'app/providers/app-loading';
 import { ITEM_VIEW_MODE_STORAGE_KEY } from 'features/items/constants/item-view-mode.constants';
 import {
   isKanbanViewMode,
@@ -60,6 +61,8 @@ export function usePage(): UsePageResult {
     enrichingItemIds,
     refreshJob,
   } = listData;
+
+  useAppLoadingGate(isWishlistLoading, 'Loading list...');
 
   const isOwner = !!(wishlist && user && wishlist.UserId === user.Id);
   const canCollaborate = isOwner || wishlist?.Role === 'collaborator';

@@ -4,6 +4,11 @@ import { MemoryRouter } from 'react-router-dom';
 import { TourProvider } from '../providers/provider';
 import { useTourOptional } from '../providers/context';
 
+const authState = vi.hoisted(() => ({
+  experimental: undefined as Record<string, boolean> | undefined,
+  firstRunDismissed: true,
+}));
+
 vi.mock('features/auth', async () => {
   const actual = await vi.importActual<typeof import('features/auth')>('features/auth');
   return {
@@ -14,7 +19,8 @@ vi.mock('features/auth', async () => {
         Username: 'alex',
         FirstName: 'Alex',
         IsOnboarded: true,
-        Tour: { FirstRunDismissed: true, Chapters: {} },
+        Tour: { FirstRunDismissed: authState.firstRunDismissed, Chapters: {} },
+        ExperimentalFeatures: authState.experimental,
       },
       refreshUser: vi.fn(),
       canShowAi: true,
@@ -37,9 +43,41 @@ function Probe() {
 describe('TourProvider', () => {
   beforeEach(() => {
     localStorage.clear();
+    authState.experimental = undefined;
+    authState.firstRunDismissed = true;
   });
 
   test('renders children and exposes inactive tour when first-run dismissed', () => {
+    render(
+      <MemoryRouter>
+        <TourProvider>
+          <Probe />
+        </TourProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('active').textContent).toBe('false');
+  });
+
+  test('does not auto-start when productTutorial experimental flag is off', async () => {
+    authState.firstRunDismissed = false;
+    authState.experimental = { ProductTutorial: false };
+
+    render(
+      <MemoryRouter>
+        <TourProvider>
+          <Probe />
+        </TourProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('active').textContent).toBe('false');
+  });
+
+  test('does not auto-start when ExperimentalFeatures omits productTutorial (default off)', () => {
+    authState.firstRunDismissed = false;
+    authState.experimental = undefined;
+
     render(
       <MemoryRouter>
         <TourProvider>

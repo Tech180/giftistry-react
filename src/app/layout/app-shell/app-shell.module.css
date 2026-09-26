@@ -17,14 +17,28 @@
   max-width: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Content inset + max-width stay on an inner wrapper, not the scrollport. */
+/* Content inset + max-width stay on an inner wrapper, not the scrollport.
+   Flex-grow so LoadingState fullHeight can center in the scrollport. */
 .mainInner{
   width: 100%;
   max-width: 75rem;
+  flex: 1 0 auto;
   margin: 0 auto;
   padding: var(--spacing-4xl) var(--spacing-lg) var(--spacing-xl) var(--spacing-lg);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Route roots (dashboard, etc.): do not shrink inside the flex scrollport — avoids squashed layout. */
+.mainInner > *{
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 

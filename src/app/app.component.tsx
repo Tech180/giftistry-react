@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from 'features/auth';
+import { isExperimentalFeatureEnabledForUser } from 'features/experimental-features';
+import { AppLoadingProvider, useAppLoading } from 'app/providers/app-loading';
 import {
   MobilePageActionsHost,
   MobilePageActionsProvider,
@@ -10,12 +12,13 @@ import { ToastProvider, UserSocketProvider } from 'shared/providers';
 import { FriendsProvider } from 'features/friends';
 import { JobNotificationToastHost, NotificationsProvider } from 'features/notifications';
 import { TourHost, TourProvider } from 'features/tour';
+import { LoadingState } from 'shared/ui';
 import { Content } from './components/content/content.component';
 import { ErrorBoundary } from './components/error-boundary/error-boundary.component';
-import { Loading } from './components/loading/loading.component';
 import { Setup } from './components/setup/setup.component';
 import { SetupBlocked } from './components/setup-blocked/setup-blocked.component';
 import { Unreachable } from './components/unreachable/unreachable.component';
+import { shouldUseAuthChrome } from './utils/should-use-auth-chrome.util';
 
 function AppContent() {
   const {
@@ -25,22 +28,21 @@ function AppContent() {
     allowSetup,
     checkSystemStatus,
     isAuthenticated,
+    user,
   } = useAuth();
+  const { message: appLoadingMessage } = useAppLoading();
   const location = useLocation();
   const isSettingsPage = location.pathname.startsWith('/settings');
   const isFullWidth =
     location.pathname.includes('/wishlists/') || location.pathname.startsWith('/invite/list/');
-  const isAuthPage =
-    location.pathname === '/login' ||
-    location.pathname === '/register' ||
-    location.pathname === '/welcome' ||
-    location.pathname === '/change-password';
+  const isAuthPage = shouldUseAuthChrome(location.pathname, isAuthenticated);
+  const isBootLoading = isLoading || systemStatus === 'loading';
+  const productTutorialEnabled = isExperimentalFeatureEnabledForUser(
+    'productTutorial',
+    user?.ExperimentalFeatures
+  );
 
-  if (isLoading || systemStatus === 'loading') {
-    return <Loading />;
-  }
-
-  if (systemStatus === 'unreachable') {
+  if (systemStatus === 'unreachable' && !isBootLoading) {
     return (
       <Unreachable
         onRetry = {
@@ -50,12 +52,23 @@ function AppContent() {
     );
   }
 
-  if (!isSystemInitialized) {
+  if (!isBootLoading && !isSystemInitialized) {
     if (allowSetup) {
       return <Setup />;
     }
 
     return <SetupBlocked />;
+  }
+
+  if (isBootLoading) {
+    return (
+      <LoadingState
+        message = {
+          'Loading...'
+        }
+        viewport
+      />
+    );
   }
 
   return (
@@ -73,7 +86,17 @@ function AppContent() {
       />
       <MobilePageActionsHost />
       {
-        isAuthenticated && !isAuthPage ? <TourHost /> : null
+        isAuthenticated && !isAuthPage && productTutorialEnabled ? <TourHost /> : null
+      }
+      {
+        appLoadingMessage ? (
+          <LoadingState
+            message = {
+              appLoadingMessage
+            }
+            viewport
+          />
+        ) : null
       }
     </MobilePageActionsProvider>
   );
@@ -113,12 +136,14 @@ function App() {
             false
           }
         >
-          <TourProvider>
-            <JobNotificationToastHost />
-            <ErrorBoundary>
-              <AppContent />
-            </ErrorBoundary>
-          </TourProvider>
+          <AppLoadingProvider>
+            <TourProvider>
+              <JobNotificationToastHost />
+              <ErrorBoundary>
+                <AppContent />
+              </ErrorBoundary>
+            </TourProvider>
+          </AppLoadingProvider>
         </BrowserRouter>
       </AppProviders>
     </AuthProvider>

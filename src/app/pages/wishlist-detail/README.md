@@ -101,7 +101,7 @@ Wraps the page in `ItemsSessionProvider` + `CommentsSessionProvider` (required b
 
 Priority:
 
-1. `isWishlistLoading` → `LoadingState` (“Loading list…”)
+1. `isWishlistLoading` → `useAppLoadingGate(..., 'Loading list...')` drives the app-level `LoadingState` host; page template returns `null` (no local full-page spinner). Content `Suspense` uses `RouteChunkFallback` with the same message while the lazy chunk loads — refcounted host stays continuous through chunk + data.
 2. Demo route (`isDemoListId`) with no wishlist yet → `null` (avoid 404 flash while tour tears down)
 3. `wishlistError` or missing wishlist → `ErrorState` + Back to Dashboard / Log in
 4. Else: optional [`ArchivedBanner`](#archived-banner), then `page__layout` with [`Workspace`](#workspace) + [`Overlays`](#overlays)

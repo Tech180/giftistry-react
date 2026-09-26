@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Calendar, Palette } from 'lucide-react';
-import { Button, LoadingState, ErrorState, UserAvatar } from 'shared/ui';
+import { Button, ErrorState, UserAvatar } from 'shared/ui';
 import { formatBirthday } from 'shared/utils/format-date.util';
 import type { PageTemplateProps } from './interfaces/page-template-props.interface';
 import styles from './page.module.css';
@@ -19,16 +19,7 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
   onTryTheme,
 }) => {
   if (isLoading) {
-    return (
-      <LoadingState
-        message = {
-          'Loading profile...'
-        }
-        fullHeight = {
-          true
-        }
-      />
-    );
+    return null;
   }
 
   if (error) {

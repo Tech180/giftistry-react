@@ -2,6 +2,8 @@
 
 Product **tutorial**: sample-list demo → beginner first-list → optional advanced chapters. Progress persists via auth `PATCH /api/auth/tutorial` (`ApiUser.Tour`) plus `localStorage` resume. Spotlight UI is `TourHost`; pages opt in with `data-tour` targets and optional hooks/events.
 
+**Requires experimental flag:** `productTutorial` must be enabled on `User.ExperimentalFeatures` (Settings → Experimental). Default is **off**. See [`experimental-features`](../experimental-features/README.md).
+
 **Status: incomplete.** Step copy and chapters exist end-to-end, but post-beginner routing/fixture wiring is thin, and some APIs/targets are unused. See [Incomplete](#incomplete).
 
 Import via `import { … } from 'features/tour'`.
@@ -87,7 +89,7 @@ Wraps `DemoListProvider` → inner controller.
 
 ### Lifecycle
 
-- Auto-start after onboarded + `!FirstRunDismissed`, not on auth paths; resume from `localStorage` or `firstPendingChapterId`
+- Auto-start after onboarded + `!FirstRunDismissed` + experimental `productTutorial` enabled, not on auth paths; resume from `localStorage` or `firstPendingChapterId`
 - **Show welcome** preference is `!Tour.FirstRunDismissed`. Account Settings and Admin Manage User toggle it via `buildWelcomePatch` / `reenableWelcome` / `dismissWelcome` (self) or `PATCH /api/admin/users/:id/tutorial` (admin)
 - Clears on logout
 - Per step: `runBeforeShow` + optional `demo.runBeat` / clear highlight

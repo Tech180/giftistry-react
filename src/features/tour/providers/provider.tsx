@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authApi, useAuth, type TourChapterId } from 'features/auth';
+import { isExperimentalFeatureEnabledForUser } from 'features/experimental-features';
 import { DemoListProvider } from '../demo/provider';
 import { useTourDemo } from '../demo/context';
 import type { TourEligibilityContext } from '../constants/chapters.constant';
@@ -54,6 +55,10 @@ function TourProviderInner({ children }: { children: ReactNode }) {
   };
 
   const isActive = activeChapterId !== null && activeStepId !== null;
+  const productTutorialEnabled = isExperimentalFeatureEnabledForUser(
+    'productTutorial',
+    user?.ExperimentalFeatures
+  );
   const activeStep =
     activeChapterId && activeStepId
       ? chapterSteps(activeChapterId).find((step) => step.id === activeStepId) ?? null
@@ -75,6 +80,10 @@ function TourProviderInner({ children }: { children: ReactNode }) {
   };
 
   const startChapter = async (id: TourChapterId) => {
+    if (!isExperimentalFeatureEnabledForUser('productTutorial', user?.ExperimentalFeatures)) {
+      return;
+    }
+
     const steps = chapterSteps(id);
     if (steps.length === 0) {
       return;
@@ -97,6 +106,10 @@ function TourProviderInner({ children }: { children: ReactNode }) {
   };
 
   const startAtStep = async (chapterId: TourChapterId, stepId: string, listId?: string) => {
+    if (!isExperimentalFeatureEnabledForUser('productTutorial', user?.ExperimentalFeatures)) {
+      return;
+    }
+
     const steps = chapterSteps(chapterId);
     if (steps.length === 0) {
       return;
@@ -363,7 +376,33 @@ function TourProviderInner({ children }: { children: ReactNode }) {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    if (productTutorialEnabled) {
+      return;
+    }
+
+    if (!isActive && !demo.active) {
+      return;
+    }
+
+    autoStartedRef.current = false;
+    setActiveChapterId(null);
+    setActiveStepId(null);
+    setCreatedListId(null);
+    clearTourResume();
+    if (demo.active || isDemoListPath(location.pathname)) {
+      leaveDemoSession();
+    } else {
+      deactivateRef.current();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- tear down when experimental flag turns off
+  }, [productTutorialEnabled]);
+
+  useEffect(() => {
     if (!user?.Id || !isAuthenticated || isAuthPath(location.pathname)) {
+      return;
+    }
+
+    if (!productTutorialEnabled) {
       return;
     }
 
@@ -393,7 +432,17 @@ function TourProviderInner({ children }: { children: ReactNode }) {
       void startChapter(chapterId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot auto-start per session
-  }, [user?.Id, user?.IsOnboarded, user?.Tour, isAuthenticated, location.pathname, isActive, canShowAi]);
+  }, [
+    user?.Id,
+    user?.IsOnboarded,
+    user?.Tour,
+    user?.ExperimentalFeatures,
+    isAuthenticated,
+    location.pathname,
+    isActive,
+    canShowAi,
+    productTutorialEnabled,
+  ]);
 
   useLayoutEffect(() => {
     if (!isActive || !activeChapterId || activeChapterId === 'demo') {

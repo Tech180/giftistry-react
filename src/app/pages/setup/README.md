@@ -34,7 +34,7 @@ flowchart TD
   init -->|yes| content
 ```
 
-`components/setup` forces every path to `/setup` and Suspense-falls back to `Loading`. Optional query: `?setup_token=` → sent as `SetupToken` on `runSetup`.
+`components/setup` forces every path to `/setup` and Suspense-falls back to `LoadingState` (“Loading…” `viewport`). Optional query: `?setup_token=` → sent as `SetupToken` on `runSetup`.
 
 When uninitialized and setup is disabled → [`SetupBlocked`](../../components/README.md#setup-blocked) (static; no page mount).
 

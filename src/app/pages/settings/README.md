@@ -19,10 +19,11 @@ Nested routes are declared inside `usePage` (relative to `/settings`):
 | Nested path | Full URL | Access | Section |
 |-------------|----------|--------|---------|
 | `index` | `/settings` | Account | Redirect → `/settings/account` |
-| `account` | `/settings/account` | Account (any auth user) | Profile + tutorial |
+| `account` | `/settings/account` | Account (any auth user) | Profile |
 | `security` | `/settings/security` | Account | Password / 2FA / passkeys |
 | `notifications` | `/settings/notifications` | Account | Notification preference toggles |
 | `theming` | `/settings/theming` | Account | Preset + custom themes |
+| `experimental` | `/settings/experimental` | Account | Experimental feature flags (registry-driven; product tutorial gated here) |
 | `admin` | `/settings/admin` | **Admin** (`AdminRoute`) | Overview |
 | `admin/users` | `/settings/admin/users` | **Admin** | User list + create |
 | `admin/users/:userId` | `/settings/admin/users/:userId` | **Admin** | User detail |
@@ -39,7 +40,7 @@ Nested routes are declared inside `usePage` (relative to `/settings`):
 - **Admin** — `user.IsAdmin`. Non-admins hitting an admin path are redirected to `/settings/account` (`AdminRoute`). Sidebar Administration group is hidden when not admin.
 - **Owner** — `user.IsOwner`. Non-owners hitting Server redirect to `/settings/admin` (if admin) or `/settings/account` (`OwnerRoute`). Server nav item only renders when `isOwner`.
 
-Each nested section is **lazy-loaded** under a shared `Suspense` fallback (`Loading`).
+Each nested section is **lazy-loaded** under a shared `Suspense` fallback (`LoadingState` “Loading…” `fullHeight`).
 
 ## Structure
 
@@ -63,10 +64,11 @@ settings/
     processes-rail/               ← background jobs panel (scoped)
   sections/
     account/
-      account/                    ← ProfileCard + Tutorial
+      account/                    ← ProfileCard
       security/                   ← password / 2FA / passkeys
       notifications/
       theming/
+      experimental/               ← experimental feature toggles (+ tutorial when enabled)
     administration/
       components/                 ← shared admin chrome (gate, pagination, settings rows)
       overview/
@@ -125,14 +127,15 @@ Cancel / suspend / resume errors call `onProcessesError` → toast.
 
 | Folder | Path | Purpose |
 |--------|------|---------|
-| [`account/`](sections/account/account/) | `/settings/account` | Hosts `ProfileCard` (auth) and `Tutorial` (tour chapter replay / restart) |
+| [`account/`](sections/account/account/) | `/settings/account` | Hosts `ProfileCard` (auth) |
+| [`experimental/`](sections/account/experimental/) | `/settings/experimental` | Registry-driven experimental toggles; embeds Account `Tutorial` when `productTutorial` is on |
 | [`security/`](sections/account/security/) | `/settings/security` | Password change, TOTP 2FA flow, passkey register/delete via `useSecuritySettings` |
 | [`notifications/`](sections/account/notifications/) | `/settings/notifications` | Preference switches (`EmailAlerts`, `FriendRequests`, `JobCompletions`, push, etc.) via `useNotificationPreferences` |
 | [`theming/`](sections/account/theming/) | `/settings/theming` | Preset catalog + custom theme editor (colors, shadows, fonts, radius) via `app/providers/theme` + `core/theme` |
 
 **Security nested UI:** `password-section/`, `two-factor-section/` (embeds passkeys), `passkeys-section/`.
 
-**Account tutorial:** lists `TOUR_CHAPTERS` (hides `importAi` when `!canShowAi`); restart all / replay sample / start chapter; stays on settings for `notifications` and `theming` chapters, otherwise navigates to `/dashboard`.
+**Experimental → product tutorial:** when enabled, lists `TOUR_CHAPTERS` (hides `importAi` when `!canShowAi`); restart all / replay sample / start chapter; stays on settings for `notifications` and `theming` chapters, otherwise navigates to `/dashboard`.
 
 ---
 
@@ -197,7 +200,8 @@ flowchart TD
 |------------------|------|
 | [`auth`](../../../features/auth/README.md) | `useAuth` flags; `ProfileCard`; `useSecuritySettings`; tutorial / tour chapter status |
 | [`notifications`](../../../features/notifications/README.md) | `useNotificationPreferences` |
-| [`tour`](../../../features/tour/README.md) | Sidebar tour target; Account `Tutorial` chapter controls |
+| [`tour`](../../../features/tour/README.md) | Sidebar tour target; Experimental `Tutorial` chapter controls (gated by `productTutorial`) |
+| [`experimental-features`](../../../features/experimental-features/README.md) | Registry + `useExperimentalFeatures` for Settings → Experimental |
 | [`admin`](../../../features/admin/README.md) | `useOverview`, `useUsers`, `useUserDetail`, `useSitePolicy`, `useModeration`, `useAuditLog` |
 | [`system`](../../../features/system/README.md) | `useSystemSettingsController` for Server (+ AI packs/models types) |
 | [`jobs`](../../../features/jobs/README.md) | `useBackgroundJobs` + `BackgroundProcessesPanel` in processes rail |

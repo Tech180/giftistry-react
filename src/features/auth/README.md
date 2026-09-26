@@ -158,10 +158,12 @@ Toasts via injected `showToast`; refreshes user after successful changes.
 
 | Type | Role |
 |------|------|
-| `ApiUser` | Session user: roles, 2FA, policy, tour, onboard/force-password flags |
+| `ApiUser` | Session user: roles, 2FA, policy, tour, experimental features, onboard/force-password flags |
 | `AuthResponse` | `User?`, `Token?`, `Require2FA?`, `Ticket?` |
 | `TourState` / `TutorialPatchPayload` | Product tour chapter progress + **Show welcome** (`FirstRunDismissed`). Self: `PATCH /api/auth/tutorial`. Admin: `PATCH /api/admin/users/:id/tutorial` (see [admin](../admin/README.md)). |
 | `Passkey` | Registered authenticator metadata |
+
+`User.ExperimentalFeatures` (PascalCase keys such as `ProductTutorial`) is owned by [`experimental-features`](../experimental-features/README.md) (`PATCH /api/auth/experimental-features`).
 
 ---
 

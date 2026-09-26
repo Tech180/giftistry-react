@@ -1,6 +1,6 @@
 # `app/layout`
 
-App chrome: **viewport shell** and **top navigation** (desktop + mobile). Composed by [`Content`](../components/README.md#content); hidden on auth pages via `isAuthPage`.
+App chrome: **viewport shell** and **top navigation** (desktop + mobile). Composed by [`Content`](../components/README.md#content); hidden via `isAuthPage` (auth paths and logged-out non-invite routes — see [`shouldUseAuthChrome`](../utils/should-use-auth-chrome.util.ts)).
 
 Public barrel: [`index.ts`](index.ts) exports `AppShell` and `AppNavigation`.
 
@@ -49,7 +49,7 @@ flowchart TD
   nav --> drawer
 ```
 
-`AppContent` derives shell flags from the path (`isSettingsPage`, `isFullWidth`, `isAuthPage`) and passes them into `AppShell`. When `isAuthPage` is true, navigation and banner are omitted and main uses full-bleed auth styles.
+`AppContent` derives shell flags from the path (`isSettingsPage`, `isFullWidth`, `isAuthPage`) and passes them into `AppShell`. `isAuthPage` comes from [`shouldUseAuthChrome`](../utils/should-use-auth-chrome.util.ts): dedicated auth paths always, plus **any logged-out path outside guest-chrome prefixes** (`/invite/list/…`). When true, navigation and banner are omitted and main uses full-bleed auth styles.
 
 ## Units
 
@@ -86,10 +86,10 @@ Full-viewport column (`100dvh`, `--bg-gradient`). Renders:
 |------|--------|
 | `isSettingsPage` | Uses `.settings-main` (flex, no inner max-width wrapper) |
 | `isFullWidth` | Inner content `max-width: 100%` (wishlist detail, invite) |
-| `isAuthPage` | No nav/banner; zero padding; overflow hidden |
+| `isAuthPage` | No nav/banner; zero padding; overflow hidden. True for `/login`, `/register`, `/welcome`, `/change-password`, and for logged-out users outside guest-chrome paths (keeps invite nav) |
 | `hasBanner` | Extra top padding so content clears a banner |
 
-Scroll lives on `main`; horizontal inset / `75rem` max-width live on `.mainInner` so the scrollbar stays flush to the viewport edge.
+Scroll lives on `main` (column flex); horizontal inset / `75rem` max-width live on `.mainInner` (`flex: 1 0 auto`, column flex) so the scrollbar stays flush to the viewport edge and in-shell `LoadingState` with `fullHeight` can grow and center in the scrollport (page gates, route guards). Direct children use `flex-shrink: 0` and full width so normal pages (e.g. dashboard) are not vertically compressed in the flex scrollport.
 
 ### `app-navigation`
 

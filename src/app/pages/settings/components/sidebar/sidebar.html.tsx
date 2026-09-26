@@ -4,6 +4,7 @@ import {
   Lock,
   Bell,
   Palette,
+  Zap,
   LayoutDashboard,
   Users,
   Flag,
@@ -77,6 +78,12 @@ export const SidebarTemplate: React.FC<SidebarTemplateProps> = ({
             label="Theming"
             isActive={activePath === '/settings/theming'}
             onClick={() => onNavigate('/settings/theming')}
+          />
+          <SidebarItem
+            icon={<Zap size={15} />}
+            label="Experimental"
+            isActive={activePath === '/settings/experimental'}
+            onClick={() => onNavigate('/settings/experimental')}
           />
 
           {isAdmin ? (

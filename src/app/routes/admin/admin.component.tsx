@@ -1,10 +1,12 @@
 import React from 'react';
 import { useAuth } from 'features/auth';
+import { useAppLoadingGate } from 'app/providers/app-loading';
 import { AdminTemplate } from './admin.html';
 import type { Props } from './interfaces/props.interface';
 
 export const AdminRoute: React.FC<Props> = ({ children }) => {
   const { user, isLoading } = useAuth();
+  useAppLoadingGate(isLoading, 'Loading...');
 
   return (
     <AdminTemplate

@@ -1,19 +1,18 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { Loading } from 'app/components/loading/loading.component';
 import { AdminRoute, OwnerRoute } from 'app/routes';
 import { useAuth } from 'features/auth';
+import { LoadingState } from 'shared/ui';
 import { useToast } from 'shared/providers/toast';
 import type { UsePageResult } from '../interfaces/use-page-result.interface';
 import { processesRailScopeForPath } from '../utils/processes-rail-scope-for-path.util';
-
-const SectionFallback = Loading;
 
 // Account
 const Account = lazy(() => import('../sections/account/account/account.component'));
 const Security = lazy(() => import('../sections/account/security/security.component'));
 const Notifications = lazy(() => import('../sections/account/notifications/notifications.component'));
 const Theming = lazy(() => import('../sections/account/theming/theming.component'));
+const Experimental = lazy(() => import('../sections/account/experimental/experimental.component'));
 
 // Administration (URL prefix: admin)
 const Overview = lazy(() =>
@@ -65,7 +64,16 @@ export function usePage(): UsePageResult {
   const processesRailScope = processesRailScopeForPath(location.pathname);
 
   const routes = (
-    <Suspense fallback={<SectionFallback />}>
+    <Suspense
+      fallback = {
+        <LoadingState
+          message = {
+            'Loading...'
+          }
+          fullHeight
+        />
+      }
+    >
       <Routes>
         <Route index element={<Navigate to="account" replace />} />
         {/* Account */}
@@ -73,6 +81,7 @@ export function usePage(): UsePageResult {
         <Route path="security" element={<Security showToast={showToast} />} />
         <Route path="notifications" element={<Notifications showToast={showToast} />} />
         <Route path="theming" element={<Theming showToast={showToast} />} />
+        <Route path="experimental" element={<Experimental showToast={showToast} />} />
         {/* Administration (URL prefix: admin) */}
         <Route path="server" element={<Navigate to="/settings/admin/server" replace />} />
         <Route path="admin" element={withAdmin(<Overview showToast={showToast} />)} />

@@ -1,8 +1,8 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppNavigation, AppShell } from 'app/layout';
-import { LegacyProfileRedirect, ProtectedRoute, PublicRoute } from 'app/routes';
-import { Loading } from '../loading/loading.component';
+import { RouteChunkFallback } from 'app/providers/app-loading';
+import { LegacyProfileRedirect, ProtectedRoute, PublicRoute, RootRedirect } from 'app/routes';
 import type { TemplateProps } from './interfaces/template-props.interface';
 
 const Login = lazy(() => import('../../pages/login/login.component'));
@@ -38,7 +38,7 @@ export const ContentTemplate: React.FC<TemplateProps> = ({
     >
       <Suspense
         fallback = {
-          <Loading />
+          <RouteChunkFallback />
         }
       >
         <Routes>
@@ -47,12 +47,7 @@ export const ContentTemplate: React.FC<TemplateProps> = ({
               '/'
             }
             element = {
-              <Navigate
-                to = {
-                  '/dashboard'
-                }
-                replace
-              />
+              <RootRedirect />
             }
           />
           <Route

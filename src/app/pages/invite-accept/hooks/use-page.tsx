@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SubmitEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAppLoadingGate } from 'app/providers/app-loading';
 import { ApiError } from 'core/api/api-error';
 import { useAuth } from 'features/auth';
 import { notificationsApi, useGuestInviteSocket } from 'features/notifications';
@@ -35,6 +36,9 @@ export function usePage(): UsePageResult {
   const previewPasswordRef = useRef<string | null>(null);
   const isPasswordProtectedRef = useRef(false);
   const listChangedTimerRef = useRef<number | null>(null);
+
+  const pageLoading = isLoading || isAuthLoading;
+  useAppLoadingGate(pageLoading, 'Checking invite link...');
 
   const reloadGuestPreview = useCallback(
     async (options?: { silent?: boolean }) => {
@@ -182,7 +186,7 @@ export function usePage(): UsePageResult {
   };
 
   return {
-    isLoading: isLoading || isAuthLoading,
+    isLoading: pageLoading,
     error,
     inviteError,
     previewRefreshError,

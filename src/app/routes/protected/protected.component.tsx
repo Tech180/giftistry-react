@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from 'features/auth';
 import { postAuthPath } from 'features/auth';
+import { useAppLoadingGate } from 'app/providers/app-loading';
 import type { Props } from './interfaces/props.interface';
 import { ProtectedTemplate } from './protected.html';
 
@@ -10,6 +11,7 @@ export const ProtectedRoute: React.FC<Props> = ({
   allowPasswordChange = false,
 }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
+  useAppLoadingGate(isLoading, 'Loading...');
 
   if (isLoading) {
     return (

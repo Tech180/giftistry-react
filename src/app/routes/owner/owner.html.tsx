@@ -1,6 +1,5 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { LoadingState } from 'shared/ui';
 import type { TemplateProps } from './interfaces/template-props.interface';
 
 export const OwnerTemplate: React.FC<TemplateProps> = ({
@@ -10,7 +9,7 @@ export const OwnerTemplate: React.FC<TemplateProps> = ({
   children,
 }) => {
   if (isLoading) {
-    return <LoadingState fullHeight />;
+    return null;
   }
 
   if (!isOwner) {

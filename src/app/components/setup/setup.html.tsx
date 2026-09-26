@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { Loading } from '../loading/loading.component';
+import { LoadingState } from 'shared/ui';
 
 const SetupPage = lazy(() =>
   import('../../pages/setup/setup.component').then((module) => ({ default: module.Setup }))
@@ -10,7 +10,12 @@ export const SetupTemplate: React.FC = () => {
   return (
     <Suspense
       fallback = {
-        <Loading />
+        <LoadingState
+          message = {
+            'Loading...'
+          }
+          viewport
+        />
       }
     >
       <Routes>

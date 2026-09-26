@@ -6,11 +6,13 @@ import styles from './loading-state.module.css';
 export const LoadingState: React.FC<LoadingStateProps> = ({
   message,
   fullHeight = false,
+  viewport = false,
   className = '',
 }) => {
   const containerClass = [
     styles.container,
     fullHeight ? styles['full-height'] : '',
+    viewport ? styles.viewport : '',
     className,
   ]
     .filter(Boolean)
@@ -20,9 +22,6 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
     <LoadingStateTemplate
       message = {
         message
-      }
-      fullHeight = {
-        fullHeight
       }
       containerClass = {
         containerClass

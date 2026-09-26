@@ -11,6 +11,7 @@ Barrel: [`index.ts`](index.ts).
 | `AdminRoute` | Require `user.IsAdmin` |
 | `OwnerRoute` | Require `user.IsOwner` |
 | `LegacyProfileRedirect` | Map `/profile/*` → `/settings/*` |
+| `RootRedirect` | `/` → `/login` when signed out, else `postAuthPath(user)` |
 
 ## Structure
 
@@ -22,6 +23,7 @@ routes/
   admin/                     ← AdminRoute
   owner/                     ← OwnerRoute
   legacy-profile-redirect/   ← /profile/* → /settings/*
+  root-redirect/             ← / → login or postAuthPath
 ```
 
 Each guard is a SoC pair: `*.component.tsx` (auth logic) → `*.html.tsx` (loading / Navigate / children).
@@ -43,7 +45,7 @@ flowchart TD
   pwd{ForcePasswordChange?}
   onboard{IsOnboarded false?}
   auth{isAuthenticated?}
-  loadUI[LoadingState]
+  loadUI[AppLoading host]
   changePwd["/change-password"]
   welcome["/welcome"]
   login["/login"]
@@ -72,7 +74,7 @@ Used around most authenticated pages in Content. Modes:
 
 | Condition | Result |
 |-----------|--------|
-| Loading | Full-height `LoadingState` |
+| Loading | App-level `LoadingState` via `useAppLoadingGate` (template returns null) |
 | Authenticated + force password change | Redirect `/change-password` |
 | Authenticated + not onboarded | Redirect `/welcome` |
 | Authenticated + onboarded | Render children |
@@ -103,7 +105,7 @@ Used around most authenticated pages in Content. Modes:
 
 Guest-only wrapper for `/login` and `/register`.
 
-- Loading → `LoadingState`
+- Loading → app-level host (`useAppLoadingGate`); template returns null
 - Authenticated → `Navigate` to `postAuthPath(user)`
 - Unauthenticated → children
 
@@ -117,7 +119,7 @@ Used inside settings nested routes for Administration sections.
 
 | Condition | Result |
 |-----------|--------|
-| Loading | `LoadingState` |
+| Loading | App-level host (`useAppLoadingGate`) |
 | `!user.IsAdmin` | `/settings/account` |
 | Admin | children |
 
@@ -131,7 +133,7 @@ Used for `/settings/admin/server`.
 
 | Condition | Result |
 |-----------|--------|
-| Loading | `LoadingState` |
+| Loading | App-level host (`useAppLoadingGate`) |
 | Not owner, but admin | `/settings/admin` |
 | Not owner, not admin | `/settings/account` |
 | Owner | children |
@@ -154,18 +156,31 @@ Element for `/profile/*` in Content. Maps old profile URLs to settings, preservi
 
 ---
 
+## `RootRedirect`
+
+Element for `/` in Content. Auth-aware landing (avoids `/` → `/dashboard` → `/login` guest-nav flash):
+
+| Condition | Destination |
+|-----------|-------------|
+| Authenticated | `postAuthPath(user)` |
+| Not authenticated | `/login` |
+
+Shell chrome for logged-out hops is also gated by [`shouldUseAuthChrome`](../utils/should-use-auth-chrome.util.ts) in `AppContent` so deep links to protected paths never paint guest nav before the redirect.
+
+---
+
 ## Where used
 
 | Guard | Mounted by |
 |-------|------------|
-| `ProtectedRoute` / `PublicRoute` / `LegacyProfileRedirect` | [`content.html.tsx`](../components/content/content.html.tsx) |
+| `ProtectedRoute` / `PublicRoute` / `LegacyProfileRedirect` / `RootRedirect` | [`content.html.tsx`](../components/content/content.html.tsx) |
 | `AdminRoute` / `OwnerRoute` | [`pages/settings` `use-page`](../pages/settings/hooks/use-page.tsx) nested Routes |
 
 Invite accept (`/invite/list/:token`) has **no** guard — token access is intentional.
 
 ## Allowed / forbidden
 
-- **May import:** `features/auth` (`useAuth`, `postAuthPath`), `shared/ui` (`LoadingState`), `react-router-dom`
+- **May import:** `features/auth` (`useAuth`, `postAuthPath`), `app/providers/app-loading`, `react-router-dom`
 - **Must not:** declare page components or the main path table (that is Content); keep role checks thin — no settings UI here
 
 ## Related

@@ -8,9 +8,9 @@ Sign-in screen for unauthenticated users. Thin layout wrapper: the page owns onl
 |------|-------|-------|
 | `/login` | [`PublicRoute`](../../routes/) | `isAuthPage` — no nav/banner; full-bleed auth main |
 
-Declared in [`content.html.tsx`](../../components/content/content.html.tsx) (lazy). `PublicRoute` redirects **authenticated** users to `postAuthPath(user)` (dashboard / welcome / change-password as appropriate). Unauthenticated users see this page.
+Declared in [`content.html.tsx`](../../components/content/content.html.tsx) (lazy). `PublicRoute` redirects **authenticated** users to `postAuthPath(user)` (dashboard / welcome / change-password as appropriate). Unauthenticated users see this page. Signed-out visits to `/` use [`RootRedirect`](../../routes/) → `/login` (no hop through `/dashboard`).
 
-`AppContent` sets `isAuthPage` when `pathname === '/login'`, so [`AppShell`](../../layout/README.md) skips navigation and uses auth-main styles.
+`AppContent` sets `isAuthPage` via [`shouldUseAuthChrome`](../../utils/should-use-auth-chrome.util.ts) (includes `/login` and logged-out non-invite paths), so [`AppShell`](../../layout/README.md) skips navigation and uses auth-main styles — no guest top-nav flash before the login card.
 
 ## Structure
 

@@ -15,11 +15,11 @@ flowchart TD
   unreachable{"systemStatus unreachable?"}
   init{"isSystemInitialized?"}
   allow{"allowSetup?"}
-  loadingNode[Loading]
+  loadingNode["LoadingState viewport"]
   unreachableNode[Unreachable]
   setupNode[Setup]
   blockedNode[SetupBlocked]
-  contentNode[Content plus mobile host / tour]
+  contentNode[Content plus mobile host / tour / app-loading overlay]
 
   start --> loading
   loading -->|yes| loadingNode
@@ -39,7 +39,6 @@ flowchart TD
 | Folder | Export | Role |
 |--------|--------|------|
 | [content/](#content) | `Content` | Main app: `AppShell` + lazy routes |
-| [loading/](#loading) | `Loading` | Full-viewport spinner |
 | [error-boundary/](#error-boundary) | `ErrorBoundary` | Class boundary + retry panel |
 | [setup/](#setup) | `Setup` | First-run wizard route shell |
 | [setup-blocked/](#setup-blocked) | `SetupBlocked` | Setup disabled, server not initialized |
@@ -50,21 +49,13 @@ flowchart TD
 Owns the **initialized** app surface:
 
 - Wraps children in [`AppShell`](../layout/README.md) / `AppNavigation`
-- Lazy-loads every page under `Suspense` (fallback: `Loading`)
-- Declares routes (`/dashboard`, `/wishlists/:listId`, `/settings/*`, auth pages, etc.) with `ProtectedRoute` / `PublicRoute` / `LegacyProfileRedirect`
+- Lazy-loads every page under `Suspense` (fallback: `RouteChunkFallback` — app-loading host with path-derived message while the chunk loads)
+- Declares routes (`/`, `/dashboard`, `/wishlists/:listId`, `/settings/*`, auth pages, etc.) with `RootRedirect` / `ProtectedRoute` / `PublicRoute` / `LegacyProfileRedirect`
+- `/` uses `RootRedirect` (signed-out → `/login`, signed-in → `postAuthPath`)
 
-**Props** (`isSettingsPage`, `isFullWidth?`, `isAuthPage?`) are derived from `useLocation()` in `AppContent` and forwarded into `AppShell` for layout chrome.
+**Props** (`isSettingsPage`, `isFullWidth?`, `isAuthPage?`) are derived in `AppContent` (`shouldUseAuthChrome` for `isAuthPage`) and forwarded into `AppShell` for layout chrome.
 
-Do not put domain logic here — only route composition and shell flags.
-
-### `loading/`
-
-Centered full-viewport spinner (`--bg` / `--primary` tokens). Used as:
-
-- Boot gate while auth/system status loads
-- `Suspense` fallback inside `Content` and `Setup`
-
-Respects `prefers-reduced-motion` (spinner animation off).
+Boot gate (auth/system still loading) uses [`LoadingState`](../../shared/ui/loading-state/loading-state.component.tsx) with `viewport` + “Loading…”. After boot, route/page full-page waits use the same host via [`app/providers/app-loading`](../providers/app-loading/README.md) (`show` / `useAppLoadingGate`) as an overlay — not a second spinner tree. Do not put domain logic here — only route composition and shell flags.
 
 ### `error-boundary/`
 
@@ -79,7 +70,7 @@ Wraps only `AppContent` (not providers above the boundary). Provider failures ou
 
 Shown when the system is **not** initialized and `allowSetup` is true.
 
-Lazy-loads [`pages/setup`](../pages/setup/README.md) and forces all paths to `/setup` (anything else redirects there). Uses `Loading` as the Suspense fallback. No `AppShell` / navigation — install-only chrome.
+Lazy-loads [`pages/setup`](../pages/setup/README.md) and forces all paths to `/setup` (anything else redirects there). Uses `LoadingState` (“Loading…” `viewport`) as the Suspense fallback. No `AppShell` / navigation — install-only chrome.
 
 ### `setup-blocked/`
 

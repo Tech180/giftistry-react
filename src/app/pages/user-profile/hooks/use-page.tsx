@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAppLoadingGate } from 'app/providers/app-loading';
 import { useTheme } from 'app/providers/theme';
 import {
   authApi,
@@ -21,6 +22,8 @@ export function usePage(): PageTemplateProps {
   const [user, setUser] = useState<ApiUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useAppLoadingGate(isLoading, 'Loading profile...');
 
   useEffect(() => {
     if (!userId) {

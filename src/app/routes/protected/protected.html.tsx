@@ -1,6 +1,5 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { LoadingState } from 'shared/ui';
 import type { TemplateProps } from './interfaces/template-props.interface';
 
 export const ProtectedTemplate: React.FC<TemplateProps> = ({
@@ -11,7 +10,7 @@ export const ProtectedTemplate: React.FC<TemplateProps> = ({
   allowAuthenticated,
 }) => {
   if (isLoading) {
-    return <LoadingState fullHeight />;
+    return null;
   }
 
   if (allowAuthenticated) {

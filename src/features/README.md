@@ -21,19 +21,20 @@ If a shared primitive needs a domain type or feature hook, **move the unit** int
 |--------|------|--------|
 | [admin](admin/README.md) | Admin API + hooks | Users, moderation, audit, site policy — page chrome in settings |
 | [auth](auth/README.md) | Session, login/register/security UI, preview card | `AuthProvider`; system status fetch; tour progress PATCH |
+| [experimental-features](experimental-features/README.md) | Per-user experimental flags | Registry + Settings toggles; gates tour |
 | [comments](comments/README.md) | Comment threads + realtime | Session mirror; WS in section, not provider |
 | [friends](friends/README.md) | Friends list, requests, search, picker | `FriendsProvider`; share tab uses controller |
 | [items](items/README.md) | Items, claims, form, views, import UI | Local `useItemController`; enrich/import via jobs |
 | [jobs](jobs/README.md) | Background jobs + progress UI | List WS / account poll; wait helper; no jobs provider |
 | [notifications](notifications/README.md) | Inbox bell, prefs, push, job toasts | Provider + separate toast host; invite HTTP helpers |
 | [system](system/README.md) | Server settings + AI/packs | Controllers only; status type owned here, fetch in auth |
-| [tour](tour/README.md) | Product tutorial | Demo + chapters; **incomplete** post-beginner wiring |
+| [tour](tour/README.md) | Product tutorial | Demo + chapters; gated by experimental `productTutorial`; **incomplete** post-beginner wiring |
 | [wishlists](wishlists/README.md) | Lists, create form, share | Dashboard controller; detail fetches directly |
 
 ```
 features/
   admin/           comments/        items/          notifications/   tour/
-  auth/            friends/         jobs/           system/          wishlists/
+  auth/            experimental-features/  friends/  jobs/  system/  wishlists/
   README.md
 ```
 
@@ -51,20 +52,23 @@ flowchart TD
   notif[notifications]
   system[system]
   tour[tour]
+  experimental[experimental-features]
   admin[admin]
   core[core/api]
   shared[shared]
 
-  pages --> auth & wishlists & items & friends & comments & jobs & notif & system & tour & admin
+  pages --> auth & wishlists & items & friends & comments & jobs & notif & system & tour & experimental & admin
   items --> jobs
   items --> wishlists
   comments --> wishlists
   wishlists --> friends
   notif --> wishlists
   tour --> auth
+  tour --> experimental
+  experimental --> auth
   system --> auth
   auth & wishlists & items & friends & comments & jobs & notif & system & admin --> core
-  auth & wishlists & items & friends & comments & jobs & notif & tour --> shared
+  auth & wishlists & items & friends & comments & jobs & notif & tour & experimental --> shared
 ```
 
 Cross-cutting edges worth knowing:

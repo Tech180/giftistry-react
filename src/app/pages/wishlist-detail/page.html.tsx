@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { isDemoListId } from 'features/tour';
-import { Button, LoadingState, ErrorState } from 'shared/ui';
+import { Button, ErrorState } from 'shared/ui';
 import { PageTemplateProps } from './interfaces/page-template-props.interface';
 import { ArchivedBanner } from './components/archived-banner/archived-banner.component';
 import { Workspace } from './components/workspace/workspace.component';
@@ -23,7 +23,7 @@ export const PageTemplate: React.FC<PageTemplateProps> = (props) => {
   const isDemoRoute = isDemoListId(listId);
 
   if (isWishlistLoading) {
-    return <LoadingState message="Loading list..." fullHeight />;
+    return null;
   }
 
   // Sample list teardown: never paint the permission/404 empty state for tour-demo.

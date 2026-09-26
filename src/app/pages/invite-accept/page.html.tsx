@@ -1,5 +1,5 @@
 import React from 'react';
-import { EnterPanel, LoadingState } from 'shared/ui';
+import { EnterPanel } from 'shared/ui';
 import { GuestWishlistPreview } from './components/guest-wishlist-preview/guest-wishlist-preview.component';
 import { ErrorView } from './components/error-view/error-view.component';
 import { Success } from './components/success/success.component';
@@ -26,7 +26,7 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
   onGoHome,
 }) => {
   if (isLoading) {
-    return <LoadingState message="Checking invite link..." fullHeight />;
+    return null;
   }
 
   if (error) {

@@ -16,4 +16,6 @@ export interface ApiUser extends PublicUserSummary {
   IsOnboarded?: boolean;
   ForcePasswordChange?: boolean;
   Tour?: TourState;
+  /** PascalCase keys (e.g. ProductTutorial). See features/experimental-features. */
+  ExperimentalFeatures?: Partial<Record<string, boolean>>;
 }

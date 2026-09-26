@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi, useAuth, type TourChapterStatus } from 'features/auth';
+import { isExperimentalFeatureEnabledForUser } from 'features/experimental-features';
 import { isWelcomeEnabled, TOUR_CHAPTERS, useTourOptional } from 'features/tour';
 import { useToast } from 'shared/providers/toast';
 import type { ChapterRow } from './interfaces/chapter-row.interface';
@@ -14,6 +15,10 @@ export const Tutorial: React.FC = () => {
   const [isBusy, setIsBusy] = useState(false);
   const [isWelcomeSaving, setIsWelcomeSaving] = useState(false);
 
+  const productTutorialEnabled = isExperimentalFeatureEnabledForUser(
+    'productTutorial',
+    user?.ExperimentalFeatures
+  );
   const welcomeEnabled = isWelcomeEnabled(user?.Tour);
 
   const chapters = useMemo((): ChapterRow[] => {
@@ -72,6 +77,10 @@ export const Tutorial: React.FC = () => {
       setIsWelcomeSaving(false);
     }
   };
+
+  if (!productTutorialEnabled) {
+    return null;
+  }
 
   return (
     <TutorialTemplate

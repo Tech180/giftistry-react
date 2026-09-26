@@ -12,7 +12,7 @@ Entry is [`invite-accept.component.tsx`](invite-accept.component.tsx) (`InviteAc
 
 Anyone with the link can open the route. Auth only chooses accept vs guest-preview APIs and home labels.
 
-**Shell:** `isFullWidth` (same as wishlist detail) so the guest workspace can use the full content width. **Not** `isAuthPage` — nav/banner remain visible on password / success / error cards as well as the preview.
+**Shell:** `isFullWidth` (same as wishlist detail) so the guest workspace can use the full content width. **Not** auth chrome — [`shouldUseAuthChrome`](../../utils/should-use-auth-chrome.util.ts) treats `/invite/list/…` as a guest-chrome exception, so nav/banner remain visible on password / success / error cards as well as the preview when logged out.
 
 ## Structure
 

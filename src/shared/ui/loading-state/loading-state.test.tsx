@@ -19,4 +19,10 @@ describe('LoadingState', () => {
     const { container } = render(<LoadingState fullHeight />);
     expect(container.firstChild).toHaveClass(styles['full-height']);
   });
+
+  test('applies viewport class when enabled', () => {
+    const { container } = render(<LoadingState viewport />);
+    expect(container.firstChild).toHaveClass(styles.viewport);
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
 });

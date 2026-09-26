@@ -9,8 +9,18 @@
 }
 
 .full-height{
+  flex: 1;
+  align-self: stretch;
   min-height: 12.5rem;
-  height: 100%;
+}
+
+.viewport{
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--zindex-overlay, 1000) + 100);
+  min-height: 100dvh;
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 .spinner{
@@ -31,5 +41,11 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
   }
 }
