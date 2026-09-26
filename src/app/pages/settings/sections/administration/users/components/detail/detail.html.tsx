@@ -31,6 +31,9 @@ export const DetailTemplate: React.FC<DetailTemplateProps> = ({
   newPassword,
   isSelf,
   isOwnerReadOnly,
+  welcomeEnabled,
+  isWelcomeSaving,
+  onWelcomeEnabledChange,
   onTabChange,
   onProfileFormChange,
   onPolicyFlagsChange,
@@ -231,6 +234,17 @@ export const DetailTemplate: React.FC<DetailTemplateProps> = ({
                 disabled={switchesDisabled}
                 onChange={(checked) => onPolicyFlagsChange({ forcePasswordChange: checked })}
                 aria-label="Require password change"
+              />
+            </SettingItem>
+            <SettingItem
+              title="Show welcome"
+              description="Allow this user to see the first-run product welcome. Turning on again after dismiss can reset finished chapters if needed."
+            >
+              <Switch
+                checked={welcomeEnabled}
+                disabled={switchesDisabled || isWelcomeSaving}
+                onChange={onWelcomeEnabledChange}
+                aria-label="Show welcome"
               />
             </SettingItem>
           </SettingGroup>

@@ -3,6 +3,7 @@ import { wishlistsApi } from 'features/wishlists/api/wishlists.api';
 import { Props } from './interfaces/props.interface';
 import type { LinkInvite } from '../../../../../../interfaces/link-invite.interface';
 import { LinkTabTemplate } from './link.html';
+import { buildShareLinkUrl } from './utils/build-share-link-url.util';
 
 export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' }) => {
   const [activeInvite, setActiveInvite] = useState<LinkInvite | null>(null);
@@ -10,7 +11,8 @@ export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' 
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<'success' | 'warning'>('success');
   const [copied, setCopied] = useState(false);
 
   const [role, setRole] = useState<'viewer' | 'collaborator'>('viewer');
@@ -19,6 +21,11 @@ export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' 
   const [expTime, setExpTime] = useState('');
   const [hasPassword, setHasPassword] = useState(false);
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const shareUrl = generatedToken ? buildShareLinkUrl(generatedToken) : '';
+  const shareUrlDisplay = shareUrl.replace(/^https?:\/\//, '');
+  const linkEnabled = Boolean(activeInvite);
 
   const loadLinkInvites = async () => {
     setIsLoading(true);
@@ -50,7 +57,7 @@ export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' 
   const handleGenerate = async () => {
     setIsGenerating(true);
     setErrorMsg(null);
-    setSuccessMsg(null);
+    setStatusMsg(null);
 
     let expiresAt: string | null = null;
     if (hasExpiration && expDate) {
@@ -68,7 +75,8 @@ export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' 
       );
       setGeneratedToken(result.Token);
       setActiveInvite(result.Invite);
-      setSuccessMsg('Share link generated successfully!');
+      setStatusTone('success');
+      setStatusMsg('Share link generated successfully!');
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to generate link.');
     } finally {
@@ -77,8 +85,7 @@ export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' 
   };
 
   const handleCopy = async () => {
-    if (!generatedToken) return;
-    const shareUrl = `${window.location.origin}/invite/list/${generatedToken}`;
+    if (!shareUrl) return;
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
@@ -96,7 +103,8 @@ export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' 
       await wishlistsApi.revokeLinkInvite(listId, activeInvite.Id);
       setActiveInvite(null);
       setGeneratedToken(null);
-      setSuccessMsg('Link revoked. It is no longer active.');
+      setStatusTone('warning');
+      setStatusMsg('Link revoked. It is no longer active.');
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Failed to revoke link.');
     } finally {
@@ -107,6 +115,18 @@ export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' 
   const handleSettings = () => {
     setActiveInvite(null);
     setGeneratedToken(null);
+  };
+
+  const handleToggleHasPassword = (enabled: boolean) => {
+    setHasPassword(enabled);
+    if (!enabled) {
+      setPassword('');
+      setShowPassword(false);
+    }
+  };
+
+  const handleToggleShowPassword = () => {
+    setShowPassword((prev) => !prev);
   };
 
   const handleToggleLink = async (enabled: boolean) => {
@@ -138,14 +158,23 @@ export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' 
       errorMsg = {
         errorMsg
       }
-      successMsg = {
-        successMsg
+      statusMsg = {
+        statusMsg
+      }
+      statusTone = {
+        statusTone
       }
       activeInvite = {
         activeInvite
       }
-      generatedToken = {
-        generatedToken
+      shareUrl = {
+        shareUrl
+      }
+      shareUrlDisplay = {
+        shareUrlDisplay
+      }
+      linkEnabled = {
+        linkEnabled
       }
       copied = {
         copied
@@ -178,13 +207,19 @@ export const LinkTab: React.FC<Props> = ({ listId, isOwner, variant = 'classic' 
         hasPassword
       }
       setHasPassword = {
-        setHasPassword
+        handleToggleHasPassword
       }
       password = {
         password
       }
       setPassword = {
         setPassword
+      }
+      showPassword = {
+        showPassword
+      }
+      onToggleShowPassword = {
+        handleToggleShowPassword
       }
       handleGenerate = {
         handleGenerate

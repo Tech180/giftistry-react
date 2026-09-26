@@ -6,4 +6,6 @@ export interface PublicLinkPreview {
   Wishlist: PublicLinkPreviewWishlist;
   Items: Item[];
   Groups: ItemListGroup[];
+  /** When true, client may open `/ws/invite/:token` for `list.changed` push. */
+  SupportsGuestRealtime?: boolean;
 }

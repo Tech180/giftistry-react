@@ -14,3 +14,4 @@ export {
   firstPendingChapterId,
   nextAdvancedChapterId,
 } from './utils/tour-progress.util';
+export { buildWelcomePatch, isWelcomeEnabled } from './utils/build-welcome-patch.util';

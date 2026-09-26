@@ -1,4 +1,5 @@
 import React from 'react';
+import { QRCode } from 'react-qr-code';
 import { AlertTriangle, Copy, Download, Fingerprint, Smartphone, Trash2, X } from 'lucide-react';
 import { TwoFactorSectionTemplateProps } from './interfaces/two-factor-section-template-props.interface';
 import styles from './two-factor-section.module.css';
@@ -46,7 +47,7 @@ const OtpInput: React.FC<{
 
 export const TwoFactorSectionTemplate: React.FC<TwoFactorSectionTemplateProps> = ({
   is2faEnabled,
-  qrCodeUrl,
+  otpAuthUri,
   totpSecret,
   accountUsername,
   handleEnable2FA,
@@ -139,9 +140,14 @@ export const TwoFactorSectionTemplate: React.FC<TwoFactorSectionTemplateProps> =
                       </div>
 
                       <div className={styles['setup-panel']}>
-                        {qrCodeUrl && (
+                        {otpAuthUri && (
                           <div className={styles['qr-frame']}>
-                            <img src={qrCodeUrl} alt="2FA QR Code" className={styles['qr-image']} />
+                            <QRCode
+                              value={otpAuthUri}
+                              size={200}
+                              className={styles['qr-image']}
+                              aria-label="2FA QR Code"
+                            />
                           </div>
                         )}
 

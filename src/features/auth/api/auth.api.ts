@@ -87,7 +87,7 @@ export const authApi = {
     apiClient.post<AuthResponse>('/api/auth/2fa/login', { Ticket: ticket, Code: code }, 'Auth'),
 
   setup2fa: () =>
-    apiClient.post<{ Secret: string; QrCodeUrl: string }>('/api/auth/2fa/setup', {}),
+    apiClient.post<{ Secret: string; OtpAuthUri: string }>('/api/auth/2fa/setup', {}),
 
   enable2fa: (secret: string, code: string) =>
     apiClient.post<{ RecoveryCodes?: string[] }>('/api/auth/2fa/enable', { Secret: secret, Code: code }, 'Auth'),

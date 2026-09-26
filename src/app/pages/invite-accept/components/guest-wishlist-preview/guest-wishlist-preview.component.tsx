@@ -1,5 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, X } from 'lucide-react';
 import type { ImportStripHandle, Item } from 'features/items';
 import { ItemsSessionProvider } from 'features/items';
 import { CommentsSessionProvider } from 'features/comments';
@@ -33,12 +34,17 @@ import { GuestWishlistPreviewTemplate } from './guest-wishlist-preview.html';
 import type { GuestWishlistPreviewProps } from './interfaces/guest-wishlist-preview-props.interface';
 import { noop } from './utils/noop.util';
 import { noopAsync } from './utils/noop-async.util';
+import { useDoesAddSidebarOverlayList } from 'app/pages/wishlist-detail/hooks/use-does-add-sidebar-overlay-list';
+import { getPageClassName } from 'app/pages/wishlist-detail/utils/get-page-class-name.util';
 import { getPageShellFlags } from 'app/pages/wishlist-detail/utils/get-page-shell-flags.util';
+import styles from './guest-wishlist-preview.module.css';
 
 export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
   wishlist: previewWishlist,
   items,
   groups,
+  refreshError = null,
+  onDismissRefreshError = noop,
 }) => {
   const navigate = useNavigate();
   const wishlist = toGuestWishlist(previewWishlist);
@@ -49,6 +55,7 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
     )
   );
   const supportsKanbanViewMode = useSupportsKanbanViewMode();
+  const doesAddSidebarOverlayList = useDoesAddSidebarOverlayList();
   const effectiveViewMode = useMemo(
     () => resolveEffectiveViewMode(viewMode, supportsKanbanViewMode),
     [viewMode, supportsKanbanViewMode]
@@ -72,6 +79,34 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
     isPublicGuest: true,
     isLocked,
   });
+
+  useEffect(() => {
+    setViewingItem((current) => {
+      if (!current) {
+        return current;
+      }
+      return items.find((item) => item.Id === current.Id) ?? null;
+    });
+  }, [items]);
+
+  useEffect(() => {
+    if (!viewingItem) {
+      return;
+    }
+    const sourceContext = linkingContextFromItem(viewingItem);
+    setLinkedItemIds(
+      resolveEditorLinkedItemIds(viewingItem.Id, items).filter((id) => {
+        const target = items.find((i) => i.Id === id);
+        return target && canLinkItemsByAudience(sourceContext, target);
+      })
+    );
+    setRelatedItemIds(
+      resolveEditorRelatedItemIds(viewingItem.Id, items).filter((id) => {
+        const target = items.find((i) => i.Id === id);
+        return target && canLinkItemsByAudience(sourceContext, target);
+      })
+    );
+  }, [items, viewingItem]);
 
   const groupedItems = useMemo(
     () => groupGuestPreviewItems(items, groups, searchQuery),
@@ -141,7 +176,7 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
     isRelatingModeActive,
     isTaggingModeActive: false,
     isReplyTaggingModeActive: false,
-    doesAddSidebarOverlayList: false,
+    doesAddSidebarOverlayList,
     isCommentsOpen,
     selectedItemId,
   });
@@ -149,11 +184,27 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
   return (
     <ItemsSessionProvider>
       <CommentsSessionProvider>
-        <GuestWishlistPreviewTemplate
+        <>
+          {refreshError ? (
+            <div className={styles['refresh-banner']} role="alert">
+              <AlertTriangle size={16} className={styles['refresh-banner__icon']} aria-hidden />
+              <span className={styles['refresh-banner__text']}>{refreshError}</span>
+              <button
+                type="button"
+                className={styles['refresh-banner__dismiss']}
+                onClick={onDismissRefreshError}
+                aria-label="Dismiss"
+              >
+                <X size={14} aria-hidden />
+              </button>
+            </div>
+          ) : null}
+          <GuestWishlistPreviewTemplate
       isWishlistLoading={false}
       wishlistError={null}
       onGoHome={() => navigate('/login')}
       {...shellFlags}
+      pageClassName={getPageClassName(shellFlags.isItemDrawerVisible, viewMode, isCommentsOpen)}
       wishlist={wishlist}
       items={items}
       priorities={[]}
@@ -199,7 +250,7 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       setIsLinkingModeActive={setIsLinkingModeActive}
       isRelatingModeActive={isRelatingModeActive}
       setIsRelatingModeActive={setIsRelatingModeActive}
-      doesAddSidebarOverlayList={false}
+      doesAddSidebarOverlayList={doesAddSidebarOverlayList}
       handleLinkingAudienceChange={noop}
       isItemLinkCompatible={() => false}
       isItemRelateCompatible={() => false}
@@ -274,6 +325,7 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       onCancelJob={noop}
       canShowAi={false}
         />
+        </>
       </CommentsSessionProvider>
     </ItemsSessionProvider>
   );

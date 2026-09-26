@@ -1,6 +1,6 @@
 {
   "name": "giftistry-react",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "dependencies": {
     "@simplewebauthn/browser": "^13.3.0",
@@ -12,6 +12,7 @@
     "lucide-react": "^1.18.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-qr-code": "^2.2.0",
     "react-router-dom": "^7.17.0"
   },
   "devDependencies": {

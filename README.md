@@ -23,7 +23,7 @@
 
 ---
 
-Giftistry helps people collect gifts, share lists with friends and family, and coordinate claims — without stuffing your data into someone else's SaaS. This repository is the **React web client**; pair it with the Giftistry API for a full stack.
+Giftistry is for birthdays, holidays, and everyday “what would you like?” moments. You keep the list, you choose who sees it, and friends can claim items so gifting stays simple and surprise-friendly. This repo is the frontend; you’ll run it with the Giftistry API.
 
 > **Note**  
 > Screenshots and a public demo URL go here when you have them. Immich/Jellyfin-style READMEs lead with a visual — one hero image beats three paragraphs.
@@ -32,11 +32,15 @@ Giftistry helps people collect gifts, share lists with friends and family, and c
 
 | | |
 | :--- | :--- |
-| **Wishlists** | Create lists, organize items, and keep ownership clear |
-| **Sharing** | Invite friends, control who sees what, accept invites in-app |
-| **Claims** | Mark gifts claimed so nobody doubles up |
-| **Friends** | Stay connected around birthdays and gifting moments |
-| **Theming** | Appearance and holiday themes that feel like *your* product |
+| **Wishlists** | Create lists, organize by bucket, archive, and keep ownership clear |
+| **Items & claims** | Multiple view modes, substitutions, group funding, and claim coordination |
+| **Sharing & invites** | Share with friends, link invites (optional password), guest preview |
+| **Friends** | Requests, search, and birthday-aware connections |
+| **Comments** | Threads, reactions, and live presence on a list |
+| **Import & jobs** | File import plus AI enrich/summarize when the server enables AI |
+| **Notifications** | In-app bell, preferences, and optional push |
+| **Theming** | Presets, light/dark/system, holiday unlocks, and custom themes |
+| **Admin & server** | Site policy and server config for owners/admins |
 | **Privacy-first** | Self-host the stack; you keep the data |
 
 ## Getting started
@@ -64,15 +68,20 @@ For a full local environment, API config, and troubleshooting, see [docs/develop
 
 | Doc | What it's for |
 | --- | --- |
-| [Architecture](docs/architecture.md) | Layers (`app` / `features` / `shared` / `core`), SoC |
-| [Development](docs/development.md) | Scripts, audits, tests, env |
+| [Architecture](docs/architecture.md) | Layers (`app` / `features` / `shared` / `core`) + SoC rules |
+| [Source map](src/README.md) | Folder map + application diagrams (providers, routes, realtime) |
+| [Features](src/features/README.md) | Domain packages (auth, wishlists, items, …) |
+| [Development](docs/development.md) | Scripts, env, audits, tests |
 | [UI conventions](docs/ui-conventions.md) | SoC trio, CSS Modules, interfaces |
-| [Contributing](CONTRIBUTING.md) | PRs, style, review expectations |
-| [Source map](src/README.md) | Nested folder READMEs under `src/` |
+| [Contributing](CONTRIBUTING.md) | PR contract |
+| [Scripts](scripts/README.md) | Repo tooling (theme sync, audits, `dev:all`) |
+
+Layer detail lives under [`src/app`](src/app/README.md), [`src/features`](src/features/README.md), [`src/shared`](src/shared/README.md), and [`src/core`](src/core/README.md).
 
 ## Stack
 
-- **UI:** React 19, React Router, Vite, CSS Modules  
+- **Runtime / tooling:** Bun (preferred), Vite  
+- **UI:** React 19, React Router, CSS Modules  
 - **Language:** TypeScript (strict)  
 - **Tests:** Vitest + Testing Library  
 

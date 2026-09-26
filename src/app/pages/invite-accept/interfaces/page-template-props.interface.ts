@@ -5,6 +5,7 @@ export interface PageTemplateProps {
   isLoading: boolean;
   error: string | null;
   inviteError: string | null;
+  previewRefreshError: string | null;
   password: string;
   isSubmitting: boolean;
   isSuccess: boolean;
@@ -14,6 +15,7 @@ export interface PageTemplateProps {
   homeLabel: string;
   onPasswordChange: (value: string) => void;
   onSubmit: (e: SubmitEvent<HTMLFormElement>) => void;
+  onDismissPreviewRefreshError: () => void;
   onViewWishlist: () => void;
   onGoHome: () => void;
 }

@@ -6,4 +6,6 @@ export interface GuestWishlistPreviewProps {
   wishlist: PublicLinkPreviewWishlist;
   items: Item[];
   groups?: ItemListGroup[];
+  refreshError?: string | null;
+  onDismissRefreshError?: () => void;
 }

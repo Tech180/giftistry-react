@@ -255,7 +255,7 @@ export const FormTemplate: React.FC<TemplateProps> = ({
             canCollaborate
           }
           hideFavorite = {
-            isSubstitutionSurface
+            isSubstitutionSurface || readOnly
           }
         />
 

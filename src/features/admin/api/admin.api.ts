@@ -1,4 +1,5 @@
 import { apiClient } from 'core/api/client';
+import type { TutorialPatchPayload, TourState } from 'features/auth';
 import type { AuditLogListResponse } from '../interfaces/audit-log-list-response.interface';
 import type { CreateUserPayload } from '../interfaces/create-user-payload.interface';
 import type { CreateUserResponse } from '../interfaces/create-user-response.interface';
@@ -81,6 +82,9 @@ export const adminApi = {
       },
       'Policy',
     ),
+
+  patchUserTutorial: (id: string, payload: TutorialPatchPayload) =>
+    apiClient.patch<{ Tour: TourState }>(`/api/admin/users/${id}/tutorial`, payload, 'Tutorial'),
 
   resetPassword: (id: string, password: string, forcePasswordChange?: boolean) =>
     apiClient.post<Record<string, never>>(

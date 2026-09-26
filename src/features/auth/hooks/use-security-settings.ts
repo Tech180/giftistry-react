@@ -23,7 +23,7 @@ export function useSecuritySettings({
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [twoFactorStep, setTwoFactorStep] = useState<'none' | 'setup' | 'disable'>('none');
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [otpAuthUri, setOtpAuthUri] = useState('');
   const [totpSecret, setTotpSecret] = useState('');
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
 
@@ -95,7 +95,7 @@ export function useSecuritySettings({
       const res = await authApi.setup2fa();
       if (res?.Secret) {
         setTotpSecret(res.Secret);
-        setQrCodeUrl(res.QrCodeUrl);
+        setOtpAuthUri(res.OtpAuthUri);
         setRecoveryCodes([]);
         setTwoFactorStep('setup');
         return true;
@@ -210,7 +210,7 @@ export function useSecuritySettings({
     is2faEnabled,
     twoFactorStep,
     setTwoFactorStep,
-    qrCodeUrl,
+    otpAuthUri,
     totpSecret,
     accountUsername: user?.Email || user?.Username || '',
     handleSetup2FA,

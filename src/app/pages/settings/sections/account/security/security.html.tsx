@@ -25,7 +25,7 @@ export const SecurityTemplate: React.FC<SecurityTemplateProps> = ({
   is2faEnabled,
   twoFactorStep,
   setTwoFactorStep,
-  qrCodeUrl,
+  otpAuthUri,
   totpSecret,
   accountUsername,
   handleSetup2FA,
@@ -74,7 +74,7 @@ export const SecurityTemplate: React.FC<SecurityTemplateProps> = ({
           is2faEnabled={is2faEnabled}
           twoFactorStep={twoFactorStep}
           setTwoFactorStep={setTwoFactorStep}
-          qrCodeUrl={qrCodeUrl}
+          otpAuthUri={otpAuthUri}
           totpSecret={totpSecret}
           accountUsername={accountUsername}
           handleSetup2FA={handleSetup2FA}

@@ -13,7 +13,7 @@ Import via `import { … } from 'features/tour'`.
 | **Provider / host** | `TourProvider`, `TourHost`, `useTour`, `useTourOptional` |
 | **Demo** | `useTourDemo`, `useTourDemoOptional`, `DEMO_JORDAN_ITEM_ID`, `DEMO_SAM_COMMENT_ID` |
 | **Targets / ids** | `TOUR_TARGETS`, `TOUR_DEMO_LIST_ID`, `isDemoListId` |
-| **Chapters / progress** | `TOUR_CHAPTERS`, `eligibleChapters`, `chapterStatus`, `normalizeClientTour`, `shouldAutoStartTour`, `firstPendingChapterId`, `nextAdvancedChapterId` |
+| **Chapters / progress** | `TOUR_CHAPTERS`, `eligibleChapters`, `chapterStatus`, `normalizeClientTour`, `shouldAutoStartTour`, `firstPendingChapterId`, `nextAdvancedChapterId`, `buildWelcomePatch`, `isWelcomeEnabled` |
 
 Not on the barrel: `TOUR_STEPS`, `DemoListProvider`, resume helpers, `runBeforeShow`.
 
@@ -83,11 +83,12 @@ Wraps `DemoListProvider` → inner controller.
 
 ### Actions
 
-`startChapter`, `next` / `back` / `skipStep` (= next), `completeChapter`, `skipChapter`, `finishTour`, `restartAll`, `notifyEvent`, `setCreatedListId`.
+`startChapter`, `next` / `back` / `skipStep` (= next), `completeChapter`, `skipChapter`, `finishTour`, `restartAll`, `reenableWelcome`, `dismissWelcome`, `notifyEvent`, `setCreatedListId`.
 
 ### Lifecycle
 
 - Auto-start after onboarded + `!FirstRunDismissed`, not on auth paths; resume from `localStorage` or `firstPendingChapterId`
+- **Show welcome** preference is `!Tour.FirstRunDismissed`. Account Settings and Admin Manage User toggle it via `buildWelcomePatch` / `reenableWelcome` / `dismissWelcome` (self) or `PATCH /api/admin/users/:id/tutorial` (admin)
 - Clears on logout
 - Per step: `runBeforeShow` + optional `demo.runBeat` / clear highlight
 - Advance via Next, target click, route match, window/CustomEvent, or `notifyEvent`
@@ -199,7 +200,8 @@ Steps **exist** in constants; the missing work is mostly **routing + fixture wir
 | Dashboard | Targets, demo card, `createdListId` highlight |
 | Wishlist-detail | Demo list data, targets, `tour:add-drawer-opened` |
 | Friends | Tab targets |
-| Settings Account Tutorial | `TOUR_CHAPTERS`, `startChapter` / `restartAll` |
+| Settings Account Tutorial | Show welcome Switch, `TOUR_CHAPTERS`, `reenableWelcome` / `dismissWelcome` / `startChapter` / `restartAll` |
+| Admin Manage User (Permissions) | Show welcome Switch → `adminApi.patchUserTutorial` |
 | App navigation / mobile FABs | hamburger, profile, theme, create FAB targets |
 | Comments / items / wishlists / notifications | Demo skip, events, targets |
 

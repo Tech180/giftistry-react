@@ -16,7 +16,7 @@ Declared in [`components/content`](../../components/README.md#content). Default 
 
 **Shell:** `isFullWidth` — `AppContent` sets `isFullWidth` when the path includes `/wishlists/` (same as invite guest preview). Content `max-width: 100%`; nav/banner stay visible (`isAuthPage` false).
 
-**Guest reuse:** [`invite-accept`](../invite-accept/README.md) hosts a read-only path that reuses `PageTemplate` + `getPageShellFlags` with `isPublicGuest` — not this protected route.
+**Guest reuse:** [`invite-accept`](../invite-accept/README.md) hosts a read-only path that reuses `PageTemplate` + `getPageShellFlags` + `useDoesAddSidebarOverlayList` / `getPageClassName` with `isPublicGuest` — not this protected route.
 
 ## Structure
 
@@ -27,6 +27,7 @@ wishlist-detail/
   page.module.css                 ← page / workspace / inspector / highlight-lock
   hooks/
     use-page.tsx                  ← orchestrates all hooks → template props
+    use-does-add-sidebar-overlay-list.ts  ← 75rem drawer overlay vs layout shift (shared with guest)
     use-list-data.ts              ← load list, items, jobs; demo list branch
     use-list-settings.ts          ← title/date/toggles → wishlistsApi.update
     use-list-lifecycle.ts         ← archive / restore / delete / duplicate

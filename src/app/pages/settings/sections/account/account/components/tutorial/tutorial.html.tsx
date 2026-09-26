@@ -1,23 +1,51 @@
 import React from 'react';
-import { Button } from 'shared/ui';
+import { Button, Switch } from 'shared/ui';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './tutorial.module.css';
 
 export const TutorialTemplate: React.FC<TemplateProps> = ({
   chapters,
   isBusy,
+  welcomeEnabled,
+  isWelcomeSaving,
+  onWelcomeEnabledChange,
   onRestartAll,
   onReplaySample,
   onStartChapter,
 }) => (
   <section className={styles['tutorial']} aria-labelledby="account-tutorial-title">
     <div className={styles['tutorial__header']}>
-      <h2 id="account-tutorial-title" className={styles['tutorial__title']}>
-        Product tutorial
-      </h2>
-      <p className={styles['tutorial__subtitle']}>
-        Replay the sample list, restart from the beginning, or jump into a specific chapter.
-      </p>
+      <div className={styles['tutorial__header-copy']}>
+        <h2 id="account-tutorial-title" className={styles['tutorial__title']}>
+          Product tutorial
+        </h2>
+        <p className={styles['tutorial__subtitle']}>
+          Replay the sample list, restart from the beginning, or jump into a specific chapter.
+        </p>
+      </div>
+    </div>
+
+    <div className={styles['tutorial__toggle-row']}>
+      <div>
+        <div className={styles['tutorial__toggle-title']}>Show welcome</div>
+        <div className={styles['tutorial__toggle-desc']}>
+          When on, Giftistry can show the product welcome after you sign in.
+        </div>
+      </div>
+      <Switch
+        checked = {
+          welcomeEnabled
+        }
+        disabled = {
+          isBusy || isWelcomeSaving
+        }
+        onChange = {
+          onWelcomeEnabledChange
+        }
+        aria-label = {
+          'Show welcome'
+        }
+      />
     </div>
 
     <div className={styles['tutorial__actions']}>
@@ -26,7 +54,7 @@ export const TutorialTemplate: React.FC<TemplateProps> = ({
           'secondary'
         }
         disabled = {
-          isBusy
+          isBusy || isWelcomeSaving
         }
         onClick = {
           onRestartAll
@@ -39,7 +67,7 @@ export const TutorialTemplate: React.FC<TemplateProps> = ({
           'secondary'
         }
         disabled = {
-          isBusy
+          isBusy || isWelcomeSaving
         }
         onClick = {
           onReplaySample
@@ -74,7 +102,7 @@ export const TutorialTemplate: React.FC<TemplateProps> = ({
                 'secondary'
               }
               disabled = {
-                isBusy
+                isBusy || isWelcomeSaving
               }
               onClick = {
                 () => onStartChapter(chapter.id)

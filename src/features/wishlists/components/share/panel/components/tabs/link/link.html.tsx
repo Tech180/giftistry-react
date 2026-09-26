@@ -1,11 +1,13 @@
 import React from 'react';
-import { AlertCircle, Check, Copy, Link2, Lock } from 'lucide-react';
-import { Button, DateField, SelectMenu, Switch } from 'shared/ui';
+import { AlertCircle, AlertTriangle, Check, Copy, Eye, EyeOff, Link2, Lock } from 'lucide-react';
+import { QRCode } from 'react-qr-code';
+import { Button, DateField, Input, SelectMenu, Switch } from 'shared/ui';
 import {
   SHARE_ROLE_MENU_TITLE,
   SHARE_ROLE_OPTIONS,
 } from 'features/wishlists/constants/share-role-options.constant';
 import { formatDateTime } from 'shared/utils/format-date.util';
+import { QR_SIZE_CLASSIC, QR_SIZE_COMPACT } from './constants/qr-size.constant';
 import { TemplateProps } from './interfaces/template-props.interface';
 import styles from './link.module.css';
 
@@ -15,9 +17,12 @@ export const LinkTabTemplate: React.FC<TemplateProps> = ({
   isLoading,
   isGenerating,
   errorMsg,
-  successMsg,
+  statusMsg,
+  statusTone,
   activeInvite,
-  generatedToken,
+  shareUrl,
+  shareUrlDisplay,
+  linkEnabled,
   copied,
   role,
   setRole,
@@ -31,6 +36,8 @@ export const LinkTabTemplate: React.FC<TemplateProps> = ({
   setHasPassword,
   password,
   setPassword,
+  showPassword,
+  onToggleShowPassword,
   handleGenerate,
   handleCopy,
   handleRevoke,
@@ -45,11 +52,6 @@ export const LinkTabTemplate: React.FC<TemplateProps> = ({
     if (isLoading) {
       return <p className={styles.compactStatus}>Checking link status...</p>;
     }
-
-    const shareUrl = generatedToken
-      ? `${window.location.origin}/invite/list/${generatedToken}`
-      : '';
-    const linkEnabled = Boolean(activeInvite);
 
     return (
       <div className={styles.compactRoot}>
@@ -89,9 +91,31 @@ export const LinkTabTemplate: React.FC<TemplateProps> = ({
             />
           </div>
 
+          {linkEnabled && shareUrl ? (
+            <div className={styles.qr}>
+              <div className={styles['qr__frame']}>
+                <QRCode
+                  value = {
+                    shareUrl
+                  }
+                  size = {
+                    QR_SIZE_COMPACT
+                  }
+                  className = {
+                    styles['qr__image']
+                  }
+                  aria-label = {
+                    'QR code for share link'
+                  }
+                />
+              </div>
+              <p className={styles['qr__hint']}>Scan to open this wishlist</p>
+            </div>
+          ) : null}
+
           {linkEnabled && shareUrl && (
             <div className={styles.linkUrlBox}>
-              <span className={styles.linkUrlText}>{shareUrl.replace(/^https?:\/\//, '')}</span>
+              <span className={styles.linkUrlText}>{shareUrlDisplay}</span>
               <Button
                 variant = {
                   'ghost'
@@ -163,30 +187,73 @@ export const LinkTabTemplate: React.FC<TemplateProps> = ({
           <span>{errorMsg}</span>
         </div>
       )}
-      {successMsg && (
-        <div className={`${styles.alert} ${styles['alert-success']}`}>
-          <Check
-            size = {
-              16
-            }
-          />
-          <span>{successMsg}</span>
+      {statusMsg && (
+        <div
+          className = {
+            [
+              styles.alert,
+              statusTone === 'warning' ? styles['alert-warning'] : styles['alert-success'],
+            ].join(' ')
+          }
+          role = {
+            'status'
+          }
+        >
+          {statusTone === 'warning' ? (
+            <AlertTriangle
+              size = {
+                16
+              }
+              className = {
+                styles['alert-warning-icon']
+              }
+              aria-hidden
+            />
+          ) : (
+            <Check
+              size = {
+                16
+              }
+            />
+          )}
+          <span>{statusMsg}</span>
         </div>
       )}
 
       {activeInvite ? (
         <div className={styles['setup-form']}>
+          {shareUrl ? (
+            <div className={styles.qr}>
+              <div className={styles['qr__frame']}>
+                <QRCode
+                  value = {
+                    shareUrl
+                  }
+                  size = {
+                    QR_SIZE_CLASSIC
+                  }
+                  className = {
+                    styles['qr__image']
+                  }
+                  aria-label = {
+                    'QR code for share link'
+                  }
+                />
+              </div>
+              <p className={styles['qr__hint']}>Scan to open this wishlist</p>
+            </div>
+          ) : null}
+
           <div className={styles['active-link-box']}>
             <div className={styles['link-row']}>
               <div className={styles['user-details']} style={{ overflow: 'hidden' }}>
                 <span className={`${styles['label']} ${styles['label--uppercase']}`}>Share Link</span>
                 <span className={styles['link-text']}>
-                  {generatedToken
-                    ? `${window.location.origin}/invite/list/${generatedToken}`
-                    : 'This link was created before URLs were stored. Use Link settings to generate a new one.'}
+                  {shareUrl ||
+                    'This link was created before URLs were stored. Use Link settings to generate a new one.'}
                 </span>
               </div>
-              {generatedToken && (
+              {shareUrl && (
                 <Button
                   variant = {
                     'ghost'
@@ -295,16 +362,23 @@ export const LinkTabTemplate: React.FC<TemplateProps> = ({
           <div className={styles.row} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className={styles['row-label']}>Expiration</span>
-              <div className={styles['toggle-container']}>
-                <input
-                  type="checkbox"
-                  id="link-exp-toggle"
-                  checked={hasExpiration}
-                  onChange={(e) => setHasExpiration(e.target.checked)}
-                  className={styles['toggle-checkbox']}
-                />
-                <label htmlFor="link-exp-toggle" className={styles['toggle-slider']} />
-              </div>
+              <Switch
+                id = {
+                  'link-exp-toggle'
+                }
+                checked = {
+                  hasExpiration
+                }
+                onChange = {
+                  setHasExpiration
+                }
+                aria-label = {
+                  hasExpiration ? 'Disable link expiration' : 'Enable link expiration'
+                }
+                size = {
+                  'sm'
+                }
+              />
             </div>
             {hasExpiration && (
               <div className={styles['sub-details']}>
@@ -336,25 +410,73 @@ export const LinkTabTemplate: React.FC<TemplateProps> = ({
           <div className={styles.row} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className={styles['row-label']}>Password Protect</span>
-              <div className={styles['toggle-container']}>
-                <input
-                  type="checkbox"
-                  id="link-pass-toggle"
-                  checked={hasPassword}
-                  onChange={(e) => setHasPassword(e.target.checked)}
-                  className={styles['toggle-checkbox']}
-                />
-                <label htmlFor="link-pass-toggle" className={styles['toggle-slider']} />
-              </div>
+              <Switch
+                id = {
+                  'link-pass-toggle'
+                }
+                checked = {
+                  hasPassword
+                }
+                onChange = {
+                  setHasPassword
+                }
+                aria-label = {
+                  hasPassword ? 'Disable password protection' : 'Enable password protection'
+                }
+                size = {
+                  'sm'
+                }
+              />
             </div>
             {hasPassword && (
               <div className={styles['sub-details']}>
-                <input
-                  type="text"
-                  placeholder="Set a secure password..."
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={styles['text-input']}
+                <Input
+                  type = {
+                    showPassword ? 'text' : 'password'
+                  }
+                  id = {
+                    'link-share-password'
+                  }
+                  name = {
+                    'link-share-password'
+                  }
+                  autoComplete = {
+                    'new-password'
+                  }
+                  placeholder = {
+                    'Set a secure password...'
+                  }
+                  value = {
+                    password
+                  }
+                  onChange = {
+                    (e) => setPassword(e.target.value)
+                  }
+                  leftIcon = {
+                    <Lock size={16} />
+                  }
+                  rightIcon = {
+                    <button
+                      type = {
+                        'button'
+                      }
+                      onClick = {
+                        onToggleShowPassword
+                      }
+                      aria-label = {
+                        showPassword ? 'Hide password' : 'Show password'
+                      }
+                    >
+                      {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                    </button>
+                  }
+                  rightIconClickable
+                  aria-label = {
+                    'Link password'
+                  }
+                  className = {
+                    styles['password-field']
+                  }
                 />
               </div>
             )}

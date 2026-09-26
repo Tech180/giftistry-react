@@ -1544,6 +1544,25 @@ describe('Form readOnly view mode', () => {
     ).not.toBeInTheDocument();
   });
 
+  test('hides pin and favorite controls in view mode', async () => {
+    render(
+      <Form
+        {...baseFormProps}
+        item={mockEditItem}
+        canCollaborate={false}
+        readOnly
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(mockEditItem.Name)).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Pin')).not.toBeInTheDocument();
+    expect(screen.queryByText('Favorite')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /pin item|unpin item|favorite/i })).not.toBeInTheDocument();
+  });
+
   test('keeps photo download enabled in view mode', async () => {
     const itemWithPhoto: Item = {
       ...mockEditItem,
@@ -1711,18 +1730,46 @@ describe('Form readOnly view mode', () => {
     expect(screen.queryByLabelText('Allow substitutions')).not.toBeInTheDocument();
   });
 
-  test('still shows Visibility and Sharing in edit mode', async () => {
+  test('still shows Visibility and Sharing in edit mode when the list has shares', async () => {
     render(
       <Form
         {...baseFormProps}
         isOwner
         item={mockEditItem}
+        listShares={[
+          {
+            Id: 'share-1',
+            ListId: 'test-list-id',
+            UserId: 'collaborator-1',
+            Role: 'collaborator',
+            Username: 'collab',
+            FirstName: 'Casey',
+            LastName: 'Collab',
+          },
+        ]}
       />
     );
 
     await waitFor(() => {
       expect(screen.getByText('Visibility & Sharing')).toBeInTheDocument();
     });
+  });
+
+  test('hides Visibility and Sharing when the list has no shares', async () => {
+    render(
+      <Form
+        {...baseFormProps}
+        isOwner
+        item={mockEditItem}
+        listShares={[]}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('https://amazon.com/old-product')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Visibility & Sharing')).not.toBeInTheDocument();
   });
 });
 

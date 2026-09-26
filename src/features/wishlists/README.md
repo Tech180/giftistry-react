@@ -180,7 +180,7 @@ Existing shares: role change / remove; confirms collaborator→viewer demotion (
 ### Friends / Link tabs (internal)
 
 - **FriendsTab** — `useFriendsController`; filter already-shared; `bulkShareWithFriends`
-- **LinkTab** — generate/revoke invites; optional expiry + password; copy `/invite/list/:token`
+- **LinkTab** — generate/revoke invites; optional expiry + password; copy `/invite/list/:token`; active link shows a QR encoding the invite URL (classic + compact)
 
 ---
 

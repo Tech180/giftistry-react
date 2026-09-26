@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { validateUsername } from 'shared/utils/validate-username.util';
+import { buildWelcomePatch, isWelcomeEnabled } from 'features/tour';
 import { adminApi } from '../api/admin.api';
 import { DEFAULT_USER_POLICY } from '../constants/default-user-policy.constant';
 import { INITIAL_POLICY_FLAGS } from '../constants/initial-policy-flags.constant';
@@ -28,6 +29,8 @@ export function useUserDetail({
   const [policy, setPolicy] = useState<GiftistryUserPolicy>(DEFAULT_USER_POLICY);
   const [newPassword, setNewPassword] = useState('');
   const [isTransferringOwnership, setIsTransferringOwnership] = useState(false);
+  const [welcomeEnabled, setWelcomeEnabled] = useState(true);
+  const [isWelcomeSaving, setIsWelcomeSaving] = useState(false);
 
   const loadUser = async () => {
     if (!userId) {
@@ -38,6 +41,7 @@ export function useUserDetail({
       const res = await adminApi.getUser(userId);
       setUser(res.User);
       setActivity(res.Activity ?? []);
+      setWelcomeEnabled(isWelcomeEnabled(res.User.Tour));
       setProfileForm({
         username: res.User.Username,
         email: res.User.Email ?? '',
@@ -66,6 +70,37 @@ export function useUserDetail({
 
   const isSelf = currentUser?.Id === userId;
   const isOwnerReadOnly = !!user?.IsOwner && !currentUser?.IsOwner;
+
+  const onWelcomeEnabledChange = async (enabled: boolean) => {
+    if (!userId || !user || isOwnerReadOnly || isWelcomeSaving) {
+      return;
+    }
+
+    const previous = welcomeEnabled;
+    setWelcomeEnabled(enabled);
+    setIsWelcomeSaving(true);
+
+    const canAi = user.Policy?.CanUseAiFeatures === true;
+    const payload = buildWelcomePatch(enabled, user.Tour, {
+      canShowAi: canAi,
+      canAutoAdd: canAi,
+    });
+
+    try {
+      const res = await adminApi.patchUserTutorial(userId, payload);
+      setUser((prev) => (prev ? { ...prev, Tour: res.Tour } : prev));
+      setWelcomeEnabled(isWelcomeEnabled(res.Tour));
+      showToast(enabled ? 'Welcome enabled for user' : 'Welcome disabled for user', 'success');
+      if (isSelf) {
+        await refreshUser();
+      }
+    } catch (err: unknown) {
+      setWelcomeEnabled(previous);
+      showToast(err instanceof Error ? err.message : 'Failed to update welcome preference', 'error');
+    } finally {
+      setIsWelcomeSaving(false);
+    }
+  };
 
   const onSaveProfile = async () => {
     if (!userId || !isSelf || isOwnerReadOnly) {
@@ -216,6 +251,9 @@ export function useUserDetail({
     newPassword,
     isSelf,
     isOwnerReadOnly,
+    welcomeEnabled,
+    isWelcomeSaving,
+    onWelcomeEnabledChange,
     onTabChange: setActiveTab,
     onProfileFormChange: (updates) => {
       if (isOwnerReadOnly) {

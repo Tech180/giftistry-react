@@ -70,10 +70,11 @@ flowchart LR
 |--------|----------|-------|
 | `getOverview` | `GET /api/admin/overview` | Stats + recent audit |
 | `listUsers` | `GET /api/admin/users` | Query: search, disabled, locked, admin, page |
-| `getUser` | `GET /api/admin/users/:id` | User + activity |
+| `getUser` | `GET /api/admin/users/:id` | User + activity; may include `Tour` (welcome / chapter progress) |
 | `createUser` | `POST …` wrap `AdminUser` | Username, email, password, names, flags, policy |
 | `updateUser` | `PATCH …` wrap `User` | Profile fields |
 | `updateUserPolicy` | `PATCH …/policy` wrap `Policy` | Admin/disabled/hidden/force-password/lockout + capability policy |
+| `patchUserTutorial` | `PATCH …/tutorial` wrap `Tutorial` | Same body as auth `TutorialPatchPayload` (`FirstRunDismissed`, `ResetAll`, …); response `{ Tour }` |
 | `resetPassword` | `POST …/reset-password` wrap `Password` | Optional force-change |
 | `unlockUser` | `POST …/unlock` | Clear lockout |
 | `revokeSessions` | `POST …/revoke-sessions` | |
@@ -115,7 +116,7 @@ List + create modal state. Debounced by search/page effect. Validates username v
 
 ### `useUserDetail`
 
-Full detail for `:userId`: profile form, policy flags + `GiftistryUserPolicy`, password reset, unlock, revoke sessions, delete, transfer ownership. Tabs via `UserDetailKey`.
+Full detail for `:userId`: profile form, policy flags + `GiftistryUserPolicy`, password reset, unlock, revoke sessions, delete, transfer ownership, and **Show welcome** (`Tour.FirstRunDismissed` via immediate `patchUserTutorial`). Tabs via `UserDetailKey`.
 
 Guards:
 
@@ -155,7 +156,7 @@ Per-user capability flags: create wishlists (and max), comments, AI, public link
 
 ## Allowed / forbidden
 
-- **May import:** `core`, `shared` (utils/UI types), other feature **barrels** if needed
+- **May import:** `core`, `shared` (utils/UI types), other feature **barrels** if needed (e.g. `features/auth` types, `features/tour` welcome helpers)
 - **Must not import:** `app/` (pages compose this feature, not the reverse)
 - **Don't put here:** settings section JSX, sidebar, sensitive-gate UI, or server/AI/SMTP config → those are `app/pages/settings` + `features/system`
 

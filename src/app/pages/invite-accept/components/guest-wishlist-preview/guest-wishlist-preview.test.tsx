@@ -1,10 +1,20 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, test, vi } from 'vitest';
-import { GuestWishlistPreview } from './guest-wishlist-preview.component';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Item } from 'features/items';
 import type { PublicLinkPreviewWishlist } from 'features/wishlists/interfaces/public-link-preview-wishlist.interface';
+import { OVERLAY_BREAKPOINT_MEDIA_QUERY } from 'app/pages/wishlist-detail/constants/overlay-breakpoint.constant';
+import { ToastProvider } from 'shared/providers/toast';
+
+const getPageClassNameMock = vi.fn(
+  (isItemDrawerVisible: boolean, viewMode: string, isCommentsOpen: boolean) =>
+    `page ${isItemDrawerVisible ? 'page--add-open' : ''} ${viewMode} ${isCommentsOpen ? 'page--comments-open' : ''}`.trim()
+);
+
+vi.mock('app/pages/wishlist-detail/utils/get-page-class-name.util', () => ({
+  getPageClassName: (...args: [boolean, string, boolean]) => getPageClassNameMock(...args),
+}));
 
 vi.mock('features/auth', () => ({
   useAuth: () => ({
@@ -12,6 +22,9 @@ vi.mock('features/auth', () => ({
     canShowAi: false,
     canShowWebSearch: false,
   }),
+  UserPreviewCard: ({ displayName }: { displayName?: string }) => (
+    <span>{displayName ?? 'User'}</span>
+  ),
 }));
 
 vi.mock('app/providers/theme', () => ({
@@ -25,6 +38,8 @@ vi.mock('features/items/hooks/use-item-ai-reviews', () => ({
     reviewsError: null,
   }),
 }));
+
+import { GuestWishlistPreview } from './guest-wishlist-preview.component';
 
 const wishlist: PublicLinkPreviewWishlist = {
   Id: 'list-1',
@@ -60,13 +75,34 @@ const item: Item = {
   IsClaimed: false,
 };
 
+function renderGuestPreview(ui: React.ReactElement) {
+  return render(
+    <MemoryRouter>
+      <ToastProvider>{ui}</ToastProvider>
+    </MemoryRouter>
+  );
+}
+
 describe('GuestWishlistPreview', () => {
-  test('shows the real list UI without claim, add, or owner chrome', () => {
-    render(
-      <MemoryRouter>
-        <GuestWishlistPreview wishlist={wishlist} items={[item]} />
-      </MemoryRouter>
+  beforeEach(() => {
+    getPageClassNameMock.mockClear();
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn((query: string) => ({
+        matches: query === OVERLAY_BREAKPOINT_MEDIA_QUERY,
+        media: query,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }))
     );
+  });
+
+  test('shows the real list UI without claim, add, or owner chrome', () => {
+    renderGuestPreview(<GuestWishlistPreview wishlist={wishlist} items={[item]} />);
 
     expect(screen.getByRole('heading', { name: 'Birthday Gifts' })).toBeInTheDocument();
     expect(screen.getByText('Headphones')).toBeInTheDocument();
@@ -84,12 +120,52 @@ describe('GuestWishlistPreview', () => {
   });
 
   test('shows View Item for guests', () => {
-    render(
+    renderGuestPreview(<GuestWishlistPreview wishlist={wishlist} items={[item]} />);
+
+    expect(screen.getByRole('button', { name: /view item/i })).toBeInTheDocument();
+  });
+
+  test('wires pageClassName for closed and open View Item drawer', () => {
+    renderGuestPreview(<GuestWishlistPreview wishlist={wishlist} items={[item]} />);
+
+    expect(getPageClassNameMock).toHaveBeenCalledWith(false, expect.any(String), false);
+
+    fireEvent.click(screen.getByRole('button', { name: /view item/i }));
+
+    expect(getPageClassNameMock).toHaveBeenCalledWith(true, expect.any(String), false);
+  });
+
+  test('refreshes open View Item when items props update', () => {
+    function Harness({ items }: { items: Item[] }) {
+      return <GuestWishlistPreview wishlist={wishlist} items={items} />;
+    }
+
+    const { rerender } = renderGuestPreview(<Harness items={[item]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /view item/i }));
+    expect(screen.getByDisplayValue('Headphones')).toBeInTheDocument();
+
+    const updated = { ...item, Name: 'Noise Cancelling Headphones' };
+    rerender(
       <MemoryRouter>
-        <GuestWishlistPreview wishlist={wishlist} items={[item]} />
+        <ToastProvider>
+          <Harness items={[updated]} />
+        </ToastProvider>
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('button', { name: /view item/i })).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Noise Cancelling Headphones')).toBeInTheDocument();
+  });
+
+  test('shows refresh error banner when provided', () => {
+    renderGuestPreview(
+      <GuestWishlistPreview
+        wishlist={wishlist}
+        items={[item]}
+        refreshError="This share link is no longer available."
+      />
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/no longer available/i);
   });
 });

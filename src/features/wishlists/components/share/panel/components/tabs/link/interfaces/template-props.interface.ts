@@ -6,9 +6,12 @@ export interface TemplateProps {
   isLoading: boolean;
   isGenerating: boolean;
   errorMsg: string | null;
-  successMsg: string | null;
+  statusMsg: string | null;
+  statusTone: 'success' | 'warning';
   activeInvite: LinkInvite | null;
-  generatedToken: string | null;
+  shareUrl: string;
+  shareUrlDisplay: string;
+  linkEnabled: boolean;
   copied: boolean;
   role: 'viewer' | 'collaborator';
   setRole: (r: 'viewer' | 'collaborator') => void;
@@ -22,6 +25,8 @@ export interface TemplateProps {
   setHasPassword: (v: boolean) => void;
   password: string;
   setPassword: (p: string) => void;
+  showPassword: boolean;
+  onToggleShowPassword: () => void;
   handleGenerate: () => void;
   handleCopy: () => void;
   handleRevoke: () => void;

@@ -287,7 +287,9 @@ export const AddItemTemplate: React.FC<TemplateProps> = ({
     ) : null}
     <AddItemForm
       key = {
-        formItem?.Id ?? 'add'
+        isView && formItem
+          ? `${formItem.Id}:view:${formItem.Name}:${formItem.Description ?? ''}`
+          : formItem?.Id ?? 'add'
       }
       listId = {
         listId

@@ -11,6 +11,7 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
   isLoading,
   error,
   inviteError,
+  previewRefreshError,
   password,
   isSubmitting,
   isSuccess,
@@ -20,6 +21,7 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
   homeLabel,
   onPasswordChange,
   onSubmit,
+  onDismissPreviewRefreshError,
   onViewWishlist,
   onGoHome,
 }) => {
@@ -41,6 +43,8 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
         wishlist={guestPreview.Wishlist}
         items={guestPreview.Items}
         groups={guestPreview.Groups}
+        refreshError={previewRefreshError}
+        onDismissRefreshError={onDismissPreviewRefreshError}
       />
     );
   }

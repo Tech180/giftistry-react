@@ -19,7 +19,7 @@ export interface UseSecuritySettingsResult {
   is2faEnabled: boolean;
   twoFactorStep: 'none' | 'setup' | 'disable';
   setTwoFactorStep: (step: 'none' | 'setup' | 'disable') => void;
-  qrCodeUrl: string;
+  otpAuthUri: string;
   totpSecret: string;
   accountUsername: string;
   handleSetup2FA: () => Promise<boolean>;

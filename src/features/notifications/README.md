@@ -9,11 +9,11 @@ Import via `import { … } from 'features/notifications'`.
 | Kind | Exports |
 |------|---------|
 | **Components** | `NotificationBell`, `JobNotificationToastHost` |
-| **API / hooks / provider** | `notificationsApi`, `NotificationsProvider`, `useNotifications`, `useNotificationPreferences`, `useJobNotificationToast` |
-| **Utils** | `mapNotification`, `claimJobNotificationToast`, `markJobNotificationHandled` |
+| **API / hooks / provider** | `notificationsApi`, `NotificationsProvider`, `useNotifications`, `useNotificationPreferences`, `useJobNotificationToast`, `useGuestInviteSocket` |
+| **Utils** | `mapNotification`, `claimJobNotificationToast`, `markJobNotificationHandled`, `getInvitePreviewWsUrl` |
 | **Types** | `Notification`, `NotificationType`, `NotificationPreferences`, push register/subscription types |
 
-Extra: [Mobile push contract](./docs/mobile-push-contract.md).
+Extra: [Mobile push contract](./docs/mobile-push-contract.md), [Guest invite socket contract](./docs/guest-invite-socket-contract.md).
 
 ## Layout
 
@@ -23,15 +23,17 @@ notifications/
   docs/mobile-push-contract.md
   api/notifications.api.ts
   providers/                 ← NotificationsProvider + useNotifications
-  hooks/                     ← useJobToast, usePreferences
+  hooks/                     ← useJobToast, usePreferences, useGuestInviteSocket
   components/
     bell/                    ← NotificationBell (dropdown rows inside)
     toast-host/              ← JobNotificationToastHost → Listener
   interfaces/
   constants/
-  utils/
+  utils/                     ← includes getInvitePreviewWsUrl
+  docs/                      ← mobile-push + guest-invite-socket contracts
 ```
 
+Guest preview live updates are owned by [`invite-accept`](../../app/pages/invite-accept/README.md) (`useGuestPreviewRefresh` + `useGuestInviteSocket`). Invite HTTP helpers stay on `notificationsApi`; the socket URL helper and hook live here so the contract stays next to notifications docs.
 ## Architecture
 
 ```mermaid

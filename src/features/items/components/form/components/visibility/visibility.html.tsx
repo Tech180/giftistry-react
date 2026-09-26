@@ -57,14 +57,16 @@ export const VisibilityTemplate: React.FC<TemplateProps> = ({
             />
           )}
 
-          <AudiencePicker
-            listShares={listShares}
-            selectedUserIds={sharedWithUserIds}
-            onChange={setSharedWithUserIds}
-            visibilityMode={visibilityMode}
-            onVisibilityModeChange={onVisibilityModeChange}
-            disabled={isLoading || readOnly}
-          />
+          {listShares.length > 0 && (
+            <AudiencePicker
+              listShares={listShares}
+              selectedUserIds={sharedWithUserIds}
+              onChange={setSharedWithUserIds}
+              visibilityMode={visibilityMode}
+              onVisibilityModeChange={onVisibilityModeChange}
+              disabled={isLoading || readOnly}
+            />
+          )}
 
           {!canCollaborate && (
             <>

@@ -15,6 +15,34 @@
   gap: var(--spacing-xs);
 }
 
+.tutorial__header-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.tutorial__toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.tutorial__toggle-title {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tutorial__toggle-desc {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-muted);
+  margin-top: var(--spacing-xs);
+}
+
 .tutorial__title {
   margin: 0;
   font-size: var(--font-size-lg, 1.125rem);

@@ -52,7 +52,7 @@ Thin: `usePage()` props into `PageTemplate`.
 
 ### `usePage`
 
-**State:** `isLoading`, `isSubmitting`, `error`, `inviteError`, `password`, `isSuccess`, `listId`, `guestPreview`.
+**State:** `isLoading`, `isSubmitting`, `error`, `inviteError`, `previewRefreshError`, `password`, `isSuccess`, `listId`, `guestPreview`.
 
 **Initial load** (token + auth ready):
 
@@ -66,7 +66,13 @@ Thin: `usePage()` props into `PageTemplate`.
 **Password submit:**
 
 - Auth → `acceptListInvite(token, password)` → Success or `inviteError`  
-- Guest → `postPublicLinkPreview(token, password)` → preview or `inviteError`
+- Guest → `postPublicLinkPreview(token, password)` → preview or `inviteError` (password kept in memory for silent refresh + WS auth)
+
+**Guest live updates** (while `guestPreview` is shown):
+
+- **Poll / focus:** `useGuestPreviewRefresh` — 30s interval while the tab is visible; debounced reload on `focus` / `visibilitychange` → visible. Silent HTTP failures keep the last good preview; 401/403/404 set `previewRefreshError`.
+- **WebSocket:** when preview has `SupportsGuestRealtime`, `useGuestInviteSocket` connects to `/ws/invite/:token` (see [guest-invite-socket-contract](../../../features/notifications/docs/guest-invite-socket-contract.md)). `list.changed` → debounced silent reload; `invite.revoked` → banner.
+- Comments/presence remain non-realtime for guests (JWT wishlist WS only).
 
 **Nav:** `onGoHome` → `/dashboard` (auth) or `/login` (guest); `onViewWishlist` → `/wishlists/:listId` when `listId` is set. `homeLabel` mirrors that (“Back to Dashboard” / “Log in”).
 
@@ -76,7 +82,7 @@ Card: password `Input`, submit disabled when empty/submitting, cancel → `onGoH
 
 ### Guest wishlist preview
 
-Largest nested unit. Wraps `ItemsSessionProvider` + `CommentsSessionProvider`, maps preview → guest wishlist, and **reuses** [`wishlist-detail`](../wishlist-detail/README.md) `PageTemplate` + `getPageShellFlags` with guest-safe flags (`isPublicGuest`, no collaborate, mutating `GUEST_ITEM_ACTIONS` throw). Local UI state for view mode, search, selection, comments panel, etc. Preview “home” navigates to `/login`.
+Largest nested unit. Wraps `ItemsSessionProvider` + `CommentsSessionProvider`, maps preview → guest wishlist, and **reuses** [`wishlist-detail`](../wishlist-detail/README.md) `PageTemplate` + `getPageShellFlags` with guest-safe flags (`isPublicGuest`, no collaborate, mutating `GUEST_ITEM_ACTIONS` throw). Layout props stay aligned with authenticated `usePage`: `pageClassName` via `getPageClassName`, and `doesAddSidebarOverlayList` via shared `useDoesAddSidebarOverlayList` (75rem breakpoint). Local UI state for view mode, search, selection, comments panel, etc. Open View Item syncs from refreshed `items` props. Optional `refreshError` banner when the share link fails refresh / is revoked. Preview “home” navigates to `/login`.
 
 ### Success
 

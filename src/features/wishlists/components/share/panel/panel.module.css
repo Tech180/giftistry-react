@@ -354,53 +354,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Custom Toggle Switch */
-.toggle-container {
-  position: relative;
-  display: inline-block;
-  width: 2rem;
-  height: 1.125rem;
-}
-
-.toggle-checkbox {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--text-muted);
-  transition: 0.2s;
-  border-radius: var(--radius-full, 9999px);
-}
-
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 0.875rem;
-  width: 0.875rem;
-  left: 0.125rem;
-  bottom: 0.125rem;
-  background-color: var(--surface);
-  transition: .2s;
-  border-radius: 50%;
-  box-shadow: 0 0.0625rem 0.125rem color-mix(in srgb, var(--text) 20%, transparent);
-}
-
-.toggle-checkbox:checked + .toggle-slider {
-  background-color: var(--accent);
-}
-
-.toggle-checkbox:checked + .toggle-slider:before {
-  transform: translateX(0.875rem);
-}
-
 /* Alerts */
 .alert {
   display: flex;
@@ -432,7 +385,6 @@
   .text-input,
   .revoke-btn,
   .settings-btn,
-  .toggle-slider,
   .sub-details {
     transition-duration: 0.01ms;
     animation: none;

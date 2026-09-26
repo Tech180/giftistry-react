@@ -3,6 +3,7 @@ export type { RegisterPushPayload } from './interfaces/register-push-payload.int
 export type { RegisterPushResult } from './interfaces/register-push-result.type';
 export { useJobToast as useJobNotificationToast } from './hooks/use-job-toast';
 export { usePreferences as useNotificationPreferences } from './hooks/use-preferences';
+export { useGuestInviteSocket } from './hooks/use-guest-invite-socket';
 export { Bell as NotificationBell } from './components/bell/bell.component';
 export { ToastHost as JobNotificationToastHost } from './components/toast-host/toast-host.component';
 export { NotificationsProvider, useNotifications } from './providers';
@@ -10,6 +11,7 @@ export {
   claimJobNotificationToast,
   markJobNotificationHandled,
 } from './utils/claim-job-notification-toast.util';
+export { getInvitePreviewWsUrl } from './utils/get-invite-preview-ws-url.util';
 export { mapNotification } from './utils/map-notification.util';
 export type { Notification } from './interfaces/notification.interface';
 export type { NotificationType } from './interfaces/notification-type.type';

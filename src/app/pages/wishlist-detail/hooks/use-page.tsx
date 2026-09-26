@@ -19,13 +19,13 @@ import { useToast } from 'shared/providers/toast';
 import { useIsMobileFab } from 'shared/hooks/use-is-mobile-fab';
 import { useSupportsKanbanViewMode } from 'shared/hooks/use-supports-kanban-view-mode';
 import { formatWishlistExpirationDate } from 'shared/utils/format-date.util';
-import { OVERLAY_BREAKPOINT_MEDIA_QUERY } from '../constants/overlay-breakpoint.constant';
 import type { UseItemSessionAssociationApi } from '../interfaces/use-item-session-association-api.interface';
 import type { UsePageResult } from '../interfaces/use-page-result.interface';
 import { groupItems } from '../utils/group-items.util';
 import { getPageClassName } from '../utils/get-page-class-name.util';
 import { getPageShellFlags } from '../utils/get-page-shell-flags.util';
 import { useCommentTagPeek } from './use-comment-tag-peek';
+import { useDoesAddSidebarOverlayList } from './use-does-add-sidebar-overlay-list';
 import { useItemAssociations } from './use-item-associations';
 import { useItemSession } from './use-item-session';
 import { useListData } from './use-list-data';
@@ -126,12 +126,7 @@ export function usePage(): UsePageResult {
   const [viewMode, setViewMode] = useState<ItemViewMode>(() =>
     normalizeStoredViewMode(localStorage.getItem(ITEM_VIEW_MODE_STORAGE_KEY))
   );
-  const [doesAddSidebarOverlayList, setDoesAddSidebarOverlayList] = useState(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) {
-      return true;
-    }
-    return !window.matchMedia(OVERLAY_BREAKPOINT_MEDIA_QUERY).matches;
-  });
+  const doesAddSidebarOverlayList = useDoesAddSidebarOverlayList();
 
   const effectiveViewMode = resolveEffectiveViewMode(viewMode, supportsKanbanViewMode);
 
@@ -166,33 +161,6 @@ export function usePage(): UsePageResult {
       setIsCommentsOpen(false);
     }
   }, [session.isAddOpen, session.editingItem, session.viewingItem]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia(OVERLAY_BREAKPOINT_MEDIA_QUERY);
-    const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
-      setDoesAddSidebarOverlayList(!event.matches);
-    };
-
-    handleChange(mediaQuery);
-
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
-    } else {
-      mediaQuery.addListener(handleChange);
-    }
-
-    return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', handleChange);
-      } else {
-        mediaQuery.removeListener(handleChange);
-      }
-    };
-  }, []);
 
   const handleSetViewMode = (mode: ItemViewMode) => {
     if (isKanbanViewMode(mode) && !supportsKanbanViewMode) {

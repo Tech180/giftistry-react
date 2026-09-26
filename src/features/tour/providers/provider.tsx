@@ -19,6 +19,7 @@ import {
   normalizeClientTour,
   shouldAutoStartTour,
 } from '../utils/tour-progress.util';
+import { buildWelcomePatch } from '../utils/build-welcome-patch.util';
 import { isDemoListPath } from '../utils/is-demo-list-id.util';
 import { TOUR_DEMO_LIST_ID } from '../constants/targets.constant';
 import { isTourMobileViewport, resolveStepVariant } from '../utils/resolve-variant.util';
@@ -262,6 +263,37 @@ function TourProviderInner({ children }: { children: ReactNode }) {
     await startChapter('demo');
   };
 
+  const reenableWelcome = async () => {
+    const tour = normalizeClientTour(user?.Tour);
+    const payload = buildWelcomePatch(true, tour, eligibilityCtx);
+    await authApi.patchTutorial(payload);
+    await refreshUser();
+    clearTourResume();
+    setCreatedListId(null);
+    autoStartedRef.current = true;
+
+    if (isActive) {
+      return;
+    }
+
+    const projected = payload.ResetAll
+      ? { FirstRunDismissed: false, Chapters: {} }
+      : { ...tour, FirstRunDismissed: false };
+    const chapterId = firstPendingChapterId(normalizeClientTour(projected), eligibilityCtx) ?? 'demo';
+    await startChapter(chapterId);
+  };
+
+  const dismissWelcome = async () => {
+    if (isActive) {
+      await finishTour();
+      return;
+    }
+
+    clearTourResume();
+    await authApi.patchTutorial({ FirstRunDismissed: true });
+    await refreshUser();
+  };
+
   const next = async () => {
     if (!activeChapterId || !activeStepId || advancingRef.current) {
       return;
@@ -436,6 +468,8 @@ function TourProviderInner({ children }: { children: ReactNode }) {
     skipChapter,
     finishTour,
     restartAll,
+    reenableWelcome,
+    dismissWelcome,
     notifyEvent,
     isDemoActive: demo.active,
   };

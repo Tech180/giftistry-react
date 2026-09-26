@@ -1,3 +1,4 @@
+import type { TourState } from 'features/auth';
 import type { GiftistryUserPolicy } from './giftistry-user-policy.interface';
 
 export interface User {
@@ -28,4 +29,6 @@ export interface User {
   CommentsCount?: number;
   PasskeyCount?: number;
   Policy: GiftistryUserPolicy;
+  /** Product tour / welcome preference when returned by the admin API. */
+  Tour?: TourState;
 }

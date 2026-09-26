@@ -14,6 +14,10 @@ export interface TourContextType {
   skipChapter: () => Promise<void>;
   finishTour: () => Promise<void>;
   restartAll: () => Promise<void>;
+  /** Persist Show welcome on and start the first pending chapter when inactive. */
+  reenableWelcome: () => Promise<void>;
+  /** Persist Show welcome off; finishes an active tour if needed. */
+  dismissWelcome: () => Promise<void>;
   notifyEvent: (event: string, payload?: { listId?: string }) => void;
   isDemoActive: boolean;
 }

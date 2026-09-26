@@ -31,6 +31,9 @@ export interface DetailTemplateProps {
   newPassword: string;
   isSelf: boolean;
   isOwnerReadOnly: boolean;
+  welcomeEnabled: boolean;
+  isWelcomeSaving: boolean;
+  onWelcomeEnabledChange: (enabled: boolean) => void;
   onTabChange: (tab: UserDetailKey) => void;
   onProfileFormChange: (updates: Partial<UserProfileFormState>) => void;
   onPolicyFlagsChange: (updates: Partial<UserPolicyFlagsState>) => void;

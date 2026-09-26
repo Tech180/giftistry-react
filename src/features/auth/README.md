@@ -160,7 +160,7 @@ Toasts via injected `showToast`; refreshes user after successful changes.
 |------|------|
 | `ApiUser` | Session user: roles, 2FA, policy, tour, onboard/force-password flags |
 | `AuthResponse` | `User?`, `Token?`, `Require2FA?`, `Ticket?` |
-| `TourState` / `TutorialPatchPayload` | Product tour chapter progress (used with `features/tour`) |
+| `TourState` / `TutorialPatchPayload` | Product tour chapter progress + **Show welcome** (`FirstRunDismissed`). Self: `PATCH /api/auth/tutorial`. Admin: `PATCH /api/admin/users/:id/tutorial` (see [admin](../admin/README.md)). |
 | `Passkey` | Registered authenticator metadata |
 
 ---
