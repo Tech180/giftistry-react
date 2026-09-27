@@ -1523,7 +1523,7 @@ describe('Form readOnly view mode', () => {
     vi.mocked(itemsApi.getFieldDefinitions).mockResolvedValue([]);
   });
 
-  test('keeps copy link enabled and hides scrape controls', async () => {
+  test('keeps open link enabled and hides scrape controls', async () => {
     render(
       <Form
         {...baseFormProps}
@@ -1537,7 +1537,7 @@ describe('Form readOnly view mode', () => {
     });
 
     expect(
-      screen.getByRole('button', { name: /copy link to clipboard/i })
+      screen.getByRole('button', { name: /open link in new tab/i })
     ).toBeEnabled();
     expect(
       screen.queryByRole('button', { name: /auto-fill details from link/i })

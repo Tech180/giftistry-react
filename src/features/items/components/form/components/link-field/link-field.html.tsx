@@ -1,13 +1,12 @@
 import React from 'react';
-import { Link, Check, Wand2, Search } from 'lucide-react';
+import { Link, Search, Wand2 } from 'lucide-react';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './link-field.module.css';
 
 export const LinkFieldTemplate: React.FC<TemplateProps> = ({
   linkUrl,
   setLinkUrl,
-  linkCopied,
-  onCopyLink,
+  onOpenLink,
   readOnly = false,
   canUseWebSearchOnList = false,
   isAutopopulating,
@@ -34,12 +33,12 @@ export const LinkFieldTemplate: React.FC<TemplateProps> = ({
         <button
           type="button"
           className={styles['link-field__input-icon']}
-          onClick={onCopyLink}
+          onClick={onOpenLink}
           disabled={!linkUrl.trim()}
-          title={linkCopied ? 'Copied!' : 'Copy link'}
-          aria-label={linkCopied ? 'Link copied to clipboard' : 'Copy link to clipboard'}
+          title="Open link"
+          aria-label="Open link in new tab"
         >
-          {linkCopied ? <Check size={16} /> : <Link size={16} />}
+          <Link size={16} aria-hidden />
         </button>
         <fieldset
           disabled={readOnly}

@@ -28,8 +28,7 @@ export const FormTemplate: React.FC<TemplateProps> = ({
   handleSubmit,
   linkUrl,
   setLinkUrl,
-  linkCopied,
-  onCopyLink,
+  onOpenLink,
   websiteName,
   setWebsiteName,
   category,
@@ -181,11 +180,8 @@ export const FormTemplate: React.FC<TemplateProps> = ({
         setLinkUrl = {
           setLinkUrl
         }
-        linkCopied = {
-          linkCopied
-        }
-        onCopyLink = {
-          onCopyLink
+        onOpenLink = {
+          onOpenLink
         }
         readOnly = {
           readOnly

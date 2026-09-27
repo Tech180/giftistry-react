@@ -123,6 +123,5 @@ export interface TemplateProps {
   readOnlyMetadataUserDefined: { name: string; value: string }[];
   hasReadOnlyMetadata: boolean;
   metadataBadgeEmoji: Record<string, string>;
-  linkCopied: boolean;
-  onCopyLink: () => void;
+  onOpenLink: () => void;
 }

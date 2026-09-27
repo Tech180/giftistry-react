@@ -56,11 +56,8 @@ export const Form: React.FC<Props> = (props) => {
       setLinkUrl = {
         t.setLinkUrl
       }
-      linkCopied = {
-        t.linkCopied
-      }
-      onCopyLink = {
-        t.onCopyLink
+      onOpenLink = {
+        t.onOpenLink
       }
       websiteName = {
         t.websiteName

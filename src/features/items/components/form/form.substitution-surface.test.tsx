@@ -105,7 +105,7 @@ const baseProps = {
   variationQtyAllowInfinity: false,
   varError: null,
   handleAddVariation: vi.fn(),
-  listShares: [],
+  listShares: [{ UserId: 'user-2', Role: 'viewer' } as TemplateProps['listShares'][number]],
   sharedWithUserIds: [],
   setSharedWithUserIds: vi.fn(),
   visibilityMode: 'everyone' as const,
@@ -133,8 +133,7 @@ const baseProps = {
   readOnlyMetadataUserDefined: [],
   hasReadOnlyMetadata: false,
   metadataBadgeEmoji: {},
-  linkCopied: false,
-  onCopyLink: vi.fn(),
+  onOpenLink: vi.fn(),
 } satisfies TemplateProps;
 
 describe('FormTemplate substitution surface', () => {

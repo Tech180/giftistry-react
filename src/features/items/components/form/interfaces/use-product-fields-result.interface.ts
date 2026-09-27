@@ -23,8 +23,6 @@ export interface UseProductFieldsResult {
   setClaimOnCreate: React.Dispatch<React.SetStateAction<boolean>>;
   linkUrl: string;
   setLinkUrl: React.Dispatch<React.SetStateAction<string>>;
-  linkCopied: boolean;
-  setLinkCopied: React.Dispatch<React.SetStateAction<boolean>>;
   websiteName: string;
   setWebsiteName: React.Dispatch<React.SetStateAction<string>>;
   category: string;
@@ -75,6 +73,6 @@ export interface UseProductFieldsResult {
   handleUpdateCustomField: (id: string, key: 'name' | 'value', value: string) => void;
   hasIncompleteCustomFields: boolean;
   handleUpdateDynamicValue: (key: string, val: string) => void;
-  onCopyLink: () => Promise<void>;
+  onOpenLink: () => void;
   resetOptionalFields: () => void;
 }

@@ -9,6 +9,7 @@ import {
   LINKED_ITEMS_MULTI_COUNT_UNSUPPORTED_MESSAGE,
   LINKED_ITEMS_SUGGESTION_UNSUPPORTED_MESSAGE,
 } from '../../../constants/linked-items-messages.constant';
+import { toOpenableLinkUrl } from '../components/link-field/utils/to-openable-link-url.util';
 import type { UseProductFieldsResult } from '../interfaces/use-product-fields-result.interface';
 
 export function useProductFields(options: {
@@ -38,7 +39,6 @@ export function useProductFields(options: {
   const [claimOnCreate, setClaimOnCreate] = useState(false);
 
   const [linkUrl, setLinkUrl] = useState('');
-  const [linkCopied, setLinkCopied] = useState(false);
   const [websiteName, setWebsiteName] = useState('');
   const [category, setCategory] = useState('uncategorized');
   const [price, setPrice] = useState('');
@@ -130,17 +130,12 @@ export function useProductFields(options: {
     }));
   };
 
-  const onCopyLink = useCallback(async () => {
-    if (!linkUrl.trim()) {
+  const onOpenLink = useCallback(() => {
+    const href = toOpenableLinkUrl(linkUrl);
+    if (!href) {
       return;
     }
-    try {
-      await navigator.clipboard.writeText(linkUrl.trim());
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch {
-      // Clipboard unavailable — no-op
-    }
+    window.open(href, '_blank', 'noopener,noreferrer');
   }, [linkUrl]);
 
   const resetOptionalFields = () => {
@@ -174,8 +169,6 @@ export function useProductFields(options: {
     setClaimOnCreate,
     linkUrl,
     setLinkUrl,
-    linkCopied,
-    setLinkCopied,
     websiteName,
     setWebsiteName,
     category,
@@ -223,7 +216,7 @@ export function useProductFields(options: {
     handleUpdateCustomField,
     hasIncompleteCustomFields,
     handleUpdateDynamicValue,
-    onCopyLink,
+    onOpenLink,
     resetOptionalFields,
   };
 }
