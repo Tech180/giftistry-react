@@ -1,5 +1,6 @@
 import React from 'react';
 import { EnterPanel } from '../enter-panel/enter-panel.component';
+import { OUTPUT_SIZE, ZOOM_STEP } from './constants/crop.constant';
 import styles from './image-cropper.module.css';
 import type { ImageCropperTemplateProps } from './interfaces/image-cropper-template-props.interface';
 
@@ -7,16 +8,29 @@ export const ImageCropperTemplate: React.FC<ImageCropperTemplateProps> = ({
   imageSrc,
   title,
   zoom,
+  minZoom,
+  maxZoom,
   offsetX,
   offsetY,
+  isDragging,
   onZoomChange,
-  onOffsetXChange,
-  onOffsetYChange,
   onCropClick,
   onCancelClick,
+  onImageLoad,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onPointerCancel,
   imgRef,
   canvasRef,
+  cropAreaRef,
+  ringRef,
 }) => {
+  const cropAreaClassName = isDragging
+    ? `${styles['crop-area']} ${styles['crop-area--dragging']}`
+    : styles['crop-area'];
+  const imageClassName = isDragging ? `${styles.image} ${styles['image--dragging']}` : styles.image;
+
   return (
     <EnterPanel animation="fade" className={styles.overlay}>
       <EnterPanel animation="scale" className={styles.modal}>
@@ -40,55 +54,45 @@ export const ImageCropperTemplate: React.FC<ImageCropperTemplateProps> = ({
           </button>
         </div>
 
-        <div className={styles['crop-area']}>
+        <div
+          ref={cropAreaRef}
+          className={cropAreaClassName}
+          role="img"
+          aria-label="Drag to reposition, scroll or pinch to zoom"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+        >
           <img
             ref={imgRef}
             src={imageSrc}
-            alt="Upload crop preview"
-            className={styles.image}
+            alt=""
+            className={imageClassName}
+            draggable={false}
+            onLoad={onImageLoad}
             style={{
               transform: `translate(${offsetX}px, ${offsetY}px) scale(${zoom})`,
             }}
           />
-          <div className={styles['crop-ring']}></div>
+          <div ref={ringRef} className={styles['crop-ring']} />
         </div>
+
+        <p className={styles.hint}>Drag to move · scroll or pinch to zoom</p>
 
         <div className={styles.controls}>
           <div className={styles['control-group']}>
-            <label className={styles.label}>Zoom</label>
+            <label className={styles.label} htmlFor="image-cropper-zoom">
+              Zoom
+            </label>
             <input
+              id="image-cropper-zoom"
               type="range"
-              min="0.5"
-              max="3"
-              step="0.05"
+              min={minZoom}
+              max={maxZoom}
+              step={ZOOM_STEP}
               value={zoom}
               onChange={onZoomChange}
-              className={styles.slider}
-            />
-          </div>
-
-          <div className={styles['control-group']}>
-            <label className={styles.label}>Move X</label>
-            <input
-              type="range"
-              min="-200"
-              max="200"
-              step="1"
-              value={offsetX}
-              onChange={onOffsetXChange}
-              className={styles.slider}
-            />
-          </div>
-
-          <div className={styles['control-group']}>
-            <label className={styles.label}>Move Y</label>
-            <input
-              type="range"
-              min="-200"
-              max="200"
-              step="1"
-              value={offsetY}
-              onChange={onOffsetYChange}
               className={styles.slider}
             />
           </div>
@@ -103,7 +107,7 @@ export const ImageCropperTemplate: React.FC<ImageCropperTemplateProps> = ({
           </button>
         </div>
 
-        <canvas ref={canvasRef} style={{ display: 'none' }} width={200} height={200} />
+        <canvas ref={canvasRef} style={{ display: 'none' }} width={OUTPUT_SIZE} height={OUTPUT_SIZE} />
       </EnterPanel>
     </EnterPanel>
   );

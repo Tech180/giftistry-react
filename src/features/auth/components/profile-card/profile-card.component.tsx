@@ -133,11 +133,6 @@ export const ProfileCard: React.FC = () => {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setErrorMsg('Image size must be less than 2MB.');
-      return;
-    }
-
     const reader = new FileReader();
     reader.onloadend = () => {
       setCropperSrc(reader.result as string);

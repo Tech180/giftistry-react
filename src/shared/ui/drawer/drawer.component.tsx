@@ -91,14 +91,23 @@ export const Drawer: React.FC<DrawerProps> = ({
   }, [isSheet, isOpen, onClose]);
 
   useEffect(() => {
-    if (!showSheetScrim || !isOpen) return;
+    if (!showSheetScrim || !isOpen) {
+      return;
+    }
 
     const previousOverflow = document.body.style.overflow;
+    const previousBodyOverscroll = document.body.style.overscrollBehavior;
+    const previousRootOverscroll = document.documentElement.style.overscrollBehavior;
+
     document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+    document.documentElement.style.overscrollBehavior = 'none';
     document.body.setAttribute(SHEET_OPEN_ATTR, 'true');
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.style.overscrollBehavior = previousBodyOverscroll;
+      document.documentElement.style.overscrollBehavior = previousRootOverscroll;
       document.body.removeAttribute(SHEET_OPEN_ATTR);
     };
   }, [showSheetScrim, isOpen]);

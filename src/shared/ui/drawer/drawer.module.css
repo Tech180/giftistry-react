@@ -155,6 +155,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  overscroll-behavior: none;
   padding: 0;
 }
 
@@ -207,6 +208,7 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
     box-sizing: border-box;
     overflow: visible;
+    overscroll-behavior: none;
   }
 
   .drawer.drawer--sheet.drawer--left,
@@ -216,10 +218,8 @@
   }
 
   .drawer__header.drawer__header--sheet {
-    position: sticky;
-    top: 0;
-    z-index: 2;
     flex-shrink: 0;
+    z-index: 2;
     background: var(--surface);
   }
 

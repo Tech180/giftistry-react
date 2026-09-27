@@ -4,6 +4,7 @@
   gap: var(--spacing-md);
   padding: var(--spacing-lg) var(--spacing-lg);
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   flex: 1;
 }
 

@@ -107,10 +107,15 @@ describe('Drawer', () => {
     );
 
     expect(document.body.style.overflow).toBe('hidden');
+    expect(document.body.style.overscrollBehavior).toBe('none');
+    expect(document.documentElement.style.overscrollBehavior).toBe('none');
     expect(document.body.getAttribute('data-drawer-sheet-open')).toBe('true');
 
     unmount();
 
+    expect(document.body.style.overflow).toBe('');
+    expect(document.body.style.overscrollBehavior).toBe('');
+    expect(document.documentElement.style.overscrollBehavior).toBe('');
     expect(document.body.getAttribute('data-drawer-sheet-open')).toBeNull();
   });
 
@@ -130,6 +135,8 @@ describe('Drawer', () => {
     );
 
     expect(document.body.style.overflow).not.toBe('hidden');
+    expect(document.body.style.overscrollBehavior).not.toBe('none');
+    expect(document.documentElement.style.overscrollBehavior).not.toBe('none');
     expect(document.body.getAttribute('data-drawer-sheet-open')).toBeNull();
   });
 
