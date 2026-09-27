@@ -12,17 +12,26 @@
   align-items: center;
   gap: var(--spacing-xs);
   margin-bottom: var(--spacing-sm);
+  flex-shrink: 0;
+  max-width: 100%;
 }
 
 .qr__frame {
+  /* Solid quiet zone — theme surface/glass must not tint modules. */
   padding: var(--spacing-sm);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: var(--surface);
+  background: #fff;
+  box-sizing: border-box;
+  line-height: 0;
 }
 
 .qr__image {
   display: block;
+  /* Keep library pixel size; do not CSS-downscale (softens modules). */
+  width: auto;
+  height: auto;
+  max-width: none;
 }
 
 .qr__hint {
@@ -56,6 +65,10 @@
   flex: 1;
   min-height: 0;
   gap: var(--spacing-sm);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .linkCard {

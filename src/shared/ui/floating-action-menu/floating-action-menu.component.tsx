@@ -236,7 +236,10 @@ export const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({
     dockState === 'toolbar'
       ? { height: toolbarHeight }
       : dockState === 'panel'
-        ? { height: panelHeight, width: panelWidth }
+        ? {
+            height: `min(${panelHeight}px, var(--floating-action-menu-panel-max-height))`,
+            width: panelWidth,
+          }
         : undefined;
 
   const panelBody =

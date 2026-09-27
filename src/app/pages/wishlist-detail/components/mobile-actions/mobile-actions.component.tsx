@@ -35,6 +35,10 @@ import {
   SETTINGS_ROW_GAP,
   SETTINGS_ROW_HEIGHT,
 } from '../../constants/settings-panel-layout.constant';
+import {
+  SHARE_PANEL_HEIGHT,
+  SHARE_PANEL_WIDTH,
+} from '../../constants/share-panel-layout.constant';
 import type { Props } from './interfaces/props.interface';
 import styles from './mobile-actions.module.css';
 
@@ -193,14 +197,14 @@ export function MobileActions({
             label: 'Share',
             icon: <Share2 size={18} aria-hidden />,
             tourTarget: TOUR_TARGETS.shareFab,
-            panelWidth: 320,
-            panelHeight: 380,
+            panelWidth: SHARE_PANEL_WIDTH,
+            panelHeight: SHARE_PANEL_HEIGHT,
             hidePanelHeader: true,
-            panelContent: ({ closeMenu }) => (
+            panelContent: ({ backToToolbar }) => (
               <ShareFabPanel
                 listId={wishlist.Id}
                 isOwner={isOwner}
-                onClose={closeMenu}
+                onClose={backToToolbar}
                 onSuccess={() => {
                   void reloadListContent();
                 }}

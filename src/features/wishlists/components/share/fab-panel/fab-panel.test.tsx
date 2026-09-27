@@ -42,7 +42,7 @@ describe('FabPanel', () => {
     expect(screen.getByText('Access tab content')).toBeInTheDocument();
   });
 
-  test('calls onClose when header close is clicked', async () => {
+  test('calls onClose when header back is clicked', async () => {
     const onClose = vi.fn();
 
     render(
@@ -50,9 +50,9 @@ describe('FabPanel', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Go back' })).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Go back' }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

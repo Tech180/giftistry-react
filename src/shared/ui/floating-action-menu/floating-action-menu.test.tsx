@@ -205,7 +205,9 @@ describe('FloatingActionMenu', () => {
     const dock = container.querySelector('[class*="state-panel"]') as HTMLElement | null;
     expect(dock).not.toBeNull();
     // PAD 32 + HEADER 44 + 5×38 + 4×4 = 282
-    expect(dock!.style.height).toBe('282px');
+    expect(dock!.style.height).toBe(
+      'min(282px, var(--floating-action-menu-panel-max-height))'
+    );
     expect(screen.getByRole('menuitem', { name: /^pdf$/i })).toBeInTheDocument();
   });
 
@@ -245,7 +247,7 @@ describe('FloatingActionMenu', () => {
     expect(screen.queryByRole('button', { name: /dropzone stub/i })).toBeNull();
   });
 
-  test('renders share panel with hidePanelHeader and 320x380 sizing', () => {
+  test('renders share panel with hidePanelHeader and 320x560 sizing', () => {
     const { container } = render(
       <FloatingActionMenu
         actions={[
@@ -254,7 +256,7 @@ describe('FloatingActionMenu', () => {
             label: 'Share',
             icon: <span>S</span>,
             panelWidth: 320,
-            panelHeight: 380,
+            panelHeight: 560,
             hidePanelHeader: true,
             panelContent: () => <div>Share FAB panel</div>,
           },
@@ -268,7 +270,9 @@ describe('FloatingActionMenu', () => {
     const dock = container.querySelector('[class*="state-panel"]') as HTMLElement | null;
     expect(dock).not.toBeNull();
     expect(dock!.style.width).toBe('320px');
-    expect(dock!.style.height).toBe('380px');
+    expect(dock!.style.height).toBe(
+      'min(560px, var(--floating-action-menu-panel-max-height))'
+    );
     expect(screen.getByText('Share FAB panel')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /go back/i })).toBeNull();
   });
@@ -321,11 +325,15 @@ describe('FloatingActionMenu', () => {
     const dock = container.querySelector('[class*="state-panel"]') as HTMLElement | null;
     expect(dock).not.toBeNull();
     expect(dock!.style.width).toBe('288px');
-    expect(dock!.style.height).toBe('268px');
+    expect(dock!.style.height).toBe(
+      'min(268px, var(--floating-action-menu-panel-max-height))'
+    );
 
     fireEvent.click(screen.getByRole('button', { name: /expand panel/i }));
     expect(dock!.style.width).toBe('320px');
-    expect(dock!.style.height).toBe('400px');
+    expect(dock!.style.height).toBe(
+      'min(400px, var(--floating-action-menu-panel-max-height))'
+    );
   });
 
   test('Escape is consumed when the panel escape handler returns true', () => {

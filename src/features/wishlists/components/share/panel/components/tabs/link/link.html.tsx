@@ -7,7 +7,11 @@ import {
   SHARE_ROLE_OPTIONS,
 } from 'features/wishlists/constants/share-role-options.constant';
 import { formatDateTime } from 'shared/utils/format-date.util';
-import { QR_SIZE_CLASSIC, QR_SIZE_COMPACT } from './constants/qr-size.constant';
+import {
+  QR_ERROR_LEVEL,
+  QR_SIZE_CLASSIC,
+  QR_SIZE_COMPACT,
+} from './constants/qr-size.constant';
 import { TemplateProps } from './interfaces/template-props.interface';
 import styles from './link.module.css';
 
@@ -100,6 +104,15 @@ export const LinkTabTemplate: React.FC<TemplateProps> = ({
                   }
                   size = {
                     QR_SIZE_COMPACT
+                  }
+                  level = {
+                    QR_ERROR_LEVEL
+                  }
+                  bgColor = {
+                    '#FFFFFF'
+                  }
+                  fgColor = {
+                    '#000000'
                   }
                   className = {
                     styles['qr__image']
@@ -231,6 +244,15 @@ export const LinkTabTemplate: React.FC<TemplateProps> = ({
                   }
                   size = {
                     QR_SIZE_CLASSIC
+                  }
+                  level = {
+                    QR_ERROR_LEVEL
+                  }
+                  bgColor = {
+                    '#FFFFFF'
+                  }
+                  fgColor = {
+                    '#000000'
                   }
                   className = {
                     styles['qr__image']

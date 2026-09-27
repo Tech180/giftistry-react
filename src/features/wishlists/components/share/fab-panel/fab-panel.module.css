@@ -12,7 +12,6 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
   color: var(--text);
@@ -30,7 +29,7 @@
   text-overflow: ellipsis;
 }
 
-.closeBtn {
+.backBtn {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-muted);
@@ -42,12 +41,14 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  transition: color 0.2s, background-color 0.2s;
+  flex-shrink: 0;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
 }
 
-.closeBtn:hover {
+.backBtn:hover {
   color: var(--text);
   background: var(--surface-hover);
+  border-color: var(--border);
 }
 
 .tabsNav {
@@ -118,7 +119,10 @@
   transform: translateY(0);
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tabPanelActive > * {

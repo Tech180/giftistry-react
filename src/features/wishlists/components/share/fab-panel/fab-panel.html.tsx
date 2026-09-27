@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { TOUR_TARGETS } from 'features/tour';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './fab-panel.module.css';
@@ -22,10 +22,15 @@ export const FabPanelTemplate: React.FC<TemplateProps> = ({
 }) => (
   <div className={styles.panel}>
     <header className={styles.header}>
-      <span className={styles.headerTitle}>Share Wishlist</span>
-      <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
-        <X size={16} aria-hidden />
+      <button
+        type="button"
+        className={styles.backBtn}
+        onClick={onClose}
+        aria-label="Go back"
+      >
+        <ChevronLeft size={18} aria-hidden />
       </button>
+      <span className={styles.headerTitle}>Share Wishlist</span>
     </header>
 
     {!hideTabs && (
