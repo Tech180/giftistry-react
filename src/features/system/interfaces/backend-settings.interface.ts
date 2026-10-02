@@ -39,6 +39,10 @@ export interface BackendSettings {
   AiImportPrompt?: string;
   AiImportChunkingEnabled?: boolean;
   AiImportChunkItemLimit?: number;
+  AiMetadataExtractionPreset?: 'full' | 'fast' | 'balanced' | 'thorough';
+  AiPageContextMaxChars?: number | null;
+  AiPopulateMaxTokens?: number | null;
+  AiMetadataSplitPackCalls?: boolean;
   AiEnabledPackIds?: string[];
   AiCustomPacks?: CustomPackSettings[];
   AiCompletionTimeoutMs?: number;

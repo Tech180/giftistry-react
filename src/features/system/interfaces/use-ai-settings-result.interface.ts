@@ -1,5 +1,6 @@
 import type { AiConnectionStatus } from './ai-connection-status.type';
 import type { AiDefaultPromptsView } from './ai-default-prompts-view.interface';
+import type { AiMetadataExtractionPreset } from './ai-metadata-extraction-preset.type';
 import type { AiModelSlot } from './ai-model-slot.type';
 import type { CustomPackSettings } from './custom-pack-settings.interface';
 import type { LocalAiModelMode } from './local-ai-model-mode.type';
@@ -18,6 +19,14 @@ export interface UseAiSettingsResult {
   setAiImportChunkingEnabled: (val: boolean) => void;
   aiImportChunkItemLimit: number;
   setAiImportChunkItemLimit: (val: number) => void;
+  aiMetadataExtractionPreset: AiMetadataExtractionPreset;
+  setAiMetadataExtractionPreset: (val: AiMetadataExtractionPreset) => void;
+  aiPageContextMaxChars: number;
+  setAiPageContextMaxChars: (val: number) => void;
+  aiPopulateMaxTokens: number;
+  setAiPopulateMaxTokens: (val: number) => void;
+  aiMetadataSplitPackCalls: boolean;
+  setAiMetadataSplitPackCalls: (val: boolean) => void;
   aiCompletionTimeoutMs: number;
   setAiCompletionTimeoutMs: (val: number) => void;
   aiConnectTimeoutMs: number;

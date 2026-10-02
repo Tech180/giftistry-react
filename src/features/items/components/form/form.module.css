@@ -35,7 +35,7 @@
 
 .alert-warning {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--spacing-sm);
   background-color: color-mix(in srgb, var(--warning) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
@@ -48,7 +48,6 @@
 
 .alert-warning-icon {
   flex-shrink: 0;
-  margin-top: 0.1rem;
   color: var(--warning);
 }
 

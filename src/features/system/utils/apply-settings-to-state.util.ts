@@ -39,6 +39,24 @@ export function applySettingsToState(s: BackendSettings, setters: SettingsStateS
   setters.setAiImportChunkItemLimit(
     Number.isFinite(s.AiImportChunkItemLimit) ? Number(s.AiImportChunkItemLimit) : 20,
   );
+  setters.setAiMetadataExtractionPreset(
+    s.AiMetadataExtractionPreset === 'fast' ||
+      s.AiMetadataExtractionPreset === 'balanced' ||
+      s.AiMetadataExtractionPreset === 'thorough'
+      ? s.AiMetadataExtractionPreset
+      : 'full',
+  );
+  setters.setAiPageContextMaxChars(
+    s.AiPageContextMaxChars == null || !Number.isFinite(s.AiPageContextMaxChars)
+      ? 0
+      : Number(s.AiPageContextMaxChars),
+  );
+  setters.setAiPopulateMaxTokens(
+    s.AiPopulateMaxTokens == null || !Number.isFinite(s.AiPopulateMaxTokens)
+      ? 0
+      : Number(s.AiPopulateMaxTokens),
+  );
+  setters.setAiMetadataSplitPackCalls(s.AiMetadataSplitPackCalls === true);
   setters.setAiCompletionTimeoutMs(
     Number.isFinite(s.AiCompletionTimeoutMs) ? Number(s.AiCompletionTimeoutMs) : 600000,
   );

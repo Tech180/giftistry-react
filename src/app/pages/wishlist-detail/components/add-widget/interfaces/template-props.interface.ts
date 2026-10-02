@@ -9,6 +9,8 @@ export interface TemplateProps {
   errorMsg: string | null;
   isSubmitting: boolean;
   hintText: string;
+  /** When true, popover hint uses warning styling (e.g. Amazon short link). */
+  hintIsWarning: boolean;
   menuToggleLabel: string;
   actionTabIndex: number;
   rootClassName: string;

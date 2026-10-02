@@ -13,7 +13,7 @@ export { claimImportJobTerminalToast } from './utils/import-job-terminal-toast.u
 export { getEnrichingItemIds } from './utils/get-enriching-item-ids.util';
 export { resolveListReloadOnJobTerminal } from './utils/resolve-list-reload-on-job-terminal.util';
 export { waitForJob, isTerminalJobStatus } from './utils/wait-for-job.util';
-export { DEFAULT_JOB_POLL_INTERVAL_MS, TERMINAL_JOB_STATUSES } from './constants/job.constants';
+export { DEFAULT_JOB_POLL_INTERVAL_MS, JOB_WAIT_SAFETY_POLL_INTERVAL_MS, TERMINAL_JOB_STATUSES } from './constants/job.constants';
 export type { BackgroundJobView, BackgroundJobKind } from './interfaces/background-job.interface';
 export type { ListReloadStrategy } from './interfaces/list-reload-strategy.type';
 export type {

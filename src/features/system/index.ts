@@ -1,5 +1,6 @@
 export type { SystemStatusResult } from './interfaces/status-result.interface';
 export type { AiModelSlot } from './interfaces/ai-model-slot.type';
+export type { AiMetadataExtractionPreset } from './interfaces/ai-metadata-extraction-preset.type';
 export type { ModelOption as SystemModelOption } from './interfaces/model-option.interface';
 export type { ModelsProvider as SystemModelsProvider } from './interfaces/models-provider.type';
 export type { MetadataPackFieldView as SystemMetadataPackFieldView } from './interfaces/metadata-pack-field-view.interface';

@@ -251,7 +251,7 @@
   color: var(--text-muted);
   line-height: 1.4;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--spacing-sm);
 }
 
@@ -259,9 +259,21 @@
   color: var(--danger);
 }
 
+.add-widget__popover-text--warning {
+  color: var(--text-primary, var(--text));
+  background-color: color-mix(in srgb, var(--warning) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
+  border-radius: var(--radius-sm, calc(var(--radius) * 0.75));
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin: calc(var(--spacing-xs) * -1) calc(var(--spacing-sm) * -1);
+}
+
 .add-widget__popover-icon {
   flex-shrink: 0;
-  margin-top: 0.125rem;
+}
+
+.add-widget__popover-icon--warning {
+  color: var(--warning);
 }
 
 /* Desktop: expand on hover / keyboard focus via root custom properties */

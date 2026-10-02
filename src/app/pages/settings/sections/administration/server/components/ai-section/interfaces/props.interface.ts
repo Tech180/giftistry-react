@@ -1,10 +1,11 @@
-import type { LocalAiModelMode } from 'features/system';
-import type { AiDefaultPromptsView } from 'features/system';
-import type { SystemModelsProvider } from 'features/system';
-import type { CustomPackSettings } from 'features/system';
-import type { PromptType } from 'features/system';
-import type { AiModelSlot } from 'features/system';
 import type { AiConnectionStatus } from 'features/system';
+import type { AiDefaultPromptsView } from 'features/system';
+import type { AiMetadataExtractionPreset } from 'features/system';
+import type { AiModelSlot } from 'features/system';
+import type { CustomPackSettings } from 'features/system';
+import type { LocalAiModelMode } from 'features/system';
+import type { PromptType } from 'features/system';
+import type { SystemModelsProvider } from 'features/system';
 
 export interface AiSectionProps {
   aiEnabled: boolean;
@@ -17,6 +18,14 @@ export interface AiSectionProps {
   setAiImportChunkingEnabled: (value: boolean) => void;
   aiImportChunkItemLimit: number;
   setAiImportChunkItemLimit: (value: number) => void;
+  aiMetadataExtractionPreset: AiMetadataExtractionPreset;
+  setAiMetadataExtractionPreset: (value: AiMetadataExtractionPreset) => void;
+  aiPageContextMaxChars: number;
+  setAiPageContextMaxChars: (value: number) => void;
+  aiPopulateMaxTokens: number;
+  setAiPopulateMaxTokens: (value: number) => void;
+  aiMetadataSplitPackCalls: boolean;
+  setAiMetadataSplitPackCalls: (value: boolean) => void;
   aiConnectTimeoutMs: number;
   setAiConnectTimeoutMs: (value: number) => void;
   aiCompletionTimeoutMs: number;

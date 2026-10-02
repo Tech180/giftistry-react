@@ -10,7 +10,7 @@ Import via `import { … } from 'features/jobs'`.
 |------|---------|
 | **Components** | `JobProgressBox`, `Timeline`, `BackgroundProcessesPanel` |
 | **API / hooks** | `jobsApi`, `useWishlistJob`, `useBackgroundJobs` |
-| **Wait / status** | `waitForJob`, `isTerminalJobStatus`, `DEFAULT_JOB_POLL_INTERVAL_MS`, `TERMINAL_JOB_STATUSES` |
+| **Wait / status** | `waitForJob`, `isTerminalJobStatus`, `DEFAULT_JOB_POLL_INTERVAL_MS`, `JOB_WAIT_SAFETY_POLL_INTERVAL_MS`, `TERMINAL_JOB_STATUSES` |
 | **Utils** | `mapJobToTimeline`, `buildSeedTimeline`, summary formatters, `claimImportJobTerminalToast`, `getEnrichingItemIds`, `resolveListReloadOnJobTerminal` |
 | **Types** | `BackgroundJobView`, `BackgroundJobKind`, `BackgroundJobsScope`, `ListReloadStrategy`, enrich/summarize payloads & results, timeline / import-summary types |
 
@@ -36,7 +36,7 @@ jobs/
 flowchart TD
   starters[items / add-widget]
   api[jobsApi]
-  wait[waitForJob poll]
+  wait[waitForJob socket-first]
   listHook[useWishlistJob]
   listWs[list WS via comments URL]
   bgHook[useBackgroundJobs]
@@ -49,7 +49,9 @@ flowchart TD
   notif[notifications toast dedupe]
 
   starters --> api
-  starters -->|enrich / summarize / import| wait
+  starters -->|enrich / summarize| wait
+  wait -->|subscribe| userSock
+  wait -->|safety getJob| api
   page --> listHook --> listWs
   page --> progress --> timeline
   starters -->|ImportStrip| timeline
@@ -63,7 +65,7 @@ flowchart TD
 | Concern | Owner |
 |---------|--------|
 | Start import / enrich / summarize | Callers (`items` import/enrich/summarize, wishlist add-widget) via `jobsApi` |
-| Poll one job to terminal | `waitForJob` (HTTP `getJob` every 1.5s) |
+| Wait one job to terminal | `waitForJob` (user-socket events + immediate `getJob` + 10s safety poll when transport passed; else 1.5s HTTP poll) |
 | List-scoped live job + enriching item ids | `useWishlistJob` (wishlist comment WS) |
 | Account / admin job list | `useBackgroundJobs` (`mine` = user socket; `admin` = 10s poll) |
 | Progress chrome on wishlist | `JobProgressBox` (import only) + `Timeline` in ImportStrip |
@@ -135,14 +137,21 @@ Account or admin process list. Scope: `'mine' | 'admin'`.
 
 ## `waitForJob` / terminal status
 
-Used by form AI helpers and import flow when the caller needs a terminal result without mounting list hooks.
+Used by form enrich / summarize when the caller needs a terminal result without mounting list hooks. Import strip uses the same user-socket events directly (`useImportFlow`); add-widget does not wait — page `useWishlistJob` owns progress.
 
 | Export | Role |
 |--------|------|
 | `TERMINAL_JOB_STATUSES` | `completed` \| `failed` \| `cancelled` |
 | `isTerminalJobStatus` | Membership check |
-| `DEFAULT_JOB_POLL_INTERVAL_MS` | `1500` |
-| `waitForJob(jobId, { intervalMs?, isCancelled? })` | Loop `getJob` until terminal; `null` if cancelled |
+| `DEFAULT_JOB_POLL_INTERVAL_MS` | `1500` (HTTP-only fallback) |
+| `JOB_WAIT_SAFETY_POLL_INTERVAL_MS` | `10000` (sparse backup while on socket) |
+| `waitForJob(jobId, options)` | See below |
+
+**Options:** `intervalMs?`, `isCancelled?`, `subscribe?` / `unsubscribe?` (from `useUserSocket`).
+
+**With transport:** subscribe to `job.progress` / `job.completed` / `job.failed`, filter by job id, immediate `getJob`, then safety poll every 10s until terminal or cancelled.
+
+**Without transport:** loop `getJob` every 1.5s (tests / legacy).
 
 ---
 
@@ -201,8 +210,8 @@ Also: `with-active-step-captions`, `format-progress-rate`, `format-stream-lane-c
 | Surface | Usage |
 |---------|--------|
 | Items import | `useImportFlow` → `startWishlistImport`; ImportStrip → `Timeline` |
-| Items enrich / summarize | form hooks → `start*` + `waitForJob`; abandon util may cancel |
-| Wishlist add-from-URL | `startItemEnrich` (`create-from-url`) |
+| Items enrich / summarize | form hooks → `start*` + `waitForJob` (user-socket transport); abandon util may cancel |
+| Wishlist add-from-URL | `startItemEnrich` (`create-from-url`); no wait — page list WS |
 | Wishlist-detail | `useWishlistJob`; soft reload while active; terminal toast + reload strategy; `JobProgressBox`; `enrichingItemIds` → skeletons |
 | Notifications | Does **not** import this package; page calls `markJobNotificationHandled` so `useJobToast` skips duplicate enrich/summarize toasts |
 | Settings | `ProcessesRail` → `useBackgroundJobs('mine' \| 'admin')` + `BackgroundProcessesPanel` |

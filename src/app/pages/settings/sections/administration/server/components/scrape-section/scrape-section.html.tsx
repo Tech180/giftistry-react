@@ -1,6 +1,6 @@
 import React from 'react';
-import { Layers, Timer } from 'lucide-react';
-import { Switch } from 'shared/ui';
+import { Timer, Layers } from 'lucide-react';
+import { Switch, NumberSelector } from 'shared/ui';
 import type { ScrapeSectionTemplateProps } from './interfaces/template-props.interface';
 import styles from './scrape-section.module.css';
 
@@ -11,13 +11,12 @@ export const ScrapeSectionTemplate: React.FC<ScrapeSectionTemplateProps> = ({
   setScrapePlaywrightTimeoutMs,
   grabInfoConcurrency,
   setGrabInfoConcurrency,
-  grabInfoConcurrencyUnlimited,
-  onUnlimitedChange,
   grabInfoActiveStreamLimit,
   setGrabInfoActiveStreamLimit,
+  grabInfoConcurrencyUnlimited,
+  onUnlimitedChange,
 }) => (
   <section className={styles.section}>
-    <h2 className={styles['section-header']}>Scraping Settings</h2>
     <div className={styles['setting-list']}>
       <div className={styles['card-header']}>
         <div className={styles['header-left']}>
@@ -34,37 +33,39 @@ export const ScrapeSectionTemplate: React.FC<ScrapeSectionTemplateProps> = ({
       </div>
 
       <div className={styles.body}>
-        <div className={styles['timeouts-grid']}>
-          <div className={styles['input-wrapper']}>
-            <label className={styles['input-label']} htmlFor="scrape-fetch-timeout-ms">
-              Fetch timeout (ms)
-            </label>
-            <input
-              id="scrape-fetch-timeout-ms"
-              type="number"
+        <div className={styles['field-list']}>
+          <div className={styles['field-row']}>
+            <div className={styles['field-info']}>
+              <label className={styles['input-label']}>Fetch timeout (ms)</label>
+              <p className={styles.subtitle}>
+                Timeout for HTTP GET requests when fetching product web pages.
+              </p>
+            </div>
+            <NumberSelector
+              value={scrapeFetchTimeoutMs}
               min={1000}
               max={60000}
-              step={500}
-              className={styles['input-field']}
-              value={scrapeFetchTimeoutMs}
-              onChange={(e) => setScrapeFetchTimeoutMs(Number(e.target.value))}
-              aria-label="Fetch scrape timeout in milliseconds"
+              onChange={setScrapeFetchTimeoutMs}
+              editLabel="Fetch scrape timeout in milliseconds"
+              decreaseLabel="Decrease fetch scrape timeout"
+              increaseLabel="Increase fetch scrape timeout"
             />
           </div>
-          <div className={styles['input-wrapper']}>
-            <label className={styles['input-label']} htmlFor="scrape-playwright-timeout-ms">
-              Playwright timeout (ms)
-            </label>
-            <input
-              id="scrape-playwright-timeout-ms"
-              type="number"
+          <div className={styles['field-row']}>
+            <div className={styles['field-info']}>
+              <label className={styles['input-label']}>Playwright timeout (ms)</label>
+              <p className={styles.subtitle}>
+                Timeout for browser automation when rendering JavaScript-heavy pages.
+              </p>
+            </div>
+            <NumberSelector
+              value={scrapePlaywrightTimeoutMs}
               min={1000}
               max={120000}
-              step={1000}
-              className={styles['input-field']}
-              value={scrapePlaywrightTimeoutMs}
-              onChange={(e) => setScrapePlaywrightTimeoutMs(Number(e.target.value))}
-              aria-label="Playwright scrape timeout in milliseconds"
+              onChange={setScrapePlaywrightTimeoutMs}
+              editLabel="Playwright scrape timeout in milliseconds"
+              decreaseLabel="Decrease Playwright scrape timeout"
+              increaseLabel="Increase Playwright scrape timeout"
             />
           </div>
         </div>
@@ -88,44 +89,46 @@ export const ScrapeSectionTemplate: React.FC<ScrapeSectionTemplateProps> = ({
       </div>
 
       <div className={styles.body}>
-        <div className={styles['timeouts-grid']}>
-          <div className={styles['input-wrapper']}>
-            <label className={styles['input-label']} htmlFor="grab-info-concurrency">
-              Concurrent grab workers
-            </label>
-            <input
-              id="grab-info-concurrency"
-              type="number"
+        <div className={styles['field-list']}>
+          <div className={styles['field-row']}>
+            <div className={styles['field-info']}>
+              <label className={styles['input-label']}>Concurrent grab workers</label>
+              <p className={styles.subtitle}>
+                Number of parallel scraper workers executing product metadata extraction.
+              </p>
+            </div>
+            <NumberSelector
+              value={grabInfoConcurrency}
               min={1}
               max={1000}
-              step={1}
-              className={styles['input-field']}
-              value={grabInfoConcurrency}
+              onChange={setGrabInfoConcurrency}
               disabled={grabInfoConcurrencyUnlimited}
-              onChange={(e) => setGrabInfoConcurrency(Number(e.target.value))}
-              aria-label="Concurrent Grab info workers"
+              editLabel="Concurrent Grab info workers"
+              decreaseLabel="Decrease concurrent Grab info workers"
+              increaseLabel="Increase concurrent Grab info workers"
             />
           </div>
-          <div className={styles['input-wrapper']}>
-            <label className={styles['input-label']} htmlFor="grab-info-stream-limit">
-              Max visible stream lanes
-            </label>
-            <input
-              id="grab-info-stream-limit"
-              type="number"
+          <div className={styles['field-row']}>
+            <div className={styles['field-info']}>
+              <label className={styles['input-label']}>Max visible stream lanes</label>
+              <p className={styles.subtitle}>
+                Maximum number of active item progress lanes shown in the timeline simultaneously.
+              </p>
+            </div>
+            <NumberSelector
+              value={grabInfoActiveStreamLimit}
               min={1}
               max={1000}
-              step={1}
-              className={styles['input-field']}
-              value={grabInfoActiveStreamLimit}
-              onChange={(e) => setGrabInfoActiveStreamLimit(Number(e.target.value))}
-              aria-label="Max visible Grab info stream lanes"
+              onChange={setGrabInfoActiveStreamLimit}
+              editLabel="Max visible Grab info stream lanes"
+              decreaseLabel="Decrease max visible Grab info stream lanes"
+              increaseLabel="Increase max visible Grab info stream lanes"
             />
           </div>
         </div>
 
         <div className={styles['unlimited-row']}>
-          <div>
+          <div className={styles['unlimited-info']}>
             <h4 className={styles['unlimited-title']}>Unlimited concurrency</h4>
             <p className={styles.subtitle}>
               Scrape every remaining Grab info URL at once.

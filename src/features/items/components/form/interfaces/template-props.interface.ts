@@ -19,7 +19,8 @@ export interface TemplateProps {
   canCollaborate: boolean;
   isLoading: boolean;
   errorMsg: string | null;
-  warningMsg: string | null;
+  /** Yellow alert slot content when no error (short-link tip or soft AI warning). */
+  displayWarning: string | null;
   handleSubmit: (e: React.SyntheticEvent) => void;
   linkUrl: string;
   setLinkUrl: (val: string) => void;

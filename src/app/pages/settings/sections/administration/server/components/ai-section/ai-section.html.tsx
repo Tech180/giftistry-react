@@ -20,6 +20,14 @@ export const AiSectionTemplate: React.FC<AiSectionTemplateProps> = ({
   setAiImportChunkingEnabled,
   aiImportChunkItemLimit,
   setAiImportChunkItemLimit,
+  aiMetadataExtractionPreset,
+  setAiMetadataExtractionPreset,
+  aiPageContextMaxChars,
+  setAiPageContextMaxChars,
+  aiPopulateMaxTokens,
+  setAiPopulateMaxTokens,
+  aiMetadataSplitPackCalls,
+  setAiMetadataSplitPackCalls,
   aiConnectTimeoutMs,
   setAiConnectTimeoutMs,
   aiCompletionTimeoutMs,
@@ -124,6 +132,30 @@ export const AiSectionTemplate: React.FC<AiSectionTemplateProps> = ({
               }
               setAiImportChunkItemLimit = {
                 setAiImportChunkItemLimit
+              }
+              aiMetadataExtractionPreset = {
+                aiMetadataExtractionPreset
+              }
+              setAiMetadataExtractionPreset = {
+                setAiMetadataExtractionPreset
+              }
+              aiPageContextMaxChars = {
+                aiPageContextMaxChars
+              }
+              setAiPageContextMaxChars = {
+                setAiPageContextMaxChars
+              }
+              aiPopulateMaxTokens = {
+                aiPopulateMaxTokens
+              }
+              setAiPopulateMaxTokens = {
+                setAiPopulateMaxTokens
+              }
+              aiMetadataSplitPackCalls = {
+                aiMetadataSplitPackCalls
+              }
+              setAiMetadataSplitPackCalls = {
+                setAiMetadataSplitPackCalls
               }
             />
 

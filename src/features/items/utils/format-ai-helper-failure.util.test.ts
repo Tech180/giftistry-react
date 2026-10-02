@@ -31,4 +31,9 @@ describe('formatAiHelperFailure', () => {
     const message = `${ENRICH_FAILURE_FALLBACK} ${AI_HELPER_MANUAL_SUFFIX}`;
     expect(formatAiHelperFailure(new Error(message), ENRICH_FAILURE_FALLBACK)).toBe(message);
   });
+
+  test('does not append when the message already asks to enter details manually', () => {
+    const message = 'Amazon blocked access to scrape; Please enter details manually.';
+    expect(formatAiHelperFailure(new Error(message), ENRICH_FAILURE_FALLBACK)).toBe(message);
+  });
 });

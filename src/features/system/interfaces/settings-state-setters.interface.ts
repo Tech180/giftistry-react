@@ -1,5 +1,6 @@
 import type { AiModelSlot } from './ai-model-slot.type';
 import type { AiDefaultPromptsView } from './ai-default-prompts-view.interface';
+import type { AiMetadataExtractionPreset } from './ai-metadata-extraction-preset.type';
 import type { CustomPackSettings } from './custom-pack-settings.interface';
 import type { ModelsProvider } from './models-provider.type';
 
@@ -36,6 +37,10 @@ export interface SettingsStateSetters {
   setAiRateLimitEnabled: (val: boolean) => void;
   setAiImportChunkingEnabled: (val: boolean) => void;
   setAiImportChunkItemLimit: (val: number) => void;
+  setAiMetadataExtractionPreset: (val: AiMetadataExtractionPreset) => void;
+  setAiPageContextMaxChars: (val: number) => void;
+  setAiPopulateMaxTokens: (val: number) => void;
+  setAiMetadataSplitPackCalls: (val: boolean) => void;
   setAiCompletionTimeoutMs: (val: number) => void;
   setAiConnectTimeoutMs: (val: number) => void;
   setScrapeFetchTimeoutMs: (val: number) => void;

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { systemApi } from '../api/system.api';
 import type { AiModelSlot } from '../interfaces/ai-model-slot.type';
+import type { AiMetadataExtractionPreset } from '../interfaces/ai-metadata-extraction-preset.type';
 import { LOCAL_AI_CUSTOM_MODEL_VALUE } from '../constants/local-ai-custom-model-value.constant';
 import {
   clearLocalAiModelsCache,
@@ -25,6 +26,11 @@ export function useAiSettings(): UseAiSettingsResult {
   const [aiRateLimitEnabled, setAiRateLimitEnabled] = useState(false);
   const [aiImportChunkingEnabled, setAiImportChunkingEnabled] = useState(true);
   const [aiImportChunkItemLimit, setAiImportChunkItemLimit] = useState(20);
+  const [aiMetadataExtractionPreset, setAiMetadataExtractionPreset] =
+    useState<AiMetadataExtractionPreset>('full');
+  const [aiPageContextMaxChars, setAiPageContextMaxChars] = useState(0);
+  const [aiPopulateMaxTokens, setAiPopulateMaxTokens] = useState(0);
+  const [aiMetadataSplitPackCalls, setAiMetadataSplitPackCalls] = useState(false);
   const [aiCompletionTimeoutMs, setAiCompletionTimeoutMs] = useState(600000);
   const [aiConnectTimeoutMs, setAiConnectTimeoutMs] = useState(5000);
   const [scrapeFetchTimeoutMs, setScrapeFetchTimeoutMs] = useState(8000);
@@ -424,6 +430,14 @@ export function useAiSettings(): UseAiSettingsResult {
     setAiImportChunkingEnabled,
     aiImportChunkItemLimit,
     setAiImportChunkItemLimit,
+    aiMetadataExtractionPreset,
+    setAiMetadataExtractionPreset,
+    aiPageContextMaxChars,
+    setAiPageContextMaxChars,
+    aiPopulateMaxTokens,
+    setAiPopulateMaxTokens,
+    aiMetadataSplitPackCalls,
+    setAiMetadataSplitPackCalls,
     aiCompletionTimeoutMs,
     setAiCompletionTimeoutMs,
     aiConnectTimeoutMs,

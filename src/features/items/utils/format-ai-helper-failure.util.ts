@@ -24,7 +24,10 @@ function reasonFromError(err: unknown): string {
 /** User-facing copy for enrich/summarize failures, with a manual-entry fallback. */
 export function formatAiHelperFailure(err: unknown, fallback: string): string {
   const reason = reasonFromError(err) || fallback.trim();
-  if (reason.includes(AI_HELPER_MANUAL_SUFFIX)) {
+  if (
+    reason.includes(AI_HELPER_MANUAL_SUFFIX) ||
+    /enter details manually\.?$/i.test(reason.trim())
+  ) {
     return reason;
   }
 

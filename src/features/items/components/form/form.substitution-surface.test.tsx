@@ -34,7 +34,7 @@ const baseProps = {
   canCollaborate: true,
   isLoading: false,
   errorMsg: null,
-  warningMsg: null,
+  displayWarning: null,
   handleSubmit: vi.fn(),
   formId: ADD_ITEM_FORM_ID,
   linkUrl: '',

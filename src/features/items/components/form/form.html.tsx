@@ -24,7 +24,7 @@ export const FormTemplate: React.FC<TemplateProps> = ({
   canCollaborate,
   isLoading,
   errorMsg,
-  warningMsg,
+  displayWarning,
   handleSubmit,
   linkUrl,
   setLinkUrl,
@@ -166,10 +166,10 @@ export const FormTemplate: React.FC<TemplateProps> = ({
           <span>{errorMsg}</span>
         </div>
       )}
-      {warningMsg && (
+      {!errorMsg && displayWarning && (
         <div className={`${styles['alert-warning']} animate-slide-up`} role="status">
           <AlertTriangle size={16} className={styles['alert-warning-icon']} aria-hidden />
-          <span>{warningMsg}</span>
+          <span>{displayWarning}</span>
         </div>
       )}
 

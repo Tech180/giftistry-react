@@ -41,8 +41,8 @@ export const Form: React.FC<Props> = (props) => {
       errorMsg = {
         t.errorMsg
       }
-      warningMsg = {
-        t.warningMsg
+      displayWarning = {
+        t.displayWarning
       }
       handleSubmit = {
         t.handleSubmit

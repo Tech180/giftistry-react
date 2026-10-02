@@ -132,6 +132,10 @@ const defaultSettings = {
   AiRateLimitEnabled: false,
   AiImportChunkingEnabled: true,
   AiImportChunkItemLimit: 20,
+  AiMetadataExtractionPreset: 'full' as const,
+  AiPageContextMaxChars: null,
+  AiPopulateMaxTokens: null,
+  AiMetadataSplitPackCalls: false,
   AiCompletionTimeoutMs: 600000,
   AiConnectTimeoutMs: 5000,
   ScrapeFetchTimeoutMs: 8000,
@@ -153,6 +157,27 @@ function getLocalModelSelect() {
 
 function getLocalModelInput() {
   return screen.getByLabelText('Model', { selector: 'input' }) as HTMLInputElement;
+}
+
+function expectNumberSelectorValue(label: string, value: number) {
+  expect(screen.getByRole('button', { name: label })).toHaveTextContent(String(value));
+}
+
+function setNumberSelectorValue(label: string, value: number) {
+  fireEvent.click(screen.getByRole('button', { name: label }));
+  const input = screen.getByRole('textbox', { name: label });
+  fireEvent.change(input, { target: { value: String(value) } });
+  fireEvent.blur(input);
+}
+
+function expectNumberSelectorEnabled(label: string) {
+  expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
+}
+
+function expectNumberSelectorDisabled(editLabel: string, decreaseLabel: string, increaseLabel: string) {
+  expect(screen.queryByRole('button', { name: editLabel })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: decreaseLabel })).toBeDisabled();
+  expect(screen.getByRole('button', { name: increaseLabel })).toBeDisabled();
 }
 
 function expectAiCheckPayload(
@@ -245,16 +270,12 @@ describe('Server local AI validation', () => {
     render(<Server showToast={showToast} />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Fetch scrape timeout in milliseconds')).toHaveValue(12000);
+      expectNumberSelectorValue('Fetch scrape timeout in milliseconds', 12000);
     });
-    expect(screen.getByLabelText('Playwright scrape timeout in milliseconds')).toHaveValue(45000);
+    expectNumberSelectorValue('Playwright scrape timeout in milliseconds', 45000);
 
-    fireEvent.change(screen.getByLabelText('Fetch scrape timeout in milliseconds'), {
-      target: { value: '15000' },
-    });
-    fireEvent.change(screen.getByLabelText('Playwright scrape timeout in milliseconds'), {
-      target: { value: '50000' },
-    });
+    setNumberSelectorValue('Fetch scrape timeout in milliseconds', 15000);
+    setNumberSelectorValue('Playwright scrape timeout in milliseconds', 50000);
 
     const form = screen.getByLabelText('Save changes').closest('form');
     expect(form).toBeTruthy();
@@ -283,17 +304,13 @@ describe('Server local AI validation', () => {
     render(<Server showToast={showToast} />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Concurrent Grab info workers')).toHaveValue(12);
+      expectNumberSelectorValue('Concurrent Grab info workers', 12);
     });
-    expect(screen.getByLabelText('Max visible Grab info stream lanes')).toHaveValue(24);
+    expectNumberSelectorValue('Max visible Grab info stream lanes', 24);
     expect(screen.getByLabelText('Unlimited Grab info concurrency')).not.toBeChecked();
 
-    fireEvent.change(screen.getByLabelText('Concurrent Grab info workers'), {
-      target: { value: '8' },
-    });
-    fireEvent.change(screen.getByLabelText('Max visible Grab info stream lanes'), {
-      target: { value: '32' },
-    });
+    setNumberSelectorValue('Concurrent Grab info workers', 8);
+    setNumberSelectorValue('Max visible Grab info stream lanes', 32);
 
     const form = screen.getByLabelText('Save changes').closest('form');
     expect(form).toBeTruthy();
@@ -318,14 +335,14 @@ describe('Server local AI validation', () => {
     render(<Server showToast={showToast} />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Concurrent Grab info workers')).toHaveValue(3);
+      expectNumberSelectorValue('Concurrent Grab info workers', 3);
     });
 
     fireEvent.click(screen.getByLabelText('Unlimited Grab info concurrency'));
 
     expect(confirmSpy).toHaveBeenCalled();
     expect(screen.getByLabelText('Unlimited Grab info concurrency')).not.toBeChecked();
-    expect(screen.getByLabelText('Concurrent Grab info workers')).not.toBeDisabled();
+    expectNumberSelectorEnabled('Concurrent Grab info workers');
 
     confirmSpy.mockRestore();
   });
@@ -336,7 +353,7 @@ describe('Server local AI validation', () => {
     render(<Server showToast={showToast} />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Concurrent Grab info workers')).toHaveValue(3);
+      expectNumberSelectorValue('Concurrent Grab info workers', 3);
     });
 
     fireEvent.click(screen.getByLabelText('Unlimited Grab info concurrency'));
@@ -345,7 +362,11 @@ describe('Server local AI validation', () => {
       expect.stringMatching(/Unlimited Grab info concurrency will scrape every remaining product URL/i)
     );
     expect(screen.getByLabelText('Unlimited Grab info concurrency')).toBeChecked();
-    expect(screen.getByLabelText('Concurrent Grab info workers')).toBeDisabled();
+    expectNumberSelectorDisabled(
+      'Concurrent Grab info workers',
+      'Decrease concurrent Grab info workers',
+      'Increase concurrent Grab info workers',
+    );
 
     const form = screen.getByLabelText('Save changes').closest('form');
     fireEvent.submit(form!);
@@ -372,12 +393,10 @@ describe('Server local AI validation', () => {
     render(<Server showToast={showToast} />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText('AI request timeout in milliseconds')).toHaveValue(300000);
+      expectNumberSelectorValue('AI request timeout in milliseconds', 300000);
     });
 
-    fireEvent.change(screen.getByLabelText('AI request timeout in milliseconds'), {
-      target: { value: '900000' },
-    });
+    setNumberSelectorValue('AI request timeout in milliseconds', 900000);
 
     const form = screen.getByLabelText('Save changes').closest('form');
     expect(form).toBeTruthy();
@@ -403,12 +422,10 @@ describe('Server local AI validation', () => {
     render(<Server showToast={showToast} />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText('AI connect timeout in milliseconds')).toHaveValue(3000);
+      expectNumberSelectorValue('AI connect timeout in milliseconds', 3000);
     });
 
-    fireEvent.change(screen.getByLabelText('AI connect timeout in milliseconds'), {
-      target: { value: '8000' },
-    });
+    setNumberSelectorValue('AI connect timeout in milliseconds', 8000);
 
     const form = screen.getByLabelText('Save changes').closest('form');
     expect(form).toBeTruthy();
@@ -824,6 +841,10 @@ describe('Server AI disable persists config', () => {
       AiRateLimitEnabled: true,
       AiImportChunkingEnabled: true,
       AiImportChunkItemLimit: 20,
+      AiMetadataExtractionPreset: 'full',
+      AiPageContextMaxChars: 0,
+      AiPopulateMaxTokens: 0,
+      AiMetadataSplitPackCalls: false,
       AiFastProvider: 'openrouter',
       AiFastEndpoint: 'https://openrouter.ai/api/v1',
       AiFastApiKey: 'sk-keep-me',

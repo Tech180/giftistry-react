@@ -1,41 +1,55 @@
 .feature-toggles {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: var(--spacing-md);
 }
 
-.feature-toggles__row {
+.feature-toggles__card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.feature-toggles__card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-base);
-  padding-bottom: var(--spacing-base);
-  margin-bottom: var(--spacing-base);
-  border-bottom: 1px solid var(--border);
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--surface);
 }
 
-.feature-toggles__copy {
+.feature-toggles__header-left {
   display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
+  align-items: center;
+  gap: var(--spacing-md);
   min-width: 0;
+  flex: 1;
 }
 
 .feature-toggles__icon {
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: var(--radius);
-  background: var(--surface-2);
-  color: var(--text-muted);
+  background-color: rgba(var(--primary-rgb), 0.1);
   flex-shrink: 0;
+}
+
+.feature-toggles__icon-svg {
+  color: var(--primary);
+  width: var(--spacing-md);
+  height: var(--spacing-md);
 }
 
 .feature-toggles__title {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text);
   margin: 0;
 }
@@ -43,7 +57,16 @@
 .feature-toggles__subtitle {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
-  margin-top: 0.125rem;
+  margin: 0.125rem 0 0;
+}
+
+.feature-toggles__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--border);
+  background-color: var(--bg);
 }
 
 .feature-toggles__field {
@@ -52,27 +75,93 @@
   gap: var(--spacing-xs);
 }
 
+.feature-toggles__field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.feature-toggles__field-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  flex: 1;
+}
+
 .feature-toggles__label {
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-muted);
 }
 
-.feature-toggles__input {
-  width: 100%;
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: inherit;
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-sm) var(--spacing-base);
-  border-radius: var(--radius);
-  outline: none;
-  transition: all 0.15s ease-out;
+.feature-toggles__hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin: 0;
+}
 
-  &:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 1px var(--primary);
-    background-color: var(--bg);
-  }
+.feature-toggles__select {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.feature-toggles__section-divider {
+  height: 1px;
+  background-color: var(--border);
+}
+
+.feature-toggles__sub-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.feature-toggles__sub-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.feature-toggles__sub-title {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.feature-toggles__limits-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.feature-toggles__nested-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border);
+  transition: opacity var(--transition-fast);
+}
+
+.feature-toggles__nested-row--disabled {
+  opacity: 0.5;
+}
+
+.feature-toggles__nested-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  flex: 1;
+}
+
+.feature-toggles__nested-title {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text);
 }

@@ -9,6 +9,9 @@ export const TERMINAL_JOB_STATUSES: BackgroundJobStatus[] = [
 
 export const DEFAULT_JOB_POLL_INTERVAL_MS = 1500;
 
+/** Sparse HTTP backup while waiting on user-socket job events. */
+export const JOB_WAIT_SAFETY_POLL_INTERVAL_MS = 10_000;
+
 export const JOBS_PAYLOAD_WRAPPER_KEYS = ['Jobs', 'Data', 'Items', 'Result'] as const;
 
 export const IMPORT_TIMELINE_STEP_ORDER: ImportTimelineStepId[] = [

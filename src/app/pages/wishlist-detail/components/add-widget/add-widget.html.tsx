@@ -13,6 +13,7 @@ export const AddWidgetTemplate: React.FC<TemplateProps> = ({
   errorMsg,
   isSubmitting,
   hintText,
+  hintIsWarning,
   menuToggleLabel,
   actionTabIndex,
   rootClassName,
@@ -319,20 +320,37 @@ export const AddWidgetTemplate: React.FC<TemplateProps> = ({
       ) : (
         <p
           className = {
-            styles['add-widget__popover-text']
+            `${styles['add-widget__popover-text']}${hintIsWarning ? ` ${styles['add-widget__popover-text--warning']}` : ''}`
+          }
+          role = {
+            hintIsWarning ? 'status' : undefined
           }
         >
-          <Info
-            size = {
-              14
-            }
-            className = {
-              styles['add-widget__popover-icon']
-            }
-            aria-hidden = {
-              'true'
-            }
-          />
+          {hintIsWarning ? (
+            <AlertTriangle
+              size = {
+                14
+              }
+              className = {
+                `${styles['add-widget__popover-icon']} ${styles['add-widget__popover-icon--warning']}`
+              }
+              aria-hidden = {
+                'true'
+              }
+            />
+          ) : (
+            <Info
+              size = {
+                14
+              }
+              className = {
+                styles['add-widget__popover-icon']
+              }
+              aria-hidden = {
+                'true'
+              }
+            />
+          )}
           <span>{hintText}</span>
         </p>
       )}

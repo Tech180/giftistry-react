@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { jobsApi } from 'features/jobs';
 import { useTourOptional } from 'features/tour';
+import { AMAZON_SHORT_LINK_WARNING } from 'shared/constants/amazon-short-link-warning.constant';
+import { isAmazonShortLinkUrl } from 'shared/utils/is-amazon-short-link-url.util';
 import { isValidUrl } from 'shared/utils/is-valid-url.util';
 import { BUSY_HINT, IDLE_HINT } from './constants/hints.constant';
 import { MOBILE_MENU_QUERY } from './constants/mobile-menu-query.constant';
@@ -190,6 +192,7 @@ export const AddWidget: React.FC<Props> = ({
   };
 
   const isExpanded = !effectiveInputMode && (isMenuOpen || forceTourExpanded);
+  const showShortLinkWarning = !isSubmitting && isAmazonShortLinkUrl(url);
 
   return (
     <AddWidgetTemplate
@@ -215,7 +218,10 @@ export const AddWidget: React.FC<Props> = ({
         isSubmitting
       }
       hintText = {
-        isSubmitting ? BUSY_HINT : IDLE_HINT
+        isSubmitting ? BUSY_HINT : showShortLinkWarning ? AMAZON_SHORT_LINK_WARNING : IDLE_HINT
+      }
+      hintIsWarning = {
+        showShortLinkWarning
       }
       menuToggleLabel = {
         isMenuOpen || forceTourExpanded ? 'Close add options' : 'Open add options'

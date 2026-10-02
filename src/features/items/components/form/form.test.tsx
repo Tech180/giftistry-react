@@ -14,6 +14,14 @@ vi.mock('features/items/providers/session', () => ({
   }),
 }));
 
+vi.mock('shared/providers/user-socket', () => ({
+  useUserSocket: () => ({
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    isConnected: true,
+  }),
+}));
+
 import { Form } from './form.component';
 import { itemsApi } from '../../api/items.api';
 import { jobsApi } from 'features/jobs/api/jobs.api';
@@ -462,6 +470,66 @@ describe('Form - Auto populate', () => {
       );
     });
     expect(screen.getByDisplayValue('Amazon')).toBeInTheDocument();
+  });
+
+  test('shows Amazon short-link warning in the yellow alert slot', () => {
+    render(<Form {...baseFormProps} />);
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://a.co/d/09RD8uDq' },
+    });
+
+    const warning = screen.getByRole('status');
+    expect(warning).toHaveTextContent(/Amazon short links often can't be auto-filled/i);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Amazon short links often can't be auto-filled/i)).toHaveLength(1);
+  });
+
+  test('hides short-link warning when an error is shown, then restores after URL change', async () => {
+    vi.mocked(jobsApi.startItemEnrich).mockRejectedValue(new Error('network'));
+
+    render(
+      <Form
+        {...baseFormProps}
+        canShowAi={true}
+        listAiEnabled={true}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://a.co/d/09RD8uDq' },
+    });
+    expect(screen.getByRole('status')).toHaveTextContent(/Amazon short links often can't be auto-filled/i);
+
+    fireEvent.click(screen.getByTitle('Auto-fill details from link'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('network');
+    });
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Amazon short links often can't be auto-filled/i)
+    ).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://amzn.to/abc123' },
+    });
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(/Amazon short links often can't be auto-filled/i);
+  });
+
+  test('does not show short-link warning for amazon.com/dp product URLs', () => {
+    render(<Form {...baseFormProps} />);
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://www.amazon.com/dp/B0TEST123' },
+    });
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Amazon short links often can't be auto-filled/i)
+    ).not.toBeInTheDocument();
   });
 
   test('starts an update-item enrich job and notifies the parent when editing', async () => {

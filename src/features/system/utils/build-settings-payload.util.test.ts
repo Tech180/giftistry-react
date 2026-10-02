@@ -34,6 +34,10 @@ const baseInput = (): SettingsPayloadInput => ({
   aiRateLimitEnabled: false,
   aiImportChunkingEnabled: true,
   aiImportChunkItemLimit: 20,
+  aiMetadataExtractionPreset: 'full',
+  aiPageContextMaxChars: 0,
+  aiPopulateMaxTokens: 0,
+  aiMetadataSplitPackCalls: false,
   aiCompletionTimeoutMs: 600000,
   aiConnectTimeoutMs: 5000,
   scrapeFetchTimeoutMs: 8000,
@@ -97,5 +101,19 @@ describe('buildSettingsPayload', () => {
     expect(local.SmtpPass).toBe('');
     expect(local.SmtpSecure).toBe(false);
     expect(local.SmtpFrom).toBe('noreply@giftistry.local');
+  });
+
+  test('includes metadata extraction preset fields', () => {
+    const payload = buildSettingsPayload({
+      ...baseInput(),
+      aiMetadataExtractionPreset: 'thorough',
+      aiPageContextMaxChars: 4000,
+      aiPopulateMaxTokens: 4096,
+      aiMetadataSplitPackCalls: true,
+    });
+    expect(payload.AiMetadataExtractionPreset).toBe('thorough');
+    expect(payload.AiPageContextMaxChars).toBe(4000);
+    expect(payload.AiPopulateMaxTokens).toBe(4096);
+    expect(payload.AiMetadataSplitPackCalls).toBe(true);
   });
 });

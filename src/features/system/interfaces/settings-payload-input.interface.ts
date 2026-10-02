@@ -1,3 +1,4 @@
+import type { AiMetadataExtractionPreset } from './ai-metadata-extraction-preset.type';
 import type { CustomPackSettings } from './custom-pack-settings.interface';
 import type { ModelsProvider } from './models-provider.type';
 
@@ -33,6 +34,10 @@ export interface SettingsPayloadInput {
   aiRateLimitEnabled: boolean;
   aiImportChunkingEnabled: boolean;
   aiImportChunkItemLimit: number;
+  aiMetadataExtractionPreset: AiMetadataExtractionPreset;
+  aiPageContextMaxChars: number;
+  aiPopulateMaxTokens: number;
+  aiMetadataSplitPackCalls: boolean;
   aiCompletionTimeoutMs: number;
   aiConnectTimeoutMs: number;
   scrapeFetchTimeoutMs: number;

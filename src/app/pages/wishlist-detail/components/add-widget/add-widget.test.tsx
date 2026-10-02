@@ -145,6 +145,30 @@ describe('AddWidget', () => {
     });
   });
 
+  test('warns when an Amazon short link is pasted without blocking submit', async () => {
+    const started = { Job: { Id: 'job-1' }, Item: { Id: 'item-1', Name: 'Product' } };
+    vi.mocked(jobsApi.startItemEnrich).mockResolvedValue(started as any);
+
+    render(<AddWidget {...baseProps} isInputMode={true} />);
+
+    fireEvent.change(screen.getByPlaceholderText('Paste product URL...'), {
+      target: { value: 'https://a.co/d/09RD8uDq' },
+    });
+
+    expect(screen.getByRole('status')).toHaveTextContent(/Amazon short links often can't be auto-filled/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /auto-add from link/i }));
+
+    await waitFor(() => {
+      expect(jobsApi.startItemEnrich).toHaveBeenCalledWith({
+        intent: 'create-from-url',
+        listId: 'list-1',
+        url: 'https://a.co/d/09RD8uDq',
+        writeBack: true,
+      });
+    });
+  });
+
   test('cancel exits input mode', () => {
     const onExitInputMode = vi.fn();
     render(

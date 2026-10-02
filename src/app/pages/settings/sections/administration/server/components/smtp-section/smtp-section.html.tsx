@@ -1,6 +1,6 @@
 import React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { Switch } from 'shared/ui';
+import { NumberSelector, Switch } from 'shared/ui';
 import type { SmtpSectionProps } from './interfaces/props.interface';
 import styles from './smtp-section.module.css';
 import segmentStyles from '../../../segmented-control.module.css';
@@ -72,13 +72,14 @@ export const SmtpSectionTemplate: React.FC<SmtpSectionProps> = ({
 
                   <div className={styles['input-group']}>
                     <label className={styles['input-label']}>Port</label>
-                    <input
-                      type="number"
-                      className={styles['input-field']}
-                      placeholder="587"
-                      value={smtpPort}
-                      onChange={(e) => setSmtpPort(e.target.value)}
-                      required={smtpType === 'remote'}
+                    <NumberSelector
+                      value={Number.parseInt(smtpPort, 10) || 587}
+                      min={1}
+                      max={65535}
+                      onChange={(next) => setSmtpPort(String(next))}
+                      editLabel="SMTP port"
+                      decreaseLabel="Decrease SMTP port"
+                      increaseLabel="Increase SMTP port"
                     />
                   </div>
                 </div>

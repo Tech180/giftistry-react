@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type React from 'react';
 import { jobsApi, waitForJob } from 'features/jobs';
+import { useUserSocket } from 'shared/providers/user-socket';
 import { isValidUrl } from 'shared/utils/is-valid-url.util';
 import { getSiteName } from 'shared/utils/get-site-name.util';
 import { STANDARD_CATEGORIES } from '../../../constants/standard-categories';
@@ -31,7 +32,7 @@ export function useEnrich(options: {
   setWarningMsg: (val: string | null) => void;
   canShowAi: boolean;
   isAutopopulating: boolean;
-  setIsAutopopulating: (val: boolean) => void;
+  setIsAutopopulating: React.Dispatch<React.SetStateAction<boolean>>;
   isSummarizingNotes: boolean;
   hasScraped: boolean;
   sessionCustomCategories: string[];
@@ -47,6 +48,7 @@ export function useEnrich(options: {
   startJobRun: () => () => boolean;
   onItemEnriched?: () => void;
 }): UseEnrichResult {
+  const { addEventListener, removeEventListener } = useUserSocket();
   const {
     listId,
     item,
@@ -165,7 +167,11 @@ export function useEnrich(options: {
         promoteOnClose: isSubstitutionEditor ? false : undefined,
       };
 
-      const finished = await waitForJob(Job.Id, { isCancelled });
+      const finished = await waitForJob(Job.Id, {
+        isCancelled,
+        subscribe: addEventListener,
+        unsubscribe: removeEventListener,
+      });
       if (!finished || isCancelled()) {
         return;
       }

@@ -4,6 +4,7 @@ import type { Item } from '../../../interfaces/item.interface';
 import type { CustomFieldRow } from '../../../interfaces/custom-field-row.interface';
 import type { PendingManualJob } from '../../../interfaces/pending-manual-job.interface';
 import { jobsApi, waitForJob } from 'features/jobs';
+import { useUserSocket } from 'shared/providers/user-socket';
 import { buildSummarizeCustomFields } from 'shared/utils/item-custom-fields.util';
 import { parsePriorityWeight } from '../../../utils/parse-priority-weight.util';
 import { toSummarizedDescription } from '../../../utils/ai-job-result.util';
@@ -33,14 +34,15 @@ export function useSummarizeNotes(options: {
   variations: { name: string; quantity: number }[];
   isAutopopulating: boolean;
   isSummarizingNotes: boolean;
-  setIsSummarizingNotes: (val: boolean) => void;
+  setIsSummarizingNotes: React.Dispatch<React.SetStateAction<boolean>>;
   undoDescription: string | null;
-  setUndoDescription: (val: string | null) => void;
+  setUndoDescription: React.Dispatch<React.SetStateAction<string | null>>;
   setErrorMsg: (val: string | null) => void;
   setWarningMsg: (val: string | null) => void;
   pendingJobRef: React.RefObject<PendingManualJob | null>;
   startJobRun: () => () => boolean;
 }): UseSummarizeNotesResult {
+  const { addEventListener, removeEventListener } = useUserSocket();
   const {
     canShowAi,
     listAiEnabled,
@@ -130,7 +132,11 @@ export function useSummarizeNotes(options: {
       }
       pendingJobRef.current = { jobId: Job.Id, kind: 'summarize' };
 
-      const finished = await waitForJob(Job.Id, { isCancelled });
+      const finished = await waitForJob(Job.Id, {
+        isCancelled,
+        subscribe: addEventListener,
+        unsubscribe: removeEventListener,
+      });
       if (!finished || isCancelled()) {
         return;
       }

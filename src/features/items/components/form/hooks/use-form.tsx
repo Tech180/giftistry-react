@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Props } from '../interfaces/props.interface';
 import type { TemplateProps } from '../interfaces/template-props.interface';
 import type { SubstitutionEditorState } from '../interfaces/substitution-editor-state.type';
@@ -7,6 +7,8 @@ import { SUBSTITUTION_FORM_ID } from '../../../constants/substitution-form.const
 import { useItemsSession } from '../../../providers/session';
 import { getFriendlyCategoryLabel } from '../../../utils/category-label.util';
 import { METADATA_BADGE_EMOJI } from 'shared/constants/metadata-badge-emoji.constant';
+import { AMAZON_SHORT_LINK_WARNING } from 'shared/constants/amazon-short-link-warning.constant';
+import { isAmazonShortLinkUrl } from 'shared/utils/is-amazon-short-link-url.util';
 import {
   buildLinkingAudienceContext,
   resolveItemSharedWithUserIds,
@@ -444,6 +446,18 @@ export function useForm({
     setSubSaving,
   });
 
+  const setLinkUrl = useCallback(
+    (val: string) => {
+      fields.setErrorMsg(null);
+      fields.setLinkUrl(val);
+    },
+    [fields.setErrorMsg, fields.setLinkUrl]
+  );
+
+  const shortLinkWarning =
+    !readOnly && isAmazonShortLinkUrl(fields.linkUrl) ? AMAZON_SHORT_LINK_WARNING : null;
+  const displayWarning = fields.errorMsg ? null : (shortLinkWarning ?? fields.warningMsg);
+
   return {
     name: fields.name,
     setName: fields.setName,
@@ -456,12 +470,12 @@ export function useForm({
     canCollaborate: canManageItems,
     isLoading: fields.isLoading || subs.subSaving,
     errorMsg: fields.errorMsg,
-    warningMsg: fields.warningMsg,
+    displayWarning,
     handleSubmit: substitutionEditor ? subs.handleSubstitutionSubmit : submit.handleSubmit,
     formId: substitutionEditor ? SUBSTITUTION_FORM_ID : ADD_ITEM_FORM_ID,
     isSubstitutionSurface: !!substitutionEditor,
     linkUrl: fields.linkUrl,
-    setLinkUrl: fields.setLinkUrl,
+    setLinkUrl,
     onOpenLink: fields.onOpenLink,
     websiteName: fields.websiteName,
     setWebsiteName: fields.setWebsiteName,
