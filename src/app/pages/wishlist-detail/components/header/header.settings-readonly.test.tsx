@@ -28,6 +28,7 @@ vi.mock('shared/utils/wishlist-export', () => ({
   exportToXlsx: vi.fn(),
   exportToTxt: vi.fn(),
   exportToJson: vi.fn(),
+  exportToMd: vi.fn(),
   exportToPdf: vi.fn(),
 }));
 

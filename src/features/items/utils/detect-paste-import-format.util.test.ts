@@ -27,6 +27,14 @@ describe('detectPasteImportFormat', () => {
   it('returns unknown for prose', () => {
     expect(detectPasteImportFormat('just some notes')).toBe('unknown');
   });
+
+  it('detects CSV when Item column is not third', () => {
+    const csv = [
+      'Category,Priority,Star,Price,Website,Description,Audience,Linked Items,Related Items,Item',
+      'Home,,,,,,,,,Mug',
+    ].join('\n');
+    expect(detectPasteImportFormat(csv)).toBe('csv');
+  });
 });
 
 describe('pasteFileNameForFormat', () => {

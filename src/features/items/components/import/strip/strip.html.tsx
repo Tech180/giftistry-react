@@ -30,6 +30,7 @@ export const StripTemplate: React.FC<TemplateProps> = ({
   canOptimizeCategories,
   optimizeCategoriesActive,
   allowAi,
+  importBlocked,
   confirmLabel,
   className,
   grabSwitchId,
@@ -170,9 +171,9 @@ export const StripTemplate: React.FC<TemplateProps> = ({
             ) : null}
             <div className={styles['strip__actions-end']}>
               <Button type="button" variant="secondary" onClick={onReset} disabled={isBusy}>
-                {phase === 'success' ? 'Import another' : 'Cancel'}
+                {phase === 'success' ? 'Import another' : importBlocked ? 'Back' : 'Cancel'}
               </Button>
-              {phase === 'ready' ? (
+              {phase === 'ready' && !importBlocked ? (
                 <Button
                   type="button"
                   variant="primary"

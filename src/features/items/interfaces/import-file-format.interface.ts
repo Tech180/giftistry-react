@@ -1,1 +1,1 @@
-export type ImportFileFormat = 'csv' | 'xlsx' | 'txt' | 'json' | 'md' | 'pdf' | 'unknown';
+export type ImportFileFormat = 'csv' | 'xlsx' | 'txt' | 'json' | 'md' | 'unknown';

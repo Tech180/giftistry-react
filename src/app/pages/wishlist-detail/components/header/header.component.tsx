@@ -7,6 +7,7 @@ import {
   exportToXlsx,
   exportToTxt,
   exportToJson,
+  exportToMd,
   exportToPdf,
 } from 'shared/utils/wishlist-export';
 import { getDisplayName } from 'shared/utils/get-display-name.util';
@@ -112,6 +113,11 @@ export const Header: React.FC<Props> = (props) => {
 
   const onExportJson = () => {
     exportToJson(wishlist.Id, wishlist.Title, exportContext);
+    closeExportMenu();
+  };
+
+  const onExportMd = () => {
+    exportToMd(wishlist.Id, wishlist.Title, exportContext);
     closeExportMenu();
   };
 
@@ -392,6 +398,9 @@ export const Header: React.FC<Props> = (props) => {
       }
       onExportJson = {
         onExportJson
+      }
+      onExportMd = {
+        onExportMd
       }
       onExportPdf = {
         onExportPdf

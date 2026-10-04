@@ -22,12 +22,12 @@ vi.mock('features/items/utils/read-import-file.util', () => ({
   readImportFile: vi.fn(async (file: File, options?: { onProgress?: (n: number) => void; allowAi?: boolean }) => {
     options?.onProgress?.(40);
     options?.onProgress?.(100);
-    if (!options?.allowAi && file.name.toLowerCase().endsWith('.pdf')) {
+    if (file.name.toLowerCase().endsWith('.pdf')) {
       throw new Error('Unsupported file type. Use CSV, XLSX, TXT, JSON, or MD.');
     }
     return {
       fileName: file.name,
-      format: file.name.toLowerCase().endsWith('.pdf') ? ('pdf' as const) : ('json' as const),
+      format: 'json' as const,
       content: '{}',
       contentEncoding: 'text' as const,
     };
@@ -51,6 +51,7 @@ vi.mock('shared/providers/user-socket', () => ({
 }));
 
 import { jobsApi } from 'features/jobs';
+import { IMPORT_FORMAT_UNSUPPORTED_MESSAGE } from 'features/items/constants/import-format-blocked-messages.constant';
 import { readImportFile } from 'features/items/utils/read-import-file.util';
 
 function renderStrip(onImported = vi.fn()) {
@@ -271,8 +272,9 @@ describe('Strip', () => {
 
     const { container } = renderStrip();
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
-    expect(input.accept).toContain('.pdf');
-    expect(screen.getByText(/CSV, XLSX, TXT, JSON, MD, or PDF/i)).toBeInTheDocument();
+    expect(input.accept).toBe('.csv,.xlsx,.txt,.json,.md');
+    expect(input.accept).not.toContain('pdf');
+    expect(screen.getByText(/CSV, XLSX, TXT, JSON, or MD/i)).toBeInTheDocument();
 
     await selectFile(container);
     await waitFor(() => {
@@ -292,6 +294,40 @@ describe('Strip', () => {
         })
       );
     });
+  });
+
+  test('shows Back and hides Create wishlist when import format is rejected', async () => {
+    vi.mocked(jobsApi.startWishlistImport).mockResolvedValue({
+      Id: 'job-format',
+      Kind: 'wishlist-import',
+      ListId: null,
+      UserId: 'user-1',
+      Status: 'failed',
+      Phase: 'failed',
+      ProgressDone: 0,
+      ProgressTotal: 100,
+      Message: IMPORT_FORMAT_UNSUPPORTED_MESSAGE,
+      Error: IMPORT_FORMAT_UNSUPPORTED_MESSAGE,
+      GrabInfo: false,
+      Mode: 'create-list',
+    });
+
+    const { container } = renderStrip();
+    await selectFile(container);
+    await waitFor(() => {
+      expect(screen.getByText('Ready')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText(/wishlist title/i), {
+      target: { value: 'Holiday' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /create wishlist/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /^Back$/i })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: /create wishlist/i })).toBeNull();
+    expect(screen.queryByRole('group', { name: /ai features/i })).toBeNull();
   });
 
   test('keeps a hidden file input when collapsed for menu browse', () => {

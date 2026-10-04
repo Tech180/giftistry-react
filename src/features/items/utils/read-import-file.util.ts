@@ -45,16 +45,15 @@ export async function readImportFile(
     throw new Error(WISHLIST_IMPORT_SIZE_ERROR);
   }
 
-  const allowAi = options.allowAi ?? false;
   const format = detectImportFormat(file.name);
-  const allowed = getWishlistImportAllowedExtensions(allowAi) as readonly string[];
+  const allowed = getWishlistImportAllowedExtensions() as readonly string[];
   if (format === 'unknown' || !allowed.includes(format)) {
-    throw new Error(getWishlistImportTypeError(allowAi));
+    throw new Error(getWishlistImportTypeError());
   }
 
   options.onProgress?.(0);
 
-  if (format === 'xlsx' || format === 'pdf') {
+  if (format === 'xlsx') {
     const dataUrl = await readWithProgress(file, 'data-url', options.onProgress);
     return {
       fileName: file.name,

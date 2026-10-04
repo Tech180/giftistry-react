@@ -40,7 +40,7 @@ export const Dropzone: React.FC<Props> = ({
     .filter(Boolean)
     .join(' ');
 
-  const formats = getWishlistImportFormatOptions(allowAi);
+  const formats = getWishlistImportFormatOptions();
   const formatsLabel = formats.map((f) => f.label).join(', ').replace(/, ([^,]*)$/, ', or $1');
 
   let bodyKind: BodyKind = 'idle-default';

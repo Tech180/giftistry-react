@@ -24,7 +24,7 @@ export const Strip = forwardRef<Handle, Props>(function Strip(
     onImported,
   });
   const menuFileInputRef = useRef<HTMLInputElement>(null);
-  const defaultAccept = getWishlistImportAccept(canShowAi);
+  const defaultAccept = getWishlistImportAccept();
   const [pasteDraft, setPasteDraft] = useState('');
   const grabSwitchId = `import-grab-info-${useId().replace(/:/g, '')}`;
   const optimizeSwitchId = `import-optimize-categories-${useId().replace(/:/g, '')}`;
@@ -131,6 +131,7 @@ export const Strip = forwardRef<Handle, Props>(function Strip(
         canOptimizeCategories = { flow.canOptimizeCategories }
         optimizeCategoriesActive = { flow.optimizeCategoriesActive }
         allowAi = { flow.allowAi }
+        importBlocked = { flow.importBlocked }
         confirmLabel = { flow.confirmLabel }
         className = { className }
         grabSwitchId = { grabSwitchId }

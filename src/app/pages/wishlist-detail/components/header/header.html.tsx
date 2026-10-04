@@ -82,6 +82,7 @@ export const HeaderTemplate: React.FC<TemplateProps> = ({
   onExportXlsx,
   onExportTxt,
   onExportJson,
+  onExportMd,
   onExportPdf,
 }) => (
   <>
@@ -501,6 +502,13 @@ export const HeaderTemplate: React.FC<TemplateProps> = ({
                       onClick={onExportJson}
                     >
                       JSON
+                    </button>
+                    <button
+                      type="button"
+                      className={styles['header__export-dropdown-item']}
+                      onClick={onExportMd}
+                    >
+                      MD
                     </button>
                     <button
                       type="button"

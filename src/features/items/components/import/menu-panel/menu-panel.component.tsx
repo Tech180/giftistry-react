@@ -63,6 +63,7 @@ export const MenuPanel: React.FC<Props> = ({
       phase = { flow.phase }
       isDetails = { isDetails }
       allowAi = { allowAi }
+      importBlocked = { flow.importBlocked }
       fileName = { flow.fileName }
       wishlistTitle = { flow.wishlistTitle }
       setWishlistTitle = { flow.setWishlistTitle }

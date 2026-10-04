@@ -22,6 +22,7 @@ import { getInitialsFromDisplayName } from 'shared/utils/get-initials.util';
 import {
   exportToCsv,
   exportToJson,
+  exportToMd,
   exportToPdf,
   exportToTxt,
   exportToXlsx,
@@ -173,6 +174,11 @@ export function MobileActions({
           id: 'json',
           label: 'JSON',
           onClick: () => exportToJson(wishlist.Id, wishlist.Title, exportContext),
+        },
+        {
+          id: 'md',
+          label: 'MD',
+          onClick: () => exportToMd(wishlist.Id, wishlist.Title, exportContext),
         },
         {
           id: 'pdf',

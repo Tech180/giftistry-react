@@ -28,6 +28,7 @@ vi.mock('shared/utils/wishlist-export', () => ({
   exportToXlsx: vi.fn(),
   exportToTxt: vi.fn(),
   exportToJson: vi.fn(),
+  exportToMd: vi.fn(),
   exportToPdf: vi.fn(),
 }));
 
@@ -106,6 +107,7 @@ const baseProps: TemplateProps = {
   onExportXlsx: vi.fn(),
   onExportTxt: vi.fn(),
   onExportJson: vi.fn(),
+  onExportMd: vi.fn(),
   onExportPdf: vi.fn(),
 };
 

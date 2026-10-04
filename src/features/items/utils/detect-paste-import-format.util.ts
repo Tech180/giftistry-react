@@ -22,8 +22,16 @@ export function detectPasteImportFormat(text: string): ImportFileFormat {
     return 'md';
   }
 
-  if (/^Category,Priority,Item,/m.test(trimmed) || /^Category\tPriority\tItem\t/m.test(trimmed)) {
-    return 'csv';
+  for (const line of trimmed.split(/\r?\n/)) {
+    const row = line.trim();
+    if (!row.includes(',') && !row.includes('\t')) {
+      continue;
+    }
+    const delimiter = row.includes('\t') ? '\t' : ',';
+    const cells = row.split(delimiter).map((cell) => cell.trim());
+    if (cells.some((cell) => cell === 'Item')) {
+      return 'csv';
+    }
   }
 
   return 'unknown';

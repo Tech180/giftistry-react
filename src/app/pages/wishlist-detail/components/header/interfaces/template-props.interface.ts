@@ -70,5 +70,6 @@ export interface TemplateProps {
   onExportXlsx: () => void;
   onExportTxt: () => void;
   onExportJson: () => void;
+  onExportMd: () => void;
   onExportPdf: () => void;
 }

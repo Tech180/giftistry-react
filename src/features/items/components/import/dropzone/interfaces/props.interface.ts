@@ -10,7 +10,7 @@ export interface Props {
   uploadPercent?: number;
   uploadLabel?: string;
   error?: string | null;
-  /** When true, PDF is accepted and an AI affordance is shown in the hint. */
+  /** When true, an AI affordance is shown in the hint. */
   allowAi?: boolean;
   /**
    * `menu` is a compact layout for the floating action panel.

@@ -27,6 +27,7 @@ export interface UseImportFlowResult {
   optimizeCategoriesActive: boolean;
   optimizeCategoriesArmed: boolean;
   allowAi: boolean;
+  importBlocked: boolean;
   confirmLabel: string;
   successMessage: string | null;
   successTone: CollapsibleStripStatus['tone'];

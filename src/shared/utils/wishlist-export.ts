@@ -30,7 +30,7 @@ const getExportFilename = (title: string, exporterName: string | undefined, ext:
 async function downloadExportFile(
   listId: string,
   title: string,
-  format: 'csv' | 'xlsx' | 'txt' | 'json' | 'pdf',
+  format: 'csv' | 'xlsx' | 'txt' | 'json' | 'md' | 'pdf',
   exportContext: WishlistExportContext = {}
 ) {
   try {
@@ -72,6 +72,10 @@ export function exportToTxt(listId: string, title: string, exportContext: Wishli
 
 export function exportToJson(listId: string, title: string, exportContext: WishlistExportContext = {}) {
   return downloadExportFile(listId, title, 'json', exportContext);
+}
+
+export function exportToMd(listId: string, title: string, exportContext: WishlistExportContext = {}) {
+  return downloadExportFile(listId, title, 'md', exportContext);
 }
 
 export function exportToPdf(listId: string, title: string, exportContext: WishlistExportContext = {}) {

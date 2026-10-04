@@ -11,6 +11,7 @@ export const MenuPanelTemplate: React.FC<TemplateProps> = ({
   phase,
   isDetails,
   allowAi,
+  importBlocked,
   fileName,
   wishlistTitle,
   setWishlistTitle,
@@ -121,7 +122,7 @@ export const MenuPanelTemplate: React.FC<TemplateProps> = ({
               </div>
             ) : null}
 
-            {allowAi ? (
+            {allowAi && !importBlocked ? (
               <div className={styles['menu-panel__ai-panel-slot']}>
                 <AiPanel
                   active = { aiPanelActive }
@@ -142,16 +143,18 @@ export const MenuPanelTemplate: React.FC<TemplateProps> = ({
             ) : null}
             {errorMessage ? <p className={styles['menu-panel__error']}>{errorMessage}</p> : null}
 
-            <Button
-              type="button"
-              variant="primary"
-              className={styles['menu-panel__confirm']}
-              onClick={onConfirm}
-              disabled={confirmDisabled}
-              isLoading={phase === 'creating'}
-            >
-              {confirmText}
-            </Button>
+            {!importBlocked ? (
+              <Button
+                type="button"
+                variant="primary"
+                className={styles['menu-panel__confirm']}
+                onClick={onConfirm}
+                disabled={confirmDisabled}
+                isLoading={phase === 'creating'}
+              >
+                {confirmText}
+              </Button>
+            ) : null}
           </div>
         </section>
       </div>

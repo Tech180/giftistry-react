@@ -19,12 +19,12 @@ vi.mock('features/items/utils/read-import-file.util', () => ({
   readImportFile: vi.fn(async (file: File, options?: { onProgress?: (n: number) => void; allowAi?: boolean }) => {
     options?.onProgress?.(40);
     options?.onProgress?.(100);
-    if (!options?.allowAi && file.name.toLowerCase().endsWith('.pdf')) {
-      throw new Error('Unsupported file type. Use CSV, XLSX, TXT, or JSON.');
+    if (file.name.toLowerCase().endsWith('.pdf')) {
+      throw new Error('Unsupported file type. Use CSV, XLSX, TXT, JSON, or MD.');
     }
     return {
       fileName: file.name,
-      format: file.name.toLowerCase().endsWith('.pdf') ? ('pdf' as const) : ('json' as const),
+      format: 'json' as const,
       content: '{}',
       contentEncoding: 'text' as const,
     };

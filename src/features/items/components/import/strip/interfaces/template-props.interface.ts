@@ -29,6 +29,7 @@ export interface TemplateProps {
   canOptimizeCategories: boolean;
   optimizeCategoriesActive: boolean;
   allowAi: boolean;
+  importBlocked: boolean;
   confirmLabel: string;
   className?: string;
   grabSwitchId: string;

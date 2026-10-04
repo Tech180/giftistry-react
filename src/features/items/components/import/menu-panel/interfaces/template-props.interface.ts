@@ -6,6 +6,7 @@ export interface TemplateProps {
   phase: Phase;
   isDetails: boolean;
   allowAi: boolean;
+  importBlocked: boolean;
   fileName: string | null;
   wishlistTitle: string;
   setWishlistTitle: (value: string) => void;

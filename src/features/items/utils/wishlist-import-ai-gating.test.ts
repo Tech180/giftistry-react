@@ -7,21 +7,22 @@ import {
 import { readImportFile } from 'features/items/utils/read-import-file.util';
 
 describe('wishlist import AI format gating', () => {
-  test('excludes PDF from accept list when AI is off', () => {
-    expect(getWishlistImportAccept(false)).toBe('.csv,.xlsx,.txt,.json,.md');
-    expect(getWishlistImportAllowedExtensions(false)).not.toContain('pdf');
-    expect(getWishlistImportTypeError(false)).not.toMatch(/PDF/i);
+  test('allows csv, xlsx, txt, json, and md', () => {
+    expect(getWishlistImportAccept()).toBe('.csv,.xlsx,.txt,.json,.md');
+    expect(getWishlistImportAllowedExtensions()).not.toContain('pdf');
+    expect(getWishlistImportTypeError()).not.toMatch(/PDF/i);
   });
 
-  test('includes PDF when AI is on', () => {
-    expect(getWishlistImportAccept(true)).toContain('.pdf');
-    expect(getWishlistImportAllowedExtensions(true)).toContain('pdf');
-    expect(getWishlistImportTypeError(true)).toMatch(/PDF/i);
-  });
-
-  test('readImportFile rejects PDF when allowAi is false', async () => {
+  test('readImportFile rejects PDF when AI is off', async () => {
     const file = new File(['%PDF'], 'scan.pdf', { type: 'application/pdf' });
     await expect(readImportFile(file, { allowAi: false })).rejects.toThrow(
+      /CSV, XLSX, TXT, JSON, or MD/i
+    );
+  });
+
+  test('readImportFile rejects PDF when AI is on', async () => {
+    const file = new File(['%PDF'], 'scan.pdf', { type: 'application/pdf' });
+    await expect(readImportFile(file, { allowAi: true })).rejects.toThrow(
       /CSV, XLSX, TXT, JSON, or MD/i
     );
   });

@@ -189,7 +189,7 @@ export const DropzoneTemplate: React.FC<TemplateProps> = ({
         ref={fileInputRef}
         className={styles['dropzone__hidden-input']}
         type="file"
-        accept={getWishlistImportAccept(allowAi)}
+        accept={getWishlistImportAccept()}
         onChange={onFileInputChange}
         tabIndex={-1}
       />

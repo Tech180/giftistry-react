@@ -19,6 +19,7 @@ import {
   detectPasteImportFormat,
   pasteFileNameForFormat,
 } from 'features/items/utils/detect-paste-import-format.util';
+import { isImportFormatBlocked } from 'features/items/utils/is-import-format-blocked.util';
 import { useToast } from 'shared/providers/toast';
 import { useUserSocket } from 'shared/providers/user-socket';
 import type { ImportTimelineStep } from 'features/items/components/import/strip/interfaces/import-timeline-step.interface';
@@ -54,13 +55,16 @@ export function useImportFlow({
   const { addEventListener, removeEventListener } = useUserSocket();
 
   const isBusy = phase === 'uploading' || phase === 'creating';
-  const canGrabInfo = allowAi && phase === 'ready' && pendingRead !== null;
+  const importBlocked = isImportFormatBlocked(errorMessage);
+  const canGrabInfo =
+    allowAi && phase === 'ready' && pendingRead !== null && !importBlocked;
   const grabInfoActive = phase === 'ready' && grabInfoArmed;
   const canOptimizeCategories = canGrabInfo;
   const optimizeCategoriesActive = phase === 'ready' && optimizeCategoriesArmed;
   const canConfirm =
     pendingRead !== null &&
     phase === 'ready' &&
+    !importBlocked &&
     (mode === 'existing-list' || wishlistTitle.trim().length > 0);
   const confirmLabel = mode === 'create-list' ? 'Create wishlist' : 'Import items';
 
@@ -408,6 +412,7 @@ export function useImportFlow({
     optimizeCategoriesActive,
     optimizeCategoriesArmed,
     allowAi,
+    importBlocked,
     confirmLabel,
     successMessage,
     successTone,
