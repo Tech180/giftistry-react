@@ -21,6 +21,8 @@ import {
   linkGroupSupportsLinkedItems,
 } from '../../../utils/item-supports-linked-items.util';
 import { parsePriorityWeight } from '../../../utils/parse-priority-weight.util';
+import { parseMoneyInput } from 'shared/utils/parse-money-input.util';
+import { ITEM_SUBMIT_ROLLBACK_MESSAGE } from '../../../constants/submit-rollback-messages.constant';
 import { syncBidirectionalItemLinks, resolveEditorLinkedItemIds } from '../../../utils/item-links-sync.util';
 import { syncBidirectionalItemRelated, resolveEditorRelatedItemIds } from '../../../utils/item-related-sync.util';
 import type { UseSubmitItemResult } from '../interfaces/use-submit-item-result.interface';
@@ -247,16 +249,23 @@ export function useSubmitItem(options: {
       }
     }
 
+    const parsedPrice = parseMoneyInput(price);
+    if (!parsedPrice.ok) {
+      setErrorMsg(parsedPrice.message);
+      return;
+    }
+
     setIsLoading(true);
     setErrorMsg(null);
     setWarningMsg(null);
+
+    let createdItem: Item | null = null;
 
     try {
       const metadataPayload = buildDescriptionPayload({ canManageItems, isFavorite });
       const priorityVal = parsePriorityWeight(priorityWeight);
 
       let savedItemId: string;
-      let createdItem: Item | null = null;
       const previousLinkedIds = item ? resolveEditorLinkedItemIds(item.Id, wishlistItems) : [];
       const previousRelatedIds = item ? resolveEditorRelatedItemIds(item.Id, wishlistItems) : [];
 
@@ -270,7 +279,7 @@ export function useSubmitItem(options: {
           priorityVal,
           finalSharedWith,
           linkUrl.trim() || null,
-          price.trim() ? parseFloat(price) : null,
+          parsedPrice.value,
           websiteName.trim() || null,
           metadataPayload,
           canManageItems ? false : isHiddenIdea
@@ -284,7 +293,7 @@ export function useSubmitItem(options: {
           null,
           canManageItems ? false : isHiddenIdea,
           linkUrl.trim() || null,
-          price.trim() ? parseFloat(price) : null,
+          parsedPrice.value,
           websiteName.trim() || null,
           category === 'uncategorized' ? null : category,
           priorityVal,
@@ -338,6 +347,15 @@ export function useSubmitItem(options: {
       }
       onSuccess();
     } catch (err) {
+      if (createdItem?.Id) {
+        try {
+          await itemsApi.deleteItem(createdItem.Id);
+        } catch {
+          /* best-effort rollback */
+        }
+        setErrorMsg(ITEM_SUBMIT_ROLLBACK_MESSAGE);
+        return;
+      }
       setErrorMsg(err instanceof Error ? err.message : 'Failed to add item.');
     } finally {
       setIsLoading(false);

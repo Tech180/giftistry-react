@@ -5,6 +5,13 @@
   gap: var(--spacing-base);
 }
 
+.row--reply-tools {
+  flex-shrink: 0;
+  justify-content: flex-end;
+  padding: 0;
+  background: transparent;
+}
+
 .visibility-anchor {
   position: relative;
   display: flex;
@@ -163,8 +170,15 @@
   background: transparent;
 }
 
-.status-badge:hover {
+.status-badge:hover:not(:disabled) {
   transform: translateY(-1px) scale(1.04);
+}
+
+.status-badge:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  pointer-events: none;
+  touch-action: none;
 }
 
 .visible-to-owner {

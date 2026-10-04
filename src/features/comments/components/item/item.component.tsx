@@ -6,6 +6,7 @@ import { ReactionPicker } from './components/reaction-picker';
 import { parseCommentContent, stripItemTagsFromSegments } from '../../utils/comment-content.util';
 import { parseCommentVisibilityMode } from '../../utils/parse-comment-visibility-mode.util';
 import { CommentReactionGroup } from '../../interfaces/comment-reaction-group.interface';
+import { COMMENT_VISIBILITY_EVERYONE_LABEL } from '../../constants/comment-visibility-labels.constant';
 import { ANONYMOUS_COMMENTER_NAME, SYSTEM_COMMENTER_NAME } from '../../constants/comment-settings.constant';
 import { useCommentsSession } from '../../providers/session';
 import styles from './item.module.css';
@@ -33,6 +34,7 @@ export const Item: React.FC<Props> = ({
   setReplyTaggedItemIds,
   isThreadChild = false,
   isOwner = false,
+  deepLinkThreadExpandTargetId = null,
 }) => {
   const { user } = useCommentsSession();
   const { segments, itemIds } = parseCommentContent(comment.Content);
@@ -42,6 +44,14 @@ export const Item: React.FC<Props> = ({
 
   const isReplying = activeReplyId === comment.Id;
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const expandForDeepLink =
+    !isThreadChild &&
+    !!deepLinkThreadExpandTargetId &&
+    (comment.Id === deepLinkThreadExpandTargetId ||
+      replies.some((reply) => reply.Id === deepLinkThreadExpandTargetId));
+
+  const isThreadExpanded = isExpanded || expandForDeepLink;
 
   useEffect(() => {
     if (isReplying && replySlotRef.current) {
@@ -87,7 +97,7 @@ export const Item: React.FC<Props> = ({
     }
     reactionsMap[rx.Reaction].count++;
     reactionsMap[rx.Reaction].users.push(rx.Username);
-    if (currentUserId && rx.UserId === currentUserId) {
+    if (currentUserId && String(rx.UserId) === String(currentUserId)) {
       reactionsMap[rx.Reaction].hasReacted = true;
     }
   }
@@ -136,7 +146,7 @@ export const Item: React.FC<Props> = ({
   );
 
   const nestedReplies =
-    isExpanded && sortedReplies.length > 0
+    isThreadExpanded && sortedReplies.length > 0
       ? sortedReplies.map((reply) => (
           <div key={reply.Id} className={styles['thread-branch']}>
             <Item
@@ -160,11 +170,11 @@ export const Item: React.FC<Props> = ({
       : null;
 
   const visibilityMode = parseCommentVisibilityMode(comment);
-  let visibilityTitle = 'Visible to Owner';
+  let visibilityTitle = COMMENT_VISIBILITY_EVERYONE_LABEL;
   if (visibilityMode === 'hiddenFromOwner') {
     visibilityTitle = 'Hidden from Owner';
   } else if (visibilityMode === 'visibleToSelected') {
-    visibilityTitle = 'Selected audience';
+    visibilityTitle = 'Selected';
   }
 
   const isDeleted = !!comment.IsDeleted;
@@ -172,7 +182,7 @@ export const Item: React.FC<Props> = ({
   const canReply = !comment.ParentId && !!handleReplySubmit;
   const hasLeftIcons = !isOwner || isOwnComment;
   const hasThread = !isThreadChild && (replies.length > 0 || isReplying);
-  const showReplyThread = !isThreadChild && (isReplying || (isExpanded && replies.length > 0));
+  const showReplyThread = !isThreadChild && (isReplying || (isThreadExpanded && replies.length > 0));
   const showLeftRail = hasLeftIcons || hasThread;
   const showRepliesToggle = replies.length > 0 && !isThreadChild;
   const showActionsRow = canReply || !!reactionPicker || showRepliesToggle;
@@ -190,7 +200,7 @@ export const Item: React.FC<Props> = ({
     styles['comment-wrapper'],
     isThreadChild ? styles['thread-child'] : '',
     hasThread ? styles['has-thread'] : '',
-    hasThread && isExpanded ? styles['thread-expanded'] : '',
+    hasThread && isThreadExpanded ? styles['thread-expanded'] : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -285,7 +295,7 @@ export const Item: React.FC<Props> = ({
         replySlotRef
       }
       isExpanded = {
-        isExpanded
+        isThreadExpanded
       }
       setIsExpanded = {
         setIsExpanded
@@ -337,6 +347,9 @@ export const Item: React.FC<Props> = ({
       }
       contentClassName = {
         contentClassName
+      }
+      highlightAnchorCommentId = {
+        isThreadChild ? comment.Id : null
       }
     />
   );

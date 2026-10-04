@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, X } from 'lucide-react';
 import type { ImportStripHandle, Item } from 'features/items';
@@ -64,11 +64,40 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(new Set());
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [showDeletedComments, setShowDeletedComments] = useState(false);
+  const [hasDeletedComments, setHasDeletedComments] = useState(false);
+  const handleHasDeletedCommentsChange = (hasDeleted: boolean) => {
+    setHasDeletedComments(hasDeleted);
+    if (!hasDeleted) {
+      setShowDeletedComments(false);
+    }
+  };
   const [isLinkingModeActive, setIsLinkingModeActive] = useState(false);
   const [isRelatingModeActive, setIsRelatingModeActive] = useState(false);
-  const [viewingItem, setViewingItem] = useState<Item | null>(null);
-  const [linkedItemIds, setLinkedItemIds] = useState<string[]>([]);
-  const [relatedItemIds, setRelatedItemIds] = useState<string[]>([]);
+  const [viewingItemId, setViewingItemId] = useState<string | null>(null);
+  const viewingItem = useMemo(
+    () => (viewingItemId ? items.find((item) => item.Id === viewingItemId) ?? null : null),
+    [items, viewingItemId]
+  );
+  const setViewingItem = useCallback((item: Item | null) => {
+    setViewingItemId(item?.Id ?? null);
+  }, []);
+  const { linkedItemIds, relatedItemIds } = useMemo(() => {
+    if (!viewingItem) {
+      return { linkedItemIds: [] as string[], relatedItemIds: [] as string[] };
+    }
+
+    const sourceContext = linkingContextFromItem(viewingItem);
+    const isCompatibleLink = (id: string) => {
+      const target = items.find((i) => i.Id === id);
+      return !!target && canLinkItemsByAudience(sourceContext, target);
+    };
+
+    return {
+      linkedItemIds: resolveEditorLinkedItemIds(viewingItem.Id, items).filter(isCompatibleLink),
+      relatedItemIds: resolveEditorRelatedItemIds(viewingItem.Id, items).filter(isCompatibleLink),
+    };
+  }, [viewingItem, items]);
 
   const isExpired = isWishlistExpired(wishlist.ExpiresAt);
   const isArchived = isWishlistArchived(wishlist.IsActive);
@@ -79,34 +108,6 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
     isPublicGuest: true,
     isLocked,
   });
-
-  useEffect(() => {
-    setViewingItem((current) => {
-      if (!current) {
-        return current;
-      }
-      return items.find((item) => item.Id === current.Id) ?? null;
-    });
-  }, [items]);
-
-  useEffect(() => {
-    if (!viewingItem) {
-      return;
-    }
-    const sourceContext = linkingContextFromItem(viewingItem);
-    setLinkedItemIds(
-      resolveEditorLinkedItemIds(viewingItem.Id, items).filter((id) => {
-        const target = items.find((i) => i.Id === id);
-        return target && canLinkItemsByAudience(sourceContext, target);
-      })
-    );
-    setRelatedItemIds(
-      resolveEditorRelatedItemIds(viewingItem.Id, items).filter((id) => {
-        const target = items.find((i) => i.Id === id);
-        return target && canLinkItemsByAudience(sourceContext, target);
-      })
-    );
-  }, [items, viewingItem]);
 
   const groupedItems = useMemo(
     () => groupGuestPreviewItems(items, groups, searchQuery),
@@ -142,25 +143,11 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
   };
 
   const openItemViewer = (item: Item) => {
-    const sourceItem = items.find((i) => i.Id === item.Id) ?? item;
-    const sourceContext = linkingContextFromItem(sourceItem);
     setSelectedItemId(null);
     setIsCommentsOpen(false);
     setIsLinkingModeActive(false);
     setIsRelatingModeActive(false);
-    setLinkedItemIds(
-      resolveEditorLinkedItemIds(sourceItem.Id, items).filter((id) => {
-        const target = items.find((i) => i.Id === id);
-        return target && canLinkItemsByAudience(sourceContext, target);
-      })
-    );
-    setRelatedItemIds(
-      resolveEditorRelatedItemIds(sourceItem.Id, items).filter((id) => {
-        const target = items.find((i) => i.Id === id);
-        return target && canLinkItemsByAudience(sourceContext, target);
-      })
-    );
-    setViewingItem(sourceItem);
+    setViewingItemId(item.Id);
   };
 
   const shellFlags = getPageShellFlags({
@@ -240,9 +227,9 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       shouldOpenItemViewer={shouldOpenItemViewer}
       setEditingItemDraft={noop}
       linkedItemIds={linkedItemIds}
-      setLinkedItemIds={setLinkedItemIds}
+      setLinkedItemIds={noop}
       relatedItemIds={relatedItemIds}
-      setRelatedItemIds={setRelatedItemIds}
+      setRelatedItemIds={noop}
       linkableItems={items}
       resolvedLinkedItems={resolvedLinkedItems}
       resolvedRelatedItems={resolvedRelatedItems}
@@ -275,8 +262,10 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       formatDate={formatWishlistExpirationDate}
       isCommentsOpen={isCommentsOpen}
       setIsCommentsOpen={setIsCommentsOpen}
-      showDeletedComments={false}
-      onToggleShowDeletedComments={noop}
+      showDeletedComments={showDeletedComments}
+      hasDeletedComments={hasDeletedComments}
+      onHasDeletedCommentsChange={handleHasDeletedCommentsChange}
+      onToggleShowDeletedComments={() => setShowDeletedComments((prev) => !prev)}
       isShareOpen={false}
       setIsShareOpen={noop}
       isMobileFab={false}

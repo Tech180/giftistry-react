@@ -2,6 +2,7 @@ import React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { TagModeToggle } from '../tag-mode-toggle';
 import { VisibilityPanel } from '../visibility-panel';
+import { COMMENT_VISIBILITY_PICKER_DISABLED_TITLE } from '../../../../constants/comment-visibility-labels.constant';
 import type { FooterTemplateProps } from './interfaces/footer-template-props.interface';
 import styles from './footer.module.css';
 
@@ -13,6 +14,8 @@ export const FooterTemplate: React.FC<FooterTemplateProps> = ({
   setIsRollover,
   autoRollover = false,
   items,
+  showTagModeToggle,
+  footerLayout,
   isTaggingModeActive,
   setIsTaggingModeActive,
   participants,
@@ -21,6 +24,8 @@ export const FooterTemplate: React.FC<FooterTemplateProps> = ({
   isPanelOpen,
   setIsPanelOpen,
   isMobile,
+  isChooseWhoEnabled,
+  isVisibilityPickerEnabled,
   badgeLabel,
   anchorRef,
 }) => {
@@ -30,32 +35,41 @@ export const FooterTemplate: React.FC<FooterTemplateProps> = ({
     isHidden ? styles['invisible-to-owner'] : styles['visible-to-owner']
   }`;
 
-  return (
-    <div className={styles.row}>
-      <div className={styles['tools-left']}>
-        {items.length > 0 && (
-          <TagModeToggle
-            isActive={isTaggingModeActive}
-            onToggle={setIsTaggingModeActive}
-          />
-        )}
+  const rowClassName = [
+    styles.row,
+    footerLayout === 'reply' ? styles['row--reply-tools'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
-        {autoRollover ? (
-          <label className={styles['rock-toggle-wrapper']} title="Toggle Rollover">
-            <input
-              type="checkbox"
-              checked={isRollover}
-              onChange={(e) => setIsRollover(e.target.checked)}
+  return (
+    <div className={rowClassName}>
+      {footerLayout === 'default' ? (
+        <div className={styles['tools-left']}>
+          {showTagModeToggle && items.length > 0 ? (
+            <TagModeToggle
+              isActive={isTaggingModeActive}
+              onToggle={setIsTaggingModeActive}
             />
-            <div className={styles['rock-toggle-track']}>
-              <div className={styles['rock-tumbler']}>
-                <div className={styles['rock-texture']} />
+          ) : null}
+
+          {autoRollover ? (
+            <label className={styles['rock-toggle-wrapper']} title="Toggle Rollover">
+              <input
+                type="checkbox"
+                checked={isRollover}
+                onChange={(e) => setIsRollover(e.target.checked)}
+              />
+              <div className={styles['rock-toggle-track']}>
+                <div className={styles['rock-tumbler']}>
+                  <div className={styles['rock-texture']} />
+                </div>
               </div>
-            </div>
-            <span className={styles['rock-toggle-label']}>Rollover</span>
-          </label>
-        ) : null}
-      </div>
+              <span className={styles['rock-toggle-label']}>Rollover</span>
+            </label>
+          ) : null}
+        </div>
+      ) : null}
 
       <div
         ref={anchorRef}
@@ -64,9 +78,20 @@ export const FooterTemplate: React.FC<FooterTemplateProps> = ({
       >
         <button
           type="button"
-          onClick={() => setIsPanelOpen(!isPanelOpen)}
+          onClick={() => {
+            if (!isVisibilityPickerEnabled) {
+              return;
+            }
+            setIsPanelOpen(!isPanelOpen);
+          }}
+          disabled={!isVisibilityPickerEnabled}
+          aria-disabled={!isVisibilityPickerEnabled}
           className={badgeClass}
-          title="Comment visibility"
+          title={
+            isVisibilityPickerEnabled
+              ? 'Comment visibility'
+              : COMMENT_VISIBILITY_PICKER_DISABLED_TITLE
+          }
           aria-expanded={isPanelOpen}
           aria-haspopup="dialog"
         >
@@ -84,6 +109,7 @@ export const FooterTemplate: React.FC<FooterTemplateProps> = ({
           listOwnerId={listOwnerId}
           isOwner={isOwner}
           isMobile={isMobile}
+          isChooseWhoEnabled={isChooseWhoEnabled}
           anchorRef={anchorRef}
         />
       </div>

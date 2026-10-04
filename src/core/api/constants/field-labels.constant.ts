@@ -6,4 +6,6 @@ export const FIELD_LABELS: Record<string, string> = {
   Email: 'Email',
   DbUrl: 'Database URL',
   PublicAppUrl: 'Public app URL',
+  Price: 'Price',
+  Amount: 'Amount',
 };

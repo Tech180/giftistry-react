@@ -23,6 +23,14 @@ export function getNavigationTarget(notification: Notification): string | null {
     case 'item_claimed':
     case 'item_deleted':
     case 'comment':
+      if (meta.ListId && meta.CommentId) {
+        return `/wishlists/${meta.ListId}?comment=${encodeURIComponent(meta.CommentId)}`;
+      }
+      if (meta.ListId) {
+        return `/wishlists/${meta.ListId}`;
+      }
+      break;
+
     case 'job_completed':
     case 'job_failed':
       if (meta.ListId) {

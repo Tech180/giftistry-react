@@ -27,6 +27,8 @@ export const CommentsTemplate: React.FC<TemplateProps> = ({
   autoRollover,
   handleItemTaggedClick,
   showDeletedComments,
+  hasDeletedComments,
+  onHasDeletedCommentsChange,
   onToggleShowDeletedComments,
   drawerTitle,
   tagsLabel,
@@ -58,6 +60,9 @@ export const CommentsTemplate: React.FC<TemplateProps> = ({
         <DeletedCommentsToggle
           showDeletedComments = {
             showDeletedComments
+          }
+          hasDeletedComments = {
+            hasDeletedComments
           }
           onToggle = {
             onToggleShowDeletedComments
@@ -147,6 +152,9 @@ export const CommentsTemplate: React.FC<TemplateProps> = ({
         }
         showDeletedComments = {
           showDeletedComments
+        }
+        onHasDeletedCommentsChange = {
+          onHasDeletedCommentsChange
         }
       />
     </Drawer>

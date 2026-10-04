@@ -71,6 +71,8 @@ export const WorkspaceTemplate: React.FC<TemplateProps> = ({
   handleItemTaggedClick,
   onLinkedItemsUnsupported,
   showDeletedComments,
+  hasDeletedComments,
+  onHasDeletedCommentsChange,
   onToggleShowDeletedComments,
   isTaggingModeActive,
   setIsTaggingModeActive,
@@ -365,6 +367,12 @@ export const WorkspaceTemplate: React.FC<TemplateProps> = ({
             }
             showDeletedComments = {
               showDeletedComments
+            }
+            hasDeletedComments = {
+              hasDeletedComments
+            }
+            onHasDeletedCommentsChange = {
+              onHasDeletedCommentsChange
             }
             onToggleShowDeletedComments = {
               onToggleShowDeletedComments

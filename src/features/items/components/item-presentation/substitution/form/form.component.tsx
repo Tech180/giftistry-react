@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal } from 'shared/ui';
 import type { CreateSubstitutionPayload } from '../../../../interfaces/item-substitution.interface';
 import type { Props } from './interfaces/props.interface';
+import { parseMoneyInput } from 'shared/utils/parse-money-input.util';
 import { FormTemplate } from './form.html';
 
 export const Form: React.FC<Props> = ({
@@ -40,12 +41,17 @@ export const Form: React.FC<Props> = ({
       setLocalError('Name is required.');
       return;
     }
+    const parsedPrice = parseMoneyInput(price);
+    if (!parsedPrice.ok) {
+      setLocalError(parsedPrice.message);
+      return;
+    }
     const payload: CreateSubstitutionPayload = {
       Name: trimmed,
       Description: description.trim() || null,
       LinkUrl: linkUrl.trim() || null,
       WebsiteName: websiteName.trim() || null,
-      Price: price.trim() ? Number(price) : null,
+      Price: parsedPrice.value,
     };
     setSubmitting(true);
     setLocalError(null);

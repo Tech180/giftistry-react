@@ -197,8 +197,10 @@ export function useItemHydrate(options: {
       );
       setIsHiddenIdea(item.IsHiddenIdea || false);
       const audienceMode = getItemAudienceMode(item);
-      setVisibilityMode(audienceMode);
-      if (audienceMode === 'restricted') {
+      const hydratedVisibilityMode =
+        listShares.length === 0 && audienceMode === 'restricted' ? 'everyone' : audienceMode;
+      setVisibilityMode(hydratedVisibilityMode);
+      if (hydratedVisibilityMode === 'restricted') {
         setSharedWithUserIds(
           sanitizeRestrictedUserIds(
             item.SharedWith?.map((u) => u.UserId) ?? [],

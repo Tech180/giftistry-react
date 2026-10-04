@@ -32,6 +32,7 @@ export function applySettingsToState(s: BackendSettings, setters: SettingsStateS
   setters.setFcmEnabled(!!s.FcmEnabled);
   setters.setFcmProjectId(s.FcmProjectId || '');
   setters.setFcmServiceAccountJson(s.FcmServiceAccountJson || '');
+  setters.setGiphyApiKey(s.GiphyApiKey || '');
   setters.setAiEnabled(!!s.AiEnabled);
   setters.setAiWebSearchEnabled(!!s.AiWebSearchEnabled);
   setters.setAiRateLimitEnabled(!!s.AiRateLimitEnabled);

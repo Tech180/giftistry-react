@@ -93,6 +93,8 @@ export interface PageTemplateProps extends PageShellFlags {
   isCommentsOpen: boolean;
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   showDeletedComments: boolean;
+  hasDeletedComments: boolean;
+  onHasDeletedCommentsChange: (hasDeletedComments: boolean) => void;
   onToggleShowDeletedComments: () => void;
   isShareOpen: boolean;
   setIsShareOpen: (open: boolean) => void;

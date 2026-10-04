@@ -5,8 +5,10 @@ import { EmojiTemplateProps } from './interfaces/emoji-template-props.interface'
 import { AnchoredPopover } from '../anchored-popover/anchored-popover.component';
 import styles from './emoji.module.css';
 
-const EmojiPickerPanel = lazy(() =>
-  import('./emoji-picker-panel.component').then((module) => ({ default: module.EmojiPickerPanel }))
+const PickerPanel = lazy(() =>
+  import('./components/picker-panel/picker-panel.component').then((module) => ({
+    default: module.PickerPanel,
+  }))
 );
 
 export const EmojiTemplate: React.FC<EmojiTemplateProps> = ({
@@ -67,7 +69,7 @@ export const EmojiTemplate: React.FC<EmojiTemplateProps> = ({
           </div>
           {isOpen ? (
             <Suspense fallback={<div className={styles['emoji-picker-loading']} aria-hidden />}>
-              <EmojiPickerPanel
+              <PickerPanel
                 activeCategory={activeCategory}
                 searchQuery={searchQuery}
                 effectiveTheme={effectiveTheme}

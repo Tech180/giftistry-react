@@ -12,6 +12,7 @@ import { useAiSettings } from './use-ai-settings';
 import { useDbSettings } from './use-db-settings';
 import { useOauthSettings } from './use-oauth-settings';
 import { usePushSettings } from './use-push-settings';
+import { useGiphySettings } from './use-giphy-settings';
 import { useSmtpSettings } from './use-smtp-settings';
 
 export function useSettingsController({ showToast }: Props): Result {
@@ -20,9 +21,11 @@ export function useSettingsController({ showToast }: Props): Result {
   const oauth = useOauthSettings();
   const smtp = useSmtpSettings();
   const push = usePushSettings(showToast);
+  const giphy = useGiphySettings();
   const ai = useAiSettings();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showGiphyApiKey, setShowGiphyApiKey] = useState(false);
   const [showFastAiKey, setShowFastAiKey] = useState(false);
   const [showIntelligentAiKey, setShowIntelligentAiKey] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,7 +34,8 @@ export function useSettingsController({ showToast }: Props): Result {
   const [allowSetup, setAllowSetup] = useState(true);
   const [isSavingAllowSetup, setIsSavingAllowSetup] = useState(false);
 
-  const settingsSetters = () => buildSettingsStateSetters({ db, oauth, smtp, push, ai, setAllowSetup });
+  const settingsSetters = () =>
+    buildSettingsStateSetters({ db, oauth, smtp, push, giphy, ai, setAllowSetup });
 
   useEffect(() => {
     let active = true;
@@ -84,6 +88,7 @@ export function useSettingsController({ showToast }: Props): Result {
     fcmEnabled: push.fcmEnabled,
     fcmProjectId: push.fcmProjectId,
     fcmServiceAccountJson: push.fcmServiceAccountJson,
+    giphyApiKey: giphy.giphyApiKey,
     aiEnabled: ai.aiEnabled,
     aiWebSearchEnabled: ai.aiWebSearchEnabled,
     aiRateLimitEnabled: ai.aiRateLimitEnabled,
@@ -187,7 +192,10 @@ export function useSettingsController({ showToast }: Props): Result {
     ...oauth,
     ...smtp,
     ...push,
+    ...giphy,
     ...aiResult,
+    showGiphyApiKey,
+    setShowGiphyApiKey,
     showPassword,
     setShowPassword,
     showFastAiKey,

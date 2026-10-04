@@ -10,6 +10,7 @@ import type { UseSectionResult } from '../interfaces/use-section-result.interfac
 import { useParticipants } from './use-participants';
 import { useCommentRealtime } from './use-comment-realtime';
 import { useComposer } from './use-composer';
+import { useCommentDeepLinkHighlight } from './use-comment-deep-link-highlight';
 
 function mapDemoComments(
   listId: string,
@@ -56,6 +57,7 @@ export function useSection({
   replyTaggedItemIds,
   setReplyTaggedItemIds,
   showDeletedComments = false,
+  onHasDeletedCommentsChange,
 }: Props): UseSectionResult {
   const { user, isAuthenticated } = useCommentsSession();
   const demo = useTourDemoOptional();
@@ -64,6 +66,7 @@ export function useSection({
   const {
     comments,
     isLoading,
+    hasLoadedComments,
     error,
     fetchComments,
     addComment,
@@ -120,7 +123,23 @@ export function useSection({
     controllerError: error,
   });
 
+  useEffect(() => {
+    if (!isDemo && !hasLoadedComments) {
+      return;
+    }
+
+    onHasDeletedCommentsChange?.(comments.some((comment) => comment.IsDeleted));
+  }, [comments, hasLoadedComments, isDemo, onHasDeletedCommentsChange]);
+
   const { parentComments, repliesMap } = buildVisibleCommentTree(comments, showDeletedComments);
+
+  const { deepLinkThreadExpandTargetId } = useCommentDeepLinkHighlight({
+    comments,
+    hasLoadedComments,
+    isLoading,
+    listContainerRef,
+    isDemo,
+  });
 
   const handleSetMainTaggingActive = (active: boolean) => {
     setIsTaggingModeActive(active);
@@ -246,5 +265,6 @@ export function useSection({
     listContainerRef,
     onMentionSelect: composer.handleMentionSelect,
     highlightedCommentId: isDemo ? (demo?.highlightedCommentId ?? null) : null,
+    deepLinkThreadExpandTargetId,
   };
 }

@@ -1,3 +1,4 @@
+import { parseMoneyInput } from 'shared/utils/parse-money-input.util';
 import type { ExtractMetadataResult } from '../interfaces/extract-metadata-result.interface';
 
 function compactVerboseTitle(title: string): string {
@@ -19,9 +20,16 @@ export function polishExtractMetadataForForm(
   const scrubbedDescription =
     description && /^amazon\.com\s*:/i.test(description) ? null : description;
 
+  let price = data.Price;
+  if (price != null) {
+    const parsed = parseMoneyInput(String(price));
+    price = parsed.ok ? parsed.value : null;
+  }
+
   return {
     ...data,
     Title: title,
     Description: scrubbedDescription,
+    Price: price,
   };
 }

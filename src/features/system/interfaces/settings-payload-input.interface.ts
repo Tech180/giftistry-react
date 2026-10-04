@@ -29,6 +29,7 @@ export interface SettingsPayloadInput {
   fcmEnabled: boolean;
   fcmProjectId: string;
   fcmServiceAccountJson: string;
+  giphyApiKey: string;
   aiEnabled: boolean;
   aiWebSearchEnabled: boolean;
   aiRateLimitEnabled: boolean;

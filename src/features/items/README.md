@@ -97,6 +97,8 @@ Unlike friends (`FriendsProvider`), there is no items context for CRUD — cards
 | `reorderOwnerSubstitutions` | `PATCH …/substitutions/reorder` |
 | `getItemReviews` | `GET …/reviews` — client kept; FE does not call until AI reviews ship |
 
+**Money fields:** Item `Price` and group-fund claim amounts are capped at **99,999,999.99** (Postgres `DECIMAL(10,2)`), validated client-side via `shared/utils/parse-money-input.util.ts` and on the API.
+
 ### Jobs (not on `itemsApi`)
 
 | Flow | API | Used by |
@@ -191,7 +193,7 @@ Mini edge drawer resolves `selectedIds` against `items` and renders `LinkedSquar
 
 ### `AudiencePicker`
 
-Controlled visibility over wishlist `ListShare[]`: search, toggle users, visibility mode. Used by form visibility.
+Controlled visibility over wishlist `ListShare[]`: search, toggle users, visibility mode. Used by form visibility. On a solo list (no shares), the picker still shows **Everyone** and **Only Me**; **Specific People** appears once the list has collaborators or viewers.
 
 ### Import (`ImportStrip` / `Dropzone` / `MenuPanel` / AI panel)
 

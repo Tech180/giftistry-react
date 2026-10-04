@@ -26,6 +26,8 @@ export const Comments: React.FC<Props> = ({
   handleItemTaggedClick,
   collapseDrawerWhileTagging = false,
   showDeletedComments,
+  hasDeletedComments,
+  onHasDeletedCommentsChange,
   onToggleShowDeletedComments,
 }) => {
   const drawerTaggingActive = isTaggingModeActive || isReplyTaggingModeActive;
@@ -104,6 +106,12 @@ export const Comments: React.FC<Props> = ({
       }
       showDeletedComments = {
         showDeletedComments
+      }
+      hasDeletedComments = {
+        hasDeletedComments
+      }
+      onHasDeletedCommentsChange = {
+        onHasDeletedCommentsChange
       }
       onToggleShowDeletedComments = {
         onToggleShowDeletedComments

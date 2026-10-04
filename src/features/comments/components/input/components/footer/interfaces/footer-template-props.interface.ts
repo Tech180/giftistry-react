@@ -10,6 +10,8 @@ export interface FooterTemplateProps {
   setIsRollover: (rollover: boolean) => void;
   autoRollover?: boolean;
   items: FooterProps['items'];
+  showTagModeToggle: boolean;
+  footerLayout: 'default' | 'reply';
   isTaggingModeActive: boolean;
   setIsTaggingModeActive: (active: boolean) => void;
   participants: ListParticipant[];
@@ -18,6 +20,8 @@ export interface FooterTemplateProps {
   isPanelOpen: boolean;
   setIsPanelOpen: (open: boolean) => void;
   isMobile: boolean;
+  isChooseWhoEnabled: boolean;
+  isVisibilityPickerEnabled: boolean;
   badgeLabel: string;
   anchorRef: React.RefObject<HTMLDivElement | null>;
 }

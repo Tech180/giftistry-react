@@ -1,130 +1,111 @@
 import React from 'react';
 import { Check } from 'lucide-react';
 import { EnterPanel } from 'shared/ui/enter-panel/enter-panel.component';
+import { COMMENT_VISIBILITY_EVERYONE_LABEL } from '../../../../constants/comment-visibility-labels.constant';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './visibility-panel.module.css';
 
-function roleLabel(
-  participant: { userId: string; role?: string },
-  listOwnerId?: string
-): string {
-  if (participant.role) {
-    return participant.role;
-  }
-
-  if (listOwnerId && participant.userId === listOwnerId) {
-    return 'owner';
-  }
-
-  return 'member';
-}
-
 export const VisibilityPanelTemplate: React.FC<TemplateProps> = ({
   isMobile,
-  isOwner,
-  mode,
-  selectedUserIds,
-  participants,
-  currentUserId,
-  listOwnerId,
+  panelClassName,
+  isEveryoneActive,
+  showSpoilerWarning,
+  showHiddenFromOwner,
+  isHiddenFromOwnerActive,
+  isChooseWhoActive,
+  isChooseWhoEnabled,
+  chooseWhoDisabledHelp,
+  audienceRows,
   onSelectMode,
   onToggleUser,
   onDone,
   panelRef,
 }) => {
-  const panelClass = [
-    styles.panel,
-    isMobile ? styles['panel--sheet'] : styles['panel--dropdown'],
-  ].join(' ');
-
-  const showAudience = isOwner || mode === 'visibleToSelected';
-  const chooseWhoActive = isOwner || mode === 'visibleToSelected';
-
   const body = (
     <div
-      ref={isMobile ? panelRef : undefined}
-      className={panelClass}
+      ref={panelRef}
+      className={panelClassName}
       role="dialog"
       aria-label="Comment visibility"
     >
       <h3 className={styles.title}>Who can see this?</h3>
 
-      {!isOwner ? (
-        <>
-          <button
-            type="button"
-            className={`${styles.option} ${mode === 'hiddenFromOwner' ? styles['option--active'] : ''}`}
-            onClick={() => onSelectMode('hiddenFromOwner')}
-            aria-pressed={mode === 'hiddenFromOwner'}
-          >
-            <span className={styles['option-label']}>Invisible to Owner</span>
-            <span className={styles['option-help']}>
-              Everyone on the list except the owner can see this.
-            </span>
-          </button>
+      <button
+        type="button"
+        className={`${styles.option} ${isEveryoneActive ? styles['option--active'] : ''}`}
+        onClick={() => onSelectMode('visibleToAll')}
+        aria-pressed={isEveryoneActive}
+      >
+        <span className={styles['option-label']}>{COMMENT_VISIBILITY_EVERYONE_LABEL}</span>
+        <span className={styles['option-help']}>Everyone with list access can see this.</span>
+      </button>
 
-          <button
-            type="button"
-            className={`${styles.option} ${mode === 'visibleToAll' ? styles['option--active'] : ''}`}
-            onClick={() => onSelectMode('visibleToAll')}
-            aria-pressed={mode === 'visibleToAll'}
-          >
-            <span className={styles['option-label']}>Visible to Owner</span>
-            <span className={styles['option-help']}>Everyone with list access can see this.</span>
-          </button>
+      {showSpoilerWarning ? (
+        <p className={styles.warning}>
+          The list owner will be able to read this comment. Surprises may be spoiled.
+        </p>
+      ) : null}
 
-          {mode === 'visibleToAll' ? (
-            <p className={styles.warning}>
-              The list owner will be able to read this comment. Surprises may be spoiled.
-            </p>
-          ) : null}
-        </>
+      {showHiddenFromOwner ? (
+        <button
+          type="button"
+          className={`${styles.option} ${isHiddenFromOwnerActive ? styles['option--active'] : ''}`}
+          onClick={() => onSelectMode('hiddenFromOwner')}
+          aria-pressed={isHiddenFromOwnerActive}
+        >
+          <span className={styles['option-label']}>Invisible to Owner</span>
+          <span className={styles['option-help']}>
+            Everyone on the list except the owner can see this.
+          </span>
+        </button>
       ) : null}
 
       <button
         type="button"
-        className={`${styles.option} ${chooseWhoActive ? styles['option--active'] : ''}`}
-        onClick={() => onSelectMode('visibleToSelected')}
-        aria-pressed={chooseWhoActive}
+        className={[
+          styles.option,
+          isChooseWhoActive ? styles['option--active'] : '',
+          !isChooseWhoEnabled ? styles['option--disabled'] : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        onClick={() => {
+          if (!isChooseWhoEnabled) {
+            return;
+          }
+          onSelectMode('visibleToSelected');
+        }}
+        disabled={!isChooseWhoEnabled}
+        aria-disabled={!isChooseWhoEnabled}
+        aria-pressed={isChooseWhoActive}
+        tabIndex={isChooseWhoEnabled ? 0 : -1}
       >
         <span className={styles['option-label']}>Choose who can see</span>
         <span className={styles['option-help']}>
-          Only selected people (and you) can see this. @mentions add them automatically.
+          {isChooseWhoEnabled
+            ? 'Only selected people (and you) can see this. @mentions add them automatically.'
+            : chooseWhoDisabledHelp}
         </span>
       </button>
 
-      {showAudience ? (
+      {isChooseWhoActive ? (
         <div className={styles.audience}>
           <p className={styles['audience-hint']}>Mention adds to audience</p>
-          {participants.map((participant) => {
-            const isAuthor = participant.userId === currentUserId;
-            const checked = isAuthor || selectedUserIds.includes(participant.userId);
-            return (
-              <button
-                key={participant.userId}
-                type="button"
-                className={`${styles['audience-row']} ${checked ? styles['audience-row--checked'] : ''}`}
-                onClick={() => {
-                  if (!isAuthor) {
-                    onToggleUser(participant.userId);
-                  }
-                }}
-                disabled={isAuthor}
-                aria-pressed={checked}
-              >
-                <span className={styles['audience-meta']}>
-                  <span className={styles['audience-name']}>
-                    {participant.displayName || participant.username}
-                    {isAuthor ? ' (you)' : ''}
-                  </span>
-                  <span className={styles['role-chip']}>
-                    {roleLabel(participant, listOwnerId)}
-                  </span>
-                </span>
-                {checked ? <Check size={14} aria-hidden /> : null}
-              </button>
-            );
-          })}
+          {audienceRows.map((row) => (
+            <button
+              key={row.userId}
+              type="button"
+              className={`${styles['audience-row']} ${row.checked ? styles['audience-row--checked'] : ''}`}
+              onClick={() => onToggleUser(row.userId)}
+              aria-pressed={row.checked}
+            >
+              <span className={styles['audience-meta']}>
+                <span className={styles['audience-name']}>{row.name}</span>
+                <span className={styles['role-chip']}>{row.roleLabel}</span>
+              </span>
+              {row.checked ? <Check size={14} aria-hidden /> : null}
+            </button>
+          ))}
         </div>
       ) : null}
 

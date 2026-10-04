@@ -27,6 +27,8 @@ export interface Props {
   handleItemTaggedClick: (itemId: string, returnToItemId?: string) => void;
   onLinkedItemsUnsupported: () => void;
   showDeletedComments: boolean;
+  hasDeletedComments: boolean;
+  onHasDeletedCommentsChange: (hasDeletedComments: boolean) => void;
   onToggleShowDeletedComments: () => void;
   isTaggingModeActive: boolean;
   setIsTaggingModeActive: (active: boolean) => void;

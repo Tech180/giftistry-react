@@ -49,4 +49,5 @@ export interface TemplateProps {
   wrapperClassName: string;
   bubbleClassName: string;
   contentClassName: string;
+  highlightAnchorCommentId: string | null;
 }

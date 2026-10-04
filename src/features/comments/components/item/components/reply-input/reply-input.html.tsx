@@ -66,34 +66,34 @@ export const ReplyInputTemplate: React.FC<ReplyInputTemplateProps> = ({
         />
       </div>
 
-      {footer}
-
-      <div className={styles['reply-toolbar']}>
-        <div className={styles['reply-toolbar-left']}>
-          {items.length > 0 && (
+      <div className={styles['reply-tools']}>
+        <div className={styles['reply-tools-start']}>
+          {items.length > 0 ? (
             <TagModeToggle
               isActive={isTaggingModeActive}
               onToggle={setIsTaggingModeActive}
             />
-          )}
+          ) : null}
           <ToolbarPickers
             editorHandle={editorHandle}
             setImageUrl={setImageUrl}
             onUploadError={onUploadError}
           />
         </div>
-        <div className={styles['reply-actions']}>
-          <button type="button" className={styles['reply-cancel-btn']} onClick={onCancel}>
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className={styles['reply-btn-primary']}
-            disabled={isSubmitting || (!content.trim() && !imageUrl && taggedItemIds.length === 0)}
-          >
-            Reply
-          </button>
-        </div>
+        {footer}
+      </div>
+
+      <div className={styles['reply-actions-row']}>
+        <button type="button" className={styles['reply-cancel-btn']} onClick={onCancel}>
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className={styles['reply-btn-primary']}
+          disabled={isSubmitting || (!content.trim() && !imageUrl && taggedItemIds.length === 0)}
+        >
+          Reply
+        </button>
       </div>
     </form>
   </div>

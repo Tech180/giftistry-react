@@ -110,8 +110,14 @@ export function useCommentRealtime({
                 const existing = c.Reactions || [];
                 let newReactions = [...existing];
 
+                const wsUserId = String(data.UserId);
+
                 if (data.Added) {
-                  if (!newReactions.some((r) => r.UserId === data.UserId && r.Reaction === data.Reaction)) {
+                  if (
+                    !newReactions.some(
+                      (r) => String(r.UserId) === wsUserId && r.Reaction === data.Reaction
+                    )
+                  ) {
                     newReactions.push({
                       UserId: data.UserId,
                       Username: data.Username,
@@ -120,7 +126,7 @@ export function useCommentRealtime({
                   }
                 } else {
                   newReactions = newReactions.filter(
-                    (r) => !(r.UserId === data.UserId && r.Reaction === data.Reaction),
+                    (r) => !(String(r.UserId) === wsUserId && r.Reaction === data.Reaction),
                   );
                 }
 

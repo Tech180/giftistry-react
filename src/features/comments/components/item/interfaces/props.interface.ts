@@ -34,4 +34,5 @@ export interface Props {
   setReplyTaggedItemIds?: (ids: string[]) => void;
   isThreadChild?: boolean;
   isOwner?: boolean;
+  deepLinkThreadExpandTargetId?: string | null;
 }

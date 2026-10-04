@@ -24,5 +24,7 @@ export interface Props {
   /** When true, tagging mode hides the comments drawer so the list is selectable (overlay / mobile). */
   collapseDrawerWhileTagging?: boolean;
   showDeletedComments: boolean;
+  hasDeletedComments: boolean;
+  onHasDeletedCommentsChange: (hasDeletedComments: boolean) => void;
   onToggleShowDeletedComments: () => void;
 }

@@ -13,6 +13,7 @@ export const GifTemplate: React.FC<GifTemplateProps> = ({
   gifs,
   isLoadingGifs,
   isSelectingGif,
+  searchHint,
   onSelectGif,
 }) => (
   <div ref={anchorRef} className={styles['picker-anchor']}>
@@ -62,7 +63,7 @@ export const GifTemplate: React.FC<GifTemplateProps> = ({
             ))}
           </div>
         ) : (
-          <div className={styles['gif-no-results']}>No GIFs found</div>
+          <div className={styles['gif-no-results']}>{searchHint ?? 'No GIFs found'}</div>
         )}
       </div>
     </AnchoredPopover>

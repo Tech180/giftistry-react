@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppLoadingGate } from 'app/providers/app-loading';
 import { ITEM_VIEW_MODE_STORAGE_KEY } from 'features/items/constants/item-view-mode.constants';
 import {
@@ -116,9 +116,18 @@ export function usePage(): UsePageResult {
     resetForAdd: associations.resetForAdd,
   };
 
+  const [searchParams] = useSearchParams();
+  const highlightCommentId = searchParams.get('comment');
   const [searchQuery, setSearchQuery] = useState('');
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [showDeletedComments, setShowDeletedComments] = useState(false);
+  const [hasDeletedComments, setHasDeletedComments] = useState(false);
+  const handleHasDeletedCommentsChange = (hasDeleted: boolean) => {
+    setHasDeletedComments(hasDeleted);
+    if (!hasDeleted) {
+      setShowDeletedComments(false);
+    }
+  };
   const [isTaggingModeActive, setIsTaggingModeActive] = useState(false);
   const [taggedItemIds, setTaggedItemIds] = useState<string[]>([]);
   const [isReplyTaggingModeActive, setIsReplyTaggingModeActive] = useState(false);
@@ -139,6 +148,12 @@ export function usePage(): UsePageResult {
     isTaggingModeActive,
     isReplyTaggingModeActive,
   });
+
+  useEffect(() => {
+    if (highlightCommentId) {
+      setIsCommentsOpen(true);
+    }
+  }, [highlightCommentId]);
 
   useEffect(() => {
     if (selectedItemId !== null) {
@@ -381,6 +396,8 @@ export function usePage(): UsePageResult {
     isCommentsOpen,
     setIsCommentsOpen,
     showDeletedComments,
+    hasDeletedComments,
+    onHasDeletedCommentsChange: handleHasDeletedCommentsChange,
     onToggleShowDeletedComments: () => setShowDeletedComments((prev) => !prev),
     isShareOpen,
     setIsShareOpen,

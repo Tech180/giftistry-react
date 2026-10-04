@@ -4,16 +4,18 @@ import type { UseDbSettingsResult } from '../interfaces/use-db-settings-result.i
 import type { UseOauthSettingsResult } from '../interfaces/use-oauth-settings-result.interface';
 import type { UsePushSettingsResult } from '../interfaces/use-push-settings-result.interface';
 import type { UseSmtpSettingsResult } from '../interfaces/use-smtp-settings-result.interface';
+import type { UseGiphySettingsResult } from '../interfaces/use-giphy-settings-result.interface';
 
 export function buildSettingsStateSetters(input: {
   db: UseDbSettingsResult;
   oauth: UseOauthSettingsResult;
   smtp: UseSmtpSettingsResult;
   push: UsePushSettingsResult;
+  giphy: UseGiphySettingsResult;
   ai: UseAiSettingsResult;
   setAllowSetup: (enabled: boolean) => void;
 }): SettingsStateSetters {
-  const { db, oauth, smtp, push, ai, setAllowSetup } = input;
+  const { db, oauth, smtp, push, giphy, ai, setAllowSetup } = input;
   const { forApply } = ai;
   return {
     setDbType: db.setDbType,
@@ -43,6 +45,7 @@ export function buildSettingsStateSetters(input: {
     setFcmEnabled: push.setFcmEnabled,
     setFcmProjectId: push.setFcmProjectId,
     setFcmServiceAccountJson: push.setFcmServiceAccountJson,
+    setGiphyApiKey: giphy.setGiphyApiKey,
     setAiEnabled: ai.setAiEnabled,
     setAiWebSearchEnabled: ai.setAiWebSearchEnabled,
     setAiRateLimitEnabled: ai.setAiRateLimitEnabled,

@@ -201,7 +201,7 @@ Nested under add-item. Shows linked/related mini-drawers beside the form; suppor
 
 ### Drawer: comments
 
-List/kanban path: right `Drawer` (mobile sheet) wrapping `CommentSection` + tagging mini-drawer + deleted-comments toggle. Collapses while tagging on narrow viewports (`collapseDrawerWhileTagging`).
+List/kanban path: right `Drawer` (mobile sheet) wrapping `CommentSection` + tagging mini-drawer + deleted-comments toggle. Collapses while tagging on narrow viewports (`collapseDrawerWhileTagging`). Opens automatically when the route includes `?comment=` (mention notification); pulse/scroll is handled inside `CommentSection`.
 
 ### Add widget
 
@@ -209,7 +209,7 @@ Idle: expand menu for Manual vs Auto (when `canAutoAdd`). Auto mode: URL form �
 
 ### Apply bar
 
-Fixed “Apply” control that clears linking/relating/comment-tagging modes after the user finishes selecting items on the list.
+Fixed control that clears linking/relating/comment-tagging modes after the user finishes selecting items on the list. Link/relate always show **Apply**; comment tagging on an overlay list shows **Cancel** until at least one item is tagged, then **Apply**.
 
 ### Settings panel
 

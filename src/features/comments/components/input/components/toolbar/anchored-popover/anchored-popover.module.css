@@ -1,4 +1,6 @@
 .anchored-popover {
   position: fixed;
   z-index: 10000;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }

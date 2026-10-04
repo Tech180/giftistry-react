@@ -1823,7 +1823,7 @@ describe('Form readOnly view mode', () => {
     });
   });
 
-  test('hides Visibility and Sharing when the list has no shares', async () => {
+  test('shows Visibility and Sharing on solo list with Everyone and Only Me', async () => {
     render(
       <Form
         {...baseFormProps}
@@ -1834,10 +1834,33 @@ describe('Form readOnly view mode', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue('https://amazon.com/old-product')).toBeInTheDocument();
+      expect(screen.getByText('Visibility & Sharing')).toBeInTheDocument();
     });
 
-    expect(screen.queryByText('Visibility & Sharing')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Everyone' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Only Me' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Specific People' })).not.toBeInTheDocument();
+  });
+
+  test('solo list Only Me shows private helper text', async () => {
+    render(
+      <Form
+        {...baseFormProps}
+        isOwner
+        item={mockEditItem}
+        listShares={[]}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Only Me' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Only Me' }));
+
+    expect(
+      screen.getByText(/hidden from everyone else on this list/i)
+    ).toBeInTheDocument();
   });
 });
 
@@ -1965,6 +1988,18 @@ describe('Form - linked items multi-count restriction', () => {
       );
     });
     expect(itemsApi.addItem).not.toHaveBeenCalled();
+  });
+
+  test('does not accept price typing beyond DECIMAL(10,2) width', async () => {
+    render(<Form {...baseFormProps} isOwner />);
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('0.00')).toBeInTheDocument();
+    });
+
+    const priceInput = screen.getByPlaceholderText('0.00');
+    fireEvent.change(priceInput, { target: { value: '100000000' } });
+    expect(priceInput).toHaveValue('');
   });
 });
 

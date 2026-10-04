@@ -4,6 +4,7 @@ import { Save } from 'lucide-react';
 import { ServerTemplateProps } from './interfaces/template-props.interface';
 import styles from './page.module.css';
 import { PublicUrl } from './components/public-url/public-url.component';
+import { GiphySection } from './components/giphy-section/giphy-section.component';
 import { Oauth } from './components/oauth/oauth.component';
 import { DbSection } from './components/db-section/db-section.component';
 import { SmtpSection } from './components/smtp-section/smtp-section.component';
@@ -65,6 +66,10 @@ export const ServerTemplate: React.FC<ServerTemplateProps> = ({
   setFcmProjectId,
   fcmServiceAccountJson,
   setFcmServiceAccountJson,
+  giphyApiKey,
+  setGiphyApiKey,
+  showGiphyApiKey,
+  setShowGiphyApiKey,
   onTestNtfy,
   isTestingNtfy,
   showPassword,
@@ -235,6 +240,21 @@ export const ServerTemplate: React.FC<ServerTemplateProps> = ({
           }
           setOauthAutoRegister = {
             setOauthAutoRegister
+          }
+        />
+
+        <GiphySection
+          giphyApiKey={
+            giphyApiKey
+          }
+          setGiphyApiKey={
+            setGiphyApiKey
+          }
+          showGiphyApiKey={
+            showGiphyApiKey
+          }
+          setShowGiphyApiKey={
+            setShowGiphyApiKey
           }
         />
 

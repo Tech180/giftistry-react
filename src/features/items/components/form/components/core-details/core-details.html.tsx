@@ -1,6 +1,7 @@
 import React from 'react';
 import { Globe, DollarSign, Star, Pin } from 'lucide-react';
 import { TOUR_TARGETS } from 'features/tour';
+import { isPartialMoneyInput } from 'shared/utils/money-input-pattern.util';
 import { NumberSelector } from 'shared/ui';
 import type { Props } from './interfaces/props.interface';
 import styles from './core-details.module.css';
@@ -61,7 +62,7 @@ export const CoreDetailsTemplate: React.FC<Props> = ({
             value={price}
             onChange={(e) => {
               const val = e.target.value;
-              if (/^\d*\.?\d{0,2}$/.test(val)) {
+              if (isPartialMoneyInput(val)) {
                 setPrice(val);
               }
             }}

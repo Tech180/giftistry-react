@@ -11,5 +11,6 @@ export interface GifTemplateProps {
   gifs: GifItem[];
   isLoadingGifs: boolean;
   isSelectingGif: boolean;
+  searchHint: string | null;
   onSelectGif: (url: string) => void;
 }

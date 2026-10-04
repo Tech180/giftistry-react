@@ -6,6 +6,7 @@ import { Meta } from './components/meta';
 import { Reactions } from './components/reactions';
 import { DeleteConfirm } from './components/delete-confirm';
 import { Tags } from './components/tags';
+import { COMMENT_HIGHLIGHT_DATA_ATTR } from '../../constants/comment-highlight.constant';
 import styles from './item.module.css';
 
 export const ItemTemplate: React.FC<TemplateProps> = ({
@@ -51,6 +52,7 @@ export const ItemTemplate: React.FC<TemplateProps> = ({
   wrapperClassName,
   bubbleClassName,
   contentClassName,
+  highlightAnchorCommentId,
 }) => {
   if (isDeleted) {
     return (
@@ -63,7 +65,12 @@ export const ItemTemplate: React.FC<TemplateProps> = ({
   }
 
   return (
-    <div className={wrapperClassName}>
+    <div
+      className={wrapperClassName}
+      {...(highlightAnchorCommentId
+        ? { [COMMENT_HIGHLIGHT_DATA_ATTR]: highlightAnchorCommentId }
+        : {})}
+    >
       <div className={bubbleClassName}>
         <div className={styles['comment-bubble-main']}>
           {showLeftRail && (

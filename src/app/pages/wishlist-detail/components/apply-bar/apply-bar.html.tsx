@@ -4,8 +4,12 @@ import type { TemplateProps } from './interfaces/template-props.interface';
 import styles from './apply-bar.module.css';
 
 export const ApplyBarTemplate: React.FC<TemplateProps> = ({
+  buttonLabel,
   onApply,
-}) => (
+}) => {
+  const buttonVariant = buttonLabel === 'Cancel' ? 'secondary' : 'primary';
+
+  return (
   <div
     className = {
       styles['apply-bar']
@@ -19,7 +23,7 @@ export const ApplyBarTemplate: React.FC<TemplateProps> = ({
         'button'
       }
       variant = {
-        'primary'
+        buttonVariant
       }
       size = {
         'lg'
@@ -31,7 +35,8 @@ export const ApplyBarTemplate: React.FC<TemplateProps> = ({
         onApply
       }
     >
-      Apply
+      {buttonLabel}
     </Button>
   </div>
-);
+  );
+};

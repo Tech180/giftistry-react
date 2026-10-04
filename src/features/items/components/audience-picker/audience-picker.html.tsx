@@ -42,13 +42,7 @@ export const AudiencePickerTemplate: React.FC<AudiencePickerTemplateProps> = ({
         </p>
       )}
 
-      {visibilityMode !== 'private' && !hasShares && (
-        <p className={styles['helper-text']}>
-          Share the list first to restrict items to specific people.
-        </p>
-      )}
-
-      <div className={visibilityMode === 'restricted' && !hasShares ? styles['disabled-overlay'] : undefined}>
+      <div>
         <div className={styles['segmented-control']} role="radiogroup" aria-label="Visibility mode">
           <button
             type="button"
@@ -59,15 +53,17 @@ export const AudiencePickerTemplate: React.FC<AudiencePickerTemplateProps> = ({
           >
             Everyone
           </button>
-          <button
-            type="button"
-            className={`${styles.segment} ${visibilityMode === 'restricted' ? styles['segment-active'] : ''}`}
-            onClick={() => onVisibilityModeChange('restricted')}
-            disabled={disabled || !hasShares}
-            aria-pressed={visibilityMode === 'restricted'}
-          >
-            Specific People
-          </button>
+          {hasShares ? (
+            <button
+              type="button"
+              className={`${styles.segment} ${visibilityMode === 'restricted' ? styles['segment-active'] : ''}`}
+              onClick={() => onVisibilityModeChange('restricted')}
+              disabled={disabled}
+              aria-pressed={visibilityMode === 'restricted'}
+            >
+              Specific People
+            </button>
+          ) : null}
           <button
             type="button"
             className={`${styles.segment} ${visibilityMode === 'private' ? styles['segment-active'] : ''}`}

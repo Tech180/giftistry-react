@@ -132,6 +132,8 @@ export const ReplyInput: React.FC<ReplyInputProps> = ({
           setIsRollover={() => undefined}
           autoRollover={false}
           items={items}
+          showTagModeToggle={false}
+          footerLayout="reply"
           isTaggingModeActive={isTaggingModeActive}
           setIsTaggingModeActive={setIsTaggingModeActive}
           participants={participants}

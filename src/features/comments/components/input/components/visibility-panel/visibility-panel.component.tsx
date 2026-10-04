@@ -1,9 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import { COMMENT_VISIBILITY_CHOOSE_WHO_DISABLED_HELP } from '../../../../constants/comment-visibility-labels.constant';
+import {
+  VISIBILITY_PANEL_POPOVER_ESTIMATED_HEIGHT,
+  VISIBILITY_PANEL_POPOVER_ESTIMATED_HEIGHT_EXPANDED,
+} from '../../../../constants/visibility-panel-popover-estimated-height.constant';
 import type { CommentVisibilityMode } from '../../../../interfaces/comment-visibility-mode.type';
+import { resolveParticipantRoleLabel } from '../../../../utils/resolve-participant-role-label.util';
 import { AnchoredPopover } from '../toolbar/anchored-popover/anchored-popover.component';
 import type { Props } from './interfaces/props.interface';
 import { VisibilityPanelTemplate } from './visibility-panel.html';
+import styles from './visibility-panel.module.css';
 
 export const VisibilityPanel: React.FC<Props> = ({
   isOpen,
@@ -15,9 +22,11 @@ export const VisibilityPanel: React.FC<Props> = ({
   listOwnerId,
   isOwner,
   isMobile = false,
+  isChooseWhoEnabled,
   anchorRef,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
+  const popoverMeasureRef = useRef<HTMLDivElement>(null);
   const fallbackAnchorRef = useRef<HTMLDivElement>(null);
   const resolvedAnchorRef = anchorRef ?? fallbackAnchorRef;
 
@@ -28,7 +37,10 @@ export const VisibilityPanel: React.FC<Props> = ({
 
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      if (panelRef.current?.contains(target)) {
+      if (
+        panelRef.current?.contains(target) ||
+        popoverMeasureRef.current?.contains(target)
+      ) {
         return;
       }
 
@@ -51,13 +63,12 @@ export const VisibilityPanel: React.FC<Props> = ({
   }
 
   const onSelectMode = (mode: CommentVisibilityMode) => {
+    if (mode === 'visibleToSelected' && !isChooseWhoEnabled) {
+      return;
+    }
+
     if (mode === 'visibleToSelected') {
-      const seededIds =
-        visibility.selectedUserIds.length > 0
-          ? visibility.selectedUserIds
-          : !isOwner && currentUserId
-            ? [currentUserId]
-            : [];
+      const seededIds = visibility.selectedUserIds.filter((id) => id !== currentUserId);
       onChange({
         mode,
         selectedUserIds: seededIds,
@@ -75,28 +86,50 @@ export const VisibilityPanel: React.FC<Props> = ({
     onChange({ mode: 'visibleToSelected', selectedUserIds: nextIds });
   };
 
+  const panelClassName = [styles.panel, isMobile ? styles['panel--sheet'] : styles['panel--dropdown']].join(' ');
+  const isEveryoneActive = visibility.mode === 'visibleToAll';
+  const isChooseWhoActive =
+    visibility.mode === 'visibleToSelected' && isChooseWhoEnabled;
+  const audienceRows = participants
+    .filter((participant) => participant.userId !== currentUserId)
+    .map((participant) => ({
+      userId: participant.userId,
+      name: participant.displayName || participant.username,
+      roleLabel: resolveParticipantRoleLabel(participant, listOwnerId),
+      checked: visibility.selectedUserIds.includes(participant.userId),
+    }));
+
   const panel = (
     <VisibilityPanelTemplate
       isMobile = {
         isMobile
       }
-      isOwner = {
-        isOwner
+      panelClassName = {
+        panelClassName
       }
-      mode = {
-        visibility.mode
+      isEveryoneActive = {
+        isEveryoneActive
       }
-      selectedUserIds = {
-        visibility.selectedUserIds
+      showSpoilerWarning = {
+        !isOwner && isEveryoneActive
       }
-      participants = {
-        participants
+      showHiddenFromOwner = {
+        !isOwner
       }
-      currentUserId = {
-        currentUserId
+      isHiddenFromOwnerActive = {
+        visibility.mode === 'hiddenFromOwner'
       }
-      listOwnerId = {
-        listOwnerId
+      isChooseWhoActive = {
+        isChooseWhoActive
+      }
+      isChooseWhoEnabled = {
+        isChooseWhoEnabled
+      }
+      chooseWhoDisabledHelp = {
+        COMMENT_VISIBILITY_CHOOSE_WHO_DISABLED_HELP
+      }
+      audienceRows = {
+        audienceRows
       }
       onSelectMode = {
         onSelectMode
@@ -122,14 +155,14 @@ export const VisibilityPanel: React.FC<Props> = ({
       anchorRef = {
         resolvedAnchorRef
       }
-      popoverRef = {
-        panelRef
-      }
+      popoverRef={popoverMeasureRef}
       isOpen = {
         isOpen
       }
-      estimatedHeight = {
-        360
+      estimatedHeight={
+        isChooseWhoActive
+          ? VISIBILITY_PANEL_POPOVER_ESTIMATED_HEIGHT_EXPANDED
+          : VISIBILITY_PANEL_POPOVER_ESTIMATED_HEIGHT
       }
       estimatedWidth = {
         352

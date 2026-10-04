@@ -95,6 +95,7 @@ export function useComposer({
       const visibility = resolveCommentVisibilityPayload(
         replyVisibility ?? commentVisibility,
         isOwner,
+        userId
       );
       await addComment(
         listId,
@@ -158,7 +159,7 @@ export function useComposer({
     }
 
     try {
-      const visibility = resolveCommentVisibilityPayload(commentVisibility, isOwner);
+      const visibility = resolveCommentVisibilityPayload(commentVisibility, isOwner, userId);
       await addComment(
         listId,
         finalContent,

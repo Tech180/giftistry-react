@@ -5,7 +5,10 @@ TODO:
 - when a user selects anonymous for an item (group funding), it should be anonymous for any users except those who contribute.
 - viewers can see all settings in the list (greyed out) even when AI is disabled server wide.
 - passkeys not working properly
-- upload without ai
+- enhancement
+    - visibility and sharing added back even when just you
+    - if an item is denied when scraping don't change item name or any field
+    - ctrl/shift click to move items to a different category
 - new features
     - price comparer
     - price fetcher (auto)

@@ -5,9 +5,11 @@ import { DEMO_SAM_COMMENT_ID, TOUR_TARGETS } from 'features/tour';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import { Item } from '../item/item.component';
 import { Input } from '../input/input.component';
+import {
+  COMMENT_HIGHLIGHT_CLASS,
+  COMMENT_HIGHLIGHT_DATA_ATTR,
+} from '../../constants/comment-highlight.constant';
 import styles from './section.module.css';
-
-const ATTENTION_PULSE_CLASS = 'attention-pulse';
 
 export const SectionTemplate: React.FC<TemplateProps> = ({
   isOwner,
@@ -56,6 +58,7 @@ export const SectionTemplate: React.FC<TemplateProps> = ({
   listContainerRef,
   onMentionSelect,
   highlightedCommentId,
+  deepLinkThreadExpandTargetId,
 }) => {
   return (
     <div className={styles.section}>
@@ -76,17 +79,19 @@ export const SectionTemplate: React.FC<TemplateProps> = ({
             {parentComments.map((comment) => {
               const isTourComment = comment.Id === DEMO_SAM_COMMENT_ID;
               const shellClass =
-                comment.Id === highlightedCommentId ? ATTENTION_PULSE_CLASS : undefined;
+                comment.Id === highlightedCommentId ? COMMENT_HIGHLIGHT_CLASS : undefined;
 
               return (
                 <div
                   key={comment.Id}
                   className={shellClass}
+                  {...{ [COMMENT_HIGHLIGHT_DATA_ATTR]: comment.Id }}
                   data-tour={isTourComment ? TOUR_TARGETS.demoNewComment : undefined}
                 >
                   <Item
                     comment={comment}
                     replies={repliesMap[comment.Id] || []}
+                    deepLinkThreadExpandTargetId={deepLinkThreadExpandTargetId}
                     listOwnerId={listOwnerId}
                     currentUserId={currentUserId}
                     items={items}

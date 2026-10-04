@@ -3,18 +3,14 @@ import { resolveCommentVisibilityBadgeLabel } from './resolve-comment-visibility
 
 describe('resolveCommentVisibilityBadgeLabel', () => {
   test('labels hiddenFromOwner', () => {
-    expect(resolveCommentVisibilityBadgeLabel('hiddenFromOwner', 0)).toBe('Invisible to Owner');
+    expect(resolveCommentVisibilityBadgeLabel('hiddenFromOwner')).toBe('Invisible to Owner');
   });
 
-  test('labels visibleToSelected with count', () => {
-    expect(resolveCommentVisibilityBadgeLabel('visibleToSelected', 3)).toBe('Visible to 3');
-  });
-
-  test('labels visibleToSelected with empty selection', () => {
-    expect(resolveCommentVisibilityBadgeLabel('visibleToSelected', 0)).toBe('Selected audience');
+  test('labels visibleToSelected', () => {
+    expect(resolveCommentVisibilityBadgeLabel('visibleToSelected')).toBe('Selected');
   });
 
   test('labels visibleToAll', () => {
-    expect(resolveCommentVisibilityBadgeLabel('visibleToAll', 0)).toBe('Visible to Owner');
+    expect(resolveCommentVisibilityBadgeLabel('visibleToAll')).toBe('Everyone');
   });
 });

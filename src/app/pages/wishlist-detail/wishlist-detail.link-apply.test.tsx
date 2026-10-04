@@ -190,6 +190,8 @@ const baseProps: PageTemplateProps = {
   isCommentsOpen: false,
   setIsCommentsOpen: vi.fn(),
   showDeletedComments: false,
+  hasDeletedComments: false,
+  onHasDeletedCommentsChange: vi.fn(),
   onToggleShowDeletedComments: vi.fn(),
   isShareOpen: false,
   setIsShareOpen: vi.fn(),
@@ -287,7 +289,7 @@ describe('PageTemplate link apply bar', () => {
     expect(screen.queryByTestId('link-apply-bar')).toBeNull();
   });
 
-  test('shows Apply and collapses comments overlay while tagging items', () => {
+  test('shows Cancel and collapses comments overlay while tagging with no selection', () => {
     const setIsTaggingModeActive = vi.fn();
 
     render(
@@ -311,6 +313,33 @@ describe('PageTemplate link apply bar', () => {
 
     expect(screen.getByTestId('link-apply-bar')).toBeInTheDocument();
     expect(screen.getByTestId('comments')).toHaveAttribute('data-collapse', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(setIsTaggingModeActive).toHaveBeenCalledWith(false);
+  });
+
+  test('shows Apply when tagging overlay has selected items', () => {
+    const setIsTaggingModeActive = vi.fn();
+
+    render(
+      <MemoryRouter>
+        <PageTemplate
+          {...baseProps}
+          isAddOpen={false}
+          viewMode="detailed"
+          isCommentsOpen
+          isTaggingModeActive
+          taggedItemIds={['item-1']}
+          doesAddSidebarOverlayList
+          setIsTaggingModeActive={setIsTaggingModeActive}
+          showApplyBar
+          collapseDrawerWhileTagging
+          isItemFormSessionActive={false}
+          isItemDrawerVisible={false}
+          isInspectorOpen
+        />
+      </MemoryRouter>
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
     expect(setIsTaggingModeActive).toHaveBeenCalledWith(false);

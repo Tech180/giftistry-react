@@ -1,6 +1,6 @@
 import { useLayoutEffect, useState } from 'react';
+import { computeAnchoredPopoverPosition } from '../utils/compute-anchored-popover-position.util';
 import type { AnchoredPopoverPosition } from './interfaces/anchored-popover-position.interface';
-import type { PopoverPlacement } from './interfaces/popover-placement.type';
 import type { UseAnchoredPopoverOptions } from './interfaces/use-anchored-popover-options.interface';
 
 export function useAnchoredPopover(
@@ -16,7 +16,7 @@ export function useAnchoredPopover(
     viewportPadding = 12,
   } = options;
 
-  const [placement, setPlacement] = useState<PopoverPlacement>('above');
+  const [placement, setPlacement] = useState<AnchoredPopoverPosition['placement']>('above');
   const [style, setStyle] = useState<React.CSSProperties>({
     top: 0,
     left: 0,
@@ -38,48 +38,43 @@ export function useAnchoredPopover(
       const popoverHeight = popoverRef.current?.offsetHeight ?? estimatedHeight;
       const popoverWidth = popoverRef.current?.offsetWidth ?? estimatedWidth;
 
-      const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
-      const spaceAbove = rect.top - viewportPadding;
-      const nextPlacement: PopoverPlacement =
-        spaceBelow >= popoverHeight + gap || spaceBelow >= spaceAbove ? 'below' : 'above';
+      const result = computeAnchoredPopoverPosition({
+        anchorRect: rect,
+        popoverWidth,
+        popoverHeight,
+        gap,
+        viewportPadding,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+      });
 
-      let top =
-        nextPlacement === 'below'
-          ? rect.bottom + gap
-          : rect.top - popoverHeight - gap;
-
-      let left = rect.left;
-
-      if (left + popoverWidth > window.innerWidth - viewportPadding) {
-        left = window.innerWidth - popoverWidth - viewportPadding;
-      }
-
-      if (left < viewportPadding) {
-        left = viewportPadding;
-      }
-
-      if (top + popoverHeight > window.innerHeight - viewportPadding) {
-        top = window.innerHeight - popoverHeight - viewportPadding;
-      }
-
-      if (top < viewportPadding) {
-        top = viewportPadding;
-      }
-
-      setPlacement(nextPlacement);
+      setPlacement(result.placement);
       setStyle({
-        top: `${top}px`,
-        left: `${left}px`,
+        top: `${result.top}px`,
+        left: `${result.left}px`,
         visibility: 'visible',
+        ...(result.constrainMaxHeight
+          ? { maxHeight: `${result.maxHeight}px` }
+          : {}),
       });
     };
 
     updatePosition();
 
+    const popoverEl = popoverRef.current;
+    let resizeObserver: ResizeObserver | null = null;
+    if (popoverEl && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        updatePosition();
+      });
+      resizeObserver.observe(popoverEl);
+    }
+
     window.addEventListener('resize', updatePosition);
     window.addEventListener('scroll', updatePosition, true);
 
     return () => {
+      resizeObserver?.disconnect();
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition, true);
     };

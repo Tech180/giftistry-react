@@ -12,5 +12,6 @@ export interface Props {
   isOwner: boolean;
   /** When true, render as bottom sheet instead of anchored dropdown. */
   isMobile?: boolean;
+  isChooseWhoEnabled: boolean;
   anchorRef?: React.RefObject<HTMLElement | null>;
 }

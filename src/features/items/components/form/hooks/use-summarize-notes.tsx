@@ -7,6 +7,7 @@ import { jobsApi, waitForJob } from 'features/jobs';
 import { useUserSocket } from 'shared/providers/user-socket';
 import { buildSummarizeCustomFields } from 'shared/utils/item-custom-fields.util';
 import { parsePriorityWeight } from '../../../utils/parse-priority-weight.util';
+import { parseMoneyInput } from 'shared/utils/parse-money-input.util';
 import { toSummarizedDescription } from '../../../utils/ai-job-result.util';
 import { formatAiHelperFailure } from '../../../utils/format-ai-helper-failure.util';
 import { SUMMARIZE_FAILURE_FALLBACK } from '../../../constants/ai-helper-failure.constants';
@@ -91,6 +92,12 @@ export function useSummarizeNotes(options: {
       }
     });
 
+    const parsedPrice = parseMoneyInput(price);
+    if (!parsedPrice.ok) {
+      setErrorMsg(parsedPrice.message);
+      return;
+    }
+
     const isCancelled = startJobRun();
     setUndoDescription(description);
     setIsSummarizingNotes(true);
@@ -113,7 +120,7 @@ export function useSummarizeNotes(options: {
         text: description.trim() || undefined,
         linkUrl: linkUrl.trim() || undefined,
         websiteName: websiteName.trim() || undefined,
-        price: price.trim() ? parseFloat(price) : null,
+        price: parsedPrice.value,
         category: category === 'uncategorized' ? undefined : category,
         priority: parsePriorityWeight(priorityWeight),
         customFields: summarizeCustomFields,

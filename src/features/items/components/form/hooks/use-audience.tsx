@@ -10,8 +10,16 @@ export function useAudience(options: { listShares: ListShare[] }): UseAudienceRe
     'everyone'
   );
 
+  if (listShares.length === 0 && visibilityMode === 'restricted') {
+    setVisibilityMode('everyone');
+    setSharedWithUserIds([]);
+  }
+
   const handleVisibilityModeChange = useCallback(
     (mode: 'everyone' | 'restricted' | 'private') => {
+      if (mode === 'restricted' && listShares.length === 0) {
+        return;
+      }
       setVisibilityMode(mode);
       setSharedWithUserIds((prev) => {
         if (mode === 'everyone' || mode === 'private') {

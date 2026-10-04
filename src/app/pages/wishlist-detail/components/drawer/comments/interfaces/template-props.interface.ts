@@ -22,6 +22,8 @@ export interface TemplateProps {
   autoRollover?: boolean;
   handleItemTaggedClick: (itemId: string, returnToItemId?: string) => void;
   showDeletedComments: boolean;
+  hasDeletedComments: boolean;
+  onHasDeletedCommentsChange: (hasDeletedComments: boolean) => void;
   onToggleShowDeletedComments: () => void;
   drawerTitle: string;
   tagsLabel: string;

@@ -123,6 +123,10 @@ Outbound: `notifyTypingStart` / `notifyTypingStop` (stop delay from presence con
 
 `isDemoListId(listId)` → skip fetch/WS; comments/typing/highlight from `useTourDemoOptional()`. Tour targets on section; highlight pulse on focused comment.
 
+### Mention notification deep link
+
+Inbox `comment` notifications navigate to `/wishlists/:listId?comment=:commentId` ([`features/notifications`](../notifications/utils/get-navigation-target.util.ts)). Wishlist detail opens the comments drawer when `comment` is present. `useCommentDeepLinkHighlight` (in `useSection`) waits for comments to load, expands reply threads when the target is a reply, scrolls the `[data-comment-id]` node into view, applies the shared global `attention-pulse` for ~2s, then removes `comment` from the URL (`replace: true`). Invalid ids clear the param without throwing.
+
 ---
 
 ## Visibility modes
@@ -132,10 +136,10 @@ Type: `CommentVisibilityMode`
 | Mode | Meaning | Payload |
 |------|---------|---------|
 | `hiddenFromOwner` | Hidden from list owner (non-owner default) | `isOwnerVisible: false` |
-| `visibleToAll` | Visible to owner / broadly (owner default) | `isOwnerVisible: true` |
+| `visibleToAll` | **Everyone** in the UI (owner, viewers, collaborators with list access). Owner default. | `isOwnerVisible: true` |
 | `visibleToSelected` | Whitelist | `visibleToUserIds` (empty → treat as all) |
 
-Resolved by `resolveCommentVisibilityPayload`. Mentions in selected mode can auto-add users to the audience. Mentions are filtered by mode (`getMentionableParticipants`).
+Resolved by `resolveCommentVisibilityPayload`. Mentions in selected mode can auto-add users to the audience. Mentions are filtered by mode (`getMentionableParticipants`). @mentions trigger backend `comment` notifications for mentioned users who can view the comment (see giftistry-bun `NotifyCommentMentionsUseCase`).
 
 ---
 
@@ -151,7 +155,7 @@ Resolved by `resolveCommentVisibilityPayload`. Mentions in selected mode can aut
 | Toolbar | Emoji / GIF / upload + send |
 | Attachment / upload error | Image preview and errors (10MB; jpeg/png/gif/webp) |
 | Footer | Tag-mode toggle, rollover checkbox, visibility badge |
-| Visibility panel | Mode + participant multi-select (popover / mobile sheet) |
+| Visibility panel | Mode + participant multi-select (popover / mobile sheet); desktop popover repositions and clamps to the viewport when content height changes (e.g. audience list); owners disable “Choose who” when ≤1 other participant (badge **Selected** for whitelist mode) |
 
 ---
 
@@ -162,7 +166,7 @@ Resolved by `resolveCommentVisibilityPayload`. Mentions in selected mode can aut
 | Meta | Avatar, name, online, owner badge, date |
 | Content | Parsed text / mentions; image |
 | Tags | Item chips from `item:…` links (public `Tags`; max visible before rail) |
-| Reactions / picker | Counts + standard set + emoji picker |
+| Reactions / picker | Counts + standard set + emoji picker; toggles update in `useCommentController` and sync via `reaction.toggled` WS (list fetch merges local reactions so stale GET cannot drop a new badge) |
 | Reply | Nested mini-composer + child items |
 | Delete | Own comments; confirm; soft-deleted placeholder |
 | Visibility rail | Eye icons from parsed mode (non-owners) |
@@ -179,7 +183,13 @@ Resolved by `resolveCommentVisibilityPayload`. Mentions in selected mode can aut
 | Attachments | Size/MIME limits |
 | Content | User/item markdown link regexes |
 
-Utils include WS URL, presence parse, unique append, visible tree, content parse/demote mentions, visibility resolve/badge/parse, GIF/image → data URL.
+Utils include WS URL, presence parse, unique append, visible tree, content parse/demote mentions, visibility resolve/badge/parse, local upload → data URL.
+
+### GIF search (GIPHY proxy)
+
+- **`gifsApi`** (`api/gifs.api.ts`): `GET /api/gifs/search`, `POST /api/gifs/import` on giftistry-bun (not the browser → GIPHY directly).
+- Server owner sets **`GiphyApiKey`** in Server settings (or `GIFTISTRY_GIPHY_API_KEY` on the API host). Without a key, the comment toolbar hides the GIF button (`GET /api/gifs/status`).
+- Picking a GIF imports CDN bytes on the server, then attaches the returned data URL like a normal comment image.
 
 ---
 
@@ -191,7 +201,7 @@ Utils include WS URL, presence parse, unique append, visible tree, content parse
 | Invite guest preview | Same provider + section (read/post rules as guest path allows) |
 | Tour demo | Demo list ids; seeded comments / typing / highlight from tour demo provider |
 
-`DeletedCommentsToggle` lives in drawer chrome when owners show soft-deleted threads.
+`DeletedCommentsToggle` lives in discussion chrome. It renders only when the loaded thread includes at least one soft-deleted comment.
 
 ---
 

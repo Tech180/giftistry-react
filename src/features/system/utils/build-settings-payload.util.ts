@@ -32,6 +32,7 @@ export function buildSettingsPayload(
     FcmEnabled: input.fcmEnabled,
     FcmProjectId: input.fcmProjectId.trim(),
     FcmServiceAccountJson: input.fcmServiceAccountJson,
+    GiphyApiKey: input.giphyApiKey,
     AiEnabled: input.aiEnabled,
     AiWebSearchEnabled: input.aiWebSearchEnabled,
     AiRateLimitEnabled: input.aiRateLimitEnabled,

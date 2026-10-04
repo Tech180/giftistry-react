@@ -63,5 +63,6 @@ export interface BackendSettings {
   FcmEnabled?: boolean;
   FcmProjectId?: string;
   FcmServiceAccountJson?: string;
+  GiphyApiKey?: string;
   AiDefaultPrompts?: AiDefaultPromptsView;
 }

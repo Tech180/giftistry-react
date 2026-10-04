@@ -3,7 +3,8 @@ import type { CommentVisibilityState } from '../interfaces/comment-visibility-st
 
 export function resolveCommentVisibilityPayload(
   state: CommentVisibilityState,
-  isOwner: boolean
+  isOwner: boolean,
+  authorUserId?: string
 ): CommentVisibilityPayload {
   if (isOwner && state.mode === 'hiddenFromOwner') {
     return { isOwnerVisible: true, visibleToUserIds: null };
@@ -14,7 +15,11 @@ export function resolveCommentVisibilityPayload(
   }
 
   if (state.mode === 'visibleToSelected') {
-    const unique = [...new Set(state.selectedUserIds.filter(Boolean))];
+    const unique = [
+      ...new Set(
+        state.selectedUserIds.filter((id) => Boolean(id) && id !== authorUserId)
+      ),
+    ];
     if (unique.length === 0) {
       return { isOwnerVisible: true, visibleToUserIds: null };
     }

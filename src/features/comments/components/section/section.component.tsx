@@ -158,6 +158,9 @@ export const Section: React.FC<Props> = (props) => {
       highlightedCommentId = {
         section.highlightedCommentId
       }
+      deepLinkThreadExpandTargetId = {
+        section.deepLinkThreadExpandTargetId
+      }
     />
   );
 };

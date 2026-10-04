@@ -21,4 +21,6 @@ export interface Props {
   setReplyTaggedItemIds: (ids: string[]) => void;
   /** When true, soft-deleted comments remain visible in the thread. Defaults to false. */
   showDeletedComments?: boolean;
+  /** Fired when the loaded thread gains or loses soft-deleted comments. */
+  onHasDeletedCommentsChange?: (hasDeletedComments: boolean) => void;
 }

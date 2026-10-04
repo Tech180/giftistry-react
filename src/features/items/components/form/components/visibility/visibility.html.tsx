@@ -57,7 +57,7 @@ export const VisibilityTemplate: React.FC<TemplateProps> = ({
             />
           )}
 
-          {listShares.length > 0 && (
+          {canCollaborate && !isSuggestion && (
             <AudiencePicker
               listShares={listShares}
               selectedUserIds={sharedWithUserIds}

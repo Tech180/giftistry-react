@@ -33,6 +33,8 @@ import {
   CLAIM_GF_AMOUNT_REQUIRED,
   CLAIM_GF_CONFIRM_CONTRIBUTE,
 } from '../claim-prompt/constants/claim-group-fund-copy.constant';
+import { MONEY_MAX_AMOUNT } from 'shared/constants/money-limits.constant';
+import { MONEY_AMOUNT_OUT_OF_RANGE_MESSAGE } from 'shared/constants/money-messages.constant';
 import type { Props } from './interfaces/props.interface';
 import styles from './claim-form.module.css';
 
@@ -92,6 +94,7 @@ export const ClaimForm: React.FC<Props> = ({
     (parsedAmount == null ||
       !Number.isFinite(parsedAmount) ||
       parsedAmount <= 0 ||
+      parsedAmount > MONEY_MAX_AMOUNT ||
       (remainingAmount > 0 && parsedAmount > remainingAmount + 1e-9));
   const confirmDisabled = (showQuantityUi && plan.type === 'noop') || amountInvalid;
   const visibleLines = lines.filter(isClaimQuantityLineVisible);
@@ -208,6 +211,10 @@ export const ClaimForm: React.FC<Props> = ({
       }
       if (remainingAmount > 0 && parsedAmount > remainingAmount + 1e-9) {
         alert(CLAIM_GF_AMOUNT_EXCEEDS);
+        return;
+      }
+      if (parsedAmount > MONEY_MAX_AMOUNT) {
+        alert(MONEY_AMOUNT_OUT_OF_RANGE_MESSAGE);
         return;
       }
     }

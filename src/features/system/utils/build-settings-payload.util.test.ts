@@ -29,6 +29,7 @@ const baseInput = (): SettingsPayloadInput => ({
   fcmEnabled: false,
   fcmProjectId: '',
   fcmServiceAccountJson: '',
+  giphyApiKey: '',
   aiEnabled: false,
   aiWebSearchEnabled: false,
   aiRateLimitEnabled: false,

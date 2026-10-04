@@ -19,6 +19,7 @@ import {
   rowsFromItemMetadataAi,
 } from '../../../utils/add-item-custom-fields.util';
 import { parsePriorityWeight } from '../../../utils/parse-priority-weight.util';
+import { parseMoneyInput } from 'shared/utils/parse-money-input.util';
 import type { UseSubstitutionsResult } from '../interfaces/use-substitutions-result.interface';
 
 export function useSubstitutions(options: {
@@ -483,12 +484,17 @@ export function useSubstitutions(options: {
       setErrorMsg('Name is required.');
       return;
     }
+    const parsedSubstitutionPrice = parseMoneyInput(price);
+    if (!parsedSubstitutionPrice.ok) {
+      setErrorMsg(parsedSubstitutionPrice.message);
+      return;
+    }
     const payload: CreateSubstitutionPayload = {
       Name: trimmed,
       Description: description.trim() || null,
       LinkUrl: linkUrl.trim() || null,
       WebsiteName: websiteName.trim() || null,
-      Price: price.trim() ? Number(price) : null,
+      Price: parsedSubstitutionPrice.value,
       Category: category || 'uncategorized',
       PriorityId: null,
       Priority: parsePriorityWeight(priorityWeight),

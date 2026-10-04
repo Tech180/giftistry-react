@@ -20,4 +20,20 @@ describe('polishExtractMetadataForForm', () => {
     expect(polished.Title).toBe('Fosi Audio C3 Gaming DAC Amp for PC');
     expect(polished.Description).toBeNull();
   });
+
+  test('drops scraped price above DECIMAL(10,2) max', () => {
+    const polished = polishExtractMetadataForForm({
+      Title: 'Luxury item',
+      Price: 100_000_000,
+      Description: null,
+      Category: null,
+      CategoryAlternatives: [],
+      ImageUrl: null,
+      WebsiteName: null,
+      ResolvedUrl: null,
+      CustomFields: { Predefined: {}, UserDefined: {} },
+    });
+
+    expect(polished.Price).toBeNull();
+  });
 });

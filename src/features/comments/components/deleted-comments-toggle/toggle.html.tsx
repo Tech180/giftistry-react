@@ -5,16 +5,23 @@ import styles from './toggle.module.css';
 
 export const ToggleTemplate: React.FC<TemplateProps> = ({
   showDeletedComments,
+  hasDeletedComments,
   onToggle,
-}) => (
-  <button
-    type="button"
-    className={`${styles.toggle} ${showDeletedComments ? styles['toggle-active'] : ''}`}
-    aria-pressed={showDeletedComments}
-    aria-label={showDeletedComments ? 'Hide deleted comments' : 'Show deleted comments'}
-    title={showDeletedComments ? 'Hide deleted comments' : 'Show deleted comments'}
-    onClick={onToggle}
-  >
-    <DumpsterIcon size={18} />
-  </button>
-);
+}) => {
+  if (!hasDeletedComments) {
+    return null;
+  }
+
+  return (
+    <button
+      type="button"
+      className={`${styles.toggle} ${showDeletedComments ? styles['toggle-active'] : ''}`}
+      aria-pressed={showDeletedComments}
+      aria-label={showDeletedComments ? 'Hide deleted comments' : 'Show deleted comments'}
+      title={showDeletedComments ? 'Hide deleted comments' : 'Show deleted comments'}
+      onClick={onToggle}
+    >
+      <DumpsterIcon size={18} />
+    </button>
+  );
+};

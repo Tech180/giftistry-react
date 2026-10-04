@@ -29,6 +29,16 @@ describe('resolveCommentVisibilityPayload', () => {
       )
     ).toEqual({ isOwnerVisible: true, visibleToUserIds: ['a', 'b'] });
   });
+
+  it('omits author from selected audience payload', () => {
+    expect(
+      resolveCommentVisibilityPayload(
+        { mode: 'visibleToSelected', selectedUserIds: ['author-1', 'b'] },
+        false,
+        'author-1'
+      )
+    ).toEqual({ isOwnerVisible: true, visibleToUserIds: ['b'] });
+  });
 });
 
 describe('parseCommentVisibilityMode', () => {

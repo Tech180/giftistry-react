@@ -32,6 +32,7 @@ export interface SettingsStateSetters {
   setFcmEnabled: (value: boolean) => void;
   setFcmProjectId: (value: string) => void;
   setFcmServiceAccountJson: (value: string) => void;
+  setGiphyApiKey: (value: string) => void;
   setAiEnabled: (val: boolean) => void;
   setAiWebSearchEnabled: (val: boolean) => void;
   setAiRateLimitEnabled: (val: boolean) => void;

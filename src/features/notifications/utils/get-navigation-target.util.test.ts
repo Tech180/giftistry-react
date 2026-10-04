@@ -36,6 +36,17 @@ describe('getNavigationTarget', () => {
     ).toBe('/wishlists/list-9');
   });
 
+  it('routes comment mentions to wishlist with comment query', () => {
+    expect(
+      getNavigationTarget(
+        base({
+          Type: 'comment',
+          Metadata: { ListId: 'list-1', CommentId: 'comment-9' },
+        }),
+      ),
+    ).toBe('/wishlists/list-1?comment=comment-9');
+  });
+
   it('routes item_deleted to the wishlist', () => {
     expect(
       getNavigationTarget(

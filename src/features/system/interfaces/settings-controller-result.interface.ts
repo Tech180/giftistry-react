@@ -62,6 +62,10 @@ export interface Result {
   setFcmProjectId: (value: string) => void;
   fcmServiceAccountJson: string;
   setFcmServiceAccountJson: (value: string) => void;
+  giphyApiKey: string;
+  setGiphyApiKey: (value: string) => void;
+  showGiphyApiKey: boolean;
+  setShowGiphyApiKey: (value: boolean) => void;
   onTestNtfy: () => void;
   isTestingNtfy: boolean;
   aiEnabled: boolean;

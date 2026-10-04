@@ -59,8 +59,11 @@ export const OverlaysTemplate: React.FC<TemplateProps> = ({
   setReplyTaggedItemIds,
   collapseDrawerWhileTagging,
   showDeletedComments,
+  hasDeletedComments,
+  onHasDeletedCommentsChange,
   onToggleShowDeletedComments,
   showApplyBar,
+  applyBarButtonLabel,
   isShareOpen,
   setIsShareOpen,
   isMobileFab,
@@ -258,6 +261,12 @@ export const OverlaysTemplate: React.FC<TemplateProps> = ({
         showDeletedComments = {
           showDeletedComments
         }
+        hasDeletedComments = {
+          hasDeletedComments
+        }
+        onHasDeletedCommentsChange = {
+          onHasDeletedCommentsChange
+        }
         onToggleShowDeletedComments = {
           onToggleShowDeletedComments
         }
@@ -266,6 +275,9 @@ export const OverlaysTemplate: React.FC<TemplateProps> = ({
 
     {showApplyBar ? (
       <ApplyBar
+        buttonLabel = {
+          applyBarButtonLabel
+        }
         onApply = {
           () => {
             setIsLinkingModeActive(false);

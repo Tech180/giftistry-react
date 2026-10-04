@@ -17,6 +17,8 @@ export const InspectorTemplate: React.FC<TemplateProps> = ({
   isExpired,
   isArchived,
   showDeletedComments,
+  hasDeletedComments,
+  onHasDeletedCommentsChange,
   onToggleShowDeletedComments,
   isTaggingModeActive,
   setIsTaggingModeActive,
@@ -130,6 +132,9 @@ export const InspectorTemplate: React.FC<TemplateProps> = ({
               showDeletedComments = {
                 showDeletedComments
               }
+              hasDeletedComments = {
+                hasDeletedComments
+              }
               onToggle = {
                 onToggleShowDeletedComments
               }
@@ -217,6 +222,9 @@ export const InspectorTemplate: React.FC<TemplateProps> = ({
             }
             showDeletedComments = {
               showDeletedComments
+            }
+            onHasDeletedCommentsChange = {
+              onHasDeletedCommentsChange
             }
           />
         </div>
