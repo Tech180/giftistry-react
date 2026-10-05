@@ -32,4 +32,6 @@ export interface Props {
   variant?: 'card' | 'inline';
   onLinkedItemNavigate?: (itemId: string, returnToItemId?: string) => void;
   onLinkedItemsUnsupported?: () => void;
+  /** When set, showcase opens on this substitution browse section (option id). */
+  initialSubstitutionOptionId?: string | null;
 }

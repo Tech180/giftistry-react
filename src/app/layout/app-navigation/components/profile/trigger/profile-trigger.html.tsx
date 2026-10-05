@@ -14,7 +14,6 @@ export const ProfileTriggerTemplate: React.FC<ProfileTriggerTemplateProps> = ({
   avatarInitial,
   showAvatarInitials,
   onSettings,
-  onFriends,
   onLogout,
 }) => (
   <div className={styles['dropdown-container']} ref={profileRef}>
@@ -34,7 +33,6 @@ export const ProfileTriggerTemplate: React.FC<ProfileTriggerTemplateProps> = ({
       <ProfileMenu
         user={user}
         onSettings={onSettings}
-        onFriends={onFriends}
         onLogout={onLogout}
       />
     )}

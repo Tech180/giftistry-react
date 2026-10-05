@@ -1,1 +1,1 @@
-export type ProfileMenuActionId = 'settings' | 'friends' | 'logout';
+export type ProfileMenuActionId = 'settings' | 'logout';

@@ -36,6 +36,9 @@ describe('build-item-showcase-display.util', () => {
   it('formats best price and category display', () => {
     expect(formatShowcaseBestPrice(0)).toBe('—');
     expect(formatShowcaseBestPrice(12.5)).toBe('$12.50');
+    expect(formatShowcaseBestPrice(15)).toBe('$15.00');
+    expect(formatShowcaseBestPrice(0, 15)).toBe('$15.00');
+    expect(formatShowcaseBestPrice(100, 15)).toBe('$15.00');
     expect(formatShowcaseDisplayCategory(undefined, baseItem)).toBe('Apparel');
     expect(formatShowcaseDisplayCategory('Kitchen', baseItem)).toBe('Kitchen');
   });

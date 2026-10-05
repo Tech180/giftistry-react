@@ -20,6 +20,7 @@ import {
   sanitizeRestrictedUserIds,
 } from '../../../utils/item-audience.util';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
+import { formatMoneyFromUnknown } from 'shared/utils/format-money-display.util';
 
 function hasOptionalMetadata(meta: ItemDescriptionMetadata) {
   const normalized = normalizeItemDescriptionMetadata(meta);
@@ -226,7 +227,9 @@ export function useItemHydrate(options: {
         setLinkUrl(item.Links[0].Url || '');
         setWebsiteName(item.Links[0].RetailerName || '');
         setPrice(
-          item.Links[0].ExtractedPrice !== null ? item.Links[0].ExtractedPrice.toString() : ''
+          item.Links[0].ExtractedPrice !== null
+            ? formatMoneyFromUnknown(item.Links[0].ExtractedPrice)
+            : ''
         );
       } else {
         setLinkUrl('');
@@ -289,5 +292,5 @@ export function useItemHydrate(options: {
       setErrorMsg(null);
       setWarningMsg(null);
     }
-  }, [isOpen, runAbandonPendingJob]);
+  }, [isOpen, readOnly, runAbandonPendingJob]);
 }

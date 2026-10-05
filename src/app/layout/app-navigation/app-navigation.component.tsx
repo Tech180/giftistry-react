@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from 'features/auth';
 import { useTheme } from 'app/providers/theme';
+import { isPrimaryNavLinkActive } from './constants/primary-nav-links.constant';
 import { AppNavigationTemplate } from './app-navigation.html';
 
 export const AppNavigation: React.FC = () => {
@@ -80,6 +81,8 @@ export const AppNavigation: React.FC = () => {
       mobileMenuRef={mobileMenuRef}
       hamburgerRef={hamburgerRef}
       showRegisterCta={registrationMode === 'open'}
+      isDashboardActive={isPrimaryNavLinkActive('dashboard', location.pathname)}
+      isFriendsActive={isPrimaryNavLinkActive('friends', location.pathname)}
     />
   );
 };

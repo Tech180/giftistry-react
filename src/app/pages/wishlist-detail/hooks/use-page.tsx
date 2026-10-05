@@ -342,6 +342,7 @@ export function usePage(): UsePageResult {
     viewingItem: session.viewingItem,
     setViewingItem: session.setViewingItem,
     openItemViewer: session.openItemViewer,
+    viewingSubstitutionOptionId: session.viewingSubstitutionOptionId,
     openClaimerSubstitutionCreate: session.openClaimerSubstitutionCreate,
     claimerSubstitutionCreateNonce: session.claimerSubstitutionCreateNonce,
     openClaimerSubstitutionEdit: session.openClaimerSubstitutionEdit,

@@ -17,6 +17,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = (props) => {
       isDragging={drawer.isDragging}
       showSwipeHandle={drawer.showSwipeHandle}
       isDashboardActive={drawer.isDashboardActive}
+      isFriendsActive={drawer.isFriendsActive}
       brandTo={drawer.brandTo}
       overlayRef={drawer.overlayRef}
       onTouchStart={drawer.onTouchStart}

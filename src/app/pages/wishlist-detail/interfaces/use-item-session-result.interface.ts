@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 import type { Item } from 'features/items';
 import type { ImportStripHandle } from 'features/items';
 import type { ItemEnrichJobResult } from 'features/jobs';
+import type { OpenItemViewerOptions } from './open-item-viewer-options.interface';
 
 export interface UseItemSessionResult {
   isAddOpen: boolean;
@@ -16,7 +17,8 @@ export interface UseItemSessionResult {
   openItemEditor: (item: Item) => void;
   viewingItem: Item | null;
   setViewingItem: (item: Item | null) => void;
-  openItemViewer: (item: Item) => void;
+  openItemViewer: (item: Item, options?: OpenItemViewerOptions) => void;
+  viewingSubstitutionOptionId: string | null;
   openClaimerSubstitutionCreate: (item: Item) => void;
   claimerSubstitutionCreateNonce: number;
   openClaimerSubstitutionEdit: (item: Item) => void;

@@ -139,7 +139,7 @@ export const FriendsTabTemplate: React.FC<TemplateProps> = ({
 
       {filteredFriends.length === 0 ? (
         <div className={styles['empty-text']}>
-          No friends found. Add friends from your profile to invite them here.
+          No friends found. Add friends from the Friends page to invite them here.
         </div>
       ) : (
         <ul className={styles.list}>

@@ -56,6 +56,11 @@
   color: var(--text);
 }
 
+.nav-link-active {
+  color: var(--text);
+  font-weight: var(--font-weight-semibold);
+}
+
 .auth-buttons {
   display: flex;
   align-items: center;

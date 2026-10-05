@@ -45,6 +45,7 @@ export const OverlaysTemplate: React.FC<TemplateProps> = ({
   claimerSubstitutionCreateNonce,
   claimerSubstitutionEditNonce,
   claimerSubstitutionEditId,
+  viewingSubstitutionOptionId,
   viewMode,
   isCommentsOpen,
   setIsCommentsOpen,
@@ -187,6 +188,9 @@ export const OverlaysTemplate: React.FC<TemplateProps> = ({
         }
         autoOpenClaimerSubstitutionEditId = {
           claimerSubstitutionEditId
+        }
+        viewingSubstitutionOptionId = {
+          viewingSubstitutionOptionId
         }
       />
     )}

@@ -1,9 +1,13 @@
 import React from 'react';
+import { formatUsd } from 'shared/utils/format-money-display.util';
 import type { Props } from './interfaces/props.interface';
 import { HeaderTemplate } from './header.html';
 import styles from '../../view.module.css';
 
 export const Header: React.FC<Props> = (props) => {
+  const primaryPriceDisplay =
+    props.primaryPrice != null ? formatUsd(props.primaryPrice) : '';
+
   const headerMetaClassName = [
     styles['view__header-meta'],
     props.elevateAboveWash ? styles['view__header-meta--above-wash'] : '',
@@ -48,6 +52,9 @@ export const Header: React.FC<Props> = (props) => {
       }
       primaryPrice = {
         props.primaryPrice
+      }
+      primaryPriceDisplay = {
+        primaryPriceDisplay
       }
       showQuantity = {
         props.showQuantity

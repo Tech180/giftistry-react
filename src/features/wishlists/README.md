@@ -194,7 +194,7 @@ Existing shares: role change / remove; confirms collaborator→viewer demotion (
 | `isWishlistInArchiveBucket` | inactive \|\| expired (dashboard Archived tab) |
 | `dateInputToExpiresAtIso` / `expiresAtIsoToDateInput` | Local date ↔ ISO |
 | `toGuestWishlist` | Preview → `Wishlist` (viewer, AI off) |
-| `normalizeGuestPreviewItem` / `groupGuestPreviewItems` | Guest item safety + grouping |
+| `normalizeGuestPreviewItem` / `groupGuestPreviewItems` | Guest item safety + grouping (same within-category sort as list API) |
 
 Internal: `CATEGORY_OPTIONS`, `SHARE_ROLE_OPTIONS`, demotion warning + `shouldConfirmCollaboratorToViewer`.
 

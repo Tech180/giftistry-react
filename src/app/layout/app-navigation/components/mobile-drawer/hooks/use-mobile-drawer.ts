@@ -8,6 +8,7 @@ import {
 } from '../constants/swipe-close.constant';
 import type { UseMobileDrawerParams } from '../interfaces/use-mobile-drawer-params.interface';
 import type { UseMobileDrawerResult } from '../interfaces/use-mobile-drawer-result.interface';
+import { isPrimaryNavLinkActive } from '../../../constants/primary-nav-links.constant';
 import styles from '../mobile-drawer.module.css';
 
 export function useMobileDrawer({
@@ -26,7 +27,8 @@ export function useMobileDrawer({
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragRef = useRef({ startX: 0, currentX: 0, startTime: 0, active: false });
 
-  const isDashboardActive = location.pathname === '/dashboard';
+  const isDashboardActive = isPrimaryNavLinkActive('dashboard', location.pathname);
+  const isFriendsActive = isPrimaryNavLinkActive('friends', location.pathname);
   const brandTo = isAuthenticated ? '/dashboard' : '/';
 
   const resetDragStyles = () => {
@@ -146,6 +148,7 @@ export function useMobileDrawer({
     isDragging,
     showSwipeHandle,
     isDashboardActive,
+    isFriendsActive,
     brandTo,
     overlayRef,
     onTouchStart,

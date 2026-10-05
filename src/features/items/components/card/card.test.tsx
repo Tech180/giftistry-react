@@ -418,6 +418,51 @@ describe('Card compact substitution chrome', () => {
     expect(screen.getByRole('button', { name: /previous option/i })).toBeInTheDocument();
   });
 
+  test('collaborator sees view not edit on another guest claimer_custom tab', () => {
+    const claimerCustomOption = {
+      Id: 'sub-custom',
+      Kind: 'claimer_custom' as const,
+      SortOrder: 1,
+      CreatedByUserId: 'guest-author',
+      Item: {
+        Id: 'sub-item-custom',
+        Name: 'Guest Alt',
+        Description: null,
+        Links: [],
+        Photos: [],
+        Claims: [],
+        IsClaimed: false,
+      },
+    };
+
+    render(
+      <Card
+        item={
+          {
+            ...compactItem,
+            SubstitutionOptions: [ownerApprovedOption, claimerCustomOption],
+          } as never
+        }
+        isOwner
+        isExpired={false}
+        canCollaborate
+        allowGroupFunds={false}
+        itemActions={itemActions as never}
+        viewMode="compact"
+        onEdit={vi.fn()}
+        onView={vi.fn()}
+        onEditSubstitutionOption={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /next option/i }));
+    fireEvent.click(screen.getByRole('button', { name: /next option/i }));
+
+    expect(screen.getByTitle('Guest Alt')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /view item/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /edit item/i })).not.toBeInTheDocument();
+  });
+
   test('claimer sees add substitution control beside claim actions', () => {
     const onAddSubstitution = vi.fn();
 

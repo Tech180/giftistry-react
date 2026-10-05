@@ -6,6 +6,7 @@ export interface MobileDrawerTemplateProps extends MobileDrawerProps {
   isDragging: boolean;
   showSwipeHandle: boolean;
   isDashboardActive: boolean;
+  isFriendsActive: boolean;
   brandTo: string;
   overlayRef: RefObject<HTMLDivElement | null>;
   onTouchStart: TouchEventHandler<HTMLDivElement>;

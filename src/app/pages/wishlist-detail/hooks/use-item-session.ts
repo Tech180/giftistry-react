@@ -6,6 +6,8 @@ import type { ItemEnrichJobResult } from 'features/jobs';
 import { useAuth } from 'features/auth';
 import { useTourOptional } from 'features/tour';
 import { useToast } from 'shared/providers/toast';
+import { resolveCanEditSubstitutionOption } from 'features/items/utils/resolve-can-edit-substitution-option.util';
+import type { OpenItemViewerOptions } from '../interfaces/open-item-viewer-options.interface';
 import type { UseItemSessionOptions } from '../interfaces/use-item-session-options.interface';
 import type { UseItemSessionResult } from '../interfaces/use-item-session-result.interface';
 
@@ -34,6 +36,7 @@ export function useItemSession({
   const [claimerSubstitutionCreateNonce, setClaimerSubstitutionCreateNonce] = useState(0);
   const [claimerSubstitutionEditNonce, setClaimerSubstitutionEditNonce] = useState(0);
   const [claimerSubstitutionEditId, setClaimerSubstitutionEditId] = useState<string | null>(null);
+  const [viewingSubstitutionOptionId, setViewingSubstitutionOptionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (editingItem && !items.some((item) => item.Id === editingItem.Id)) {
@@ -45,14 +48,20 @@ export function useItemSession({
   useEffect(() => {
     if (viewingItem && !items.some((item) => item.Id === viewingItem.Id)) {
       setViewingItem(null);
+      setViewingSubstitutionOptionId(null);
     }
   }, [items, viewingItem]);
 
-  const clearSubstitutionAutoOpen = useCallback(() => {
+  const clearSubstitutionEditAutoOpen = useCallback(() => {
     setClaimerSubstitutionEditId(null);
     setClaimerSubstitutionEditNonce(0);
     setClaimerSubstitutionCreateNonce(0);
   }, []);
+
+  const clearSubstitutionAutoOpen = useCallback(() => {
+    clearSubstitutionEditAutoOpen();
+    setViewingSubstitutionOptionId(null);
+  }, [clearSubstitutionEditAutoOpen]);
 
   const openItemEditor = useCallback(
     (item: Item) => {
@@ -68,16 +77,17 @@ export function useItemSession({
   );
 
   const openItemViewer = useCallback(
-    (item: Item) => {
-      clearSubstitutionAutoOpen();
+    (item: Item, options?: OpenItemViewerOptions) => {
+      clearSubstitutionEditAutoOpen();
       const sourceItem = items.find((i) => i.Id === item.Id) ?? item;
       setIsAddOpen(false);
       setEditingItem(null);
       setEditingItemDraft(null);
       associationsRef.current?.primeForItem(sourceItem);
+      setViewingSubstitutionOptionId(options?.substitutionOptionId ?? null);
       setViewingItem(sourceItem);
     },
-    [items, clearSubstitutionAutoOpen, associationsRef]
+    [items, clearSubstitutionEditAutoOpen, associationsRef]
   );
 
   const openClaimerSubstitutionCreate = useCallback(
@@ -95,15 +105,27 @@ export function useItemSession({
         return;
       }
 
-      if (canCollaborate) {
+      const { canEdit } = resolveCanEditSubstitutionOption({
+        option,
+        userId: user?.Id,
+        canCollaborate,
+      });
+
+      if (!canEdit) {
+        openItemViewer(item, { substitutionOptionId: substitutionId });
+        return;
+      }
+
+      if (option.Kind === 'owner_approved' && canCollaborate) {
         openItemEditor(item);
+        setViewingSubstitutionOptionId(substitutionId);
       } else {
-        openItemViewer(item);
+        openItemViewer(item, { substitutionOptionId: substitutionId });
       }
       setClaimerSubstitutionEditId(option.Id);
       setClaimerSubstitutionEditNonce((n) => n + 1);
     },
-    [canCollaborate, openItemEditor, openItemViewer]
+    [canCollaborate, openItemEditor, openItemViewer, user?.Id]
   );
 
   const openClaimerSubstitutionEdit = useCallback(
@@ -207,6 +229,7 @@ export function useItemSession({
     viewingItem,
     setViewingItem,
     openItemViewer,
+    viewingSubstitutionOptionId,
     openClaimerSubstitutionCreate,
     claimerSubstitutionCreateNonce,
     openClaimerSubstitutionEdit,

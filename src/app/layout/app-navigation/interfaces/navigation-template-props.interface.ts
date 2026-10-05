@@ -21,4 +21,6 @@ export interface NavigationTemplateProps {
   mobileMenuRef: RefObject<HTMLDivElement | null>;
   hamburgerRef: RefObject<HTMLButtonElement | null>;
   showRegisterCta: boolean;
+  isDashboardActive: boolean;
+  isFriendsActive: boolean;
 }

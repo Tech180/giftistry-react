@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PlusCircle, Pencil, Eye, ArrowLeft } from 'lucide-react';
 import { formatItemAsGiftistryMarkdown } from 'features/items/utils/format-item-as-giftistry-markdown.util';
 import type { SubstitutionDrawerChrome } from 'features/items/interfaces/substitution-drawer-chrome.interface';
@@ -43,28 +43,39 @@ export const AddItem: React.FC<Props> = ({
   autoOpenClaimerSubstitutionNonce = 0,
   autoOpenClaimerSubstitutionEditNonce = 0,
   autoOpenClaimerSubstitutionEditId = null,
+  viewingSubstitutionOptionId = null,
 }) => {
   const { canShowAi } = useAuth();
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isFormDirty, setIsFormDirty] = useState(true);
+  const sessionKey = useMemo(
+    () => `${editingItem?.Id ?? ''}|${viewingItem?.Id ?? ''}`,
+    [editingItem?.Id, viewingItem?.Id]
+  );
+  const defaultFormDirty = !editingItem && !viewingItem;
+  const [isFormDirty, setIsFormDirty] = useState(defaultFormDirty);
+  const [dirtySessionKey, setDirtySessionKey] = useState(sessionKey);
+
+  if (sessionKey !== dirtySessionKey) {
+    setDirtySessionKey(sessionKey);
+    setIsFormDirty(defaultFormDirty);
+  }
+
   const [substitutionChrome, setSubstitutionChrome] = useState<SubstitutionDrawerChrome | null>(
     null
   );
   const [substitutionExitNonce, setSubstitutionExitNonce] = useState(0);
+  const [trackedIsOpen, setTrackedIsOpen] = useState(isOpen);
 
-  useEffect(() => {
-    setIsFormDirty(!editingItem && !viewingItem);
-  }, [editingItem, viewingItem]);
-
-  useEffect(() => {
+  if (isOpen !== trackedIsOpen) {
+    setTrackedIsOpen(isOpen);
     if (isOpen) {
       setSubstitutionExitNonce(0);
-      return;
+    } else {
+      setSubstitutionChrome(null);
+      setSubstitutionExitNonce((n) => n + 1);
     }
-    setSubstitutionChrome(null);
-    setSubstitutionExitNonce((n) => n + 1);
-  }, [isOpen]);
+  }
 
   const isView = !!viewingItem;
   const isEdit = !!editingItem && !isView;
@@ -262,6 +273,9 @@ export const AddItem: React.FC<Props> = ({
       }
       autoOpenClaimerSubstitutionEditId = {
         autoOpenClaimerSubstitutionEditId
+      }
+      viewingSubstitutionOptionId = {
+        viewingSubstitutionOptionId
       }
       substitutionChrome = {
         substitutionChrome

@@ -30,6 +30,7 @@ export const ViewTemplate: React.FC<TemplateProps> = (props) => {
     isLinkedToItems,
     isRelatedToItems,
     primaryPrice,
+    primaryPriceDisplay,
     primaryImageUrl,
     isSelectable,
     onHoverChange,
@@ -173,7 +174,7 @@ export const ViewTemplate: React.FC<TemplateProps> = (props) => {
             }
           />
           <span className={styles['view__price']}>
-            {primaryPrice != null ? `$${primaryPrice}` : '—'}
+            {primaryPrice != null ? primaryPriceDisplay : '—'}
           </span>
         </div>
       </div>

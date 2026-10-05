@@ -18,6 +18,7 @@ import {
   CLAIM_FORM_CONFIRM_LINKED,
   CLAIM_FORM_PROMPT_CLAIM_LINKED,
 } from '../../item-presentation/claim-form/constants/claim-form-copy.constant';
+import { formatUsd } from 'shared/utils/format-money-display.util';
 import { ViewTemplate } from './view.html';
 import styles from './view.module.css';
 
@@ -60,6 +61,7 @@ export const View: React.FC<Props> = (props) => {
   const isRelatedToItems = relatedItems.length > 0 || !!(isRelatingContext && isTaggedSelection);
   const primaryLink = displayItem.Links[0];
   const primaryPrice = primaryLink?.ExtractedPrice;
+  const primaryPriceDisplay = primaryPrice != null ? formatUsd(primaryPrice) : '';
   const primaryImageUrl = getItemPrimaryImageUrl(displayItem);
   const sharingUsers = item.SharedWith ?? [];
   const { entries: claimBadgeEntries, showClaimBadge, hasVisibleClaim } =
@@ -204,6 +206,9 @@ export const View: React.FC<Props> = (props) => {
       }
       primaryPrice = {
         primaryPrice
+      }
+      primaryPriceDisplay = {
+        primaryPriceDisplay
       }
       primaryLink = {
         primaryLink

@@ -50,6 +50,14 @@ describe('formatItemAsGiftistryMarkdown', () => {
     expect(formatItemAsGiftistryMarkdown(coffeeMaker())).toBe(GOLDEN_COFFEE_MAKER_MD);
   });
 
+  it('formats whole-dollar prices with two decimals in metadata', () => {
+    const md = formatItemAsGiftistryMarkdown({
+      ...coffeeMaker(),
+      Links: [{ ...coffeeMaker().Links![0]!, ExtractedPrice: 15 }],
+    });
+    expect(md).toContain('- Price: 15.00');
+  });
+
   it('includes custom fields section when present', () => {
     const md = formatItemAsGiftistryMarkdown({
       ...coffeeMaker(),

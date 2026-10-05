@@ -14,6 +14,7 @@ export interface TemplateProps extends Props {
   isRelatedToItems: boolean;
   primaryImageUrl: string | null;
   primaryPrice: number | null | undefined;
+  primaryPriceDisplay: string;
   primaryLink: ItemLink | undefined;
   claimBadgeEntries: ClaimBadgeEntry[];
   showClaimBadge: boolean;

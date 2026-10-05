@@ -33,6 +33,7 @@ export type { CategoryMeta } from './interfaces/category-meta.interface';
 export type { ItemAudienceUser } from './interfaces/item-audience-user.interface';
 export { AudiencePicker } from './components/audience-picker/audience-picker.component';
 export { ItemPhotoGallery } from './components/photo-gallery/item-photo-gallery.component';
+export { sortItemsForListDisplay } from './utils/sort-items-for-list-display.util';
 export { getCategoryMeta } from './utils/get-category-meta.util';
 export { getItemPrimaryImageUrl } from './utils/item-primary-image.util';
 export type { ItemViewMode } from './interfaces/item-view-mode.type';

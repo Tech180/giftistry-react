@@ -21,6 +21,7 @@ import {
 import { parsePriorityWeight } from '../../../utils/parse-priority-weight.util';
 import { parseMoneyInput } from 'shared/utils/parse-money-input.util';
 import type { UseSubstitutionsResult } from '../interfaces/use-substitutions-result.interface';
+import { formatMoneyFromUnknown } from 'shared/utils/format-money-display.util';
 
 export function useSubstitutions(options: {
   item: Item | null | undefined;
@@ -34,6 +35,8 @@ export function useSubstitutions(options: {
   autoOpenClaimerSubstitutionNonce: number;
   autoOpenClaimerSubstitutionEditNonce: number;
   autoOpenClaimerSubstitutionEditId?: string | null;
+  readOnly?: boolean;
+  viewingSubstitutionOptionId?: string | null;
   onSubstitutionChromeChange?: (chrome: SubstitutionDrawerChrome | null) => void;
   onSuccess: () => void;
   onItemEnriched?: () => void;
@@ -100,7 +103,10 @@ export function useSubstitutions(options: {
   const {
     item, canManageItems, canShowAi, userId, userFirstName, userLastName, userUsername,
     substitutionExitNonce, autoOpenClaimerSubstitutionNonce, autoOpenClaimerSubstitutionEditNonce,
-    autoOpenClaimerSubstitutionEditId = null, onSubstitutionChromeChange, onSuccess, onItemEnriched,
+    autoOpenClaimerSubstitutionEditId = null,
+    readOnly = false,
+    viewingSubstitutionOptionId = null,
+    onSubstitutionChromeChange, onSuccess, onItemEnriched,
     definitions, buildSubstitutionMetadata, name, description, priorityWeight, linkUrl, websiteName,
     category, price, isFavorite, desiredQuantity, variations, customFields, dynamicValues,
     showExtraFields, photoEntries, photoError, otherUsersCanSee, isHiddenIdea, claimOnCreate,
@@ -118,6 +124,7 @@ export function useSubstitutions(options: {
   const lastSubstitutionExitNonceRef = useRef(substitutionExitNonce);
   const lastAutoOpenClaimerNonceRef = useRef(0);
   const lastAutoOpenClaimerEditNonceRef = useRef(0);
+  const lastViewingSubstitutionOptionIdRef = useRef<string | null>(null);
 
   const user = userId
     ? { Id: userId, FirstName: userFirstName ?? '', LastName: userLastName ?? '', Username: userUsername ?? '' }
@@ -294,7 +301,7 @@ export function useSubstitutions(options: {
         setWebsiteName(summary.Links[0]!.RetailerName || '');
         setPrice(
           summary.Links[0]!.ExtractedPrice != null
-            ? String(summary.Links[0]!.ExtractedPrice)
+            ? formatMoneyFromUnknown(summary.Links[0]!.ExtractedPrice)
             : ''
         );
       } else {
@@ -307,7 +314,7 @@ export function useSubstitutions(options: {
       setErrorMsg(null);
       setUndoDescription(null);
     },
-    [canShowAi, definitions, resetOptionalFields, clearAiCategories]
+    [canShowAi, definitions, readOnly, resetOptionalFields, clearAiCategories]
   );
 
   const openCreateSubstitution = () => {
@@ -387,6 +394,40 @@ export function useSubstitutions(options: {
     item?.SubstitutionOptions,
     canManageItems,
     user?.Id,
+    openEditSubstitution,
+  ]);
+
+  useEffect(() => {
+    lastViewingSubstitutionOptionIdRef.current = null;
+  }, [item?.Id]);
+
+  useEffect(() => {
+    if (!readOnly || !viewingSubstitutionOptionId || !item?.Id) {
+      return;
+    }
+    if (substitutionEditor) {
+      return;
+    }
+    if (lastViewingSubstitutionOptionIdRef.current === viewingSubstitutionOptionId) {
+      return;
+    }
+    const option = (item.SubstitutionOptions ?? []).find(
+      (entry) => entry.Id === viewingSubstitutionOptionId
+    );
+    if (!option) {
+      return;
+    }
+    const timerId = window.setTimeout(() => {
+      lastViewingSubstitutionOptionIdRef.current = viewingSubstitutionOptionId;
+      openEditSubstitution(option, false);
+    }, 0);
+    return () => window.clearTimeout(timerId);
+  }, [
+    readOnly,
+    viewingSubstitutionOptionId,
+    item?.Id,
+    item?.SubstitutionOptions,
+    substitutionEditor,
     openEditSubstitution,
   ]);
 

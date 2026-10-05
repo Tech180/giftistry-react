@@ -29,6 +29,7 @@ export interface TemplateProps {
    * Badge text still uses displayItem claims.
    */
   hasVisibleClaimForGray?: boolean;
+  activeSectionHasClaim?: boolean;
   /**
    * True when this browse section is locked because a sibling was claimed
    * (button label: Unavailable rather than Claimed).
@@ -87,8 +88,8 @@ export interface TemplateProps {
   viewMode?: ItemViewMode;
   isSelected?: boolean;
   onSelect?: () => void;
-  /** Opens read-only View Item drawer (viewers / public guests). */
-  onView?: () => void;
+  /** Opens read-only View Item drawer; optional substitution option id. */
+  onView?: (substitutionOptionId?: string) => void;
   isExpanded?: boolean;
   setIsExpanded?: (val: boolean) => void;
   displayDescription: string | null;

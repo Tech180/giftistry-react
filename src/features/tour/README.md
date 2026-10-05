@@ -130,7 +130,7 @@ Wraps `DemoListProvider` → inner controller.
 
 ## Targets
 
-`TOUR_TARGETS` → `data-tour="…"` values. Wired across dashboard, wishlist-detail, friends tabs, notification bell, settings notifications, nav (hamburger/profile/theme), item form, import dropzone, share panel tabs.
+`TOUR_TARGETS` → `data-tour="…"` values. Wired across dashboard, wishlist-detail, friends tabs, notification bell, settings notifications, nav (hamburger/profile/theme/friendsAction), item form, import dropzone, share panel tabs.
 
 Pages/features opt in by stamping targets; tour host queries `[data-tour=…]`.
 
@@ -184,8 +184,7 @@ Documented gaps — do not treat advanced chapters as fully polished:
 | **`createdListId` not used for nav** | Set/resumed in provider; advanced chapters lack `beforeShow` to `/wishlists/${createdListId}` — targets fail if user isn’t already on that list |
 | **`demoBeat: 'claim'` dead** | Implemented in demo provider; no step references it |
 | **`advanceOn: 'input'` unused** | Host + util ready; `beginner-title` uses `next` instead |
-| **Orphan target `friendsAction`** | In `TOUR_TARGETS` only — no `data-tour` in the app |
-| **Unused beforeShow** | `openDrawer`, `navigateSettingsTheming` defined; theming mobile may need profile sheet but doesn’t call them |
+| **Unused beforeShow** | `navigateSettingsTheming` defined; theming mobile may need profile sheet but doesn’t call it |
 | **`canAutoAdd` unused in eligibility** | Always mirrored from `canShowAi`; chapter `when` only checks AI |
 | **Shallow advanced guidance** | e.g. beginner friends/share-next are Next-only / center dialogs; import chapter assumes Import UI is already reachable |
 | **Migrated step id** | `beginner-create-fab-action` → `beginner-create` handled in `startAtStep` only |

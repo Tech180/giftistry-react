@@ -21,4 +21,6 @@ export interface SubstitutionGroupClaimChrome {
    * locks the group (claim button should read Unavailable).
    */
   isUnavailableDueToSiblingClaim: boolean;
+  /** True when the active browse section has at least one claim. */
+  activeSectionHasClaim: boolean;
 }

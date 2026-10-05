@@ -35,7 +35,8 @@ export interface PageTemplateProps extends PageShellFlags {
   openItemEditor: (item: Item) => void;
   viewingItem: Item | null;
   setViewingItem: (item: Item | null) => void;
-  openItemViewer: (item: Item) => void;
+  openItemViewer: (item: Item, options?: { substitutionOptionId?: string }) => void;
+  viewingSubstitutionOptionId: string | null;
   openClaimerSubstitutionCreate: (item: Item) => void;
   claimerSubstitutionCreateNonce: number;
   openClaimerSubstitutionEdit: (item: Item) => void;

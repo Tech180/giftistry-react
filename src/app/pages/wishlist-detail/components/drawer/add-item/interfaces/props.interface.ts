@@ -41,4 +41,6 @@ export interface Props {
   /** Bump with edit id to open claimer custom substitution edit. */
   autoOpenClaimerSubstitutionEditNonce?: number;
   autoOpenClaimerSubstitutionEditId?: string | null;
+  /** When viewing, open the nested substitution read-only surface for this option id. */
+  viewingSubstitutionOptionId?: string | null;
 }

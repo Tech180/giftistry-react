@@ -131,6 +131,22 @@ describe('ShowcaseTemplate', () => {
 
     expect(screen.getByText('Wireless Headphones')).toBeInTheDocument();
   });
+
+  it('renders formatted hero price in inline variant (inspector sidebar)', () => {
+    render(
+      <ShowcaseTemplate
+        {...baseTemplateProps}
+        variant = {
+          'inline'
+        }
+        bestPriceDisplay = {
+          '$15.00'
+        }
+      />
+    );
+
+    expect(screen.getByText('$15.00')).toBeInTheDocument();
+  });
 });
 
 describe('OwnerActions', () => {

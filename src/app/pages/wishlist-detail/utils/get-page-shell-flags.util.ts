@@ -11,8 +11,7 @@ export function getPageShellFlags(input: GetPageShellFlagsInput): PageShellFlags
   const collapseDrawerWhileTagging =
     input.isCommentsOpen && isCommentTaggingActive && input.doesAddSidebarOverlayList;
   const isItemDrawerVisible = isItemFormSessionActive && !collapseDrawerWhileLinking;
-  const showApplyBar =
-    (isItemFormSessionActive && isAssociationModeActive) || collapseDrawerWhileTagging;
+  const showApplyBar = collapseDrawerWhileLinking || collapseDrawerWhileTagging;
   const isInspectorOpen = input.selectedItemId !== null || input.isCommentsOpen;
 
   return {

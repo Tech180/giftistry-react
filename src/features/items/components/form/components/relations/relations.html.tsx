@@ -28,14 +28,18 @@ export const RelationsTemplate: React.FC<TemplateProps> = ({
             </p>
             <button
               type="button"
-              onClick={() => setIsLinkingModeActive(true)}
+              onClick={() => setIsLinkingModeActive((prev) => !prev)}
               className={[
                 styles['relations__btn'],
                 isLinkingModeActive ? styles['relations__btn--active'] : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
-              title="Select linked items from wishlist"
+              title={
+                isLinkingModeActive
+                  ? 'Finish selecting linked items'
+                  : 'Select linked items from wishlist'
+              }
               aria-pressed={isLinkingModeActive}
             >
               <Link size={16} />
@@ -56,14 +60,18 @@ export const RelationsTemplate: React.FC<TemplateProps> = ({
             </p>
             <button
               type="button"
-              onClick={() => setIsRelatingModeActive(true)}
+              onClick={() => setIsRelatingModeActive((prev) => !prev)}
               className={[
                 styles['relations__btn'],
                 isRelatingModeActive ? styles['relations__btn--active'] : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
-              title="Select related items from wishlist"
+              title={
+                isRelatingModeActive
+                  ? 'Finish selecting related items'
+                  : 'Select related items from wishlist'
+              }
               aria-pressed={isRelatingModeActive}
             >
               <Layers2 size={16} />

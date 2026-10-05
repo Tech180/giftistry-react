@@ -10,6 +10,7 @@ import { isItemGroupFundingInProgress } from '../../../utils/is-item-group-fundi
 import { getItemPrimaryImageUrl } from '../../../utils/item-primary-image.util';
 import { resolveItemClaimBadgeState } from '../../../utils/resolve-item-claim-badge-state.util';
 import { resolveSuggestedByDisplayName } from '../../../utils/resolve-suggested-by-display-name.util';
+import { formatUsdOrFallback } from 'shared/utils/format-money-display.util';
 import { ViewTemplate } from './view.html';
 import styles from './view.module.css';
 
@@ -41,6 +42,7 @@ export const View: React.FC<Props> = (props) => {
   const isLinkedToItems = linkedItems.length > 0 || !!(isLinkingContext && isTaggedSelection);
   const isRelatedToItems = relatedItems.length > 0 || !!(isRelatingContext && isTaggedSelection);
   const primaryPrice = displayItem.Links[0]?.ExtractedPrice;
+  const primaryPriceDisplay = formatUsdOrFallback(primaryPrice);
   const primaryImageUrl = getItemPrimaryImageUrl(displayItem);
   const { hasVisibleClaim } = resolveItemClaimBadgeState(
     displayItem.Claims,
@@ -118,6 +120,9 @@ export const View: React.FC<Props> = (props) => {
       }
       primaryPrice = {
         primaryPrice
+      }
+      primaryPriceDisplay = {
+        primaryPriceDisplay
       }
       primaryImageUrl = {
         primaryImageUrl

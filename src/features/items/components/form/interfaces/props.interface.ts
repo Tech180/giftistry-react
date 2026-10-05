@@ -49,4 +49,6 @@ export interface Props {
   /** Parent bumps with edit id to auto-open a substitution edit (claimer own custom, or any option for owners). */
   autoOpenClaimerSubstitutionEditNonce?: number;
   autoOpenClaimerSubstitutionEditId?: string | null;
+  /** Read-only view: open nested substitution surface for this option id. */
+  viewingSubstitutionOptionId?: string | null;
 }

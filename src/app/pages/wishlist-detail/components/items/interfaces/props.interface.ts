@@ -43,7 +43,7 @@ export interface Props {
   handleSelectTag: (itemId: string) => void;
   handleSelectReplyTag: (itemId: string) => void;
   openItemEditor: (item: Item) => void;
-  openItemViewer: (item: Item) => void;
+  openItemViewer: (item: Item, options?: { substitutionOptionId?: string }) => void;
   openClaimerSubstitutionCreate: (item: Item) => void;
   openClaimerSubstitutionEdit: (item: Item) => void;
   deleteClaimerSubstitution: (item: Item) => Promise<void>;

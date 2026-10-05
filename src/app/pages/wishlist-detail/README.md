@@ -119,7 +119,7 @@ Orchestrates hooks and page-local UI:
 | Lifecycle / settings | `useListLifecycle`, `useListSettings` |
 | Item session | `useItemSession` (+ associations ref for prime/clear/reset) |
 | Associations | `useItemAssociations` — exclusive link vs relate modes |
-| View / search | `viewMode` (localStorage `ITEM_VIEW_MODE_STORAGE_KEY`), search, collapsed groups, `groupItems` |
+| View / search | `viewMode` (localStorage `ITEM_VIEW_MODE_STORAGE_KEY`), search, collapsed groups, `groupItems` (within each category: API order + `sortItemsForListDisplay` when grouping locally) |
 | Mutual exclusion | Selected item ↔ comments ↔ add/edit/view — opening one clears the others |
 | Overlay breakpoint | `OVERLAY_BREAKPOINT` (`75rem`): below → add/comments drawers overlay list (`doesAddSidebarOverlayList`) |
 | Shell flags | `getPageShellFlags` → `canAutoAdd`, drawer collapse, `showApplyBar`, `isInspectorOpen`, … |
@@ -173,7 +173,7 @@ Builds [`AddWidget`](#add-widget) when `canSuggest`, packs `itemsProps`, renders
 
 ### Overlays
 
-Always (except public guest without viewing item): [`AddItem`](#drawer-add-item) when `isItemFormSessionActive`. List-mode (non-grid) comments drawer. [`ApplyBar`](#apply-bar) when linking/relating or collapsing comments while tagging. Desktop [`ShareModal`](#share-modal) when not mobile FAB. Highlight lock portal when peeking.
+Always (except public guest without viewing item): [`AddItem`](#drawer-add-item) when `isItemFormSessionActive`. List-mode (non-grid) comments drawer. [`ApplyBar`](#apply-bar) when link/relate or comment tagging collapses the drawer over the list. Desktop [`ShareModal`](#share-modal) when not mobile FAB. Highlight lock portal when peeking.
 
 ### Header
 
@@ -209,11 +209,11 @@ Idle: expand menu for Manual vs Auto (when `canAutoAdd`). Auto mode: URL form �
 
 ### Apply bar
 
-Fixed control that clears linking/relating/comment-tagging modes after the user finishes selecting items on the list. Link/relate always show **Apply**; comment tagging on an overlay list shows **Cancel** until at least one item is tagged, then **Apply**.
+Fixed control that clears linking/relating/comment-tagging modes after the user finishes selecting items on the list. Link/relate show **Apply** only when the add drawer collapses over the list (below `OVERLAY_BREAKPOINT`); on wider layouts the drawer stays open and the user exits picking by toggling the Link or Related control in the item form. Comment tagging on an overlay list shows **Cancel** until at least one item is tagged, then **Apply**.
 
 ### Settings panel
 
-Toggle rows: group funding, rollover, AI reviews, web search, background enrich — visibility gated by `canShowAi` / `canShowWebSearch` / `readOnly` (non-owner or archived). Used in header popover and mobile FAB panel.
+Toggle rows: group funding, rollover, AI, web search, background enrich — AI-related rows visible only when `canShowAi` / `canShowWebSearch` (same for owners and viewers). `readOnly` (non-owner or archived) greys rows and blocks toggles; it does not force AI rows to appear. Used in header popover and mobile FAB panel.
 
 ### Share modal
 

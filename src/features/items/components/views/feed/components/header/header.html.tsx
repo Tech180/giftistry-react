@@ -23,6 +23,7 @@ export const HeaderTemplate: React.FC<TemplateProps> = ({
   isRelatedToItems,
   primaryLink,
   primaryPrice,
+  primaryPriceDisplay,
   showQuantity,
   claimBadgeEntries,
   showClaimBadge,
@@ -114,7 +115,7 @@ export const HeaderTemplate: React.FC<TemplateProps> = ({
             }
           />
           {primaryPrice != null ? (
-            <span className={priceClassName}>${primaryPrice}</span>
+            <span className={priceClassName}>{primaryPriceDisplay}</span>
           ) : null}
           {showClaimBadge ? (
             <ClaimBadge

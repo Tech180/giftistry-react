@@ -3,12 +3,15 @@ TODO:
 - Overhaul collaborators
 - fix greying for fully funded items that other users haven't contributed to
 - when a user selects anonymous for an item (group funding), it should be anonymous for any users except those who contribute.
-- viewers can see all settings in the list (greyed out) even when AI is disabled server wide.
 - passkeys not working properly
+- as a viewer, when an item is claimed and there is a substitution it seems the edit button is there for people who didn't add that substitution. the amount isn't correct (if 5 are selected, x5 should be shown),
+claimed by box should be ungrayed, substitution box should be ungrayed, arrow section should be ungrayed
 - enhancement
-    - visibility and sharing added back even when just you
     - if an item is denied when scraping don't change item name or any field
     - ctrl/shift click to move items to a different category
+    - shouldn't show yourself on dashboard item
+    - settings for viewer should be the same
+    - make loading spinner
 - new features
     - price comparer
     - price fetcher (auto)

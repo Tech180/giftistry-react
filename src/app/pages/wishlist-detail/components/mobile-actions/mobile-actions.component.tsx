@@ -29,6 +29,7 @@ import {
 } from 'shared/utils/wishlist-export';
 import { ConfirmPanel } from '../confirm-panel/confirm-panel.component';
 import { SettingsPanel } from '../settings-panel/settings-panel.component';
+import { countListSettingsPanelRows } from '../settings-panel/utils/count-list-settings-panel-rows.util';
 import {
   SETTINGS_PANEL_HEADER,
   SETTINGS_PANEL_PAD,
@@ -300,9 +301,7 @@ export function MobileActions({
     }
 
     const listSettingsReadOnly = !isOwner || isArchived;
-    const settingsRowCount = listSettingsReadOnly
-      ? 5
-      : 2 + (canShowAi ? 1 : 0) + (canShowWebSearch ? 1 : 0) + (canShowAi ? 1 : 0);
+    const settingsRowCount = countListSettingsPanelRows({ canShowAi, canShowWebSearch });
     actions.push({
       id: 'settings',
       label: 'Settings',

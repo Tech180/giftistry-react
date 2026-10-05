@@ -142,12 +142,17 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
     localStorage.setItem(ITEM_VIEW_MODE_STORAGE_KEY, mode);
   };
 
-  const openItemViewer = (item: Item) => {
+  const [viewingSubstitutionOptionId, setViewingSubstitutionOptionId] = useState<string | null>(
+    null
+  );
+
+  const openItemViewer = (item: Item, options?: { substitutionOptionId?: string }) => {
     setSelectedItemId(null);
     setIsCommentsOpen(false);
     setIsLinkingModeActive(false);
     setIsRelatingModeActive(false);
     setViewingItemId(item.Id);
+    setViewingSubstitutionOptionId(options?.substitutionOptionId ?? null);
   };
 
   const shellFlags = getPageShellFlags({
@@ -215,6 +220,7 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       viewingItem={viewingItem}
       setViewingItem={setViewingItem}
       openItemViewer={openItemViewer}
+      viewingSubstitutionOptionId={viewingSubstitutionOptionId}
       openClaimerSubstitutionCreate={noop}
       claimerSubstitutionCreateNonce={0}
       openClaimerSubstitutionEdit={noop}

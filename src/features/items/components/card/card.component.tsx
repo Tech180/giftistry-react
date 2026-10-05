@@ -29,6 +29,7 @@ import { resolveDisplayVariant } from '../../utils/resolve-display-variant.util'
 import { resolveDisplayItem } from '../../utils/resolve-display-item.util';
 import { resolveClaimerSubstitutionAction } from '../../utils/resolve-claimer-substitution-action.util';
 import { resolveSectionFooterActions } from '../../utils/resolve-section-footer-actions.util';
+import { resolveCanEditSubstitutionOption } from '../../utils/resolve-can-edit-substitution-option.util';
 import { resolveSubstitutionGroupClaimChrome } from '../../utils/resolve-substitution-group-claim-chrome.util';
 import { resolveItemFundingSnapshot } from '../../utils/is-item-group-funding-active.util';
 import { resolveDisplayItemFullyClaimed } from '../../utils/resolve-item-section-fully-claimed.util';
@@ -214,7 +215,17 @@ export const Card: React.FC<Props> = ({
       setAnonymous(false);
       setShowClaimFormState(false);
     },
-    [claimAmount, anonymous, claimActorName, itemActions, displayItem.Id]
+    [
+      claimAmount,
+      anonymous,
+      claimActorName,
+      itemActions,
+      displayItem.Id,
+      setClaimAmount,
+      setClaimedByName,
+      setAnonymous,
+      setShowClaimFormState,
+    ]
   );
 
   const handleClaim = async (e?: React.SyntheticEvent<HTMLFormElement>) => {
@@ -298,7 +309,7 @@ export const Card: React.FC<Props> = ({
     (groupClaimChrome.isUnavailableDueToSiblingClaim ||
       (isFullyClaimed && !activeIsFullyClaimed));
 
-  const canAdjustClaim = itemNeedsClaimQuantityUi(item, metadata);
+  const canAdjustClaim = itemNeedsClaimQuantityUi(displayItem, metadata);
 
   const [isPinned, setIsPinned] = useState(() => {
     try {
@@ -362,21 +373,33 @@ export const Card: React.FC<Props> = ({
   const activeBrowseOption =
     activeSubstitution.kind !== 'original' ? (activeSubstitution.option ?? null) : null;
 
-  const footerCanEditItem =
-    !!activeBrowseOption
-      ? canEditItem && !!onEditSubstitutionOption
-      : sectionFooter.showParentEditDelete && canEditItem;
+  const substitutionOptionPolicy = activeBrowseOption
+    ? resolveCanEditSubstitutionOption({
+        option: activeBrowseOption,
+        userId: user?.Id,
+        canCollaborate,
+      })
+    : null;
+
+  const footerCanEditItem = activeBrowseOption
+    ? substitutionOptionPolicy!.canEdit && !!onEditSubstitutionOption
+    : sectionFooter.showParentEditDelete && canEditItem;
 
   const footerOnEdit = activeBrowseOption
-    ? onEditSubstitutionOption
+    ? substitutionOptionPolicy!.canEdit && onEditSubstitutionOption
       ? () => onEditSubstitutionOption(activeBrowseOption)
       : undefined
     : sectionFooter.showParentEditDelete
       ? onEdit
       : undefined;
 
+  const canDeleteActiveSubstitution =
+    !!activeBrowseOption &&
+    !!substitutionOptionPolicy?.canDelete &&
+    !!onDeleteSubstitutionOption;
+
   const handleFooterDelete = async () => {
-    if (activeBrowseOption && onDeleteSubstitutionOption) {
+    if (activeBrowseOption && canDeleteActiveSubstitution) {
       setDeleteLoading(true);
       try {
         await onDeleteSubstitutionOption(activeBrowseOption);
@@ -463,13 +486,14 @@ export const Card: React.FC<Props> = ({
       deleteLoading={deleteLoading}
       handleDelete={
         activeBrowseOption
-          ? onDeleteSubstitutionOption
+          ? canDeleteActiveSubstitution
             ? handleFooterDelete
             : () => undefined
           : sectionFooter.showParentEditDelete
             ? handleFooterDelete
             : () => undefined
       }
+      activeSectionHasClaim={groupClaimChrome.activeSectionHasClaim}
       isFavorite={localIsFavorite}
       toggleFavorite={toggleFavorite}
       onEdit={footerOnEdit}
@@ -493,7 +517,13 @@ export const Card: React.FC<Props> = ({
             }
           : undefined
       }
-      onView={footerCanEditItem && footerOnEdit ? undefined : onView}
+      onView={
+        footerCanEditItem
+          ? undefined
+          : onView
+            ? () => onView(activeBrowseOption?.Id)
+            : undefined
+      }
       isExpanded={isExpanded}
       setIsExpanded={setIsExpanded}
       displayDescription={displayDescription}

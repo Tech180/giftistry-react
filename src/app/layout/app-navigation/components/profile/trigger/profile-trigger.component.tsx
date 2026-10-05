@@ -35,10 +35,6 @@ export const ProfileTrigger: React.FC<ProfileTriggerProps> = ({ user, onLogout }
         closeProfile();
         navigate('/settings/account');
       }}
-      onFriends={() => {
-        closeProfile();
-        navigate('/friends/current');
-      }}
       onLogout={() => {
         closeProfile();
         onLogout();

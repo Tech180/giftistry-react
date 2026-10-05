@@ -537,12 +537,14 @@
   color: var(--primary);
 }
 
-.view--claimed-gray {
+.view--claimed-gray,
+.view__body.view--claimed-gray {
   position: relative;
   isolation: isolate;
 }
 
-.view--claimed-gray::before {
+.view--claimed-gray::before,
+.view__body.view--claimed-gray::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -551,6 +553,11 @@
   pointer-events: none;
   z-index: 2;
   border-radius: inherit;
+}
+
+.view__switcher--above-claim-gray {
+  position: relative;
+  z-index: 3;
 }
 
 .view--user-claimed-highlight {

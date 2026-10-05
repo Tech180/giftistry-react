@@ -1,5 +1,6 @@
 import type { Item } from 'features/items';
 import type { ItemListGroup } from 'features/items/interfaces/item-list-result.interface';
+import { sortItemsForListDisplay } from 'features/items/utils/sort-items-for-list-display.util';
 import {
   getFriendlyCategoryLabel,
   normalizeCategoryLabel,
@@ -19,8 +20,14 @@ export function groupGuestPreviewItems(
     );
   };
 
+  const withSortedItems = (next: { categoryKey: string; label: string; items: Item[] }[]) =>
+    next.map((group) => ({
+      ...group,
+      items: sortItemsForListDisplay(group.items),
+    }));
+
   const sortGroups = (next: { categoryKey: string; label: string; items: Item[] }[]) =>
-    [...next]
+    [...withSortedItems(next)]
       .filter((group) => group.items.length > 0)
       .sort((a, b) => {
         const aTail = a.categoryKey === 'uncategorized';

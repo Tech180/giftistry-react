@@ -32,6 +32,8 @@ import {
   resolveItemFundingSnapshot,
 } from '../../../utils/is-item-group-funding-active.util';
 import { resolveCanEditItem } from '../../../utils/resolve-can-edit-item.util';
+import { resolveCanEditSubstitutionOption } from '../../../utils/resolve-can-edit-substitution-option.util';
+import { resolveSubstitutionOptionIndex } from '../../../utils/resolve-substitution-option-index.util';
 import { resolveClaimerSubstitutionAction } from '../../../utils/resolve-claimer-substitution-action.util';
 import { resolveCurrentUserClaimIsAnonymous } from '../../../utils/resolve-current-user-claim-is-anonymous.util';
 import { resolveDisplayItem } from '../../../utils/resolve-display-item.util';
@@ -77,6 +79,7 @@ export function useShowcase({
   variant = 'card',
   onLinkedItemNavigate,
   onLinkedItemsUnsupported,
+  initialSubstitutionOptionId = null,
 }: Props): TemplateProps {
   void _priorityLabel;
   void aiEnabled;
@@ -84,8 +87,22 @@ export function useShowcase({
   const { user } = useItemsSession();
   const { showToast } = useToast();
   const [substitutionBrowseIndex, setSubstitutionBrowseIndex] = useState<number | undefined>(
-    undefined
+    () =>
+      resolveSubstitutionOptionIndex(
+        item,
+        item.SubstitutionOptions,
+        initialSubstitutionOptionId
+      )
   );
+
+  useEffect(() => {
+    const index = resolveSubstitutionOptionIndex(
+      item,
+      item.SubstitutionOptions,
+      initialSubstitutionOptionId
+    );
+    setSubstitutionBrowseIndex(index);
+  }, [item.Id, item.SubstitutionOptions, initialSubstitutionOptionId]);
 
   const activeSubstitution = useMemo(
     () =>
@@ -187,7 +204,7 @@ export function useShowcase({
     resolveItemFundingSnapshot(displayItem);
 
   const quantitySummary = resolveItemQuantitySummary(displayItem, metadata);
-  const canAdjustClaim = itemNeedsClaimQuantityUi(item, metadata);
+  const canAdjustClaim = itemNeedsClaimQuantityUi(displayItem, metadata);
   const isMultiCount = quantitySummary.isMultiCount;
   const totalClaimedQty = quantitySummary.claimedQuantity;
   const desiredQtyVal = quantitySummary.desiredQuantity;
@@ -247,7 +264,10 @@ export function useShowcase({
     desiredQtyVal
   );
   const displayCategory = formatShowcaseDisplayCategory(categoryMeta.label, item);
-  const bestPriceDisplay = formatShowcaseBestPrice(totalExtractedPrice);
+  const bestPriceDisplay = formatShowcaseBestPrice(
+    totalExtractedPrice,
+    displayItem.Links[0]?.ExtractedPrice
+  );
   const variationProgress = useMemo(
     () => buildShowcaseVariationProgress(item, metadata),
     [item, metadata]
@@ -292,20 +312,33 @@ export function useShowcase({
   const activeBrowseOption =
     activeSubstitution.kind !== 'original' ? (activeSubstitution.option ?? null) : null;
 
+  const substitutionOptionPolicy = activeBrowseOption
+    ? resolveCanEditSubstitutionOption({
+        option: activeBrowseOption,
+        userId: user?.Id,
+        canCollaborate,
+      })
+    : null;
+
   const footerCanEditItem = activeBrowseOption
-    ? canEditItem && !!onEditSubstitutionOption
+    ? substitutionOptionPolicy!.canEdit && !!onEditSubstitutionOption
     : sectionFooter.showParentEditDelete && canEditItem;
 
   const footerOnEdit = activeBrowseOption
-    ? onEditSubstitutionOption
+    ? substitutionOptionPolicy!.canEdit && onEditSubstitutionOption
       ? () => onEditSubstitutionOption(activeBrowseOption)
       : undefined
     : sectionFooter.showParentEditDelete
       ? onEdit
       : undefined;
 
+  const canDeleteActiveSubstitution =
+    !!activeBrowseOption &&
+    !!substitutionOptionPolicy?.canDelete &&
+    !!onDeleteSubstitutionOption;
+
   const handleFooterDelete = async () => {
-    if (activeBrowseOption && onDeleteSubstitutionOption) {
+    if (activeBrowseOption && canDeleteActiveSubstitution) {
       setDeleteLoading(true);
       try {
         await onDeleteSubstitutionOption(activeBrowseOption);
@@ -463,7 +496,7 @@ export function useShowcase({
       deleteLoading,
       handleDelete:
         activeBrowseOption
-          ? onDeleteSubstitutionOption
+          ? canDeleteActiveSubstitution
             ? handleFooterDelete
             : () => undefined
           : sectionFooter.showParentEditDelete

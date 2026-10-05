@@ -119,6 +119,7 @@ Local list state + mutations. Called from the wishlist-detail page (not a provid
 |-------|---------|
 | `items` | Flat item list |
 | `itemGroups` | Server groups or `null` (cleared on simple `addItem`) |
+| `sortItemsForListDisplay` | Within-category order: favorited+priority → priority → favorited → neither; ties by priority, name, id |
 | `isLoading` / `error` | Fetch flags (`fetchItems` supports `{ silent: true }`) |
 
 ### Actions
@@ -214,9 +215,10 @@ Strip owns `useImportFlow`, dropzone/paste, jobs timeline, confirm. Modes: `exis
 ## Claims, substitutions, links, funding
 
 - **Claims** — `POST`/`DELETE …/claims`. Projections update parent + nested substitution claim fields. Optional `includeLinked` claims/unclaims the link group (UI via ClaimForm + linked-peer utils).
-- **Substitutions** — alternate options under a parent (`SubstitutionOptions`). Owner vs claimer create paths; card/showcase pick a **display variant** so claim chrome targets the active option. Blocked for suggestions (`itemSupportsSubstitutions`).
+- **Substitutions** — alternate options under a parent (`SubstitutionOptions`). Owner vs claimer create paths; card/showcase pick a **display variant** so claim chrome targets the active option. Blocked for suggestions (`itemSupportsSubstitutions`). **Edit/delete authority:** `owner_approved` options are editable by list managers (`canCollaborate`); **`claimer_custom`** options are editable only by the guest who created them (`CreatedByUserId`). List cards pass the browsed substitution option id into the viewer so the drawer/inspector open on the same variant.
 - **Linked items** — metadata `LinkedItemIds`; bidirectional sync on form save. Blocked for suggestions, unlimited qty (`0`), or qty > 1. **Related** (`RelatedItemIds`) is a softer association — not a claim group.
 - **Group funding** — list-flagged (`allowGroupFunds` from page/wishlist). Target from `FundingTarget` or max link price; contributions are claim amounts. Drives FundingWidget and fully-claimed section logic.
+- **Money display** — read-only item prices and funding copy use [`shared/utils/format-money-display.util`](../../shared/utils/format-money-display.util.ts) (`$15.00` style). Editable price inputs keep free-form typing until save.
 
 ---
 

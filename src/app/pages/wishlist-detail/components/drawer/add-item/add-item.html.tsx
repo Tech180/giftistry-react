@@ -53,6 +53,7 @@ export const AddItemTemplate: React.FC<TemplateProps> = ({
   autoOpenClaimerSubstitutionNonce,
   autoOpenClaimerSubstitutionEditNonce,
   autoOpenClaimerSubstitutionEditId,
+  viewingSubstitutionOptionId,
   substitutionChrome,
   substitutionExitNonce,
   onSubstitutionChromeChange,
@@ -395,6 +396,9 @@ export const AddItemTemplate: React.FC<TemplateProps> = ({
       }
       autoOpenClaimerSubstitutionEditId = {
         autoOpenClaimerSubstitutionEditId
+      }
+      viewingSubstitutionOptionId = {
+        viewingSubstitutionOptionId
       }
     />
   </Drawer>

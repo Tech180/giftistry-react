@@ -24,6 +24,8 @@ export interface Props {
   deleteClaimerSubstitution: (item: Item) => Promise<void>;
   openSubstitutionEdit: (item: Item, substitutionId: string) => void;
   deleteSubstitutionOption: (substitutionId: string) => Promise<void>;
+  viewingItem: Item | null;
+  viewingSubstitutionOptionId: string | null;
   handleItemTaggedClick: (itemId: string, returnToItemId?: string) => void;
   onLinkedItemsUnsupported: () => void;
   showDeletedComments: boolean;

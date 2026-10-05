@@ -6,6 +6,7 @@ export interface TemplateProps extends Props {
   isLinkedToItems: boolean;
   isRelatedToItems: boolean;
   primaryPrice: number | null | undefined;
+  primaryPriceDisplay: string;
   primaryImageUrl: string | null;
   isSelectable: boolean;
   isHovered: boolean;

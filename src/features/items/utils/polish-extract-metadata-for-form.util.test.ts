@@ -21,6 +21,22 @@ describe('polishExtractMetadataForForm', () => {
     expect(polished.Description).toBeNull();
   });
 
+  test('drops generic retailer shell titles', () => {
+    const polished = polishExtractMetadataForForm({
+      Title: 'Amazon',
+      Price: 12,
+      Description: null,
+      Category: null,
+      CategoryAlternatives: [],
+      ImageUrl: null,
+      WebsiteName: 'Amazon',
+      ResolvedUrl: 'https://www.amazon.com/dp/B0TEST',
+      CustomFields: { Predefined: {}, UserDefined: {} },
+    });
+
+    expect(polished.Title).toBe('');
+  });
+
   test('drops scraped price above DECIMAL(10,2) max', () => {
     const polished = polishExtractMetadataForForm({
       Title: 'Luxury item',

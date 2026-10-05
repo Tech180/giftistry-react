@@ -58,6 +58,7 @@ export const ViewTemplate: React.FC<TemplateProps> = (props) => {
     isLinkedToItems,
     isRelatedToItems,
     primaryPrice,
+    primaryPriceDisplay,
     showQuantity,
     claimBadgeEntries,
     showClaimBadge,
@@ -143,7 +144,7 @@ export const ViewTemplate: React.FC<TemplateProps> = (props) => {
           <div className={styles['view__price-row']}>
             <QuantityBadge item={item} metadata={metadata} isOwner={isOwner} />
             {primaryPrice != null && (
-              <span className={styles['view__price']}>${primaryPrice}</span>
+              <span className={styles['view__price']}>{primaryPriceDisplay}</span>
             )}
             {showClaimBadge && <ClaimBadge entries={claimBadgeEntries} />}
             {item.IsSuggestion && (

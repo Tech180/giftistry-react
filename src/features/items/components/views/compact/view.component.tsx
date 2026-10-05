@@ -19,6 +19,7 @@ import {
   isItemGroupFundingInProgress,
 } from '../../../utils/is-item-group-funding-active.util';
 import { CLAIM_FORM_PROMPT_CLAIM_LINKED } from '../../item-presentation/claim-form/constants/claim-form-copy.constant';
+import { formatUsdOrFallback } from 'shared/utils/format-money-display.util';
 import { buildColClass } from './utils/build-col-class.util';
 import { ViewTemplate } from './view.html';
 import styles from './view.module.css';
@@ -42,6 +43,8 @@ export const View: React.FC<Props> = (props) => {
     isFullyClaimed,
     isMultiCount,
     hasVisibleClaimForGray,
+    activeSectionHasClaim = false,
+    onEdit,
     totalExtractedPrice,
     totalClaimedAmount,
     showClaimForm,
@@ -122,7 +125,6 @@ export const View: React.FC<Props> = (props) => {
   const rootClassName = [
     styles.view,
     modifierClass,
-    claimedGrayClass,
     groupFundingClass,
     userClaimedHighlightClass,
     hasSubstitutionBrowse ? styles['view--with-subs'] : '',
@@ -173,7 +175,7 @@ export const View: React.FC<Props> = (props) => {
     ? columnPresence.trailing
     : !!primaryLink || !!onView || showCompactActions;
   const showQuantityBadge = (() => {
-    const quantity = resolveItemQuantitySummary(item, metadata);
+    const quantity = resolveItemQuantitySummary(displayItem, metadata);
     if (!quantity.shouldDisplay) {
       return false;
     }
@@ -298,8 +300,15 @@ export const View: React.FC<Props> = (props) => {
   const actionBtnPrimaryClassName = `${styles['view__action-btn']} ${styles['view__action-btn--primary']}`;
   const actionBtnConfirmClassName = `${styles['view__action-btn']} ${styles['view__action-btn--confirm']}`;
   const actionBtnConfirmPrimaryClassName = `${actionBtnConfirmClassName} ${styles['view__action-btn--primary']}`;
-  const switcherClassName = styles['view__switcher'];
-  const bodyClassName = styles['view__body'];
+  const switcherClassName = [
+    styles['view__switcher'],
+    claimedGrayClass && (activeSectionHasClaim || showClaimBadge)
+      ? styles['view__switcher--above-claim-gray']
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const bodyClassName = [styles['view__body'], claimedGrayClass].filter(Boolean).join(' ');
   const primaryClassName = styles['view__primary'];
   const starClassName = styles['view__star'];
   const starBtnClassName = styles['view__star-btn'];
@@ -333,7 +342,7 @@ export const View: React.FC<Props> = (props) => {
   const showExpanded = !!(hasExpandableContent && isExpanded);
   const showExpandedMetadata =
     predefinedDisplayEntries.length > 0 || userDefinedEntries.length > 0;
-  const canShowEditActions = !!(showCompactActions && (canEditItem ?? canCollaborate));
+  const canShowEditActions = !!(showCompactActions && canEditItem && onEdit);
   const claimActionsDivided = !!(onView || canShowEditActions);
   const claimActionsClassName = [
     styles['view__claim-actions'],
@@ -351,7 +360,7 @@ export const View: React.FC<Props> = (props) => {
   const linkedClaimPeerIds = linkedClaimPeers.map((peer) => peer.Id);
   const badgesAudienceLabel = showSharingAvatars ? null : audienceLabel;
   const suggestedByDisplayName = resolveSuggestedByDisplayName(item);
-  const primaryPriceLabel = primaryPrice != null ? `$${primaryPrice}` : '\u2014';
+  const primaryPriceLabel = formatUsdOrFallback(primaryPrice);
   const primaryLinkTitle = primaryLink
     ? getSiteName(primaryLink.Url, primaryLink.RetailerName)
     : '';

@@ -50,6 +50,7 @@ export interface TemplateProps {
   autoOpenClaimerSubstitutionNonce: number;
   autoOpenClaimerSubstitutionEditNonce: number;
   autoOpenClaimerSubstitutionEditId: string | null;
+  viewingSubstitutionOptionId: string | null;
   substitutionChrome: SubstitutionDrawerChrome | null;
   substitutionExitNonce: number;
   onSubstitutionChromeChange: (chrome: SubstitutionDrawerChrome | null) => void;

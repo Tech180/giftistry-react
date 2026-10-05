@@ -16,6 +16,7 @@ export interface TemplateProps {
   isRelatedToItems: boolean;
   primaryLink: ItemLink | undefined;
   primaryPrice: number | null | undefined;
+  primaryPriceDisplay: string;
   showQuantity: boolean;
   claimBadgeEntries: ClaimBadgeEntry[];
   showClaimBadge: boolean;

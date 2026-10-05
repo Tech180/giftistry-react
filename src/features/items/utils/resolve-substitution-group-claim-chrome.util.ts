@@ -72,5 +72,6 @@ export function resolveSubstitutionGroupClaimChrome(
       activeGfFullyFunded ||
       siblingGfFullyFunded,
     isUnavailableDueToSiblingClaim: siblingFullyClaimed && !activeFullyClaimed,
+    activeSectionHasClaim: activeHasClaim,
   };
 }

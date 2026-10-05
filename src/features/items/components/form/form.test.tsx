@@ -1893,6 +1893,29 @@ describe('Form - linked items multi-count restriction', () => {
     expect(screen.getByText('Related Items')).toBeInTheDocument();
   });
 
+  test('toggles linking mode off when link control is clicked while active', async () => {
+    const setIsLinkingModeActive = vi.fn();
+    render(
+      <Form
+        {...baseFormProps}
+        wishlistItems={[mockEditItem, peerItem]}
+        isLinkingModeActive
+        setIsLinkingModeActive={setIsLinkingModeActive}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Linked Items')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTitle('Finish selecting linked items'));
+
+    expect(setIsLinkingModeActive).toHaveBeenCalled();
+    const updater = setIsLinkingModeActive.mock.calls.at(-1)?.[0];
+    expect(typeof updater).toBe('function');
+    expect(updater(true)).toBe(false);
+  });
+
   test('shows error and clears links when raising quantity above 1 with links selected', async () => {
     const setLinkedItemIds = vi.fn();
     const setIsLinkingModeActive = vi.fn();

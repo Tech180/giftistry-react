@@ -3,6 +3,7 @@ import type { ShowcaseVariationProgress } from '../interfaces/showcase-variation
 import type { ShowcaseRelationItem } from '../interfaces/showcase-relation-item.interface';
 import type { Item } from '../interfaces/item.interface';
 import type { ItemDescriptionMetadata } from 'shared/interfaces/item-description-metadata.interface';
+import { formatUsdOrFallback } from 'shared/utils/format-money-display.util';
 import { hasPriorityValue } from './item-priority.util';
 
 export function formatShowcaseStatusLabel(
@@ -14,8 +15,18 @@ export function formatShowcaseStatusLabel(
   return 'Available';
 }
 
-export function formatShowcaseBestPrice(totalExtractedPrice: number): string {
-  return totalExtractedPrice > 0 ? `$${totalExtractedPrice.toFixed(2)}` : '—';
+/** Prefer the active variant's primary link price (matches list cards); fall back to funding target. */
+export function formatShowcaseBestPrice(
+  fundingTarget: number,
+  primaryLinkExtractedPrice?: number | null
+): string {
+  const amount =
+    primaryLinkExtractedPrice != null && Number.isFinite(primaryLinkExtractedPrice)
+      ? primaryLinkExtractedPrice
+      : fundingTarget > 0
+        ? fundingTarget
+        : null;
+  return formatUsdOrFallback(amount);
 }
 
 export function formatShowcaseDisplayCategory(

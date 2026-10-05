@@ -33,8 +33,8 @@ export interface Props {
   viewMode?: ItemViewMode;
   isSelected?: boolean;
   onSelect?: () => void;
-  /** Opens read-only View Item drawer (viewers / public guests). */
-  onView?: () => void;
+  /** Opens read-only View Item drawer; optional substitution option id for active browse section. */
+  onView?: (substitutionOptionId?: string) => void;
   wishlistItems?: Item[];
   isLinkingContext?: boolean;
   isRelatingContext?: boolean;

@@ -121,7 +121,11 @@ export const Items: React.FC<Props> = (props) => {
       viewMode,
       isSelected: selectedItemId === item.Id || viewingItem?.Id === item.Id,
       onSelect,
-      onView: shouldOpenItemViewer && viewMode !== 'grid' ? () => openItemViewer(item) : undefined,
+      onView:
+        shouldOpenItemViewer && viewMode !== 'grid'
+          ? (substitutionOptionId?: string) =>
+              openItemViewer(item, { substitutionOptionId })
+          : undefined,
       wishlistItems: displayItems,
       isLinkingContext: isFormSessionActive && isLinkingModeActive,
       isRelatingContext: isFormSessionActive && isRelatingModeActive,

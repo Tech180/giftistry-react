@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { NotificationBell } from 'features/notifications';
 import { TOUR_TARGETS } from 'features/tour';
+import { PRIMARY_NAV_LINKS } from './constants/primary-nav-links.constant';
 import { NavigationTemplateProps } from './interfaces/navigation-template-props.interface';
 import { BrandMark } from 'shared/ui/brand-mark/brand-mark.component';
 import { MobileDrawer } from './components/mobile-drawer/mobile-drawer.component';
@@ -28,7 +29,15 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
   mobileMenuRef,
   hamburgerRef,
   showRegisterCta,
-}) => (
+  isDashboardActive,
+  isFriendsActive,
+}) => {
+  const navActiveById = {
+    dashboard: isDashboardActive,
+    friends: isFriendsActive,
+  } as const;
+
+  return (
   <nav className={styles.navbar}>
     <div className={styles.container}>
       <div className={styles.left}>
@@ -50,9 +59,18 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
 
         {isAuthenticated && (
           <div className={styles['nav-links']}>
-            <Link to="/dashboard" className={styles['nav-link']}>
-              Dashboard
-            </Link>
+            {PRIMARY_NAV_LINKS.map((link) => (
+              <Link
+                key={link.id}
+                to={link.path}
+                className={`${styles['nav-link']}${navActiveById[link.id] ? ` ${styles['nav-link-active']}` : ''}`}
+                {...(link.id === 'friends'
+                  ? { 'data-tour': TOUR_TARGETS.friendsAction }
+                  : {})}
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         )}
       </div>
@@ -104,4 +122,5 @@ export const AppNavigationTemplate: React.FC<NavigationTemplateProps> = ({
       showRegisterCta={showRegisterCta}
     />
   </nav>
-);
+  );
+};

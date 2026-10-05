@@ -68,6 +68,8 @@ export const WorkspaceTemplate: React.FC<TemplateProps> = ({
   deleteClaimerSubstitution,
   openSubstitutionEdit,
   deleteSubstitutionOption,
+  viewingItem,
+  viewingSubstitutionOptionId,
   handleItemTaggedClick,
   onLinkedItemsUnsupported,
   showDeletedComments,
@@ -358,6 +360,12 @@ export const WorkspaceTemplate: React.FC<TemplateProps> = ({
             }
             deleteSubstitutionOption = {
               deleteSubstitutionOption
+            }
+            viewingItem = {
+              viewingItem
+            }
+            viewingSubstitutionOptionId = {
+              viewingSubstitutionOptionId
             }
             handleItemTaggedClick = {
               handleItemTaggedClick

@@ -51,6 +51,25 @@ describe('groupItems', () => {
     expect(groups[0].items.map((i) => i.Id)).toEqual(['1']);
   });
 
+  it('sorts items within a category by display tier', () => {
+    const priOnly = makeItem({ Id: 'p', Name: 'PriOnly', Category: 'electronics', Priority: 1 });
+    const favOnly = makeItem({
+      Id: 'f',
+      Name: 'FavOnly',
+      Category: 'electronics',
+      Metadata: { IsFavorite: true },
+    });
+    const groups = groupItems({
+      visibleItems: [favOnly, priOnly],
+      searchQuery: '',
+      itemGroups: null,
+      enrichingItemIds: new Set(),
+    });
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].items.map((i) => i.Name)).toEqual(['PriOnly', 'FavOnly']);
+  });
+
   it('uses server itemGroups when provided', () => {
     const item = makeItem({ Id: '1', Name: 'Lens', Category: 'electronics' });
     const groups = groupItems({

@@ -10,6 +10,7 @@ import { toExtractMetadataResult } from '../../../utils/ai-job-result.util';
 import { polishExtractMetadataForForm } from '../../../utils/polish-extract-metadata-for-form.util';
 import { formatAiHelperFailure } from '../../../utils/format-ai-helper-failure.util';
 import { resolveItemEnrichRequest } from '../../../utils/resolve-item-enrich-request.util';
+import { formatMoneyFromUnknown } from 'shared/utils/format-money-display.util';
 import type { ExtractMetadataResult } from '../../../interfaces/extract-metadata-result.interface';
 import type { Item } from '../../../interfaces/item.interface';
 import type { SubstitutionEditorState } from '../interfaces/substitution-editor-state.type';
@@ -89,7 +90,9 @@ export function useEnrich(options: {
   const applyExtractedMetadata = (data: ExtractMetadataResult) => {
     setHasScraped(true);
     setName(data.Title || '');
-    setPrice(data.Price !== null && data.Price !== undefined ? data.Price.toString() : '');
+    setPrice(
+      data.Price !== null && data.Price !== undefined ? formatMoneyFromUnknown(data.Price) : ''
+    );
     setDescription(data.Description || '');
     const resolvedLink = data.ResolvedUrl?.trim();
     if (resolvedLink) {

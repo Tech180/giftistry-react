@@ -1,5 +1,6 @@
 import { parseMoneyInput } from 'shared/utils/parse-money-input.util';
 import type { ExtractMetadataResult } from '../interfaces/extract-metadata-result.interface';
+import { isGenericProductTitle } from './is-generic-product-title.util';
 
 function compactVerboseTitle(title: string): string {
   const trimmed = title.replace(/\s+/g, ' ').trim();
@@ -15,7 +16,8 @@ function compactVerboseTitle(title: string): string {
 export function polishExtractMetadataForForm(
   data: ExtractMetadataResult
 ): ExtractMetadataResult {
-  const title = compactVerboseTitle(data.Title || '');
+  const rawTitle = compactVerboseTitle(data.Title || '');
+  const title = rawTitle && !isGenericProductTitle(rawTitle) ? rawTitle : '';
   const description = data.Description?.trim() || null;
   const scrubbedDescription =
     description && /^amazon\.com\s*:/i.test(description) ? null : description;

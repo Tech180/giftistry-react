@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
+import { formatUsd } from 'shared/utils/format-money-display.util';
 import { Props } from './interfaces/props.interface';
 import styles from './links-widget.module.css';
 
@@ -20,7 +21,7 @@ export const LinksWidgetTemplate: React.FC<Props> = ({ links, getSiteName }) => 
         >
           <span>{getSiteName(link.Url, link.RetailerName)}</span>
           <strong>
-            {link.ExtractedPrice != null ? `$${link.ExtractedPrice}` : ''}{' '}
+            {link.ExtractedPrice != null ? formatUsd(link.ExtractedPrice) : ''}{' '}
             <ArrowUpRight size={14} />
           </strong>
         </a>

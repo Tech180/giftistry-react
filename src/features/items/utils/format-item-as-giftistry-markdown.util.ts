@@ -10,6 +10,7 @@ import {
   GIFTISTRY_MD_RETAILER_LABEL,
 } from '../constants/giftistry-markdown.constant';
 import { parseItemDescription } from 'shared/utils/parse-item-description.util';
+import { formatMoneyAmount } from 'shared/utils/format-money-display.util';
 
 function metaLine(label: string, value: string | number | null | undefined): string | null {
   if (value === null || value === undefined || value === '') return null;
@@ -49,7 +50,10 @@ export function formatItemAsGiftistryMarkdown(item: Item): string {
   const primaryLink = item.Links?.[0];
   if (primaryLink) {
     if (primaryLink.ExtractedPrice != null) {
-      const line = metaLine(GIFTISTRY_MD_PRICE_LABEL, primaryLink.ExtractedPrice);
+      const line = metaLine(
+        GIFTISTRY_MD_PRICE_LABEL,
+        formatMoneyAmount(primaryLink.ExtractedPrice)
+      );
       if (line) lines.push(line);
     }
     if (primaryLink.Url?.trim()) {

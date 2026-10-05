@@ -44,6 +44,30 @@ describe('getPageShellFlags', () => {
     expect(flags.showApplyBar).toBe(true);
   });
 
+  test('hides apply bar while linking when drawer stays open on desktop', () => {
+    const flags = getPageShellFlags({
+      ...base,
+      isAddOpen: true,
+      isLinkingModeActive: true,
+      doesAddSidebarOverlayList: false,
+    });
+    expect(flags.collapseDrawerWhileLinking).toBe(false);
+    expect(flags.isItemDrawerVisible).toBe(true);
+    expect(flags.showApplyBar).toBe(false);
+  });
+
+  test('hides apply bar while relating when drawer stays open on desktop', () => {
+    const flags = getPageShellFlags({
+      ...base,
+      isAddOpen: true,
+      isRelatingModeActive: true,
+      doesAddSidebarOverlayList: false,
+    });
+    expect(flags.collapseDrawerWhileLinking).toBe(false);
+    expect(flags.isItemDrawerVisible).toBe(true);
+    expect(flags.showApplyBar).toBe(false);
+  });
+
   test('shows apply bar while comment tagging collapses the drawer', () => {
     const flags = getPageShellFlags({
       ...base,

@@ -97,11 +97,11 @@ Logic component: auth (`user`, `logout`, `registrationMode`), theme provider, mo
 
 Template chrome (left → right):
 
-- **Hamburger** (≤48rem) + **BrandMark** + Dashboard link (desktop, authenticated)
+- **Hamburger** (≤48rem) + **BrandMark** + Dashboard and Friends links (desktop, authenticated)
 - **WishlistSearch** (authenticated)
 - **NotificationBell** (authenticated) · **ThemeMenu** · **ProfileTrigger** or Sign In / Get Started
 
-`showRegisterCta` follows `registrationMode === 'open'`. Tour hooks: `TOUR_TARGETS.hamburger`, `themeMenu`, `profileMenu`.
+`showRegisterCta` follows `registrationMode === 'open'`. Tour hooks: `TOUR_TARGETS.hamburger`, `themeMenu`, `profileMenu`, `friendsAction` (primary nav Friends link).
 
 Navbar is `position: fixed`; when `body[data-drawer-sheet-open]` is set (page drawer sheets), nav z-index drops so sheet headers stay clickable.
 
@@ -109,7 +109,7 @@ Navbar is `position: fixed`; when `body[data-drawer-sheet-open]` is set (page dr
 
 Portaled to `document.body`. `useMobileDrawer` owns mount/unmount delay (`CLOSE_MS`), open animation (`isActive`), body scroll lock, Escape, and left-swipe close (`SWIPE_CLOSE_*`, `DRAWER_WIDTH`).
 
-Content: brand + Dashboard link; footer is either `ProfileSheet` (signed in) or auth CTAs. Overlay click closes.
+Content: brand + Dashboard and Friends links; footer is either `ProfileSheet` (signed in) or auth CTAs. Overlay click closes.
 
 ### `theme-menu`
 
@@ -121,7 +121,9 @@ Authenticated only. On open: fetches `wishlistsApi.listWishlists({ bucket: 'all'
 
 ### `profile`
 
-Shared actions: [`PROFILE_MENU_ACTIONS`](app-navigation/components/profile/constants/profile-menu-actions.constant.ts) — Settings → `/settings/account`, Friends → `/friends/current`, Sign Out (danger).
+Primary app links: [`PRIMARY_NAV_LINKS`](app-navigation/constants/primary-nav-links.constant.ts) — Dashboard → `/dashboard`, Friends → `/friends/current`.
+
+Shared profile actions: [`PROFILE_MENU_ACTIONS`](app-navigation/components/profile/constants/profile-menu-actions.constant.ts) — Settings → `/settings/account`, Sign Out (danger).
 
 | Unit | Surface |
 |------|---------|

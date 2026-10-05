@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { X, LayoutGrid } from 'lucide-react';
+import { X } from 'lucide-react';
+import { TOUR_TARGETS } from 'features/tour';
+import { PRIMARY_NAV_LINK_ICONS } from '../../constants/primary-nav-link-icons.constant';
+import { PRIMARY_NAV_LINKS } from '../../constants/primary-nav-links.constant';
 import { BrandMark } from 'shared/ui/brand-mark/brand-mark.component';
 import { IconButton } from 'shared/ui/icon-button/icon-button.component';
 import { ProfileSheet } from '../profile/sheet/profile-sheet.component';
@@ -23,6 +26,7 @@ export const MobileDrawerTemplate: React.FC<MobileDrawerTemplateProps> = ({
   isActive,
   showSwipeHandle,
   isDashboardActive,
+  isFriendsActive,
   brandTo,
   overlayRef,
   onTouchStart,
@@ -30,7 +34,13 @@ export const MobileDrawerTemplate: React.FC<MobileDrawerTemplateProps> = ({
   onTouchEnd,
   overlayClassName,
   drawerClassName,
-}) => (
+}) => {
+  const navActiveById = {
+    dashboard: isDashboardActive,
+    friends: isFriendsActive,
+  } as const;
+
+  return (
   <div
     ref={overlayRef}
     className={overlayClassName}
@@ -74,16 +84,25 @@ export const MobileDrawerTemplate: React.FC<MobileDrawerTemplateProps> = ({
       <div className={styles['drawer-content']}>
         <div className={`${styles['stagger-item']} ${styles['delay-1']}`}>
           <div className={styles['nav-island']}>
-            <Link
-              to="/dashboard"
-              className={`${styles['drawer-link']} ${isDashboardActive ? styles['active-link'] : ''}`}
-              onClick={onClose}
-            >
-              <div className={styles['drawer-link-left']}>
-                <LayoutGrid size={18} className={styles['drawer-icon']} />
-                <span>Dashboard</span>
-              </div>
-            </Link>
+            {PRIMARY_NAV_LINKS.map((link) => {
+              const Icon = PRIMARY_NAV_LINK_ICONS[link.id];
+              return (
+                <Link
+                  key={link.id}
+                  to={link.path}
+                  className={`${styles['drawer-link']} ${navActiveById[link.id] ? styles['active-link'] : ''}`}
+                  onClick={onClose}
+                  {...(link.id === 'friends'
+                    ? { 'data-tour': TOUR_TARGETS.friendsAction }
+                    : {})}
+                >
+                  <div className={styles['drawer-link-left']}>
+                    <Icon size={18} className={styles['drawer-icon']} />
+                    <span>{link.label}</span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -125,4 +144,5 @@ export const MobileDrawerTemplate: React.FC<MobileDrawerTemplateProps> = ({
       </div>
     </div>
   </div>
-);
+  );
+};

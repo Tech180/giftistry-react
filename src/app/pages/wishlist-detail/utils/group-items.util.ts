@@ -1,5 +1,6 @@
 import type { Item } from 'features/items';
 import { getFriendlyCategoryLabel, normalizeCategoryLabel } from 'features/items/utils/category-label.util';
+import { sortItemsForListDisplay } from 'features/items/utils/sort-items-for-list-display.util';
 import {
   GENERAL_ITEMS_CATEGORY_LABEL,
   PROCESSING_CATEGORY_KEY,
@@ -38,6 +39,13 @@ function splitEnrichingUncategorized(groups: ItemGroup[], enrichingItemIds: Set<
 
     return next;
   });
+}
+
+function withListDisplaySort(groups: ItemGroup[]): ItemGroup[] {
+  return groups.map((group) => ({
+    ...group,
+    items: sortItemsForListDisplay(group.items),
+  }));
 }
 
 function sortGroups(groups: ItemGroup[]): ItemGroup[] {
@@ -94,18 +102,20 @@ export function groupItems(input: GroupItemsInput): ItemGroup[] {
 
   if (itemGroups && itemGroups.length > 0) {
     return sortGroups(
-      splitEnrichingUncategorized(
-        itemGroups
-          .map((group) => ({
-            categoryKey: group.CategoryKey,
-            label: group.CategoryLabel,
-            items: group.Items.filter((item) => {
-              const inVisible = visibleItems.some((visible) => visible.Id === item.Id);
-              return inVisible && matchesQuery(item);
-            }),
-          }))
-          .filter((group) => group.items.length > 0),
-        enrichingItemIds
+      withListDisplaySort(
+        splitEnrichingUncategorized(
+          itemGroups
+            .map((group) => ({
+              categoryKey: group.CategoryKey,
+              label: group.CategoryLabel,
+              items: group.Items.filter((item) => {
+                const inVisible = visibleItems.some((visible) => visible.Id === item.Id);
+                return inVisible && matchesQuery(item);
+              }),
+            }))
+            .filter((group) => group.items.length > 0),
+          enrichingItemIds
+        )
       )
     );
   }
@@ -124,13 +134,15 @@ export function groupItems(input: GroupItemsInput): ItemGroup[] {
   }
 
   return sortGroups(
-    splitEnrichingUncategorized(
-      Object.entries(groups).map(([key, val]) => ({
-        categoryKey: key,
-        label: val.label,
-        items: val.items,
-      })),
-      enrichingItemIds
+    withListDisplaySort(
+      splitEnrichingUncategorized(
+        Object.entries(groups).map(([key, val]) => ({
+          categoryKey: key,
+          label: val.label,
+          items: val.items,
+        })),
+        enrichingItemIds
+      )
     )
   );
 }

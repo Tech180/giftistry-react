@@ -106,6 +106,24 @@ describe('ItemCardRouter', () => {
   it('renders item name in detailed view', () => {
     render(<ItemCardRouter {...baseProps} viewMode="detailed" />);
     expect(screen.getByText('Test Gift')).toBeInTheDocument();
+    expect(screen.getByText('$49.99')).toBeInTheDocument();
+  });
+
+  it('formats whole-dollar prices with two decimals in compact view', () => {
+    const item = {
+      ...baseItem,
+      Links: [{ ...baseItem.Links[0], ExtractedPrice: 15 }],
+    };
+    render(
+      <ItemCardRouter
+        {...baseProps}
+        item={item as any}
+        totalExtractedPrice={15}
+        viewMode="compact"
+        setIsExpanded={vi.fn()}
+      />
+    );
+    expect(screen.getByText('$15.00')).toBeInTheDocument();
   });
 
   it('renders item name in kanban view', () => {

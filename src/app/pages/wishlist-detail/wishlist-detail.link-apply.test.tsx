@@ -142,6 +142,7 @@ const baseProps: PageTemplateProps = {
   viewingItem: null,
   setViewingItem: vi.fn(),
   openItemViewer: vi.fn(),
+  viewingSubstitutionOptionId: null,
   openClaimerSubstitutionCreate: vi.fn(),
   claimerSubstitutionCreateNonce: 0,
   openClaimerSubstitutionEdit: vi.fn(),
@@ -233,14 +234,14 @@ const baseProps: PageTemplateProps = {
 };
 
 describe('PageTemplate link apply bar', () => {
-  test('shows a bottom Apply button while linking when sidebar stays open', () => {
+  test('hides bottom Apply while linking when sidebar stays open', () => {
     render(
       <MemoryRouter>
         <PageTemplate
           {...baseProps}
           isLinkingModeActive
           doesAddSidebarOverlayList={false}
-          showApplyBar
+          showApplyBar={false}
           collapseDrawerWhileLinking={false}
           isItemDrawerVisible
           isItemFormSessionActive
@@ -248,8 +249,8 @@ describe('PageTemplate link apply bar', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByTestId('link-apply-bar')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Apply' })).toBeInTheDocument();
+    expect(screen.queryByTestId('link-apply-bar')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Apply' })).toBeNull();
     expect(screen.getByTestId('add-item')).toHaveAttribute('data-collapse', 'false');
   });
 

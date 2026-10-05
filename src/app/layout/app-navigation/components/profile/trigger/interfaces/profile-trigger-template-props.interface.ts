@@ -10,6 +10,5 @@ export interface ProfileTriggerTemplateProps {
   avatarInitial: string;
   showAvatarInitials: boolean;
   onSettings: () => void;
-  onFriends: () => void;
   onLogout: () => void;
 }

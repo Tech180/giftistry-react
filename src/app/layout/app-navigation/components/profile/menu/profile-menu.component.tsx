@@ -9,7 +9,6 @@ import styles from './profile-menu.module.css';
 export const ProfileMenu: React.FC<ProfileMenuProps> = ({
   user,
   onSettings,
-  onFriends,
   onLogout,
   placement = 'down',
   className,
@@ -17,7 +16,6 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
   const placementClass = placement === 'up' ? styles['placement-up'] : styles['placement-down'];
   const handlers: Record<ProfileMenuActionId, () => void> = {
     settings: onSettings,
-    friends: onFriends,
     logout: onLogout,
   };
 

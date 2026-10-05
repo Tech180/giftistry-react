@@ -17,6 +17,8 @@ export const Inspector: React.FC<Props> = (props) => {
     deleteClaimerSubstitution,
     openSubstitutionEdit,
     deleteSubstitutionOption,
+    viewingItem,
+    viewingSubstitutionOptionId,
   } = props;
 
   let showcaseProps: ItemShowcaseProps | null = null;
@@ -28,8 +30,12 @@ export const Inspector: React.FC<Props> = (props) => {
     categoryLabel = categoryMeta.label;
     CategoryIcon = categoryMeta.icon;
 
+    const initialSubstitutionOptionId =
+      viewingItem?.Id === selectedItem.Id ? viewingSubstitutionOptionId : null;
+
     showcaseProps = {
       item: selectedItem,
+      initialSubstitutionOptionId,
       priorityLabel: selectedItemPriorityLabel,
       isOwner: props.isOwner,
       isExpired: props.isExpired,

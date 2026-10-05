@@ -37,8 +37,8 @@ export const SettingsPanel: React.FC<Props> = ({
   readOnly = false,
 }) => {
   const aiGradientId = `settings-panel-ai-${useId().replace(/:/g, '')}`;
-  const showAiRows = readOnly || canShowAi;
-  const showWebSearchRow = readOnly || canShowWebSearch;
+  const showAiRows = canShowAi;
+  const showWebSearchRow = canShowWebSearch;
 
   const buildRow = (
     key: string,

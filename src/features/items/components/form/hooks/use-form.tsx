@@ -62,6 +62,7 @@ export function useForm({
   autoOpenClaimerSubstitutionNonce = 0,
   autoOpenClaimerSubstitutionEditNonce = 0,
   autoOpenClaimerSubstitutionEditId = null,
+  viewingSubstitutionOptionId = null,
 }: Props): TemplateProps {
   const { user } = useItemsSession();
   const canManageItems = canCollaborate;
@@ -385,6 +386,8 @@ export function useForm({
     autoOpenClaimerSubstitutionNonce,
     autoOpenClaimerSubstitutionEditNonce,
     autoOpenClaimerSubstitutionEditId,
+    readOnly,
+    viewingSubstitutionOptionId,
     onSubstitutionChromeChange,
     onSuccess,
     onItemEnriched,

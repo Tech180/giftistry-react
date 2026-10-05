@@ -178,10 +178,14 @@ export const TOUR_STEPS: TourStepDef[] = [
     id: 'beginner-friends',
     chapterId: 'beginner',
     title: 'Friends',
-    body: 'Friends live under your profile. You can connect with people and see their lists.',
+    body: 'Friends is in the main navigation beside Dashboard. Connect with people and see their lists.',
     advanceOn: 'next',
-    desktop: { target: TOUR_TARGETS.profileMenu, placement: 'bottom', beforeShow: 'closeShare' },
-    mobile: { target: TOUR_TARGETS.hamburger, placement: 'bottom', beforeShow: 'closeShare' },
+    desktop: { target: TOUR_TARGETS.friendsAction, placement: 'bottom', beforeShow: 'closeShare' },
+    mobile: {
+      target: TOUR_TARGETS.friendsAction,
+      placement: 'bottom',
+      beforeShow: ['closeShare', 'openDrawer'],
+    },
   },
   {
     id: 'beginner-done',
