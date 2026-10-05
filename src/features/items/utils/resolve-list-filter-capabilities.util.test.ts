@@ -44,6 +44,20 @@ describe('resolveListFilterCapabilities', () => {
     ).toBe(true);
   });
 
+  test('shows partial quantity filter only for shared viewers', () => {
+    expect(resolveListFilterCapabilities(base).showPartialQuantity).toBe(true);
+    expect(
+      resolveListFilterCapabilities({ ...base, isOwner: true, canCollaborate: true })
+        .showPartialQuantity
+    ).toBe(false);
+    expect(
+      resolveListFilterCapabilities({ ...base, canCollaborate: true }).showPartialQuantity
+    ).toBe(false);
+    expect(
+      resolveListFilterCapabilities({ ...base, isPublicGuest: true }).showPartialQuantity
+    ).toBe(false);
+  });
+
   test('shows common list filters for owners, collaborators, and viewers', () => {
     const viewer = resolveListFilterCapabilities(base);
     const owner = resolveListFilterCapabilities({ ...base, isOwner: true, canCollaborate: true });
@@ -52,7 +66,6 @@ describe('resolveListFilterCapabilities', () => {
     for (const caps of [viewer, owner, collaborator]) {
       expect(caps.showEnrichFilters).toBe(true);
       expect(caps.showFavorites).toBe(true);
-      expect(caps.showPartialQuantity).toBe(true);
     }
   });
 

@@ -262,6 +262,40 @@ export const ListFiltersTemplate: React.FC<TemplateProps> = ({
             </>
           ) : null}
 
+          {capabilities.showPartialQuantity ? (
+            <section
+              className = {
+                styles['list-filters__section']
+              }
+            >
+              <FilterSwitchRow
+                id = {
+                  'list-filter-partial-qty'
+                }
+                label = {
+                  'Partial quantity remaining'
+                }
+                description = {
+                  'Multi-quantity gifts where some units are still open to claim, but not all.'
+                }
+                checked = {
+                  draft.filters.partialQuantityRemaining
+                }
+                onChange = {
+                  (checked) => {
+                    onUpdateDraft((prev) => ({
+                      ...prev,
+                      filters: {
+                        ...prev.filters,
+                        partialQuantityRemaining: checked,
+                      },
+                    }));
+                  }
+                }
+              />
+            </section>
+          ) : null}
+
           <SectionDivider />
 
           <section
@@ -621,30 +655,6 @@ export const ListFiltersTemplate: React.FC<TemplateProps> = ({
                     onUpdateDraft((prev) => ({
                       ...prev,
                       filters: { ...prev.filters, priorityOnly: checked },
-                    }));
-                  }
-                }
-              />
-            ) : null}
-            {capabilities.showPartialQuantity ? (
-              <FilterSwitchRow
-                id = {
-                  'list-filter-partial-qty'
-                }
-                label = {
-                  'Partial quantity remaining'
-                }
-                checked = {
-                  draft.filters.partialQuantityRemaining
-                }
-                onChange = {
-                  (checked) => {
-                    onUpdateDraft((prev) => ({
-                      ...prev,
-                      filters: {
-                        ...prev.filters,
-                        partialQuantityRemaining: checked,
-                      },
                     }));
                   }
                 }

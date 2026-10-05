@@ -3,20 +3,44 @@ import { Switch } from 'shared/ui';
 import type { Props } from './interfaces/props.interface';
 import styles from './filter-switch-row.module.css';
 
-export const FilterSwitchRow: React.FC<Props> = ({ id, label, checked, onChange }) => {
+export const FilterSwitchRow: React.FC<Props> = ({
+  id,
+  label,
+  description,
+  checked,
+  onChange,
+}) => {
   return (
     <div
       className = {
-        styles['filter-switch-row']
+        `${styles['filter-switch-row']}${description ? ` ${styles['filter-switch-row--with-description']}` : ''}`
       }
     >
-      <span
-        id = {
-          `${id}-label`
+      <div
+        className = {
+          styles['filter-switch-row__copy']
         }
       >
-        {label}
-      </span>
+        <span
+          id = {
+            `${id}-label`
+          }
+          className = {
+            styles['filter-switch-row__label']
+          }
+        >
+          {label}
+        </span>
+        {description ? (
+          <span
+            className = {
+              styles['filter-switch-row__description']
+            }
+          >
+            {description}
+          </span>
+        ) : null}
+      </div>
       <Switch
         id = {
           id

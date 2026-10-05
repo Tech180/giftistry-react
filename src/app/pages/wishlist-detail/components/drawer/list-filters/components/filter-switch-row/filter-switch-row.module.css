@@ -5,3 +5,31 @@
   gap: var(--spacing-sm);
   font-size: 0.8125rem;
 }
+
+.filter-switch-row--with-description {
+  align-items: flex-start;
+}
+
+.filter-switch-row__copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.filter-switch-row__label {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.filter-switch-row__description {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.filter-switch-row--with-description > :last-child {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}

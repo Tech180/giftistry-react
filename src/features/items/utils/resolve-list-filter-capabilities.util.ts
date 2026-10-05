@@ -13,7 +13,7 @@ export function resolveListFilterCapabilities(context: ListFilterContext): ListF
     showFavorites: true,
     showPriorityOnly: true,
     showPricePresence: false,
-    showPartialQuantity: true,
+    showPartialQuantity: isViewer,
     showEnrichFilters: true,
     allowCustomPresets: canManage && !context.isPublicGuest,
   };
