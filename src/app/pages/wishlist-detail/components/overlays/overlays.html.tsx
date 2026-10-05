@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { AddItem } from '../drawer/add-item/add-item.component';
 import { Comments } from '../drawer/comments/comments.component';
+import { ListFilters } from '../drawer/list-filters/list-filters.component';
 import { ApplyBar } from '../apply-bar/apply-bar.component';
 import { ShareModal } from '../share-modal/share-modal.component';
 import styles from '../../page.module.css';
@@ -69,6 +70,7 @@ export const OverlaysTemplate: React.FC<TemplateProps> = ({
   setIsShareOpen,
   isMobileFab,
   isHighlightInteractionLocked = false,
+  listDisplay,
 }) => (
   <>
     {(!isPublicGuest || !!viewingItem) && (
@@ -276,6 +278,12 @@ export const OverlaysTemplate: React.FC<TemplateProps> = ({
         }
       />
     ) : null}
+
+    <ListFilters
+      listDisplay = {
+        listDisplay
+      }
+    />
 
     {showApplyBar ? (
       <ApplyBar

@@ -54,6 +54,7 @@ export const WorkspaceTemplate: React.FC<TemplateProps> = ({
   searchQuery,
   setSearchQuery,
   addItemWidget,
+  listDisplay,
   itemsProps,
   isInspectorOpen,
   pageClassName,
@@ -275,6 +276,9 @@ export const WorkspaceTemplate: React.FC<TemplateProps> = ({
               addItemWidget = {
                 addItemWidget
               }
+              listDisplay = {
+                listDisplay
+              }
             />
           </div>
           <div
@@ -441,6 +445,9 @@ export const WorkspaceTemplate: React.FC<TemplateProps> = ({
             }
             addItemWidget = {
               addItemWidget
+            }
+            listDisplay = {
+              listDisplay
             }
           />
           <Items

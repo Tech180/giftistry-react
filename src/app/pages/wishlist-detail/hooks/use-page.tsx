@@ -32,6 +32,8 @@ import { useItemSession } from './use-item-session';
 import { useListData } from './use-list-data';
 import { useListLifecycle } from './use-list-lifecycle';
 import { useListSettings } from './use-list-settings';
+import { useListDisplayPreferences } from './use-list-display-preferences';
+import type { ListFilterContext } from 'features/items';
 
 export function usePage(): UsePageResult {
   const navigate = useNavigate();
@@ -233,6 +235,54 @@ export function usePage(): UsePageResult {
     });
   }, [items, session.editingItem, session.editingItemDraft]);
 
+  const filterContext = useMemo((): ListFilterContext => ({
+    allowGroupFunds: wishlist?.AllowGroupFunds === true,
+    revealSuggestions: wishlist?.RevealSuggestions === true,
+    currentUserId: user?.Id ?? null,
+    listOwnerUserId: wishlist?.UserId ?? null,
+    isOwner,
+    canCollaborate,
+    isPublicGuest: false,
+  }), [wishlist, user, isOwner, canCollaborate]);
+
+  const listDisplay = useListDisplayPreferences({
+    listId: wishlist?.Id,
+    searchQuery,
+    displayItems,
+    itemGroups,
+    filterContext,
+  });
+
+  const { closeDrawer: closeListFiltersDrawer, isOpen: isListFiltersOpen } = listDisplay;
+
+  useEffect(() => {
+    if (session.isAddOpen || session.editingItem || session.viewingItem) {
+      closeListFiltersDrawer();
+    }
+  }, [session.isAddOpen, session.editingItem, session.viewingItem, closeListFiltersDrawer]);
+
+  useEffect(() => {
+    if (isListFiltersOpen) {
+      setSelectedItemId(null);
+      setIsCommentsOpen(false);
+      session.setIsAddOpen(false);
+      session.setEditingItem(null);
+      session.setViewingItem(null);
+    }
+  }, [isListFiltersOpen]);
+
+  useEffect(() => {
+    if (isCommentsOpen) {
+      closeListFiltersDrawer();
+    }
+  }, [isCommentsOpen, closeListFiltersDrawer]);
+
+  useEffect(() => {
+    if (selectedItemId !== null) {
+      closeListFiltersDrawer();
+    }
+  }, [selectedItemId, closeListFiltersDrawer]);
+
   const groupedItems = useMemo(
     () =>
       groupItems({
@@ -240,8 +290,17 @@ export function usePage(): UsePageResult {
         searchQuery,
         itemGroups,
         enrichingItemIds,
+        listDisplayPreferences: listDisplay.appliedPreferences,
+        filterContext,
       }),
-    [displayItems, searchQuery, itemGroups, enrichingItemIds]
+    [
+      displayItems,
+      searchQuery,
+      itemGroups,
+      enrichingItemIds,
+      listDisplay.appliedPreferences,
+      filterContext,
+    ]
   );
 
   const selectedItem = useMemo(
@@ -440,5 +499,6 @@ export function usePage(): UsePageResult {
     onCancelJob,
     canShowAi,
     mobileActions,
+    listDisplay,
   };
 }

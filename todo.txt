@@ -12,6 +12,7 @@ claimed by box should be ungrayed, substitution box should be ungrayed, arrow se
     - shouldn't show yourself on dashboard item
     - settings for viewer should be the same
     - make loading spinner
+    - filtering
 - new features
     - price comparer
     - price fetcher (auto)

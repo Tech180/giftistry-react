@@ -1,4 +1,5 @@
 import React from 'react';
+import { Funnel } from 'lucide-react';
 import { TOUR_TARGETS } from 'features/tour';
 import styles from './controls.module.css';
 import type { TemplateProps } from './interfaces/template-props.interface';
@@ -13,6 +14,8 @@ export const ControlsTemplate: React.FC<TemplateProps> = ({
   isViewModeMenuOpen,
   onViewModeMenuOpenChange,
   addItemWidget,
+  activeFilterCount,
+  onOpenListFilters,
 }) => {
   return (
     <div
@@ -20,18 +23,23 @@ export const ControlsTemplate: React.FC<TemplateProps> = ({
         styles.controls
       }
     >
-      <h3
-        className = {
-          styles['controls__title']
-        }
-      >
-        Gift Ideas
-      </h3>
       <div
         className = {
-          styles['controls__actions']
+          styles['controls__toolbar']
         }
       >
+        <h3
+          className = {
+            styles['controls__title']
+          }
+        >
+          Gift Ideas
+        </h3>
+        <div
+          className = {
+            styles['controls__actions']
+          }
+        >
         <label
           className = {
             styles['controls__search']
@@ -105,6 +113,39 @@ export const ControlsTemplate: React.FC<TemplateProps> = ({
             }
           />
         </label>
+
+        <button
+          type = {
+            'button'
+          }
+          className = {
+            styles['controls__filter-trigger']
+          }
+          onClick = {
+            onOpenListFilters
+          }
+          aria-label = {
+            'Sort and filter'
+          }
+        >
+          <Funnel
+            size = {
+              18
+            }
+            aria-hidden = {
+              true
+            }
+          />
+          {activeFilterCount > 0 ? (
+            <span
+              className = {
+                styles['controls__filter-badge']
+              }
+            >
+              {activeFilterCount}
+            </span>
+          ) : null}
+        </button>
 
         <div
           className = {
@@ -233,6 +274,7 @@ export const ControlsTemplate: React.FC<TemplateProps> = ({
         </details>
 
         {addItemWidget}
+        </div>
       </div>
     </div>
   );

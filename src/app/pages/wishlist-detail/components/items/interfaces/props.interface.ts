@@ -10,7 +10,7 @@ export interface Props {
   viewMode: ItemViewMode;
   isLoading: boolean;
   searchQuery: string;
-  setSearchQuery: (query: string) => void;
+  onClearFilteredView: () => void;
   canSuggest: boolean;
   canAutoAdd: boolean;
   openAutoAdd: () => void;

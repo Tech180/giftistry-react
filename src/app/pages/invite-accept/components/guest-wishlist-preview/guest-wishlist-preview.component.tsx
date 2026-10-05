@@ -37,6 +37,8 @@ import { noopAsync } from './utils/noop-async.util';
 import { useDoesAddSidebarOverlayList } from 'app/pages/wishlist-detail/hooks/use-does-add-sidebar-overlay-list';
 import { getPageClassName } from 'app/pages/wishlist-detail/utils/get-page-class-name.util';
 import { getPageShellFlags } from 'app/pages/wishlist-detail/utils/get-page-shell-flags.util';
+import { useListDisplayPreferences } from 'app/pages/wishlist-detail/hooks/use-list-display-preferences';
+import type { ListFilterContext } from 'features/items';
 import styles from './guest-wishlist-preview.module.css';
 
 export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
@@ -109,9 +111,31 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
     isLocked,
   });
 
+  const filterContext = useMemo((): ListFilterContext => ({
+    allowGroupFunds: wishlist.AllowGroupFunds === true,
+    revealSuggestions: wishlist.RevealSuggestions === true,
+    currentUserId: null,
+    listOwnerUserId: wishlist.UserId ?? null,
+    isOwner: false,
+    canCollaborate: false,
+    isPublicGuest: true,
+  }), [wishlist]);
+
+  const listDisplay = useListDisplayPreferences({
+    listId: wishlist.Id,
+    searchQuery,
+    displayItems: items,
+    itemGroups: groups ?? null,
+    filterContext,
+  });
+
   const groupedItems = useMemo(
-    () => groupGuestPreviewItems(items, groups, searchQuery),
-    [items, groups, searchQuery]
+    () =>
+      groupGuestPreviewItems(items, groups, searchQuery, {
+        listDisplayPreferences: listDisplay.appliedPreferences,
+        filterContext,
+      }),
+    [items, groups, searchQuery, listDisplay.appliedPreferences, filterContext]
   );
 
   const selectedItem = useMemo(
@@ -319,6 +343,7 @@ export const GuestWishlistPreview: React.FC<GuestWishlistPreviewProps> = ({
       isCancellingJob={false}
       onCancelJob={noop}
       canShowAi={false}
+      listDisplay={listDisplay}
         />
         </>
       </CommentsSessionProvider>

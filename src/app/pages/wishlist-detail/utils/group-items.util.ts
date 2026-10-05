@@ -1,6 +1,10 @@
-import type { Item } from 'features/items';
+import type { Item, ListDisplaySortKey } from 'features/items';
+import {
+  createDefaultListDisplayPreferences,
+  filterItemsForListDisplay,
+  sortItemsForListSort,
+} from 'features/items';
 import { getFriendlyCategoryLabel, normalizeCategoryLabel } from 'features/items/utils/category-label.util';
-import { sortItemsForListDisplay } from 'features/items/utils/sort-items-for-list-display.util';
 import {
   GENERAL_ITEMS_CATEGORY_LABEL,
   PROCESSING_CATEGORY_KEY,
@@ -9,7 +13,6 @@ import {
 } from '../constants/category-group.constant';
 import type { GroupItemsInput } from '../interfaces/group-items-input.interface';
 import type { ItemGroup } from '../interfaces/item-group.interface';
-import { filterItemsByQuery } from './filter-items-by-query.util';
 
 function isTailCategory(categoryKey: string): boolean {
   return categoryKey === UNCATEGORIZED_CATEGORY_KEY || categoryKey === PROCESSING_CATEGORY_KEY;
@@ -41,10 +44,14 @@ function splitEnrichingUncategorized(groups: ItemGroup[], enrichingItemIds: Set<
   });
 }
 
-function withListDisplaySort(groups: ItemGroup[]): ItemGroup[] {
+function withListDisplaySort(
+  groups: ItemGroup[],
+  sortKey: ListDisplaySortKey,
+  allowGroupFunds: boolean
+): ItemGroup[] {
   return groups.map((group) => ({
     ...group,
-    items: sortItemsForListDisplay(group.items),
+    items: sortItemsForListSort(group.items, sortKey, allowGroupFunds),
   }));
 }
 
@@ -96,9 +103,42 @@ function resolveCategoryLabel(item: Item, categoryKey: string): string {
   return getFriendlyCategoryLabel(item.Category || categoryKey);
 }
 
+function passesListDisplayFilters(input: GroupItemsInput, item: Item): boolean {
+  const preferences = input.listDisplayPreferences ?? createDefaultListDisplayPreferences();
+  const context = input.filterContext;
+  if (!context) {
+    return filterItemsForListDisplay({
+      items: [item],
+      searchQuery: input.searchQuery,
+      searchScope: preferences.searchScope,
+      filters: preferences.filters,
+      context: {
+        allowGroupFunds: false,
+        revealSuggestions: true,
+        currentUserId: null,
+        listOwnerUserId: null,
+        isOwner: false,
+        canCollaborate: false,
+        isPublicGuest: false,
+      },
+    }).length > 0;
+  }
+
+  return filterItemsForListDisplay({
+    items: [item],
+    searchQuery: input.searchQuery,
+    searchScope: preferences.searchScope,
+    filters: preferences.filters,
+    context,
+  }).length > 0;
+}
+
 export function groupItems(input: GroupItemsInput): ItemGroup[] {
   const { visibleItems, searchQuery, itemGroups, enrichingItemIds } = input;
-  const matchesQuery = (item: Item) => filterItemsByQuery(item, searchQuery);
+  const preferences = input.listDisplayPreferences ?? createDefaultListDisplayPreferences();
+  const allowGroupFunds = input.filterContext?.allowGroupFunds ?? false;
+  const sortKey = preferences.sort;
+  const matchesDisplay = (item: Item) => passesListDisplayFilters(input, item);
 
   if (itemGroups && itemGroups.length > 0) {
     return sortGroups(
@@ -110,17 +150,19 @@ export function groupItems(input: GroupItemsInput): ItemGroup[] {
               label: group.CategoryLabel,
               items: group.Items.filter((item) => {
                 const inVisible = visibleItems.some((visible) => visible.Id === item.Id);
-                return inVisible && matchesQuery(item);
+                return inVisible && matchesDisplay(item);
               }),
             }))
             .filter((group) => group.items.length > 0),
           enrichingItemIds
-        )
+        ),
+        sortKey,
+        allowGroupFunds
       )
     );
   }
 
-  const filtered = visibleItems.filter(matchesQuery);
+  const filtered = visibleItems.filter(matchesDisplay);
   const groups: { [categoryKey: string]: { label: string; items: Item[] } } = {};
 
   for (const item of filtered) {
@@ -142,7 +184,9 @@ export function groupItems(input: GroupItemsInput): ItemGroup[] {
           items: val.items,
         })),
         enrichingItemIds
-      )
+      ),
+      sortKey,
+      allowGroupFunds
     )
   );
 }

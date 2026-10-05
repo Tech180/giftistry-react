@@ -1,0 +1,13 @@
+.filter-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.filter-chip-group__chip {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+  text-align: center;
+}

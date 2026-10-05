@@ -27,6 +27,7 @@ wishlist-detail/
   page.module.css                 ← page / workspace / inspector / highlight-lock
   hooks/
     use-page.tsx                  ← orchestrates all hooks → template props
+    use-list-display-preferences.ts ← applied/draft prefs, presets, localStorage
     use-does-add-sidebar-overlay-list.ts  ← 75rem drawer overlay vs layout shift (shared with guest)
     use-list-data.ts              ← load list, items, jobs; demo list branch
     use-list-settings.ts          ← title/date/toggles → wishlistsApi.update
@@ -49,12 +50,13 @@ wishlist-detail/
     workspace/                    ← header + import + job + controls + items + inspector
     overlays/                     ← add drawer, comments drawer, apply bar, share, lock
     header/                       ← title/date, actions, confirm banner, settings popover
-    controls/                     ← view mode + search + add widget slot
+    controls/                     ← view mode + search + sort/filter trigger + chips + add widget slot
     items/                        ← grouped ItemCards / empty / loading
     inspector/                    ← grid-mode selected item + inline comments
     drawer/
       add-item/                   ← add/edit/view form drawer + association-rails/
       comments/                   ← list-mode comments drawer
+      list-filters/               ← sort & filter drawer (right, sheet on mobile)
     add-widget/                   ← manual / auto-add URL control
     apply-bar/                    ← finish linking/relating/tagging
     settings-panel/               ← AI / web search / enrich / rollover / group funds
@@ -85,6 +87,7 @@ wishlist-detail/
 | [inspector/](#inspector) | `Inspector` | Grid selection + `ItemShowcase` + comments |
 | [drawer/add-item/](#drawer-add-item) | `AddItem` | Form drawer + association rails |
 | [drawer/comments/](#drawer-comments) | `Comments` | List-mode comments drawer |
+| `drawer/list-filters/` | `ListFilters` | Single-scroll sort & filter drawer (demo layout); draft/apply; mutual exclusion with add/comments/selection |
 | [add-widget/](#add-widget) | `AddWidget` | Manual add / URL auto-enrich |
 | [apply-bar/](#apply-bar) | `ApplyBar` | Exit association / tagging modes |
 | [settings-panel/](#settings-panel) | `SettingsPanel` | List setting toggles (header + FAB) |

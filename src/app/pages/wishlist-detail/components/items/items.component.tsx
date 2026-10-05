@@ -156,11 +156,8 @@ export const Items: React.FC<Props> = (props) => {
       isLoading = {
         props.isLoading
       }
-      searchQuery = {
-        props.searchQuery
-      }
-      setSearchQuery = {
-        props.setSearchQuery
+      onClearFilteredView = {
+        props.onClearFilteredView
       }
       canSuggest = {
         props.canSuggest

@@ -7,6 +7,7 @@ import type { BackgroundJobView, ItemEnrichJobResult } from 'features/jobs';
 import type { ConfirmAction } from './confirm-action.type';
 import type { ItemGroup } from './item-group.interface';
 import type { PageShellFlags } from './page-shell-flags.interface';
+import type { UseListDisplayPreferencesResult } from './use-list-display-preferences-result.interface';
 
 export interface PageTemplateProps extends PageShellFlags {
   isWishlistLoading: boolean;
@@ -138,4 +139,5 @@ export interface PageTemplateProps extends PageShellFlags {
   onCancelJob: () => void;
   canShowAi?: boolean;
   pageClassName: string;
+  listDisplay: UseListDisplayPreferencesResult;
 }

@@ -16,6 +16,7 @@ export const Controls: React.FC<Props> = ({
   searchQuery,
   setSearchQuery,
   addItemWidget,
+  listDisplay,
 }) => {
   const [isViewModeMenuOpen, setIsViewModeMenuOpen] = useState(false);
 
@@ -65,6 +66,12 @@ export const Controls: React.FC<Props> = ({
       }
       addItemWidget = {
         addItemWidget
+      }
+      activeFilterCount = {
+        listDisplay.activeFilterCount
+      }
+      onOpenListFilters = {
+        listDisplay.openDrawer
       }
     />
   );

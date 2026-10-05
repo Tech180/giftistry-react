@@ -8,8 +8,7 @@ import {
   AUTO_ADD_LABEL,
   CLEAR_SEARCH_LABEL,
   EMPTY_LIST_TEXT,
-  SEARCH_EMPTY_PREFIX,
-  SEARCH_EMPTY_SUFFIX,
+  FILTERED_EMPTY_TEXT,
 } from './constants/empty-copy.constant';
 import type { TemplateProps } from './interfaces/template-props.interface';
 import { getGroupChevronClassName } from './utils/get-group-chevron-class-name.util';
@@ -26,8 +25,7 @@ export const ItemsTemplate: React.FC<TemplateProps> = ({
   toggleGroupCollapsed,
   viewMode,
   isLoading,
-  searchQuery,
-  setSearchQuery,
+  onClearFilteredView,
   canSuggest,
   canAutoAdd,
   openAutoAdd,
@@ -171,9 +169,7 @@ export const ItemsTemplate: React.FC<TemplateProps> = ({
             styles['items__empty-text']
           }
         >
-          {SEARCH_EMPTY_PREFIX}
-          {searchQuery}
-          {SEARCH_EMPTY_SUFFIX}
+          {FILTERED_EMPTY_TEXT}
         </p>
         <Button
           variant = {
@@ -183,7 +179,7 @@ export const ItemsTemplate: React.FC<TemplateProps> = ({
             'sm'
           }
           onClick = {
-            () => setSearchQuery('')
+            onClearFilteredView
           }
         >
           {CLEAR_SEARCH_LABEL}

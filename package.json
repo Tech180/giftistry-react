@@ -1,6 +1,6 @@
 {
   "name": "giftistry-react",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "private": true,
   "dependencies": {
     "@simplewebauthn/browser": "^13.3.0",

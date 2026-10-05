@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, test, vi } from 'vitest';
 import { PageTemplate } from './page.html';
 import type { PageTemplateProps } from './interfaces/page-template-props.interface';
+import { createMockListDisplay } from './test-utils/mock-list-display.util';
 
 vi.mock('./components/drawer/add-item/add-item.component', () => ({
   AddItem: ({
@@ -231,6 +232,7 @@ const baseProps: PageTemplateProps = {
   activeJob: null,
   isCancellingJob: false,
   onCancelJob: vi.fn(),
+  listDisplay: createMockListDisplay(),
 };
 
 describe('PageTemplate link apply bar', () => {

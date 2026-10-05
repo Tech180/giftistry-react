@@ -120,6 +120,8 @@ Local list state + mutations. Called from the wishlist-detail page (not a provid
 | `items` | Flat item list |
 | `itemGroups` | Server groups or `null` (cleared on simple `addItem`) |
 | `sortItemsForListDisplay` | Within-category order: favorited+priority → priority → favorited → neither; ties by priority, name, id |
+| `sortItemsForListSort` / `filterItemsForListDisplay` | User-selected sort key + drawer filters + scoped toolbar search (wishlist list pipeline) |
+| `ListDisplayPreferences` + storage utils | Per-list `localStorage` sort/filter/search-scope; built-in presets; sanitize by role capabilities |
 | `isLoading` / `error` | Fetch flags (`fetchItems` supports `{ silent: true }`) |
 
 ### Actions

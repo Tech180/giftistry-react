@@ -1,0 +1,120 @@
+.list-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
+  box-sizing: border-box;
+}
+
+.list-filters__unsaved {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.list-filters__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.list-filters__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.list-filters__section-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.list-filters__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.list-filters__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.list-filters__label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.list-filters__select-menu {
+  width: 100%;
+}
+
+.list-filters__price-range {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.list-filters__price-bound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.list-filters__price-bound-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.list-filters__price-range-arrow {
+  flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 0.3125rem;
+}
+
+.list-filters__price-selector {
+  --number-selector-height: 1.5rem;
+  --number-selector-btn-width: 1.5rem;
+  --number-selector-val-width: 2.25rem;
+  --number-selector-icon-size: 0.75rem;
+}
+
+.list-filters__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.list-filters__footer-meta {
+  margin: 0;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.list-filters__footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  justify-content: stretch;
+
+  & > * {
+    flex: 1;
+    min-width: 5rem;
+  }
+}

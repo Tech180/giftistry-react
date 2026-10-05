@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { createMockListDisplay } from '../../test-utils/mock-list-display.util';
 import { Controls } from './controls.component';
 
 describe('Controls', () => {
@@ -10,6 +11,7 @@ describe('Controls', () => {
     searchQuery: '',
     setSearchQuery: vi.fn(),
     addItemWidget: null,
+    listDisplay: createMockListDisplay(),
   };
 
   it('omits kanban when supportsKanbanViewMode is false', () => {

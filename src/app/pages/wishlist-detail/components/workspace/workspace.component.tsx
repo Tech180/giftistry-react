@@ -59,6 +59,7 @@ export const Workspace: React.FC<Props> = (props) => {
     displayItems,
     handleItemTaggedClick,
     onLinkedItemsUnsupported,
+    listDisplay,
   } = props;
 
   const addItemWidget = canSuggest ? (
@@ -95,7 +96,10 @@ export const Workspace: React.FC<Props> = (props) => {
     viewMode,
     isLoading,
     searchQuery,
-    setSearchQuery,
+    onClearFilteredView: () => {
+      setSearchQuery('');
+      listDisplay.resetAppliedFilters();
+    },
     canSuggest,
     canAutoAdd,
     openAutoAdd,

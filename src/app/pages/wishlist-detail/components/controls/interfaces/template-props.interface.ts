@@ -13,4 +13,6 @@ export interface TemplateProps {
   isViewModeMenuOpen: boolean;
   onViewModeMenuOpenChange: (open: boolean) => void;
   addItemWidget: ReactNode;
+  activeFilterCount: number;
+  onOpenListFilters: () => void;
 }

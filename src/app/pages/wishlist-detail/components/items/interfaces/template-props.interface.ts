@@ -10,8 +10,7 @@ export interface TemplateProps {
   toggleGroupCollapsed: (categoryKey: string) => void;
   viewMode: ItemViewMode;
   isLoading: boolean;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
+  onClearFilteredView: () => void;
   canSuggest: boolean;
   canAutoAdd: boolean;
   openAutoAdd: () => void;

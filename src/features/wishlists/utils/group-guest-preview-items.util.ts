@@ -1,6 +1,14 @@
-import type { Item } from 'features/items';
+import type {
+  Item,
+  ListDisplayPreferences,
+  ListFilterContext,
+} from 'features/items';
+import {
+  createDefaultListDisplayPreferences,
+  filterItemsForListDisplay,
+  sortItemsForListSort,
+} from 'features/items';
 import type { ItemListGroup } from 'features/items/interfaces/item-list-result.interface';
-import { sortItemsForListDisplay } from 'features/items/utils/sort-items-for-list-display.util';
 import {
   getFriendlyCategoryLabel,
   normalizeCategoryLabel,
@@ -9,21 +17,39 @@ import {
 export function groupGuestPreviewItems(
   items: Item[],
   groups: ItemListGroup[] | undefined,
-  searchQuery: string
+  searchQuery: string,
+  options?: {
+    listDisplayPreferences?: ListDisplayPreferences;
+    filterContext?: ListFilterContext;
+  }
 ): { categoryKey: string; label: string; items: Item[] }[] {
-  const query = searchQuery.toLowerCase().trim();
-  const matchesQuery = (item: Item) => {
-    if (!query) return true;
-    return (
-      item.Name.toLowerCase().includes(query) ||
-      Boolean(item.Description && item.Description.toLowerCase().includes(query))
-    );
+  const preferences = options?.listDisplayPreferences ?? createDefaultListDisplayPreferences();
+  const context: ListFilterContext = options?.filterContext ?? {
+    allowGroupFunds: false,
+    revealSuggestions: true,
+    currentUserId: null,
+    listOwnerUserId: null,
+    isOwner: false,
+    canCollaborate: false,
+    isPublicGuest: true,
   };
+
+  const filteredItems = filterItemsForListDisplay({
+    items,
+    searchQuery,
+    searchScope: preferences.searchScope,
+    filters: preferences.filters,
+    context,
+  });
 
   const withSortedItems = (next: { categoryKey: string; label: string; items: Item[] }[]) =>
     next.map((group) => ({
       ...group,
-      items: sortItemsForListDisplay(group.items),
+      items: sortItemsForListSort(
+        group.items,
+        preferences.sort,
+        context.allowGroupFunds
+      ),
     }));
 
   const sortGroups = (next: { categoryKey: string; label: string; items: Item[] }[]) =>
@@ -38,18 +64,20 @@ export function groupGuestPreviewItems(
       });
 
   if (groups && groups.length > 0) {
-    const itemsById = new Map(items.map((item) => [item.Id, item]));
+    const itemsById = new Map(filteredItems.map((item) => [item.Id, item]));
     return sortGroups(
       groups.map((group) => ({
         categoryKey: group.CategoryKey,
         label: group.CategoryLabel,
-        items: group.Items.map((item) => itemsById.get(item.Id) ?? item).filter(matchesQuery),
+        items: group.Items.map((item) => itemsById.get(item.Id)).filter(
+          (item): item is Item => item != null
+        ),
       }))
     );
   }
 
   const grouped: Record<string, { label: string; items: Item[] }> = {};
-  for (const item of items.filter(matchesQuery)) {
+  for (const item of filteredItems) {
     const categoryKey =
       item.CategoryKey ||
       normalizeCategoryLabel(item.Category && item.Category.trim() ? item.Category.trim() : 'uncategorized');
